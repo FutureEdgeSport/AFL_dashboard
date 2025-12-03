@@ -844,20 +844,23 @@ def build_depth_chart_html(df_team: pd.DataFrame) -> str:
         if depth_pos in grid and age_band in grid[depth_pos]:
             grid[depth_pos][age_band].append(player_html)
 
-    # build HTML table
+    # build HTML table (pre-rankings version: no row/column totals)
     html = []
     html.append(
         "<table style='width:100%;border-collapse:collapse;font-size:0.8em;'>"
     )
+    # Header row with column names only
     html.append("<tr>")
     html.append(
         "<th style='background-color:black;color:white;padding:6px;"
-        "border:2px solid #000;width:10%;'>Position</th>"
+        "border:2px solid #000;width:12%;'>Position</th>"
     )
     for band in AGE_BANDS:
         html.append(
             f"<th style='background-color:#8BC34A;color:black;padding:6px;"
-            f"border:2px solid #000;text-align:center;'>{band}</th>"
+            f"border:2px solid #000;text-align:center;'>"
+            f"{band}"
+            f"</th>"
         )
     html.append("</tr>")
 
@@ -889,7 +892,7 @@ def build_depth_chart_html(df_team: pd.DataFrame) -> str:
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Overview", "Team Ladder", "Player Dashboard", "Depth Chart"]
+PAGES = ["Overview", "Team Breakdown", "Player Dashboard", "Depth Chart"]
 page = st.sidebar.radio("Navigate", PAGES)
 
 
@@ -1029,10 +1032,10 @@ if page == "Overview":
         st.info("No ladder columns found to display.")
 
 
-# ================= TEAM LADDER =================
+# ================= TEAM BREAKDOWN =================
 
-elif page == "Team Ladder":
-    st.title("📊 Team Ladder")
+elif page == "Team Breakdown":
+    st.title("📊 Team Breakdown")
 
     selected_season = st.selectbox("Season", TEAM_SEASONS)
     window = st.radio(
