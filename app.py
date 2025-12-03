@@ -635,25 +635,25 @@ def render_interactive_table(df: pd.DataFrame, exclude_cols=None, color_col=None
     `color_col` cells using the existing `rating_colour_for_value` logic.
     Falls back to `st.table` with the pandas Styler if ag-Grid isn't installed.
     
-    If pre_styled_styler is provided, it will be used when ag-Grid is unavailable,
-    instead of building a new styler from scratch.
+    If pre_styled_styler is provided, it will always be used (prioritizes styling over interactivity).
     """
     if exclude_cols is None:
         exclude_cols = ["Player", "Team"]
 
+    # If a pre-styled Styler is provided, always use it for consistent conditional formatting
+    if pre_styled_styler is not None:
+        st.table(pre_styled_styler)
+        return
+
     if not AGGRID_AVAILABLE:
-        # Use pre-built styler if provided, otherwise build one
-        if pre_styled_styler is not None:
-            st.table(pre_styled_styler)
-        else:
-            # Fallback: show the pandas Styler table (static)
-            # centre all except exclude_cols
-            cols_to_center = [c for c in df.columns if c not in exclude_cols]
-            styler = df.style.set_properties(subset=cols_to_center, **{"text-align": "center"})
-            if color_col and color_col in df.columns:
-                # try to apply colouring via existing styler function
-                styler = styler.apply(rating_colour_style, subset=[color_col])
-            st.table(styler)
+        # Fallback: show the pandas Styler table (static)
+        # centre all except exclude_cols
+        cols_to_center = [c for c in df.columns if c not in exclude_cols]
+        styler = df.style.set_properties(subset=cols_to_center, **{"text-align": "center"})
+        if color_col and color_col in df.columns:
+            # try to apply colouring via existing styler function
+            styler = styler.apply(rating_colour_style, subset=[color_col])
+        st.table(styler)
         return
 
     df2 = df.copy()
