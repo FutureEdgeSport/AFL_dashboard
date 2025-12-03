@@ -1,0 +1,10 @@
+# Note: installing pyarrow and other binary deps is easier via conda.
+# Recommended: use the provided `environment.yml` with conda-forge.
+
+streamlit>=1.23.0
+streamlit-aggrid
+altair==4.2.2
+pandas
+Pillow
+openpyxl
+protobuf==3.20.3

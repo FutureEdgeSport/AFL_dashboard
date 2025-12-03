@@ -1,0 +1,17 @@
+name: afl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pandas
+  - altair=4.2.2
+  - streamlit
+  - streamlit-aggrid
+  - pyarrow
+  - pillow
+  - openpyxl
+  - protobuf=3.20.3
+  - pip
+  - pip:
+    - streamlit-aggrid

@@ -10,6 +10,25 @@ try:
 except ImportError:
     Image = None
 
+# Compatibility shim: some older Streamlit versions (e.g. 1.9.0) do not
+# provide `st.cache_data`. Provide a lightweight fallback that maps
+# `st.cache_data` to `st.cache` when absent so the app can run without
+# forcing an immediate Streamlit upgrade in the user's environment.
+if not hasattr(st, "cache_data"):
+    def _cache_data_fallback(*dargs, **dkwargs):
+        def _decorate(func):
+            return st.cache(func)
+        return _decorate
+
+    st.cache_data = _cache_data_fallback
+
+# Optional interactive grid (ag-Grid) for nicer interactive tables
+try:
+    from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+    AGGRID_AVAILABLE = True
+except Exception:
+    AGGRID_AVAILABLE = False
+
 # ---------------- STREAMLIT CONFIG ----------------
 st.set_page_config(
     page_title="FutureEdge AFL Dashboard",
@@ -151,6 +170,11 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
     df.columns = new_cols
 
     df = df[df["Team"].notna()].copy()
+    # Normalize GWS team names BEFORE filtering bad labels
+    df["Team"] = df["Team"].replace({
+        "GWS": "GWS Giants",
+        "Greater Western Sydney": "GWS Giants"
+    })
     bad_labels = ["Total", "Totals", "Average", "Averages", "League", "Overall"]
     df = df[~df["Team"].isin(bad_labels)].copy()
 
@@ -349,12 +373,13 @@ def get_attribute_stat_distribution(
     rank_col = block_info["rank_col"]
 
     team_series = summary_df.iloc[:, 0]
-    afl_team_set = set(TEAM_CODE_MAP.keys())
+    # Build a set of all known team aliases (including canonical and alternate names)
+    team_aliases = set(TEAM_CODE_MAP.keys()) | {"Greater Western Sydney"}
 
     team_row_indices = [
         i
         for i, val in team_series.items()
-        if str(val).strip() in afl_team_set
+        if str(val).strip() in team_aliases
     ]
     if not team_row_indices:
         return pd.DataFrame(columns=["Team", "Value", "Rank"])
@@ -374,7 +399,12 @@ def get_attribute_stat_distribution(
 
     records = []
     for idx in chosen_indices:
-        team = str(team_series.iloc[idx]).strip()
+        team_raw = str(team_series.iloc[idx]).strip()
+        # Normalize GWS/GWS Giants/Greater Western Sydney to 'GWS Giants' for consistency
+        if team_raw in ["GWS", "GWS Giants", "Greater Western Sydney"]:
+            team = "GWS Giants"
+        else:
+            team = team_raw
         val = summary_df.iloc[idx, value_col]
         rank = summary_df.iloc[idx, rank_col] if rank_col is not None else None
         records.append(
@@ -440,7 +470,11 @@ def display_logo(team_name: str, container, size: int = 80):
     if img is not None:
         container.image(img)
     else:
-        container.image(path, width=size)
+        try:
+            container.image(path, width=size)
+        except Exception:
+            # If PIL / Streamlit can't identify the image file, skip showing it
+            return
 
 
 def display_player_photo(player_name: str, container, size: int = 160):
@@ -451,7 +485,10 @@ def display_player_photo(player_name: str, container, size: int = 160):
     if img is not None:
         container.image(img)
     else:
-        container.image(path, width=size)
+        try:
+            container.image(path, width=size)
+        except Exception:
+            return
 
 
 # ---------------- RATING COLOUR HELPERS ----------------
@@ -498,6 +535,7 @@ def rating_colour_style(col: pd.Series):
             styles.append(
                 f"background-color:{bg};color:{fg};"
                 "font-weight:bold;border-radius:4px;"
+                "text-align:center;vertical-align:middle;"
             )
     return styles
 
@@ -554,22 +592,99 @@ def style_ladder_table(ladder_view: pd.DataFrame):
         return [""] * len(row)
 
     styler = styler.apply(highlight_leader, axis=1)
+    # Centre all columns except the Team column for consistent table alignment
+    try:
+        cols_to_center = [c for c in ladder_view.columns if c not in ["Team"]]
+        if cols_to_center:
+            styler = styler.set_properties(
+                subset=cols_to_center,
+                **{"text-align": "center"},
+            )
+    except Exception:
+        pass
+
     return styler
 
 
 def style_numeric_center(df: pd.DataFrame):
+    """
+    Generic helper: centre numeric columns in any DataFrame styler.
+    Detects numeric dtypes and applies `text-align:center` to them.
+    """
     styler = df.style
-    left_cols = {"Player", "Team", "Position", "Stat"}
-    stat_cols = [c for c in df.columns if c not in left_cols]
-    if stat_cols:
-        styler = styler.set_properties(
-            subset=stat_cols,
-            **{
-                "text-align": "center",
-                "width": "80px",
-            }
-        )
+    try:
+        # Centre all columns except Player and Team by default
+        exclude = {"Player", "Team"}
+        cols_to_center = [c for c in df.columns if c not in exclude]
+        if cols_to_center:
+            styler = styler.set_properties(
+                subset=cols_to_center,
+                **{
+                    "text-align": "center",
+                    "width": "80px",
+                }
+            )
+    except Exception:
+        pass
     return styler
+
+
+def render_interactive_table(df: pd.DataFrame, exclude_cols=None, color_col=None):
+    """Render an interactive table using st_aggrid when available.
+    Centres all columns except those in `exclude_cols`. Optionally colours
+    `color_col` cells using the existing `rating_colour_for_value` logic.
+    Falls back to `st.table` with the pandas Styler if ag-Grid isn't installed.
+    """
+    if exclude_cols is None:
+        exclude_cols = ["Player", "Team"]
+
+    if not AGGRID_AVAILABLE:
+        st.info("For interactive tables with centring and colouring, install: pip install streamlit-aggrid")
+        # Fallback: show the pandas Styler table (static)
+        # centre all except exclude_cols
+        cols_to_center = [c for c in df.columns if c not in exclude_cols]
+        styler = df.style.set_properties(subset=cols_to_center, **{"text-align": "center"})
+        if color_col and color_col in df.columns:
+            # try to apply colouring via existing styler function
+            styler = styler.apply(rating_colour_style, subset=[color_col])
+        st.table(styler)
+        return
+
+    df2 = df.copy()
+    # If requested, compute a per-row colour tuple for the color_col
+    if color_col and color_col in df2.columns:
+        try:
+            vals = pd.to_numeric(df2[color_col], errors="coerce")
+            df2["_ag_color"] = [list(rating_colour_for_value(v, vals)) if not pd.isna(v) else None for v in vals]
+        except Exception:
+            df2["_ag_color"] = None
+
+    gb = GridOptionsBuilder.from_dataframe(df2)
+    gb.configure_default_column(filter=True, sortable=True, resizable=True)
+
+    for c in df2.columns:
+        if c in exclude_cols:
+            gb.configure_column(c, cellStyle={'textAlign': 'left'})
+        elif c == "_ag_color":
+            gb.configure_column(c, hide=True)
+        else:
+            gb.configure_column(c, cellStyle={'textAlign': 'center'})
+
+    if color_col and color_col in df2.columns:
+        # Use JsCode to read the precomputed _ag_color list per row and apply styles
+        js = JsCode(
+            """
+            function(params) {
+                if(!params.data || !params.data._ag_color) return {};
+                var c = params.data._ag_color;
+                return {background: c[0], color: c[1], fontWeight: '700'};
+            }
+            """
+        )
+        gb.configure_column(color_col, cellStyle=js)
+
+    gridOptions = gb.build()
+    AgGrid(df2, gridOptions=gridOptions, allow_unsafe_jscode=True, fit_columns_on_grid_load=False)
 
 
 # ---------------- DEPTH CHART HELPERS ----------------
@@ -934,6 +1049,21 @@ elif page == "Team Ladder":
 
     st.caption(f"Showing: {period_label}")
 
+    # Normalize team names in ladders DataFrame and dropdown
+    ladders["Team"] = ladders["Team"].replace({
+        "GWS": "GWS Giants",
+        "Greater Western Sydney": "GWS Giants"
+    })
+    # Only check for canonical team names (one per team)
+    canonical_teams = set([
+        "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
+        "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
+        "Sydney", "West Coast", "Western Bulldogs"
+    ])
+    missing_teams = canonical_teams - set(ladders["Team"].unique())
+    if missing_teams:
+        st.warning(f"Warning: Only {ladders['Team'].nunique()} teams found in data (expected 18). Data may be incomplete.")
+        st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
     team_list = sorted(ladders["Team"].unique())
     team_name = st.selectbox("Select a team", team_list)
 
@@ -981,11 +1111,19 @@ elif page == "Team Ladder":
         else:
             color = "grey"
 
-        value_str = (
-            f"{rating_str} (Rank {rank_int})"
-            if rank_int is not None
-            else rating_str
-        )
+        if rank_int is not None:
+            try:
+                r_int = int(rank_int)
+                if 10 <= (r_int % 100) <= 20:
+                    suf = "th"
+                else:
+                    suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
+                ord_snap = f"{r_int}{suf}"
+            except Exception:
+                ord_snap = str(rank_int)
+            value_str = f"{rating_str} ({ord_snap})"
+        else:
+            value_str = rating_str
 
         target_col = cols_row1[idx] if idx < 3 else cols_row2[idx - 3]
         target_col.markdown(f"**{metric_col}**")
@@ -997,6 +1135,7 @@ elif page == "Team Ladder":
         target_col.markdown(value_html, unsafe_allow_html=True)
 
         idx += 1
+
 
     # --- Attribute Detail – new design ---
     st.markdown("---")
@@ -1027,171 +1166,149 @@ elif page == "Team Ladder":
             st.info("No stats found for this attribute group.")
         else:
             stat_names = [b["stat_name"] for b in blocks]
-            selected_stat = st.selectbox(
-                "Select stat",
-                stat_names,
-                key="attr_stat_selector",
-            )
-
             which_block = "Last10" if window == "Last 10 Games" else "Season"
-
-            dist_df = get_attribute_stat_distribution(
-                summary_2025,
-                selected_attribute,
-                selected_stat,
-                block=which_block,
-            )
-
-            if dist_df.empty:
-                st.info("No data found for this stat across teams.")
-            else:
-                dist_df = dist_df.copy()
-                dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
-                dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
-
-                dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
-
-                if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
-                    dist_df = dist_df.sort_values("Value", ascending=False)
-                    dist_df["Rank"] = range(1, len(dist_df) + 1)
-                else:
-                    dist_df = dist_df.sort_values("Rank", ascending=True)
-
-                dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
-
-                # main selected team display
-                sel_row = dist_df[dist_df["Team"] == team_name]
-                if sel_row.empty:
-                    st.warning(f"{team_name} has no data for this stat.")
-                else:
-                    sel = sel_row.iloc[0]
-                    val = sel["Value"]
-                    rank = int(sel["Rank"])
-                    n_teams = len(dist_df)
-
-                    try:
-                        val_str = f"{float(val):.2f}"
-                    except Exception:
-                        val_str = str(val)
-
-                    rank_str = f"{rank} / {n_teams}"
-
-                    if rank <= 4:
-                        main_color = "darkgreen"
-                    elif rank <= 9:
-                        main_color = "lightgreen"
-                    elif rank <= 14:
-                        main_color = "orange"
-                    else:
-                        main_color = "red"
-
-                    c_logo, c_text = st.columns([1, 3])
-                    display_logo(team_name, c_logo, size=80)
-
-                    main_html = f"""
-                    <div style="font-size:1.4em;font-weight:900;">
-                        {team_name} – {selected_stat}
-                    </div>
-                    <div style="font-size:1.6em;font-weight:900;color:{main_color};margin-top:4px;">
-                        {val_str}
-                        <span style="font-size:0.8em;font-weight:700;color:#cccccc;">
-                            (Rank {rank_str})
-                        </span>
-                    </div>
-                    <div style="font-size:0.85em;color:#aaaaaa;margin-top:2px;">
-                        Data window: {"Last 10 Games" if which_block == "Last10" else "Season Total"}
-                    </div>
-                    """
-                    c_text.markdown(main_html, unsafe_allow_html=True)
-
-                # Top 4 by Rank
-                st.markdown(f"#### Top 4 – {selected_stat}")
-
-                top4 = (
-                    dist_df.dropna(subset=["Rank"])
-                    .sort_values("Rank", ascending=True)
-                    .head(4)
+            # Show first 4 stats in 4 columns
+            stat_cols = st.columns(4)
+            for idx, stat_name in enumerate(stat_names[:4]):
+                dist_df = get_attribute_stat_distribution(
+                    summary_2025,
+                    selected_attribute,
+                    stat_name,
+                    block=which_block,
                 )
-
-                if top4.empty:
-                    st.info("No ranked teams found for this stat.")
-                else:
-                    lines = []
-                    for _, row in top4.iterrows():
-                        t = row["Team"]
-                        val = row["Value"]
-                        r = int(row["Rank"])
-
-                        try:
-                            val_str = f"{float(val):.2f}"
-                        except Exception:
-                            val_str = str(val)
-
-                        if t == team_name:
-                            size = "1.05em"
-                            weight = "900"
-                            color = "#00CC00"
-                        elif r == 1:
-                            size = "1.0em"
-                            weight = "800"
-                            color = "#FFFFFF"
+                with stat_cols[idx]:
+                    # add a subtle right border between columns for visual separation
+                    col_border = (
+                        "border-right:1px solid #e0e0e0;padding-right:12px;margin-right:8px;"
+                        if idx < 3
+                        else ""
+                    )
+                    st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
+                    st.markdown(f"### {stat_name}")
+                    if dist_df.empty:
+                        st.info("No data found for this stat across teams.")
+                    else:
+                        dist_df = dist_df.copy()
+                        dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
+                        dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
+                        dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                        expected_team_count = 18
+                        actual_team_count = dist_df["Team"].nunique()
+                        if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
+                            dist_df = dist_df.sort_values("Value", ascending=False)
+                            dist_df["Rank"] = range(1, len(dist_df) + 1)
                         else:
-                            size = "0.9em"
-                            weight = "700"
-                            color = "#DDDDDD"
-
-                        line_html = (
-                            "<div style='margin-bottom:4px;"
-                            f"font-size:{size};font-weight:{weight};"
-                            f"color:{color};'>"
-                            f"{r}. {t} – {val_str}</div>"
+                            dist_df = dist_df.sort_values("Rank", ascending=True)
+                        dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
+                        sel_row = dist_df[dist_df["Team"] == team_name]
+                        if sel_row.empty:
+                            st.warning(f"{team_name} has no data for this stat.")
+                        else:
+                            sel = sel_row.iloc[0]
+                            val = sel["Value"]
+                            rank = int(sel["Rank"])
+                            canonical_teams = set([
+                                "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
+                                "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
+                                "Sydney", "West Coast", "Western Bulldogs"
+                            ])
+                            missing_teams = canonical_teams - set(dist_df["Team"].unique())
+                            if actual_team_count != expected_team_count:
+                                n_teams = actual_team_count
+                                rank_str = f"{rank} / {n_teams}"
+                                st.warning(f"Warning: Only {actual_team_count} teams found in data (expected 18). Data may be incomplete.")
+                                if missing_teams:
+                                    st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
+                            else:
+                                n_teams = expected_team_count
+                                rank_str = f"{rank} / {n_teams}"
+                            try:
+                                val_str = f"{float(val):.1f}"
+                            except Exception:
+                                val_str = str(val)
+                            if rank <= 4:
+                                main_color = "darkgreen"
+                            elif rank <= 9:
+                                main_color = "lightgreen"
+                            elif rank <= 14:
+                                main_color = "orange"
+                            else:
+                                main_color = "red"
+                            # make selected team display more prominent (approx. 2x size)
+                            st.markdown(f"<div style='font-size:2.2em;font-weight:900;margin-bottom:6px;'>{team_name}</div>", unsafe_allow_html=True)
+                            # compute ordinal (1st, 2nd, 3rd, 4th...)
+                            try:
+                                r_int = int(rank)
+                                if 10 <= (r_int % 100) <= 20:
+                                    suf = "th"
+                                else:
+                                    suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
+                                ord_str = f"{r_int}{suf}"
+                            except Exception:
+                                ord_str = str(rank)
+                            # show ordinal at half the stat font size (stat font ~3.2em -> ordinal 1.6em)
+                            st.markdown(
+                                f"<div style='font-size:3.2em;font-weight:900;color:{main_color};margin-top:4px;'>{val_str} "
+                                f"(<span style='font-size:0.9em;font-weight:700;color:{main_color};'>{ord_str}</span>)</div>",
+                                unsafe_allow_html=True,
+                            )
+                            st.markdown(f"<div style='font-size:0.85em;color:#aaaaaa;margin-top:2px;'>Data window: {'Last 10 Games' if which_block == 'Last10' else 'Season Total'}</div>", unsafe_allow_html=True)
+                        # Top 4 by Rank
+                        st.markdown(f"#### Top 4")
+                        top4 = (
+                            dist_df.dropna(subset=["Rank"])
+                            .sort_values("Rank", ascending=True)
+                            .head(4)
                         )
-                        lines.append(line_html)
+                        if top4.empty:
+                            st.info("No ranked teams found for this stat.")
+                        else:
+                            lines = []
+                            for _, row in top4.iterrows():
+                                t = row["Team"]
+                                val = row["Value"]
+                                r = int(row["Rank"])
+                                try:
+                                    val_str = f"{float(val):.1f}"
+                                except Exception:
+                                    val_str = str(val)
+                                if t == team_name:
+                                    size = "1.05em"
+                                    weight = "900"
+                                    color = "#00CC00"
+                                elif r == 1:
+                                    size = "1.0em"
+                                    weight = "800"
+                                    color = "#FFFFFF"
+                                else:
+                                    size = "0.9em"
+                                    weight = "700"
+                                    color = "#DDDDDD"
+                                line_html = (
+                                    "<div style='margin-bottom:4px;"
+                                    f"font-size:{size};font-weight:{weight};"
+                                    f"color:{color};'>"
+                                    f"{r}. {t} – {val_str}</div>"
+                                )
+                                lines.append(line_html)
+                            st.markdown("".join(lines), unsafe_allow_html=True)
+                        # Averages
+                        st.markdown("#### Averages")
+                        col_avg_top4, col_avg_league = st.columns(2)
+                        if not top4.empty and top4["Value"].notna().any():
+                            avg_top4 = top4["Value"].dropna().mean()
+                            col_avg_top4.metric("Top 4", f"{avg_top4:.1f}")
+                        else:
+                            col_avg_top4.metric("Top 4", "–")
+                        vals_all = dist_df["Value"].dropna()
+                        if not vals_all.empty:
+                            league_avg = vals_all.mean()
+                            col_avg_league.metric("Competition", f"{league_avg:.1f}")
+                        else:
+                            col_avg_league.metric("Competition", "–")
+                    # close the bordered div
+                    st.markdown("</div>", unsafe_allow_html=True)
 
-                    st.markdown("".join(lines), unsafe_allow_html=True)
-
-                # Averages
-                st.markdown("#### Averages")
-                col_avg_top4, col_avg_league = st.columns(2)
-
-                if not top4.empty and top4["Value"].notna().any():
-                    avg_top4 = top4["Value"].dropna().mean()
-                    col_avg_top4.metric("Top 4 Average", f"{avg_top4:.2f}")
-                else:
-                    col_avg_top4.metric("Top 4 Average", "–")
-
-                vals_all = dist_df["Value"].dropna()
-                if not vals_all.empty:
-                    league_avg = vals_all.mean()
-                    col_avg_league.metric("League Average (18 teams)", f"{league_avg:.2f}")
-                else:
-                    col_avg_league.metric("League Average (18 teams)", "–")
-
-    # Full ladder table
-    st.markdown("---")
-    st.subheader(f"Full Ladder Table – {period_label}")
-
-    ladder_cols = ["Team"]
-    for metric_col in METRIC_ORDER:
-        if metric_col in ladders.columns:
-            ladder_cols.append(metric_col)
-    ladder_cols = list(dict.fromkeys(ladder_cols))
-    existing = [c for c in ladder_cols if c in ladders.columns]
-
-    if existing:
-        ladder_view = ladders[existing].copy()
-        if "Team Rating" in ladder_view.columns:
-            ladder_view = ladder_view.sort_values("Team Rating", ascending=False)
-
-        numeric_cols = [c for c in ladder_view.columns if c not in ["Team", "Team Rating"]]
-        ladder_view[numeric_cols] = ladder_view[numeric_cols].round(1)
-        if "Team Rating" in ladder_view.columns:
-            ladder_view["Team Rating"] = ladder_view["Team Rating"].round(0).astype("Int64")
-
-        ladder_view.insert(0, "Pos", range(1, len(ladder_view) + 1))
-
-        styler = style_ladder_table(ladder_view)
-        st.table(styler)
 
 
 # ================= PLAYER DASHBOARD =================
@@ -1264,11 +1381,13 @@ elif page == "Player Dashboard":
     fcol3, fcol4 = st.columns(2)
     with fcol3:
         teams = sorted(players_all["Team"].dropna().unique())
-        team_filter = st.multiselect("Teams", teams, default=teams)
+        # default to no selection (cleaner UI) — empty list means no filter applied
+        team_filter = st.multiselect("Teams", teams, default=[])
 
     with fcol4:
         positions = sorted(players_all["Position"].dropna().unique())
-        pos_filter = st.multiselect("Positions", positions, default=positions)
+        # default to no selection (cleaner UI) — empty list means no filter applied
+        pos_filter = st.multiselect("Positions", positions, default=[])
 
     # ---- Apply filters to view ----
     df_view = players_all.copy()
@@ -1333,20 +1452,25 @@ elif page == "Player Dashboard":
         rename_map["RatingPoints_Avg"] = "Rating"
     table_view = table_view.rename(columns=rename_map)
 
-    numeric_cols = [c for c in table_view.columns if c not in ["Player", "Team", "Position"]]
-
+    # Centre all columns except Player and Team
+    cols_to_center = [c for c in table_view.columns if c not in ["Player", "Team"]]
     styler_players = table_view.style.set_properties(
-        subset=numeric_cols,
+        subset=cols_to_center,
         **{"text-align": "center"},
     )
     if "Rating" in table_view.columns:
         styler_players = styler_players.apply(rating_colour_style, subset=["Rating"])
+    # Format Age and Rating columns to 1 decimal place where present
+    fmt_map = {}
+    if "Age" in table_view.columns:
+        fmt_map["Age"] = "{:.1f}"
+    if "Rating" in table_view.columns:
+        fmt_map["Rating"] = "{:.1f}"
+    if fmt_map:
+        styler_players = styler_players.format(fmt_map)
 
-    st.dataframe(
-        styler_players,
-        use_container_width=True,
-        hide_index=True,
-    )
+    # Prefer interactive AgGrid if available, otherwise fall back to styled table
+    render_interactive_table(table_view, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in table_view.columns else None)
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
@@ -1520,6 +1644,8 @@ elif page == "Player Dashboard":
             season_display_cols.append(c)
 
     player_table = player_table[season_display_cols].drop_duplicates()
+    # Reset index so the displayed table does not show the original DataFrame index
+    player_table = player_table.reset_index(drop=True)
 
     rename_map_season = {}
     if age_col in player_table.columns:
@@ -1527,22 +1653,26 @@ elif page == "Player Dashboard":
     rename_map_season["RatingPoints_Avg"] = "Rating"
     player_table = player_table.rename(columns=rename_map_season)
 
-    numeric_cols_season = [c for c in player_table.columns if c not in ["Team", "Position"]]
-
+    # Centre all columns except Player and Team (if present)
+    cols_to_center_season = [c for c in player_table.columns if c not in ["Player", "Team"]]
     styler_player_table = player_table.style.set_properties(
-        subset=numeric_cols_season,
+        subset=cols_to_center_season,
         **{"text-align": "center"},
     )
     if "Rating" in player_table.columns:
         styler_player_table = styler_player_table.apply(
             rating_colour_style, subset=["Rating"]
         )
+    # Format Age and Rating columns to 1 decimal place where present
+    fmt_map_season = {}
+    if "Age" in player_table.columns:
+        fmt_map_season["Age"] = "{:.1f}"
+    if "Rating" in player_table.columns:
+        fmt_map_season["Rating"] = "{:.1f}"
+    if fmt_map_season:
+        styler_player_table = styler_player_table.format(fmt_map_season)
 
-    st.dataframe(
-        styler_player_table,
-        use_container_width=True,
-        hide_index=True,
-    )
+    render_interactive_table(player_table, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in player_table.columns else None)
 
 
 # ================= DEPTH CHART =================
@@ -1555,7 +1685,11 @@ elif page == "Depth Chart":
         st.error("Could not load Summary sheet from AFL Player Ratings.")
         st.stop()
 
-    teams = sorted(summary_df["Team"].dropna().unique())
+    # Normalize team names in dropdown to match logic
+    teams = sorted([
+        "GWS Giants" if t in ["GWS", "GWS Giants", "Greater Western Sydney"] else t
+        for t in summary_df["Team"].dropna().unique()
+    ])
     selected_team = st.selectbox("Team", teams)
 
     rating_options = {
