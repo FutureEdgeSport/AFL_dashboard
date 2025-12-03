@@ -629,25 +629,31 @@ def style_numeric_center(df: pd.DataFrame):
     return styler
 
 
-def render_interactive_table(df: pd.DataFrame, exclude_cols=None, color_col=None):
+def render_interactive_table(df: pd.DataFrame, exclude_cols=None, color_col=None, pre_styled_styler=None):
     """Render an interactive table using st_aggrid when available.
     Centres all columns except those in `exclude_cols`. Optionally colours
     `color_col` cells using the existing `rating_colour_for_value` logic.
     Falls back to `st.table` with the pandas Styler if ag-Grid isn't installed.
+    
+    If pre_styled_styler is provided, it will be used when ag-Grid is unavailable,
+    instead of building a new styler from scratch.
     """
     if exclude_cols is None:
         exclude_cols = ["Player", "Team"]
 
     if not AGGRID_AVAILABLE:
-        st.info("For interactive tables with centring and colouring, install: pip install streamlit-aggrid")
-        # Fallback: show the pandas Styler table (static)
-        # centre all except exclude_cols
-        cols_to_center = [c for c in df.columns if c not in exclude_cols]
-        styler = df.style.set_properties(subset=cols_to_center, **{"text-align": "center"})
-        if color_col and color_col in df.columns:
-            # try to apply colouring via existing styler function
-            styler = styler.apply(rating_colour_style, subset=[color_col])
-        st.table(styler)
+        # Use pre-built styler if provided, otherwise build one
+        if pre_styled_styler is not None:
+            st.table(pre_styled_styler)
+        else:
+            # Fallback: show the pandas Styler table (static)
+            # centre all except exclude_cols
+            cols_to_center = [c for c in df.columns if c not in exclude_cols]
+            styler = df.style.set_properties(subset=cols_to_center, **{"text-align": "center"})
+            if color_col and color_col in df.columns:
+                # try to apply colouring via existing styler function
+                styler = styler.apply(rating_colour_style, subset=[color_col])
+            st.table(styler)
         return
 
     df2 = df.copy()
@@ -1470,7 +1476,7 @@ elif page == "Player Dashboard":
         styler_players = styler_players.format(fmt_map)
 
     # Prefer interactive AgGrid if available, otherwise fall back to styled table
-    render_interactive_table(table_view, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in table_view.columns else None)
+    render_interactive_table(table_view, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in table_view.columns else None, pre_styled_styler=styler_players)
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
@@ -1672,7 +1678,7 @@ elif page == "Player Dashboard":
     if fmt_map_season:
         styler_player_table = styler_player_table.format(fmt_map_season)
 
-    render_interactive_table(player_table, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in player_table.columns else None)
+    render_interactive_table(player_table, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in player_table.columns else None, pre_styled_styler=styler_player_table)
 
 
 # ================= DEPTH CHART =================
