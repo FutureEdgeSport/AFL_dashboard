@@ -1,5 +1,6 @@
 import os
 import warnings
+import math
 
 import altair as alt
 import pandas as pd
@@ -763,10 +764,11 @@ def get_rating_color_team_context(rating_value, df_team, rating_col):
         return "#333333", "white"
 
 
-def build_depth_chart_html(df_team: pd.DataFrame) -> str:
+def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = None) -> str:
     """
     df_team is the Summary subset for one team, with:
     Player, Jumper, Age, Height, Position, RatingPoints_Avg.
+    all_teams_df is the full Summary DataFrame for all teams (for ranking calculations).
     """
     num_col = find_first_column(df_team, ["Jumper", "Jersey", "Number", "Guernsey", "No"])
     age_col = "Age"
@@ -776,6 +778,9 @@ def build_depth_chart_html(df_team: pd.DataFrame) -> str:
     player_col = "Player"
 
     grid = {pos: {band: [] for band in AGE_BANDS} for pos in DEPTH_POSITIONS}
+    
+    # Track ratings for each cell to calculate averages
+    ratings_grid = {pos: {band: [] for band in AGE_BANDS} for pos in DEPTH_POSITIONS}
 
     if rating_col in df_team.columns:
         df_sorted = df_team.sort_values(rating_col, ascending=False)
@@ -843,23 +848,136 @@ def build_depth_chart_html(df_team: pd.DataFrame) -> str:
 
         if depth_pos in grid and age_band in grid[depth_pos]:
             grid[depth_pos][age_band].append(player_html)
+            # Track rating for average calculation
+            if pd.notna(rating) and str(rating).strip() != "":
+                try:
+                    ratings_grid[depth_pos][age_band].append(float(rating))
+                except Exception:
+                    pass
 
-    # build HTML table (pre-rankings version: no row/column totals)
+    # Calculate rankings if all_teams_df is provided
+    age_band_rankings = {}
+    position_rankings = {}
+    
+    if all_teams_df is not None and rating_col in all_teams_df.columns:
+        # Get unique teams
+        teams = all_teams_df["Team"].dropna().unique()
+        
+        # Calculate age band rankings (column rankings)
+        age_band_averages = {team: {band: [] for band in AGE_BANDS} for team in teams}
+        
+        for team in teams:
+            team_df = all_teams_df[all_teams_df["Team"] == team]
+            for _, row in team_df.iterrows():
+                player_age = row.get(age_col, None)
+                player_rating = row.get(rating_col, None)
+                player_pos = row.get(pos_col, None)
+                
+                if pd.notna(player_age) and pd.notna(player_rating):
+                    age_band = map_age_to_band(player_age)
+                    try:
+                        age_band_averages[team][age_band].append(float(player_rating))
+                    except Exception:
+                        pass
+        
+        # Calculate average for each team/age_band and rank
+        for band in AGE_BANDS:
+            team_avgs = []
+            for team in teams:
+                ratings = age_band_averages[team][band]
+                if ratings:
+                    avg = sum(ratings) / len(ratings)
+                    team_avgs.append((team, avg))
+            
+            # Sort by average (descending) and assign ranks
+            team_avgs.sort(key=lambda x: x[1], reverse=True)
+            for rank, (team, avg) in enumerate(team_avgs, 1):
+                if team == df_team["Team"].iloc[0]:
+                    age_band_rankings[band] = (rank, len(teams), avg)
+                    break
+        
+        # Calculate position rankings (row rankings)
+        position_averages = {team: {pos: [] for pos in DEPTH_POSITIONS} for team in teams}
+        
+        for team in teams:
+            team_df = all_teams_df[all_teams_df["Team"] == team]
+            for _, row in team_df.iterrows():
+                player_pos_raw = row.get(pos_col, None)
+                player_rating = row.get(rating_col, None)
+                
+                if pd.notna(player_pos_raw) and pd.notna(player_rating):
+                    depth_pos = map_position_to_depth(player_pos_raw)
+                    try:
+                        position_averages[team][depth_pos].append(float(player_rating))
+                    except Exception:
+                        pass
+        
+        # Calculate average for each team/position and rank
+        for pos in DEPTH_POSITIONS:
+            team_avgs = []
+            for team in teams:
+                ratings = position_averages[team][pos]
+                if ratings:
+                    avg = sum(ratings) / len(ratings)
+                    team_avgs.append((team, avg))
+            
+            # Sort by average (descending) and assign ranks
+            team_avgs.sort(key=lambda x: x[1], reverse=True)
+            for rank, (team, avg) in enumerate(team_avgs, 1):
+                if team == df_team["Team"].iloc[0]:
+                    position_rankings[pos] = (rank, len(teams), avg)
+                    break
+
+    # Helper function to get ordinal suffix
+    def get_ordinal(n):
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+    
+    # Helper function to get ranking color (same as Team Breakdown)
+    def get_ranking_color(rank, total):
+        if rank <= 4:
+            return "darkgreen"
+        elif rank <= 9:
+            return "lightgreen"
+        elif rank <= 14:
+            return "orange"
+        else:
+            return "red"
+
+    # build HTML table with rankings
     html = []
     html.append(
         "<table style='width:100%;border-collapse:collapse;font-size:0.8em;'>"
     )
-    # Header row with column names only
+    # Header row with column names and rankings
     html.append("<tr>")
     html.append(
         "<th style='background-color:black;color:white;padding:6px;"
         "border:2px solid #000;width:12%;'>Position</th>"
     )
     for band in AGE_BANDS:
+        # Get ranking info for this age band
+        ranking_html = ""
+        if band in age_band_rankings:
+            rank, total, avg = age_band_rankings[band]
+            ordinal = get_ordinal(rank)
+            color = get_ranking_color(rank, total)
+            ranking_html = (
+                f"<div style='margin-top:4px;'>"
+                f"<span style='display:inline-block;background-color:{color};color:white;"
+                f"padding:4px 8px;border-radius:4px;font-weight:bold;"
+                f"font-size:1em;border:2px solid white;'>{ordinal}</span>"
+                f"</div>"
+            )
+        
         html.append(
             f"<th style='background-color:#8BC34A;color:black;padding:6px;"
-            f"border:2px solid #000;text-align:center;'>"
-            f"{band}"
+            f"border:2px solid #000;text-align:center;vertical-align:top;'>"
+            f"<div>{band}</div>"
+            f"{ranking_html}"
             f"</th>"
         )
     html.append("</tr>")
@@ -867,11 +985,27 @@ def build_depth_chart_html(df_team: pd.DataFrame) -> str:
     for pos in DEPTH_POSITIONS:
         bg, fg = POSITION_COLOURS.get(pos, ("#dddddd", "black"))
         html.append("<tr>")
+        
+        # Position cell with ranking
+        pos_cell_html = f"<div>{pos}</div>"
+        if pos in position_rankings:
+            rank, total, avg = position_rankings[pos]
+            ordinal = get_ordinal(rank)
+            color = get_ranking_color(rank, total)
+            pos_cell_html += (
+                f"<div style='margin-top:4px;'>"
+                f"<span style='display:inline-block;background-color:{color};color:white;"
+                f"padding:4px 8px;border-radius:4px;font-weight:bold;"
+                f"font-size:1em;border:2px solid white;'>{ordinal}</span>"
+                f"</div>"
+            )
+        
         html.append(
             f"<td style='background-color:{bg};color:{fg};padding:6px;"
             f"border:2px solid #000;font-weight:bold;width:10%;"
-            f"white-space:nowrap;'>{pos}</td>"
+            f"white-space:nowrap;vertical-align:top;text-align:center;'>{pos_cell_html}</td>"
         )
+        
         for band in AGE_BANDS:
             players = grid[pos][band]
             if players:
@@ -1083,6 +1217,101 @@ elif page == "Team Breakdown":
     # --- Team Ratings Snapshot ---
     st.subheader("Team Ratings Snapshot")
 
+    # Prepare data for spider chart
+    spider_metrics = []
+    team_values = []
+    top4_averages = []
+    
+    for metric_col in METRIC_ORDER:
+        if metric_col not in ladders.columns:
+            continue
+        
+        # Get team value
+        rating_val = team_row[metric_col]
+        try:
+            team_val = float(rating_val)
+        except Exception:
+            continue
+        
+        # Calculate Top 4 average
+        top4_vals = ladders.nlargest(4, metric_col)[metric_col]
+        top4_avg = top4_vals.mean()
+        
+        spider_metrics.append(metric_col)
+        team_values.append(team_val)
+        top4_averages.append(top4_avg)
+    
+    # Create spider chart if we have data
+    if spider_metrics and team_values:
+        try:
+            import plotly.graph_objects as go
+            
+            # Clean metric names for display
+            clean_metrics = [m.replace(' Ranking', '').replace('Ranking', '').strip() for m in spider_metrics]
+            
+            # Close the polygon by appending first value to end
+            team_values_closed = team_values + [team_values[0]]
+            top4_averages_closed = top4_averages + [top4_averages[0]]
+            clean_metrics_closed = clean_metrics + [clean_metrics[0]]
+            
+            # Create the radar chart
+            fig = go.Figure()
+            
+            # Add Top 4 Average trace (bold yellow/gold)
+            fig.add_trace(go.Scatterpolar(
+                r=top4_averages_closed,
+                theta=clean_metrics_closed,
+                fill='toself',
+                fillcolor='rgba(255, 215, 0, 0.1)',
+                line=dict(color='#FFD700', width=4),
+                name='Top 4 Average'
+            ))
+            
+            # Add Selected Team trace (white)
+            fig.add_trace(go.Scatterpolar(
+                r=team_values_closed,
+                theta=clean_metrics_closed,
+                fill='toself',
+                fillcolor='rgba(255, 255, 255, 0.1)',
+                line=dict(color='white', width=3),
+                name=team_name
+            ))
+            
+            # Update layout
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100],
+                        showticklabels=True,
+                        tickfont=dict(color='white', size=10),
+                        gridcolor='gray'
+                    ),
+                    angularaxis=dict(
+                        tickfont=dict(color='white', size=12, family='Arial Black'),
+                        gridcolor='gray'
+                    ),
+                    bgcolor='rgba(0,0,0,0)'
+                ),
+                showlegend=True,
+                legend=dict(
+                    font=dict(color='white', size=12),
+                    bgcolor='rgba(0,0,0,0.5)',
+                    bordercolor='white',
+                    borderwidth=1
+                ),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=500
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+        except ImportError:
+            st.warning("Plotly not installed. Install with: `conda install -n afl plotly -y`")
+    
+    # Numeric values below chart
+    st.markdown("---")
     cols_row1 = st.columns(3)
     cols_row2 = st.columns(3)
     idx = 0
@@ -1243,8 +1472,6 @@ elif page == "Team Breakdown":
                                 main_color = "orange"
                             else:
                                 main_color = "red"
-                            # make selected team display more prominent (approx. 2x size)
-                            st.markdown(f"<div style='font-size:2.2em;font-weight:900;margin-bottom:6px;'>{team_name}</div>", unsafe_allow_html=True)
                             # compute ordinal (1st, 2nd, 3rd, 4th...)
                             try:
                                 r_int = int(rank)
@@ -1255,10 +1482,9 @@ elif page == "Team Breakdown":
                                 ord_str = f"{r_int}{suf}"
                             except Exception:
                                 ord_str = str(rank)
-                            # show ordinal at half the stat font size (stat font ~3.2em -> ordinal 1.6em)
+                            # Match snapshot styling: 1.6em font size for value with ordinal
                             st.markdown(
-                                f"<div style='font-size:3.2em;font-weight:900;color:{main_color};margin-top:4px;'>{val_str} "
-                                f"(<span style='font-size:0.9em;font-weight:700;color:{main_color};'>{ord_str}</span>)</div>",
+                                f"<div style='font-size:1.6em;font-weight:900;color:{main_color};margin-top:4px;'>{val_str} ({ord_str})</div>",
                                 unsafe_allow_html=True,
                             )
                             st.markdown(f"<div style='font-size:0.85em;color:#aaaaaa;margin-top:2px;'>Data window: {'Last 10 Games' if which_block == 'Last10' else 'Season Total'}</div>", unsafe_allow_html=True)
@@ -1302,19 +1528,13 @@ elif page == "Team Breakdown":
                                 lines.append(line_html)
                             st.markdown("".join(lines), unsafe_allow_html=True)
                         # Averages
+                        st.markdown("<hr style='border:0;border-top:2px solid #333;margin:16px 0;'>", unsafe_allow_html=True)
                         st.markdown("#### Averages")
-                        col_avg_top4, col_avg_league = st.columns(2)
                         if not top4.empty and top4["Value"].notna().any():
                             avg_top4 = top4["Value"].dropna().mean()
-                            col_avg_top4.metric("Top 4", f"{avg_top4:.1f}")
+                            st.metric("Top 4", f"{avg_top4:.1f}")
                         else:
-                            col_avg_top4.metric("Top 4", "–")
-                        vals_all = dist_df["Value"].dropna()
-                        if not vals_all.empty:
-                            league_avg = vals_all.mean()
-                            col_avg_league.metric("Competition", f"{league_avg:.1f}")
-                        else:
-                            col_avg_league.metric("Competition", "–")
+                            st.metric("Top 4", "–")
                     # close the bordered div
                     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1371,19 +1591,16 @@ elif page == "Player Dashboard":
     with fcol2:
         # Age range
         if age_col in players_all.columns:
-            age_min_val = float(players_all[age_col].min(skipna=True) or 18.0)
+            age_min_val = float(players_all[age_col].min(skipna=True) or 17.0)
             age_max_val = float(players_all[age_col].max(skipna=True) or 40.0)
         else:
-            age_min_val, age_max_val = 18.0, 40.0
+            age_min_val, age_max_val = 17.0, 40.0
 
         age_min, age_max = st.slider(
             "Age range",
-            min_value=float(int(age_min_val)),
-            max_value=float(int(age_max_val if age_max_val > age_min_val else age_min_val + 1)),
-            value=(
-                float(int(age_min_val)),
-                float(int(age_max_val if age_max_val > age_min_val else age_min_val + 1)),
-            ),
+            min_value=17.0,
+            max_value=40.0,
+            value=(17.0, 40.0),
             step=0.5,
         )
 
@@ -1517,7 +1734,7 @@ elif page == "Player Dashboard":
     if latest_team:
         display_logo(latest_team, col_photo, size=70)
 
-    # Meta info from Summary tab (Age, Draft, Draft #, Height)
+    # Meta info from Summary tab (Age, Draft, Draft #, Height, Total Matches, Contract Expiry)
     summary_df = load_player_summary()
     summary_match = summary_df[summary_df["Player"] == selected_player]
     summary_row = summary_match.iloc[0] if not summary_match.empty else None
@@ -1527,11 +1744,16 @@ elif page == "Player Dashboard":
     latest_matches = latest_record.get("Matches", None)
     latest_rating = latest_record.get("RatingPoints_Avg", None)
 
-    # Age, Draft info, Height from Summary
+    # Age, Draft info, Height, Total Matches, Contract Expiry from Summary
     age_summary = summary_row.get("Age") if summary_row is not None else None
-    draft_year = summary_row.get("Draft") if summary_row is not None else None
+    # Try both "Draft" and "Draft Year" column names
+    draft_year = None
+    if summary_row is not None:
+        draft_year = summary_row.get("Draft Year") if "Draft Year" in summary_row.index else summary_row.get("Draft")
     draft_no = summary_row.get("Draft #") if summary_row is not None else None
     height_summary = summary_row.get("Height") if summary_row is not None else None
+    total_matches = summary_row.get("Total Matches") if summary_row is not None else None
+    contract_expiry = summary_row.get("Contract Expiry") if summary_row is not None else None
 
     # Header
     col_meta.markdown(f"### {selected_player}")
@@ -1551,48 +1773,91 @@ elif page == "Player Dashboard":
     if age_bits:
         col_meta.markdown(" • ".join(age_bits))
 
-    # Draft + Height
-    extra_bits = []
-    if draft_year not in [None, ""]:
-        extra_bits.append(f"Draft Year: {int(draft_year)}")
+    # Draft info
+    draft_bits = []
     if draft_no not in [None, ""]:
-        extra_bits.append(f"Draft #: {int(draft_no)}")
+        draft_bits.append(f"Draft #: {int(draft_no)}")
+    if draft_year not in [None, ""]:
+        draft_bits.append(f"Draft Year: {int(draft_year)}")
+    if draft_bits:
+        col_meta.markdown(" • ".join(draft_bits))
+    
+    # Contract Expiry on separate line
+    if contract_expiry not in [None, ""]:
+        try:
+            col_meta.markdown(f"**Contract Expiry:** {int(contract_expiry)}")
+        except Exception:
+            col_meta.markdown(f"**Contract Expiry:** {contract_expiry}")
+
+    # Height on separate line
     if height_summary not in [None, ""]:
         try:
-            extra_bits.append(f"Height: {float(height_summary):.0f} cm")
+            col_meta.markdown(f"Height: {float(height_summary):.0f} cm")
         except Exception:
-            extra_bits.append(f"Height: {height_summary} cm")
-    if extra_bits:
-        col_meta.markdown(" • ".join(extra_bits))
+            col_meta.markdown(f"Height: {height_summary} cm")
 
-    # Season games + rating (prominent)
-    season_meta_bits = []
-    try:
-        if pd.notna(latest_matches):
-            season_meta_bits.append(f"Games ({int(latest_record['Season'])}): {int(latest_matches)}")
-    except Exception:
-        if latest_matches not in [None, ""]:
-            season_meta_bits.append(f"Games ({latest_record.get('Season')}): {latest_matches}")
-
-    rating_box_html = ""
-    if latest_rating not in [None, ""]:
+    # Total Matches from Summary tab
+    if total_matches not in [None, ""] and pd.notna(total_matches):
         try:
-            rating_val = float(latest_rating)
-            bg, fg = rating_colour_for_value(
-                rating_val,
-                players_full["RatingPoints_Avg"],
-            )
-            rating_box_html = (
-                f"<span style='display:inline-block;padding:2px 8px;"
-                f"border-radius:4px;background-color:{bg};color:{fg};"
-                f"border:1px solid #000;font-weight:bold;'>"
-                f"{rating_val:.1f}</span>"
-            )
-            season_meta_bits.append(f"Rating ({int(latest_record['Season'])}): {rating_box_html}")
+            col_meta.markdown(f"**Total Matches:** {int(total_matches)}")
         except Exception:
-            season_meta_bits.append(
-                f"Rating ({latest_record.get('Season')}): {latest_rating}"
-            )
+            col_meta.markdown(f"**Total Matches:** {total_matches}")
+
+    # 2025 Games and Rating (bold and bigger)
+    season_2025_data = player_data_all[player_data_all["Season"] == 2025]
+    if not season_2025_data.empty:
+        games_2025 = season_2025_data.iloc[0].get("Matches", None)
+        rating_2025 = season_2025_data.iloc[0].get("RatingPoints_Avg", None)
+        
+        if pd.notna(games_2025):
+            col_meta.markdown(f"<div style='font-size:1.3em;font-weight:bold;margin-top:8px;'>2025 Games: {int(games_2025)}</div>", unsafe_allow_html=True)
+        
+        if pd.notna(rating_2025):
+            rating_2025_val = float(rating_2025)
+            # Color based on all players in competition
+            bg, fg = rating_colour_for_value(rating_2025_val, players_full["RatingPoints_Avg"])
+            
+            # Calculate positional ranking for 2025
+            if latest_position:
+                position_players_2025 = players_full[
+                    (players_full["Season"] == 2025) & 
+                    (players_full["Position"] == latest_position)
+                ]
+                if not position_players_2025.empty:
+                    position_players_2025 = position_players_2025.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
+                    pos_rank = position_players_2025[position_players_2025["Player"] == selected_player].index[0] + 1 if selected_player in position_players_2025["Player"].values else None
+                else:
+                    pos_rank = None
+            else:
+                pos_rank = None
+            
+            # Calculate overall ranking for 2025
+            all_players_2025 = players_full[players_full["Season"] == 2025]
+            if not all_players_2025.empty:
+                all_players_2025 = all_players_2025.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
+                overall_rank = all_players_2025[all_players_2025["Player"] == selected_player].index[0] + 1 if selected_player in all_players_2025["Player"].values else None
+            else:
+                overall_rank = None
+            
+            # Helper function for ordinal suffix
+            def get_ordinal(n):
+                if 10 <= n % 100 <= 20:
+                    suffix = "th"
+                else:
+                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+                return f"{n}{suffix}"
+            
+            rating_html = f"<div style='font-size:1.3em;font-weight:bold;margin-top:4px;'>2025 Rating: <span style='background-color:{bg};color:{fg};padding:2px 8px;border-radius:4px;border:1px solid #000;'>{rating_2025_val:.1f}</span></div>"
+            col_meta.markdown(rating_html, unsafe_allow_html=True)
+            
+            # Rankings
+            ranking_parts = []
+            if pos_rank:
+                ranking_parts.append(f"{get_ordinal(pos_rank)} ({latest_position})")
+            if overall_rank:
+                ranking_parts.append(f"{get_ordinal(overall_rank)} (Overall)")
+            if ranking_parts:
+                col_meta.markdown(" • ".join(ranking_parts))
 
 
     # ---- Rating by Season bar chart (all seasons for this player) ----
@@ -1606,11 +1871,12 @@ elif page == "Player Dashboard":
     if player_data_all.empty:
         st.info("No rating data to chart.")
     else:
-        vals = player_data_all["RatingPoints_Avg"].dropna()
+        # Use ALL player ratings from competition for consistent coloring
+        all_ratings = players_full["RatingPoints_Avg"].dropna()
 
         def colour_for_value(v):
-            # percentile within THIS player's seasons
-            perc = (vals <= v).mean()
+            # percentile within entire competition
+            perc = (all_ratings <= v).mean()
             if perc >= 0.85:
                 return "darkgreen"
             elif perc >= 0.60:
@@ -1664,13 +1930,37 @@ elif page == "Player Dashboard":
 
     # Centre all columns except Player and Team (if present)
     cols_to_center_season = [c for c in player_table.columns if c not in ["Player", "Team"]]
+    
+    # Apply competition-wide percentile coloring to Rating column (same as Player List and graph)
+    def rating_colour_style_competition(col: pd.Series):
+        """
+        Styler apply function using competition-wide percentiles (matches Player List table and graph).
+        """
+        # Use all ratings from entire competition for percentile calculation
+        all_comp_ratings = players_full["RatingPoints_Avg"].dropna()
+        if all_comp_ratings.empty:
+            return [""] * len(col)
+
+        styles = []
+        for v in col:
+            if pd.isna(v):
+                styles.append("")
+            else:
+                bg, fg = rating_colour_for_value(float(v), all_comp_ratings)
+                styles.append(
+                    f"background-color:{bg};color:{fg};"
+                    "font-weight:bold;border-radius:4px;"
+                    "text-align:center;vertical-align:middle;"
+                )
+        return styles
+    
     styler_player_table = player_table.style.set_properties(
         subset=cols_to_center_season,
         **{"text-align": "center"},
     )
     if "Rating" in player_table.columns:
         styler_player_table = styler_player_table.apply(
-            rating_colour_style, subset=["Rating"]
+            rating_colour_style_competition, subset=["Rating"]
         )
     # Format Age and Rating columns to 1 decimal place where present
     fmt_map_season = {}
@@ -1728,11 +2018,17 @@ elif page == "Depth Chart":
     df_team["RatingPoints_Avg"] = pd.to_numeric(
         df_team[rating_col_name], errors="coerce"
     )
+    
+    # Also add RatingPoints_Avg to the full summary_df for ranking calculations
+    summary_df_with_ratings = summary_df.copy()
+    summary_df_with_ratings["RatingPoints_Avg"] = pd.to_numeric(
+        summary_df_with_ratings[rating_col_name], errors="coerce"
+    )
 
     st.markdown(
         f"#### Squad Depth Grid – {selected_team} "
         f"({rating_label}, coloured by team percentile)"
     )
 
-    html = build_depth_chart_html(df_team)
+    html = build_depth_chart_html(df_team, summary_df_with_ratings)
     st.markdown(html, unsafe_allow_html=True)
