@@ -1,0 +1,1595 @@
+import os
+import warnings
+
+import altair as alt
+import pandas as pd
+import streamlit as st
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+# ---------------- STREAMLIT CONFIG ----------------
+st.set_page_config(
+    page_title="FutureEdge AFL Dashboard",
+    page_icon="🏉",
+    layout="wide",
+)
+
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
+
+# ---------------- PATHS & CONSTANTS ----------------
+TEAM_FILE = "AFL Team Ratings.xlsx"
+PLAYER_FILE = "AFL Player Ratings.xlsx"
+
+LOGO_FOLDER = "team_logos"
+PLAYER_PHOTO_FOLDER = "player_photos"
+
+TEAM_CODE_MAP = {
+    "Adelaide": "afc",
+    "Brisbane": "lions",
+    "Carlton": "cfc",
+    "Collingwood": "cofc",
+    "Essendon": "efc",
+    "Fremantle": "ffc",
+    "Geelong": "gfc",
+    "Gold Coast": "gcs",
+    "GWS": "gws",
+    "GWS Giants": "gws",
+    "Hawthorn": "hfc",
+    "Melbourne": "mfc",
+    "North Melbourne": "nmfc",
+    "Port Adelaide": "pafc",
+    "Richmond": "rfc",
+    "St Kilda": "skfc",
+    "Sydney": "sfc",
+    "West Coast": "wcfc",
+    "Western Bulldogs": "wbfc",
+}
+
+TEAM_COLOURS = {
+    "Adelaide": "#002B5C",
+    "Brisbane": "#7C003E",
+    "Carlton": "#031A28",
+    "Collingwood": "#000000",
+    "Essendon": "#D50032",
+    "Fremantle": "#2F0055",
+    "Geelong": "#001F3D",
+    "Gold Coast": "#E2001A",
+    "GWS": "#F37A20",
+    "GWS Giants": "#F37A20",
+    "Hawthorn": "#4D2004",
+    "Melbourne": "#0F1131",
+    "North Melbourne": "#0055A4",
+    "Port Adelaide": "#01A0E1",
+    "Richmond": "#FFCC00",
+    "St Kilda": "#E00034",
+    "Sydney": "#E00034",
+    "West Coast": "#003087",
+    "Western Bulldogs": "#0055A4",
+}
+
+METRIC_ORDER = [
+    "Team Rating",
+    "Ball Winning Ranking",
+    "Ball Movement Ranking",
+    "Scoring Ranking",
+    "Defence Ranking",
+    "Pressure Ranking",
+]
+
+# Rating column candidates in per-season sheets
+RATING_COL_CANDIDATES = [
+    "RatingPoints_Avg",
+    "RatingPoints_Ave",
+    "RatingPoint_Ave",
+    "RatingPoint_Avg",
+]
+
+TEAM_SEASONS = [2025, 2024, 2023]
+
+# Depth chart layout
+DEPTH_POSITIONS = [
+    "Key Defender",
+    "Gen. Defender",
+    "Midfielder",
+    "Mid-Forward",
+    "Wing",
+    "Gen. Forward",
+    "Ruck",
+    "Key Forward",
+]
+
+AGE_BANDS = [
+    "Under 22",
+    "22 to 26 Year Old",
+    "26 to 30 Year Old",
+    "30+ Year Old",
+]
+
+POSITION_COLOURS = {
+    "Key Defender": ("#ff0000", "white"),     # red
+    "Gen. Defender": ("#ff9900", "white"),    # orange
+    "Midfielder": ("#00aa00", "white"),       # green
+    "Mid-Forward": ("#00aa00", "white"),      # green
+    "Wing": ("#ffff00", "black"),             # yellow
+    "Gen. Forward": ("#ffff00", "black"),     # yellow
+    "Ruck": ("#0099ff", "white"),             # blue
+    "Key Forward": ("#0099ff", "white"),      # blue
+}
+
+# ---------------- DATA LOADERS – TEAM LADDERS ----------------
+
+
+def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
+    """
+    Find the header row (contains 'Team'), rename '#' to Rank,
+    drop totals/averages, and normalise metric + Rank pairs.
+    """
+    header_idx_candidates = raw.index[
+        raw.apply(
+            lambda row: row.astype(str).str.strip().str.lower().eq("team").any(),
+            axis=1,
+        )
+    ]
+    if len(header_idx_candidates) == 0:
+        raise ValueError("Could not find a header row containing 'Team' in this sheet.")
+    header_idx = header_idx_candidates[0]
+
+    header = raw.iloc[header_idx]
+    df = raw.iloc[header_idx + 1 :].copy()
+    df.columns = header
+
+    new_cols = []
+    for c in df.columns:
+        s = str(c).strip()
+        if s == "#":
+            new_cols.append("Rank")
+        else:
+            new_cols.append(c)
+    df.columns = new_cols
+
+    df = df[df["Team"].notna()].copy()
+    bad_labels = ["Total", "Totals", "Average", "Averages", "League", "Overall"]
+    df = df[~df["Team"].isin(bad_labels)].copy()
+
+    norm = pd.DataFrame()
+    norm["Team"] = df["Team"].copy()
+
+    cols = list(df.columns)
+    i = 0
+    while i < len(cols):
+        col = cols[i]
+        if col in ["Team", "Rank"]:
+            i += 1
+            continue
+
+        metric_col = col
+        metric_values = df[metric_col]
+
+        rank_series = None
+        rank_col_name = None
+        if i + 1 < len(cols):
+            next_col = cols[i + 1]
+            if str(next_col).strip().lower() == "rank":
+                rank_series = df.iloc[:, i + 1]
+                rank_col_name = f"{metric_col} Rank"
+
+        norm[metric_col] = metric_values
+        if rank_series is not None:
+            norm[rank_col_name] = rank_series
+            i += 2
+        else:
+            i += 1
+
+    for col in norm.columns:
+        if col != "Team":
+            norm[col] = pd.to_numeric(norm[col], errors="coerce")
+
+    norm = norm.drop_duplicates(subset=["Team"], keep="first").reset_index(drop=True)
+    return norm
+
+
+@st.cache_data
+def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
+    xl = pd.ExcelFile(TEAM_FILE)
+    sheet_name = f"{season} Ladders (L10)" if last10 else f"{season} Ladders"
+    raw = xl.parse(sheet_name)
+    return _normalise_ladder_df(raw)
+
+
+# ---------------- DATA LOADERS – TEAM SUMMARY (2025) ----------------
+
+
+@st.cache_data
+def load_team_summary_2025() -> pd.DataFrame:
+    xl = pd.ExcelFile(TEAM_FILE)
+    df = xl.parse("2025 Summary")
+    df.columns = df.columns.astype(str)
+    return df
+
+
+# ---------------- DATA LOADERS – PLAYERS ----------------
+
+
+@st.cache_data
+def load_player_summary() -> pd.DataFrame:
+    xl = pd.ExcelFile(PLAYER_FILE)
+    df = xl.parse("Summary")
+    df.columns = df.columns.astype(str).str.strip()
+    return df
+
+
+@st.cache_data
+def get_player_seasons():
+    xl = pd.ExcelFile(PLAYER_FILE)
+    seasons = []
+    for s in xl.sheet_names:
+        if str(s).isdigit():
+            seasons.append(int(s))
+    return sorted(seasons, reverse=True)
+
+
+def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
+    for cand in RATING_COL_CANDIDATES:
+        if cand in df.columns:
+            if cand != "RatingPoints_Avg":
+                df = df.rename(columns={cand: "RatingPoints_Avg"})
+            break
+    return df
+
+
+@st.cache_data
+def load_players(season: int) -> pd.DataFrame:
+    xl = pd.ExcelFile(PLAYER_FILE)
+    df = xl.parse(str(season))
+    df = _normalise_rating_column(df)
+
+    cols = [
+        "Player",
+        "Team",
+        "Age",
+        "Age_Decimal",
+        "Position",
+        "Matches",
+        "RatingPoints_Avg",
+        "Height",
+        "Height_cm",
+        "Jumper",
+        "Jersey",
+        "Number",
+        "Guernsey",
+        "No",
+    ]
+    existing = [c for c in cols if c in df.columns]
+    return df[existing].copy()
+
+
+# ---------------- ATTRIBUTE STRUCTURE HELPERS (2025 SUMMARY) ----------------
+
+
+def _extract_attribute_structure(summary_df: pd.DataFrame, attribute_name: str):
+    """
+    For 2025 Summary: reads group header row and stat row to find columns for one
+    attribute group. Returns list of dicts:
+      { "stat_name": ..., "value_col": int, "rank_col": int | None }
+    """
+    if summary_df is None or summary_df.empty:
+        return []
+
+    header_row = summary_df.iloc[1]  # group header row
+    stat_row = summary_df.iloc[2]    # stat labels row
+
+    start_idx_list = [
+        i for i, val in enumerate(header_row) if str(val).strip() == attribute_name
+    ]
+    if not start_idx_list:
+        return []
+
+    start = start_idx_list[0]
+    group_starts = [
+        i for i, val in enumerate(header_row)
+        if pd.notna(val) and i > start
+    ]
+    end = group_starts[0] if group_starts else summary_df.shape[1]
+
+    blocks = []
+    col = start
+    while col < end:
+        label = stat_row.iloc[col]
+        if pd.isna(label):
+            col += 1
+            continue
+        label_str = str(label).strip()
+        if label_str in ["Team", "#", "", "Rank"]:
+            col += 1
+            continue
+
+        stat_name = label_str
+        value_col = col
+        rank_col = None
+
+        if col + 1 < end and str(stat_row.iloc[col + 1]).strip() in ["#", "Rank"]:
+            rank_col = col + 1
+            col += 2
+        else:
+            col += 1
+
+        blocks.append(
+            {
+                "stat_name": stat_name,
+                "value_col": value_col,
+                "rank_col": rank_col,
+            }
+        )
+
+    return blocks
+
+
+def get_attribute_stat_distribution(
+    summary_df: pd.DataFrame,
+    attribute_name: str,
+    stat_name: str,
+    block: str = "Season",  # "Season" or "Last10"
+) -> pd.DataFrame:
+    """
+    Returns distribution of a stat for 18 AFL teams from 2025 Summary.
+    Uses its Rank column (adjacent col) so your Excel ranking logic is the truth.
+    """
+    blocks = _extract_attribute_structure(summary_df, attribute_name)
+    if not blocks:
+        return pd.DataFrame(columns=["Team", "Value", "Rank"])
+
+    block_info = next((b for b in blocks if b["stat_name"] == stat_name), None)
+    if block_info is None:
+        return pd.DataFrame(columns=["Team", "Value", "Rank"])
+
+    value_col = block_info["value_col"]
+    rank_col = block_info["rank_col"]
+
+    team_series = summary_df.iloc[:, 0]
+    afl_team_set = set(TEAM_CODE_MAP.keys())
+
+    team_row_indices = [
+        i
+        for i, val in team_series.items()
+        if str(val).strip() in afl_team_set
+    ]
+    if not team_row_indices:
+        return pd.DataFrame(columns=["Team", "Value", "Rank"])
+
+    team_row_indices = sorted(team_row_indices)
+    total_rows = len(team_row_indices)
+
+    if total_rows <= 18:
+        season_indices = team_row_indices
+        last10_indices = team_row_indices
+    else:
+        chunk_size = total_rows // 2
+        season_indices = team_row_indices[:chunk_size]
+        last10_indices = team_row_indices[-chunk_size:]
+
+    chosen_indices = last10_indices if block.lower().startswith("last") else season_indices
+
+    records = []
+    for idx in chosen_indices:
+        team = str(team_series.iloc[idx]).strip()
+        val = summary_df.iloc[idx, value_col]
+        rank = summary_df.iloc[idx, rank_col] if rank_col is not None else None
+        records.append(
+            {
+                "Team": team,
+                "Value": val,
+                "Rank": rank,
+            }
+        )
+
+    df_out = pd.DataFrame(records)
+    if df_out.empty:
+        return df_out
+
+    df_out["Value"] = pd.to_numeric(df_out["Value"], errors="coerce")
+    df_out["Rank"] = pd.to_numeric(df_out["Rank"], errors="coerce").astype("Int64")
+    return df_out
+
+
+# ---------------- IMAGE HELPERS ----------------
+
+
+def get_team_logo_path(team_name: str):
+    if not isinstance(team_name, str):
+        return None
+    code = TEAM_CODE_MAP.get(team_name)
+    if not code:
+        return None
+    for ext in (".png", ".jpg", ".jpeg"):
+        path = os.path.join(LOGO_FOLDER, code + ext)
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def get_player_photo_path(player_name: str):
+    if not isinstance(player_name, str):
+        return None
+    base = player_name.strip().lower().replace(" ", "_")
+    for ext in (".png", ".jpg", ".jpeg"):
+        path = os.path.join(PLAYER_PHOTO_FOLDER, base + ext)
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def _resize_image(path: str, size: int):
+    if Image is None or path is None:
+        return None
+    try:
+        img = Image.open(path).convert("RGBA")
+        img = img.resize((size, size))
+        return img
+    except Exception:
+        return None
+
+
+def display_logo(team_name: str, container, size: int = 80):
+    path = get_team_logo_path(team_name)
+    if not path:
+        return
+    img = _resize_image(path, size)
+    if img is not None:
+        container.image(img)
+    else:
+        container.image(path, width=size)
+
+
+def display_player_photo(player_name: str, container, size: int = 160):
+    path = get_player_photo_path(player_name)
+    if not path:
+        return
+    img = _resize_image(path, size)
+    if img is not None:
+        container.image(img)
+    else:
+        container.image(path, width=size)
+
+
+# ---------------- RATING COLOUR HELPERS ----------------
+
+
+def rating_colour_for_value(v: float, values: pd.Series) -> tuple:
+    """
+    Returns (bg_color, fg_color) based on percentile of v within values.
+    Colour logic:
+    - Top 15%  -> dark green
+    - Top 40%  -> light green
+    - Top 65%  -> orange
+    - Rest     -> red
+    """
+    vals = pd.to_numeric(values, errors="coerce").dropna()
+    if len(vals) == 0 or pd.isna(v):
+        return "#333333", "white"
+
+    perc = (vals <= v).mean()
+    if perc >= 0.85:
+        return "#008000", "white"     # dark green
+    elif perc >= 0.60:
+        return "#90EE90", "black"     # light green
+    elif perc >= 0.35:
+        return "#FFA500", "white"     # orange
+    else:
+        return "#FF0000", "white"     # red
+
+
+def rating_colour_style(col: pd.Series):
+    """
+    Styler apply function to colour cells in a Rating column.
+    """
+    vals = pd.to_numeric(col, errors="coerce").dropna()
+    if vals.empty:
+        return [""] * len(col)
+
+    styles = []
+    for v in col:
+        if pd.isna(v):
+            styles.append("")
+        else:
+            bg, fg = rating_colour_for_value(float(v), vals)
+            styles.append(
+                f"background-color:{bg};color:{fg};"
+                "font-weight:bold;border-radius:4px;"
+            )
+    return styles
+
+
+# ---------------- TABLE STYLING ----------------
+
+
+def style_ladder_table(ladder_view: pd.DataFrame):
+    colour_map = {
+        "Team Rating": ("black", "white"),
+        "Ball Winning Ranking": ("#0066CC", "white"),
+        "Ball Movement Ranking": ("#009933", "white"),
+        "Scoring Ranking": ("#FFEB3B", "black"),
+        "Defence Ranking": ("#CC0000", "white"),
+        "Pressure Ranking": ("#800080", "white"),
+    }
+
+    styler = ladder_view.style
+    stat_cols = [c for c in ladder_view.columns if c not in ["Pos", "Team"]]
+
+    if stat_cols:
+        styler = styler.set_properties(
+            subset=stat_cols,
+            **{
+                "padding": "8px 12px",
+                "font-size": "0.95em",
+                "text-align": "center",
+                "width": "80px",
+            },
+        )
+
+    styler = styler.set_properties(
+        subset=["Team"],
+        **{"text-align": "left"}
+    )
+
+    for col, (bg, fg) in colour_map.items():
+        if col in ladder_view.columns:
+            styler = styler.set_properties(
+                subset=[col],
+                **{
+                    "background-color": bg,
+                    "color": fg,
+                    "font-weight": "bold",
+                },
+            )
+
+    def highlight_leader(row):
+        if "Pos" in ladder_view.columns and row["Pos"] == 1:
+            return [
+                "color: #00CC00; font-weight: 900; font-size: 1.05em;"
+                for _ in row
+            ]
+        return [""] * len(row)
+
+    styler = styler.apply(highlight_leader, axis=1)
+    return styler
+
+
+def style_numeric_center(df: pd.DataFrame):
+    styler = df.style
+    left_cols = {"Player", "Team", "Position", "Stat"}
+    stat_cols = [c for c in df.columns if c not in left_cols]
+    if stat_cols:
+        styler = styler.set_properties(
+            subset=stat_cols,
+            **{
+                "text-align": "center",
+                "width": "80px",
+            }
+        )
+    return styler
+
+
+# ---------------- DEPTH CHART HELPERS ----------------
+
+
+def find_first_column(df: pd.DataFrame, candidates):
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
+
+
+def map_position_to_depth(pos_raw: str) -> str:
+    if not isinstance(pos_raw, str):
+        return "Midfielder"
+    p = pos_raw.lower()
+
+    if "ruck" in p or "ruc" in p:
+        return "Ruck"
+    if ("key" in p and ("def" in p or "back" in p)) or "kpd" in p:
+        return "Key Defender"
+    if ("key" in p and ("fwd" in p or "forward" in p)) or "kpf" in p:
+        return "Key Forward"
+    if "wing" in p:
+        return "Wing"
+    if "mid-f" in p or "hff" in p or ("half" in p and "forward" in p):
+        return "Mid-Forward"
+    if "mid" in p:
+        return "Midfielder"
+    if "def" in p or "back" in p or "hb" in p:
+        return "Gen. Defender"
+    if "fwd" in p or "forward" in p:
+        return "Gen. Forward"
+    return "Midfielder"
+
+
+def map_age_to_band(age_val) -> str:
+    try:
+        a = float(age_val)
+    except Exception:
+        return "Under 22"
+    if a < 22:
+        return "Under 22"
+    elif a < 26:
+        return "22 to 26 Year Old"
+    elif a < 30:
+        return "26 to 30 Year Old"
+    else:
+        return "30+ Year Old"
+
+
+def get_rating_color_team_context(rating_value, df_team, rating_col):
+    """Return colour based on percentile of rating_value within df_team[rating_col]."""
+    try:
+        ratings = pd.to_numeric(df_team[rating_col], errors="coerce").dropna()
+        if len(ratings) == 0 or pd.isna(rating_value):
+            return "#333333", "white"
+
+        percentile = (ratings <= rating_value).mean()
+
+        if percentile >= 0.85:
+            return "#008000", "white"
+        elif percentile >= 0.60:
+            return "#90EE90", "black"
+        elif percentile >= 0.35:
+            return "#FFA500", "white"
+        else:
+            return "#FF0000", "white"
+    except Exception:
+        return "#333333", "white"
+
+
+def build_depth_chart_html(df_team: pd.DataFrame) -> str:
+    """
+    df_team is the Summary subset for one team, with:
+    Player, Jumper, Age, Height, Position, RatingPoints_Avg.
+    """
+    num_col = find_first_column(df_team, ["Jumper", "Jersey", "Number", "Guernsey", "No"])
+    age_col = "Age"
+    height_col = "Height"
+    rating_col = "RatingPoints_Avg"
+    pos_col = "Position"
+    player_col = "Player"
+
+    grid = {pos: {band: [] for band in AGE_BANDS} for pos in DEPTH_POSITIONS}
+
+    if rating_col in df_team.columns:
+        df_sorted = df_team.sort_values(rating_col, ascending=False)
+    else:
+        df_sorted = df_team.copy()
+
+    for _, row in df_sorted.iterrows():
+        player_name = row.get(player_col, "")
+        if not isinstance(player_name, str) or not player_name.strip():
+            continue
+
+        num = row.get(num_col, "")
+        age = row.get(age_col, "")
+        height = row.get(height_col, "")
+        rating = row.get(rating_col, "")
+
+        depth_pos = map_position_to_depth(row.get(pos_col, ""))
+        age_band = map_age_to_band(age)
+
+        # line 1 – jumper + name
+        line1_parts = []
+        if pd.notna(num) and str(num).strip() != "":
+            try:
+                line1_parts.append(str(int(num)))
+            except Exception:
+                line1_parts.append(str(num))
+        line1_parts.append(player_name)
+        line1 = " ".join(line1_parts)
+
+        # line 2 – age, height, rating box
+        line2_parts = []
+
+        if pd.notna(age) and str(age).strip() != "":
+            try:
+                line2_parts.append(f"{float(age):.1f}yrs")
+            except Exception:
+                line2_parts.append(f"{age}yrs")
+
+        if pd.notna(height) and str(height).strip() != "":
+            try:
+                line2_parts.append(f"{float(height):.0f}cm")
+            except Exception:
+                line2_parts.append(f"{height}cm")
+
+        if rating_col in df_team.columns and pd.notna(rating) and str(rating).strip() != "":
+            try:
+                rating_float = float(rating)
+                bg_color, text_color = get_rating_color_team_context(
+                    rating_float, df_team, rating_col
+                )
+
+                rating_box_html = (
+                    f"<span style='display:inline-block;"
+                    f"padding:1px 6px;border-radius:4px;"
+                    f"background-color:{bg_color};color:{text_color};"
+                    f"border:1px solid #000;font-weight:bold;'>"
+                    f"{rating_float:.1f}</span>"
+                )
+                line2_parts.append(f"Rating {rating_box_html}")
+            except Exception:
+                line2_parts.append(f"Rating {rating}")
+
+        line2 = ", ".join(line2_parts)
+        player_html = f"{line1}<br>{line2}"
+
+        if depth_pos in grid and age_band in grid[depth_pos]:
+            grid[depth_pos][age_band].append(player_html)
+
+    # build HTML table
+    html = []
+    html.append(
+        "<table style='width:100%;border-collapse:collapse;font-size:0.8em;'>"
+    )
+    html.append("<tr>")
+    html.append(
+        "<th style='background-color:black;color:white;padding:6px;"
+        "border:2px solid #000;width:10%;'>Position</th>"
+    )
+    for band in AGE_BANDS:
+        html.append(
+            f"<th style='background-color:#8BC34A;color:black;padding:6px;"
+            f"border:2px solid #000;text-align:center;'>{band}</th>"
+        )
+    html.append("</tr>")
+
+    for pos in DEPTH_POSITIONS:
+        bg, fg = POSITION_COLOURS.get(pos, ("#dddddd", "black"))
+        html.append("<tr>")
+        html.append(
+            f"<td style='background-color:{bg};color:{fg};padding:6px;"
+            f"border:2px solid #000;font-weight:bold;width:10%;"
+            f"white-space:nowrap;'>{pos}</td>"
+        )
+        for band in AGE_BANDS:
+            players = grid[pos][band]
+            if players:
+                sep = "<hr style='margin:4px 0;border:0;border-top:1px solid #cccccc;' />"
+                cell_html = sep.join(players)
+            else:
+                cell_html = ""
+            html.append(
+                "<td style='background-color:white;color:black;padding:6px;"
+                "border:2px solid #000;vertical-align:top;text-align:left;'>"
+                f"{cell_html}</td>"
+            )
+        html.append("</tr>")
+
+    html.append("</table>")
+    return "".join(html)
+
+
+# ---------------- PAGE NAV ----------------
+
+PAGES = ["Overview", "Team Ladder", "Player Dashboard", "Depth Chart"]
+page = st.sidebar.radio("Navigate", PAGES)
+
+
+# ================= OVERVIEW =================
+
+if page == "Overview":
+    st.title("🏉 FutureEdge AFL Dashboard – Overview")
+
+    selected_season = st.selectbox("Season", TEAM_SEASONS)
+    window = st.radio(
+        "Data window",
+        ["Season", "Last 10 Games"],
+        horizontal=True,
+    )
+    last10 = window == "Last 10 Games"
+    period_label = f"{window} ({selected_season})"
+
+    try:
+        ladders = load_team_ladders(selected_season, last10=last10)
+    except Exception as e:
+        st.error(f"Error loading data for {selected_season} – {window}: {e}")
+        st.stop()
+
+    if ladders.empty:
+        st.warning(f"No ladder data found for {period_label}.")
+        st.stop()
+
+    top4_colour_map = {
+        "Team Rating": ("black", "white"),
+        "Ball Winning Ranking": ("#0066CC", "white"),
+        "Ball Movement Ranking": ("#009933", "white"),
+        "Scoring Ranking": ("#FFEB3B", "black"),
+        "Defence Ranking": ("#CC0000", "white"),
+        "Pressure Ranking": ("#800080", "white"),
+    }
+
+    st.subheader(f"Team Leaders – {period_label}")
+
+    metric_configs = [
+        {"label": "Team Rating", "metric_col": "Team Rating"},
+        {"label": "Ball Winning Ranking", "metric_col": "Ball Winning Ranking"},
+        {"label": "Ball Movement Ranking", "metric_col": "Ball Movement Ranking"},
+        {"label": "Scoring Ranking", "metric_col": "Scoring Ranking"},
+        {"label": "Defence Ranking", "metric_col": "Defence Ranking"},
+        {"label": "Pressure Ranking", "metric_col": "Pressure Ranking"},
+    ]
+
+    cols_row1 = st.columns(3)
+    cols_row2 = st.columns(3)
+    idx = 0
+
+    for cfg in metric_configs:
+        metric_col = cfg["metric_col"]
+        if metric_col not in ladders.columns:
+            continue
+
+        top4 = (
+            ladders[["Team", metric_col]]
+            .dropna(subset=[metric_col])
+            .sort_values(metric_col, ascending=False)
+            .head(4)
+        )
+        if top4.empty:
+            continue
+
+        bg, fg = top4_colour_map.get(metric_col, ("#333333", "white"))
+        lines = []
+
+        for j, (_, row) in enumerate(top4.iterrows()):
+            team = row["Team"]
+            val = row[metric_col]
+            try:
+                val_str = f"{float(val):.1f}"
+            except Exception:
+                val_str = str(val)
+
+            if j == 0:
+                font_size = "1.1em"
+                font_weight = "900"
+            else:
+                font_size = "0.85em"
+                font_weight = "700"
+
+            prefix = f"{j+1}. {team} – {val_str}" if j > 0 else f"{team} – {val_str}"
+
+            line_html = (
+                f"<div style='background-color:{bg};color:{fg};"
+                f"border-radius:8px;padding:6px 10px;margin-bottom:4px;"
+                f"font-size:{font_size};font-weight:{font_weight};'>"
+                f"{prefix}</div>"
+            )
+            lines.append(line_html)
+
+        target_col = cols_row1[idx] if idx < 3 else cols_row2[idx - 3]
+        container = target_col.container()
+
+        header_html = (
+            f"<div style='font-size:1.2em;font-weight:900;margin-bottom:6px;'>"
+            f"{cfg['label']}</div>"
+        )
+        container.markdown(header_html, unsafe_allow_html=True)
+
+        leader_team = top4.iloc[0]["Team"]
+        display_logo(leader_team, container, size=80)
+        container.markdown("".join(lines), unsafe_allow_html=True)
+
+        idx += 1
+
+    st.markdown("---")
+    st.subheader(f"Team Ladder – {period_label}")
+
+    ladder_cols = ["Team"]
+    for metric_col in METRIC_ORDER:
+        if metric_col in ladders.columns:
+            ladder_cols.append(metric_col)
+    ladder_cols = list(dict.fromkeys(ladder_cols))
+    existing = [c for c in ladder_cols if c in ladders.columns]
+
+    if existing:
+        ladder_view = ladders[existing].copy()
+
+        sort_col = "Team Rating" if "Team Rating" in ladder_view.columns else None
+        if sort_col:
+            ladder_view = ladder_view.sort_values(sort_col, ascending=False)
+
+        numeric_cols = [c for c in ladder_view.columns if c not in ["Team", "Team Rating"]]
+        ladder_view[numeric_cols] = ladder_view[numeric_cols].round(1)
+        if "Team Rating" in ladder_view.columns:
+            ladder_view["Team Rating"] = ladder_view["Team Rating"].round(0).astype("Int64")
+
+        ladder_view.insert(0, "Pos", range(1, len(ladder_view) + 1))
+
+        styler = style_ladder_table(ladder_view)
+        st.table(styler)
+        st.caption(f"Teams shown: {ladder_view['Team'].nunique()} (should be 18)")
+    else:
+        st.info("No ladder columns found to display.")
+
+
+# ================= TEAM LADDER =================
+
+elif page == "Team Ladder":
+    st.title("📊 Team Ladder")
+
+    selected_season = st.selectbox("Season", TEAM_SEASONS)
+    window = st.radio(
+        "Data window",
+        ["Season", "Last 10 Games"],
+        horizontal=True,
+    )
+    last10 = window == "Last 10 Games"
+    period_label = f"{window} ({selected_season})"
+
+    try:
+        ladders = load_team_ladders(selected_season, last10=last10)
+    except Exception as e:
+        st.error(f"Error loading team data for {selected_season} – {window}: {e}")
+        st.stop()
+
+    if ladders.empty:
+        st.warning(f"No ladder data found for {period_label}.")
+        st.stop()
+
+    st.caption(f"Showing: {period_label}")
+
+    team_list = sorted(ladders["Team"].unique())
+    team_name = st.selectbox("Select a team", team_list)
+
+    team_row = ladders[ladders["Team"] == team_name].iloc[0]
+    display_logo(team_name, st, size=80)
+    st.markdown(f"### {team_name}")
+
+    # --- Team Ratings Snapshot ---
+    st.subheader("Team Ratings Snapshot")
+
+    cols_row1 = st.columns(3)
+    cols_row2 = st.columns(3)
+    idx = 0
+
+    for metric_col in METRIC_ORDER:
+        if metric_col not in ladders.columns:
+            continue
+
+        rating_val = team_row[metric_col]
+        try:
+            rating_str = f"{float(rating_val):.1f}"
+        except Exception:
+            rating_str = str(rating_val)
+
+        rank_col = f"{metric_col} Rank"
+        rank_int = None
+        if rank_col in team_row.index:
+            try:
+                rank_int = int(team_row[rank_col])
+            except Exception:
+                rank_int = None
+
+        if isinstance(rank_int, int) and rank_int == 0:
+            rank_int = 1
+
+        if isinstance(rank_int, int):
+            if rank_int <= 4:
+                color = "darkgreen"
+            elif rank_int <= 9:
+                color = "lightgreen"
+            elif rank_int <= 14:
+                color = "orange"
+            else:
+                color = "red"
+        else:
+            color = "grey"
+
+        value_str = (
+            f"{rating_str} (Rank {rank_int})"
+            if rank_int is not None
+            else rating_str
+        )
+
+        target_col = cols_row1[idx] if idx < 3 else cols_row2[idx - 3]
+        target_col.markdown(f"**{metric_col}**")
+
+        value_html = (
+            "<div style='font-size:1.6em;font-weight:900;margin-top:4px;"
+            f"color:{color};'>{value_str}</div>"
+        )
+        target_col.markdown(value_html, unsafe_allow_html=True)
+
+        idx += 1
+
+    # --- Attribute Detail – new design ---
+    st.markdown("---")
+    st.subheader("Attribute Detail – Team vs Competition (2025 Summary)")
+
+    if selected_season != 2025:
+        st.info("Attribute detail currently uses the 2025 Summary sheet only.")
+    else:
+        summary_2025 = load_team_summary_2025()
+
+        attribute_options = [
+            "Ball Winning",
+            "Ball Movement",
+            "Scoring",
+            "Defence",
+            "Pressure",
+            "Health Check",
+            "Wheelo Ratings",
+        ]
+        selected_attribute = st.selectbox(
+            "Select attribute group",
+            attribute_options,
+            help="Matches the groups in the 2025 Summary sheet.",
+        )
+
+        blocks = _extract_attribute_structure(summary_2025, selected_attribute)
+        if not blocks:
+            st.info("No stats found for this attribute group.")
+        else:
+            stat_names = [b["stat_name"] for b in blocks]
+            selected_stat = st.selectbox(
+                "Select stat",
+                stat_names,
+                key="attr_stat_selector",
+            )
+
+            which_block = "Last10" if window == "Last 10 Games" else "Season"
+
+            dist_df = get_attribute_stat_distribution(
+                summary_2025,
+                selected_attribute,
+                selected_stat,
+                block=which_block,
+            )
+
+            if dist_df.empty:
+                st.info("No data found for this stat across teams.")
+            else:
+                dist_df = dist_df.copy()
+                dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
+                dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
+
+                dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+
+                if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
+                    dist_df = dist_df.sort_values("Value", ascending=False)
+                    dist_df["Rank"] = range(1, len(dist_df) + 1)
+                else:
+                    dist_df = dist_df.sort_values("Rank", ascending=True)
+
+                dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
+
+                # main selected team display
+                sel_row = dist_df[dist_df["Team"] == team_name]
+                if sel_row.empty:
+                    st.warning(f"{team_name} has no data for this stat.")
+                else:
+                    sel = sel_row.iloc[0]
+                    val = sel["Value"]
+                    rank = int(sel["Rank"])
+                    n_teams = len(dist_df)
+
+                    try:
+                        val_str = f"{float(val):.2f}"
+                    except Exception:
+                        val_str = str(val)
+
+                    rank_str = f"{rank} / {n_teams}"
+
+                    if rank <= 4:
+                        main_color = "darkgreen"
+                    elif rank <= 9:
+                        main_color = "lightgreen"
+                    elif rank <= 14:
+                        main_color = "orange"
+                    else:
+                        main_color = "red"
+
+                    c_logo, c_text = st.columns([1, 3])
+                    display_logo(team_name, c_logo, size=80)
+
+                    main_html = f"""
+                    <div style="font-size:1.4em;font-weight:900;">
+                        {team_name} – {selected_stat}
+                    </div>
+                    <div style="font-size:1.6em;font-weight:900;color:{main_color};margin-top:4px;">
+                        {val_str}
+                        <span style="font-size:0.8em;font-weight:700;color:#cccccc;">
+                            (Rank {rank_str})
+                        </span>
+                    </div>
+                    <div style="font-size:0.85em;color:#aaaaaa;margin-top:2px;">
+                        Data window: {"Last 10 Games" if which_block == "Last10" else "Season Total"}
+                    </div>
+                    """
+                    c_text.markdown(main_html, unsafe_allow_html=True)
+
+                # Top 4 by Rank
+                st.markdown(f"#### Top 4 – {selected_stat}")
+
+                top4 = (
+                    dist_df.dropna(subset=["Rank"])
+                    .sort_values("Rank", ascending=True)
+                    .head(4)
+                )
+
+                if top4.empty:
+                    st.info("No ranked teams found for this stat.")
+                else:
+                    lines = []
+                    for _, row in top4.iterrows():
+                        t = row["Team"]
+                        val = row["Value"]
+                        r = int(row["Rank"])
+
+                        try:
+                            val_str = f"{float(val):.2f}"
+                        except Exception:
+                            val_str = str(val)
+
+                        if t == team_name:
+                            size = "1.05em"
+                            weight = "900"
+                            color = "#00CC00"
+                        elif r == 1:
+                            size = "1.0em"
+                            weight = "800"
+                            color = "#FFFFFF"
+                        else:
+                            size = "0.9em"
+                            weight = "700"
+                            color = "#DDDDDD"
+
+                        line_html = (
+                            "<div style='margin-bottom:4px;"
+                            f"font-size:{size};font-weight:{weight};"
+                            f"color:{color};'>"
+                            f"{r}. {t} – {val_str}</div>"
+                        )
+                        lines.append(line_html)
+
+                    st.markdown("".join(lines), unsafe_allow_html=True)
+
+                # Averages
+                st.markdown("#### Averages")
+                col_avg_top4, col_avg_league = st.columns(2)
+
+                if not top4.empty and top4["Value"].notna().any():
+                    avg_top4 = top4["Value"].dropna().mean()
+                    col_avg_top4.metric("Top 4 Average", f"{avg_top4:.2f}")
+                else:
+                    col_avg_top4.metric("Top 4 Average", "–")
+
+                vals_all = dist_df["Value"].dropna()
+                if not vals_all.empty:
+                    league_avg = vals_all.mean()
+                    col_avg_league.metric("League Average (18 teams)", f"{league_avg:.2f}")
+                else:
+                    col_avg_league.metric("League Average (18 teams)", "–")
+
+    # Full ladder table
+    st.markdown("---")
+    st.subheader(f"Full Ladder Table – {period_label}")
+
+    ladder_cols = ["Team"]
+    for metric_col in METRIC_ORDER:
+        if metric_col in ladders.columns:
+            ladder_cols.append(metric_col)
+    ladder_cols = list(dict.fromkeys(ladder_cols))
+    existing = [c for c in ladder_cols if c in ladders.columns]
+
+    if existing:
+        ladder_view = ladders[existing].copy()
+        if "Team Rating" in ladder_view.columns:
+            ladder_view = ladder_view.sort_values("Team Rating", ascending=False)
+
+        numeric_cols = [c for c in ladder_view.columns if c not in ["Team", "Team Rating"]]
+        ladder_view[numeric_cols] = ladder_view[numeric_cols].round(1)
+        if "Team Rating" in ladder_view.columns:
+            ladder_view["Team Rating"] = ladder_view["Team Rating"].round(0).astype("Int64")
+
+        ladder_view.insert(0, "Pos", range(1, len(ladder_view) + 1))
+
+        styler = style_ladder_table(ladder_view)
+        st.table(styler)
+
+
+# ================= PLAYER DASHBOARD =================
+
+elif page == "Player Dashboard":
+    st.title("👤 Player Dashboard")
+
+    # ---- Season selection (main area) ----
+    seasons_available = get_player_seasons()
+    if not seasons_available:
+        st.error("No season sheets found in AFL Player Ratings workbook.")
+        st.stop()
+
+    st.subheader("Select seasons to include")
+    selected_seasons = st.multiselect(
+        "",
+        seasons_available,
+        default=[seasons_available[0]],
+    )
+
+    if not selected_seasons:
+        st.warning("Please select at least one season.")
+        st.stop()
+
+    dfs = []
+    for s in selected_seasons:
+        df_s = load_players(s)
+        df_s["Season"] = s
+        dfs.append(df_s)
+
+    players_all = pd.concat(dfs, ignore_index=True)
+    players_all = _normalise_rating_column(players_all)
+
+    # Decide which age column to use
+    age_col = "Age_Decimal" if "Age_Decimal" in players_all.columns else "Age"
+    if age_col in players_all.columns:
+        players_all[age_col] = pd.to_numeric(players_all[age_col], errors="coerce")
+
+    # ---- Filters directly under seasons ----
+    st.subheader("Filters")
+    fcol1, fcol2 = st.columns(2)
+
+    with fcol1:
+        min_matches = st.slider(
+            "Minimum matches (per season)",
+            min_value=0,
+            max_value=25,
+            value=0,
+        )
+
+    with fcol2:
+        # Age range
+        if age_col in players_all.columns:
+            age_min_val = float(players_all[age_col].min(skipna=True) or 18.0)
+            age_max_val = float(players_all[age_col].max(skipna=True) or 40.0)
+        else:
+            age_min_val, age_max_val = 18.0, 40.0
+
+        age_min, age_max = st.slider(
+            "Age range",
+            min_value=float(int(age_min_val)),
+            max_value=float(int(age_max_val if age_max_val > age_min_val else age_min_val + 1)),
+            value=(
+                float(int(age_min_val)),
+                float(int(age_max_val if age_max_val > age_min_val else age_min_val + 1)),
+            ),
+            step=0.5,
+        )
+
+    fcol3, fcol4 = st.columns(2)
+    with fcol3:
+        teams = sorted(players_all["Team"].dropna().unique())
+        team_filter = st.multiselect("Teams", teams, default=teams)
+
+    with fcol4:
+        positions = sorted(players_all["Position"].dropna().unique())
+        pos_filter = st.multiselect("Positions", positions, default=positions)
+
+    # ---- Apply filters to view ----
+    df_view = players_all.copy()
+
+    # Matches
+    if "Matches" in df_view.columns:
+        df_view["Matches"] = pd.to_numeric(df_view["Matches"], errors="coerce").fillna(0)
+        df_view = df_view[df_view["Matches"] >= min_matches]
+
+    # Age range
+    if age_col in df_view.columns:
+        df_view[age_col] = pd.to_numeric(df_view[age_col], errors="coerce")
+        df_view = df_view[
+            (df_view[age_col] >= age_min) & (df_view[age_col] <= age_max)
+        ]
+
+    # Team + position filters
+    if team_filter:
+        df_view = df_view[df_view["Team"].isin(team_filter)]
+    if pos_filter:
+        df_view = df_view[df_view["Position"].isin(pos_filter)]
+
+    if df_view.empty:
+        st.warning("No players match the current filters.")
+        st.stop()
+
+    # Ensure rating is numeric
+    df_view["RatingPoints_Avg"] = pd.to_numeric(
+        df_view["RatingPoints_Avg"], errors="coerce"
+    )
+    df_view = df_view.sort_values("RatingPoints_Avg", ascending=False)
+
+    # ---- Player list table (rounding + centred numbers) ----
+    st.subheader("Player List")
+
+    display_cols = [
+        "Player",
+        "Team",
+        "Season",
+        "Position",
+        age_col,
+        "Matches",
+        "RatingPoints_Avg",
+    ]
+    display_cols = [c for c in display_cols if c in df_view.columns]
+
+    table_view = df_view[display_cols].copy()
+
+    # Round age + rating to 1 decimal
+    if age_col in table_view.columns:
+        table_view[age_col] = pd.to_numeric(table_view[age_col], errors="coerce").round(1)
+    if "RatingPoints_Avg" in table_view.columns:
+        table_view["RatingPoints_Avg"] = pd.to_numeric(
+            table_view["RatingPoints_Avg"], errors="coerce"
+        ).round(1)
+
+    # Rename columns nicely
+    rename_map = {}
+    if age_col in table_view.columns:
+        rename_map[age_col] = "Age"
+    if "RatingPoints_Avg" in table_view.columns:
+        rename_map["RatingPoints_Avg"] = "Rating"
+    table_view = table_view.rename(columns=rename_map)
+
+    numeric_cols = [c for c in table_view.columns if c not in ["Player", "Team", "Position"]]
+
+    styler_players = table_view.style.set_properties(
+        subset=numeric_cols,
+        **{"text-align": "center"},
+    )
+    if "Rating" in table_view.columns:
+        styler_players = styler_players.apply(rating_colour_style, subset=["Rating"])
+
+    st.dataframe(
+        styler_players,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    # ---- Individual Player View (all seasons, photos, logos, summary info) ----
+    st.markdown("---")
+    st.subheader("Individual Player View")
+
+    player_names = sorted(df_view["Player"].dropna().unique())
+    selected_player = st.selectbox("Select player", player_names)
+
+    # Load ALL seasons for this player, regardless of selected_seasons
+    all_players_all = []
+    for s in get_player_seasons():
+        df_s = load_players(s)
+        df_s["Season"] = s
+        all_players_all.append(df_s)
+    players_full = pd.concat(all_players_all, ignore_index=True)
+    players_full = _normalise_rating_column(players_full)
+
+    player_data_all = players_full[players_full["Player"] == selected_player].copy()
+    if player_data_all.empty:
+        st.info("No data found for this player.")
+        st.stop()
+
+    player_data_all["Season"] = pd.to_numeric(player_data_all["Season"], errors="coerce")
+
+    # Latest season record for meta
+    latest_record = player_data_all.sort_values("Season", ascending=False).iloc[0]
+
+    col_photo, col_meta = st.columns([1, 3])
+
+    # Player photo
+    display_player_photo(selected_player, col_photo, size=160)
+
+    # Team logo (latest team)
+    latest_team = latest_record.get("Team", "")
+    if latest_team:
+        display_logo(latest_team, col_photo, size=70)
+
+    # Meta info from Summary tab (Age, Draft, Draft #, Height)
+    summary_df = load_player_summary()
+    summary_match = summary_df[summary_df["Player"] == selected_player]
+    summary_row = summary_match.iloc[0] if not summary_match.empty else None
+
+    # Base fields
+    latest_position = latest_record.get("Position", "")
+    latest_matches = latest_record.get("Matches", None)
+    latest_rating = latest_record.get("RatingPoints_Avg", None)
+
+    # Age, Draft info, Height from Summary
+    age_summary = summary_row.get("Age") if summary_row is not None else None
+    draft_year = summary_row.get("Draft") if summary_row is not None else None
+    draft_no = summary_row.get("Draft #") if summary_row is not None else None
+    height_summary = summary_row.get("Height") if summary_row is not None else None
+
+    # Header
+    col_meta.markdown(f"### {selected_player}")
+    if latest_team:
+        col_meta.markdown(f"**Team:** {latest_team}")
+    if latest_position:
+        col_meta.markdown(f"**Position:** {latest_position}")
+
+    # Age line under position
+    age_bits = []
+    try:
+        if age_summary is not None and pd.notna(age_summary):
+            age_bits.append(f"Age: {float(age_summary):.1f}")
+    except Exception:
+        if age_summary not in [None, ""]:
+            age_bits.append(f"Age: {age_summary}")
+    if age_bits:
+        col_meta.markdown(" • ".join(age_bits))
+
+    # Draft + Height
+    extra_bits = []
+    if draft_year not in [None, ""]:
+        extra_bits.append(f"Draft Year: {int(draft_year)}")
+    if draft_no not in [None, ""]:
+        extra_bits.append(f"Draft #: {int(draft_no)}")
+    if height_summary not in [None, ""]:
+        try:
+            extra_bits.append(f"Height: {float(height_summary):.0f} cm")
+        except Exception:
+            extra_bits.append(f"Height: {height_summary} cm")
+    if extra_bits:
+        col_meta.markdown(" • ".join(extra_bits))
+
+    # Season games + rating (prominent)
+    season_meta_bits = []
+    try:
+        if pd.notna(latest_matches):
+            season_meta_bits.append(f"Games ({int(latest_record['Season'])}): {int(latest_matches)}")
+    except Exception:
+        if latest_matches not in [None, ""]:
+            season_meta_bits.append(f"Games ({latest_record.get('Season')}): {latest_matches}")
+
+    rating_box_html = ""
+    if latest_rating not in [None, ""]:
+        try:
+            rating_val = float(latest_rating)
+            bg, fg = rating_colour_for_value(
+                rating_val,
+                players_full["RatingPoints_Avg"],
+            )
+            rating_box_html = (
+                f"<span style='display:inline-block;padding:2px 8px;"
+                f"border-radius:4px;background-color:{bg};color:{fg};"
+                f"border:1px solid #000;font-weight:bold;'>"
+                f"{rating_val:.1f}</span>"
+            )
+            season_meta_bits.append(f"Rating ({int(latest_record['Season'])}): {rating_box_html}")
+        except Exception:
+            season_meta_bits.append(
+                f"Rating ({latest_record.get('Season')}): {latest_rating}"
+            )
+
+
+    # ---- Rating by Season bar chart (all seasons for this player) ----
+    st.markdown("#### Rating by Season")
+
+    player_data_all["RatingPoints_Avg"] = pd.to_numeric(
+        player_data_all["RatingPoints_Avg"], errors="coerce"
+    )
+    player_data_all = player_data_all.dropna(subset=["RatingPoints_Avg"])
+
+    if player_data_all.empty:
+        st.info("No rating data to chart.")
+    else:
+        vals = player_data_all["RatingPoints_Avg"].dropna()
+
+        def colour_for_value(v):
+            # percentile within THIS player's seasons
+            perc = (vals <= v).mean()
+            if perc >= 0.85:
+                return "darkgreen"
+            elif perc >= 0.60:
+                return "lightgreen"
+            elif perc >= 0.35:
+                return "orange"
+            else:
+                return "red"
+
+        player_data_all["Color"] = player_data_all["RatingPoints_Avg"].apply(colour_for_value)
+
+        chart = (
+            alt.Chart(player_data_all)
+            .mark_bar()
+            .encode(
+                x=alt.X("Season:O", sort="ascending"),
+                y=alt.Y("RatingPoints_Avg:Q", title="Rating (avg)"),
+                color=alt.Color("Color:N", scale=None, legend=None),
+                tooltip=["Season", "RatingPoints_Avg"],
+            )
+            .properties(height=260)
+        )
+        st.altair_chart(chart, use_container_width=True)
+
+    # ---- Raw player data table (only this player) ----
+    st.markdown("#### Player Season Data")
+
+    player_table = player_data_all.copy()
+
+    # Round age + rating
+    if age_col in player_table.columns:
+        player_table[age_col] = pd.to_numeric(player_table[age_col], errors="coerce").round(1)
+    player_table["RatingPoints_Avg"] = pd.to_numeric(
+        player_table["RatingPoints_Avg"], errors="coerce"
+    ).round(1)
+
+    season_display_cols = []
+    for c in ["Season", "Team", "Position", age_col, "Matches", "RatingPoints_Avg"]:
+        if c in player_table.columns:
+            season_display_cols.append(c)
+
+    player_table = player_table[season_display_cols].drop_duplicates()
+
+    rename_map_season = {}
+    if age_col in player_table.columns:
+        rename_map_season[age_col] = "Age"
+    rename_map_season["RatingPoints_Avg"] = "Rating"
+    player_table = player_table.rename(columns=rename_map_season)
+
+    numeric_cols_season = [c for c in player_table.columns if c not in ["Team", "Position"]]
+
+    styler_player_table = player_table.style.set_properties(
+        subset=numeric_cols_season,
+        **{"text-align": "center"},
+    )
+    if "Rating" in player_table.columns:
+        styler_player_table = styler_player_table.apply(
+            rating_colour_style, subset=["Rating"]
+        )
+
+    st.dataframe(
+        styler_player_table,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+# ================= DEPTH CHART =================
+
+elif page == "Depth Chart":
+    st.title("📋 Depth Chart")
+
+    summary_df = load_player_summary()
+    if summary_df.empty:
+        st.error("Could not load Summary sheet from AFL Player Ratings.")
+        st.stop()
+
+    teams = sorted(summary_df["Team"].dropna().unique())
+    selected_team = st.selectbox("Team", teams)
+
+    rating_options = {
+        "2025 (current)": "2025",
+        "Last 2 Seasons Average": "Last 2 Average",
+        "Career": "Career",
+    }
+    rating_label = st.selectbox(
+        "Which rating to use?",
+        list(rating_options.keys()),
+        index=0,
+    )
+    rating_col_name = rating_options[rating_label]
+
+    df_team = summary_df[summary_df["Team"] == selected_team].copy()
+    if df_team.empty:
+        st.warning("No data for this team in Summary sheet.")
+        st.stop()
+
+    if rating_col_name not in df_team.columns:
+        st.error(
+            f"Column '{rating_col_name}' not found in Summary sheet. "
+            "Check the exact header names in the Excel file."
+        )
+        st.stop()
+
+    df_team["RatingPoints_Avg"] = pd.to_numeric(
+        df_team[rating_col_name], errors="coerce"
+    )
+
+    st.markdown(
+        f"#### Squad Depth Grid – {selected_team} "
+        f"({rating_label}, coloured by team percentile)"
+    )
+
+    html = build_depth_chart_html(df_team)
+    st.markdown(html, unsafe_allow_html=True)
