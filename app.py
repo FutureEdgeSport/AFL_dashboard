@@ -54,7 +54,7 @@ TEAM_CODE_MAP = {
     "Essendon": "efc",
     "Fremantle": "ffc",
     "Geelong": "gfc",
-    "Gold Coast": "gcs",
+    "Gold Coast": "gcfc",
     "GWS": "gws",
     "GWS Giants": "gws",
     "Hawthorn": "hfc",
@@ -1026,7 +1026,7 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Overview", "Team Breakdown", "Player Dashboard", "Depth Chart"]
+PAGES = ["Overview", "Team Breakdown", "Player Dashboard", "Depth Chart", "Team Age Breakdown"]
 page = st.sidebar.radio("Navigate", PAGES)
 
 
@@ -1099,7 +1099,7 @@ if page == "Overview":
             team = row["Team"]
             val = row[metric_col]
             try:
-                val_str = f"{float(val):.1f}"
+                val_str = f"{int(round(float(val)))}"
             except Exception:
                 val_str = str(val)
 
@@ -1139,9 +1139,14 @@ if page == "Overview":
     st.subheader(f"Team Ladder – {period_label}")
 
     ladder_cols = ["Team"]
+    # Add both value and rank columns for each metric
     for metric_col in METRIC_ORDER:
         if metric_col in ladders.columns:
             ladder_cols.append(metric_col)
+            # Also add rank column if it exists
+            rank_col = f"{metric_col} Rank"
+            if rank_col in ladders.columns:
+                ladder_cols.append(rank_col)
     ladder_cols = list(dict.fromkeys(ladder_cols))
     existing = [c for c in ladder_cols if c in ladders.columns]
 
@@ -1152,15 +1157,190 @@ if page == "Overview":
         if sort_col:
             ladder_view = ladder_view.sort_values(sort_col, ascending=False)
 
-        numeric_cols = [c for c in ladder_view.columns if c not in ["Team", "Team Rating"]]
-        ladder_view[numeric_cols] = ladder_view[numeric_cols].round(1)
-        if "Team Rating" in ladder_view.columns:
-            ladder_view["Team Rating"] = ladder_view["Team Rating"].round(0).astype("Int64")
+        # Convert all Ranking columns (not Rank columns) to integers with no decimals
+        for col in ladder_view.columns:
+            if col not in ["Team"] and "Rank" not in col:
+                ladder_view[col] = pd.to_numeric(ladder_view[col], errors="coerce").round(0).astype("Int64")
 
-        ladder_view.insert(0, "Pos", range(1, len(ladder_view) + 1))
+        # Rename columns to wrap over 2 lines
+        column_renames = {
+            "Team Rating": "Team\nRating",
+            "Team Rating Rank": "Team Rating\nRank",
+            "Ball Winning Ranking": "Ball Winning\nRanking",
+            "Ball Winning Ranking Rank": "Ball Winning\nRank",
+            "Ball Movement Ranking": "Ball Movement\nRanking",
+            "Ball Movement Ranking Rank": "Ball Movement\nRank",
+            "Scoring Ranking": "Scoring\nRanking",
+            "Scoring Ranking Rank": "Scoring\nRank",
+            "Defence Ranking": "Defence\nRanking",
+            "Defence Ranking Rank": "Defence\nRank",
+            "Pressure Ranking": "Pressure\nRanking",
+            "Pressure Ranking Rank": "Pressure\nRank",
+        }
+        ladder_view = ladder_view.rename(columns=column_renames)
 
-        styler = style_ladder_table(ladder_view)
-        st.table(styler)
+        # Use interactive table with ranking colors
+        if AGGRID_AVAILABLE:
+            from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+            
+            df_display = ladder_view.copy()
+            
+            # Convert only Rank columns (not Ranking columns) to ordinal format (1st, 2nd, 3rd, etc.)
+            def to_ordinal(n):
+                if pd.isna(n):
+                    return ""
+                n = int(n)
+                if 10 <= n % 100 <= 20:
+                    suffix = "th"
+                else:
+                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+                return f"{n}{suffix}"
+            
+            for col in df_display.columns:
+                # Only apply ordinal format to Rank columns (right columns), not Ranking columns (left columns)
+                if "Rank" in col and "Ranking" not in col:
+                    df_display[col] = df_display[col].apply(to_ordinal)
+            
+            gb = GridOptionsBuilder.from_dataframe(df_display)
+            gb.configure_default_column(filter=True, sortable=True, resizable=True, wrapHeaderText=True, autoHeaderHeight=True)
+            
+            # Configure specific columns
+            gb.configure_column("Team", cellStyle={'textAlign': 'left'}, pinned='left', width=150, wrapHeaderText=True, autoHeaderHeight=True)
+            
+            # Configure metric columns with background colors
+            metric_colors = {
+                "Team\nRating": ("black", "white"),
+                "Ball Winning\nRanking": ("#0066CC", "white"),
+                "Ball Movement\nRanking": ("#009933", "white"),
+                "Scoring\nRanking": ("#FFEB3B", "black"),
+                "Defence\nRanking": ("#CC0000", "white"),
+                "Pressure\nRanking": ("#800080", "white"),
+            }
+            
+            # Lighter shades for Rank columns
+            rank_colors = {
+                "Team\nRating": ("#404040", "white"),  # lighter black/gray
+                "Ball Winning\nRanking": ("#3399FF", "white"),  # lighter blue
+                "Ball Movement\nRanking": ("#33CC66", "white"),  # lighter green
+                "Scoring\nRanking": ("#FFF176", "black"),  # lighter yellow
+                "Defence\nRanking": ("#FF3333", "white"),  # lighter red
+                "Pressure\nRanking": ("#B366CC", "white"),  # lighter purple
+            }
+            
+            # Column widths - can be narrower now with wrapped headers
+            metric_widths = {
+                "Team\nRating": 90,
+                "Ball Winning\nRanking": 110,
+                "Ball Movement\nRanking": 110,
+                "Scoring\nRanking": 90,
+                "Defence\nRanking": 90,
+                "Pressure\nRanking": 90,
+            }
+            
+            for col in df_display.columns:
+                if col in metric_colors:
+                    bg_color, text_color = metric_colors[col]
+                    width = metric_widths.get(col, 90)
+                    gb.configure_column(
+                        col,
+                        cellStyle={
+                            'textAlign': 'center',
+                            'backgroundColor': bg_color,
+                            'color': text_color,
+                            'fontWeight': 'bold'
+                        },
+                        width=width,
+                        wrapHeaderText=True,
+                        autoHeaderHeight=True
+                    )
+                elif "Rank" in col:
+                    # Match rank column to lighter shade of its parent metric
+                    parent_metric = col.replace("\nRank", "\nRanking")
+                    if parent_metric in rank_colors:
+                        bg_color, text_color = rank_colors[parent_metric]
+                        gb.configure_column(
+                            col,
+                            cellStyle={
+                                'textAlign': 'center',
+                                'backgroundColor': bg_color,
+                                'color': text_color,
+                                'fontWeight': 'bold'
+                            },
+                            width=70,
+                            wrapHeaderText=True,
+                            autoHeaderHeight=True
+                        )
+                    else:
+                        gb.configure_column(col, cellStyle={'textAlign': 'center'}, width=70, wrapHeaderText=True, autoHeaderHeight=True)
+                else:
+                    gb.configure_column(col, cellStyle={'textAlign': 'center'}, width=90, wrapHeaderText=True, autoHeaderHeight=True)
+            
+            gridOptions = gb.build()
+            AgGrid(df_display, gridOptions=gridOptions, allow_unsafe_jscode=True, fit_columns_on_grid_load=False, height=600)
+        else:
+            # Fallback to styled table without green highlight
+            df_fallback = ladder_view.copy()
+            
+            # Convert only Rank columns (not Ranking columns) to ordinal format (1st, 2nd, 3rd, etc.)
+            def to_ordinal(n):
+                if pd.isna(n):
+                    return ""
+                n = int(n)
+                if 10 <= n % 100 <= 20:
+                    suffix = "th"
+                else:
+                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+                return f"{n}{suffix}"
+            
+            for col in df_fallback.columns:
+                # Only apply ordinal format to Rank columns (right columns), not Ranking columns (left columns)
+                if "Rank" in col and "Ranking" not in col:
+                    df_fallback[col] = df_fallback[col].apply(to_ordinal)
+            
+            styler = df_fallback.style
+            
+            # Apply metric colors (to both stat and rank columns) - using wrapped column names
+            colour_map = {
+                "Team\nRating": ("black", "white"),
+                "Ball Winning\nRanking": ("#0066CC", "white"),
+                "Ball Movement\nRanking": ("#009933", "white"),
+                "Scoring\nRanking": ("#FFEB3B", "black"),
+                "Defence\nRanking": ("#CC0000", "white"),
+                "Pressure\nRanking": ("#800080", "white"),
+            }
+            
+            # Lighter shades for Rank columns
+            rank_colour_map = {
+                "Team\nRating": ("#404040", "white"),  # lighter black/gray
+                "Ball Winning\nRanking": ("#3399FF", "white"),  # lighter blue
+                "Ball Movement\nRanking": ("#33CC66", "white"),  # lighter green
+                "Scoring\nRanking": ("#FFF176", "black"),  # lighter yellow
+                "Defence\nRanking": ("#FF3333", "white"),  # lighter red
+                "Pressure\nRanking": ("#B366CC", "white"),  # lighter purple
+            }
+            
+            for col, (bg, fg) in colour_map.items():
+                if col in df_fallback.columns:
+                    styler = styler.set_properties(
+                        subset=[col],
+                        **{"background-color": bg, "color": fg, "font-weight": "bold", "text-align": "center"}
+                    )
+                # Apply lighter shade to rank column
+                rank_col = col.replace("\nRanking", "\nRank")
+                if rank_col in df_fallback.columns and col in rank_colour_map:
+                    rank_bg, rank_fg = rank_colour_map[col]
+                    styler = styler.set_properties(
+                        subset=[rank_col],
+                        **{"background-color": rank_bg, "color": rank_fg, "font-weight": "bold", "text-align": "center"}
+                    )
+            
+            # Center all columns except Team
+            cols_to_center = [c for c in df_fallback.columns if c not in ["Team"]]
+            styler = styler.set_properties(subset=cols_to_center, **{"text-align": "center"})
+            styler = styler.set_properties(subset=["Team"], **{"text-align": "left"})
+            
+            st.table(styler)
+        
         st.caption(f"Teams shown: {ladder_view['Team'].nunique()} (should be 18)")
     else:
         st.info("No ladder columns found to display.")
@@ -2032,3 +2212,250 @@ elif page == "Depth Chart":
 
     html = build_depth_chart_html(df_team, summary_df_with_ratings)
     st.markdown(html, unsafe_allow_html=True)
+
+
+# ================= TEAM AGE BREAKDOWN =================
+
+elif page == "Team Age Breakdown":
+    st.title("📊 Team Age Breakdown")
+
+    # Season selection
+    seasons_available = get_player_seasons()
+    if not seasons_available:
+        st.error("No season sheets found in AFL Player Ratings workbook.")
+        st.stop()
+
+    selected_season = st.selectbox("Season", seasons_available, index=0)
+
+    # Load player data for the selected season
+    try:
+        players_df = load_players(selected_season)
+    except Exception as e:
+        st.error(f"Error loading player data for {selected_season}: {e}")
+        st.stop()
+
+    if players_df.empty:
+        st.warning(f"No player data found for {selected_season}.")
+        st.stop()
+
+    # Ensure required columns exist
+    required_cols = ["Player", "Team", "Age", "Matches", "RatingPoints_Avg"]
+    missing_cols = [c for c in required_cols if c not in players_df.columns]
+    if missing_cols:
+        st.error(f"Missing required columns: {', '.join(missing_cols)}")
+        st.stop()
+
+    # Convert to numeric
+    players_df["Age"] = pd.to_numeric(players_df["Age"], errors="coerce")
+    players_df["Matches"] = pd.to_numeric(players_df["Matches"], errors="coerce").fillna(0)
+    players_df["RatingPoints_Avg"] = pd.to_numeric(players_df["RatingPoints_Avg"], errors="coerce").fillna(0)
+
+    # Calculate Total Rating Points (RatingPoints_Avg * Matches)
+    players_df["Total_Rating_Points"] = players_df["RatingPoints_Avg"] * players_df["Matches"]
+
+    # Map each player to an age band
+    players_df["Age_Band"] = players_df["Age"].apply(map_age_to_band)
+
+    # Group by Team and Age_Band, sum Total_Rating_Points
+    age_contributions = (
+        players_df.groupby(["Team", "Age_Band"])["Total_Rating_Points"]
+        .sum()
+        .reset_index()
+    )
+
+    # Calculate team totals
+    team_totals = (
+        players_df.groupby("Team")["Total_Rating_Points"]
+        .sum()
+        .reset_index()
+        .rename(columns={"Total_Rating_Points": "Team_Total"})
+    )
+
+    # Merge to get percentages
+    age_contributions = age_contributions.merge(team_totals, on="Team")
+    age_contributions["Percentage"] = (
+        (age_contributions["Total_Rating_Points"] / age_contributions["Team_Total"]) * 100
+    ).round(1)
+
+    # Pivot to get age bands as columns
+    age_breakdown_table = age_contributions.pivot(
+        index="Team",
+        columns="Age_Band",
+        values="Percentage"
+    ).reset_index()
+
+    # Ensure all age bands are present (fill missing with 0)
+    for band in AGE_BANDS:
+        if band not in age_breakdown_table.columns:
+            age_breakdown_table[band] = 0.0
+
+    # Reorder columns to match AGE_BANDS order
+    column_order = ["Team"] + AGE_BANDS
+    age_breakdown_table = age_breakdown_table[column_order]
+
+    # Fill NaN with 0
+    age_breakdown_table = age_breakdown_table.fillna(0)
+
+    # Sort by team name
+    age_breakdown_table = age_breakdown_table.sort_values("Team").reset_index(drop=True)
+
+    # Calculate league averages for each age band
+    league_averages = {"Team": "League Average"}
+    for band in AGE_BANDS:
+        league_averages[band] = age_breakdown_table[band].mean()
+    
+    # Add league averages row to the table
+    league_avg_df = pd.DataFrame([league_averages])
+    age_breakdown_with_avg = pd.concat([age_breakdown_table, league_avg_df], ignore_index=True)
+
+    # Display the table
+    st.subheader(f"Age Group Contribution by Team ({selected_season})")
+    st.caption(
+        "Percentage shows each age group's contribution to total team performance. "
+        "Performance = Sum of (Rating Points Average × Matches Played) for all players."
+    )
+
+    # Use interactive table if available, otherwise styled table
+    if AGGRID_AVAILABLE:
+        from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+        
+        # Separate team data from league average for proper sorting
+        df_teams = age_breakdown_table.copy()
+        df_league_avg = age_breakdown_with_avg[age_breakdown_with_avg["Team"] == "League Average"].copy()
+        
+        # Format percentages with % sign for teams
+        for band in AGE_BANDS:
+            df_teams[band] = df_teams[band].apply(lambda x: f"{x:.1f}%")
+            df_league_avg[band] = df_league_avg[band].apply(lambda x: f"{x:.1f}%")
+        
+        # Display team table (sortable)
+        st.markdown("#### Teams")
+        gb = GridOptionsBuilder.from_dataframe(df_teams)
+        gb.configure_default_column(filter=True, sortable=True, resizable=True)
+        gb.configure_column("Team", pinned='left', width=150)
+        
+        # Calculate min/max for each age band independently
+        band_ranges = {}
+        for band in AGE_BANDS:
+            band_ranges[band] = {
+                'min': age_breakdown_table[band].min(),
+                'max': age_breakdown_table[band].max()
+            }
+        
+        # Create separate JavaScript styling for each age band column
+        for band in AGE_BANDS:
+            min_val = band_ranges[band]['min']
+            max_val = band_ranges[band]['max']
+            
+            cell_style_js = JsCode(f"""
+                function(params) {{
+                    var value = parseFloat(params.value);
+                    if (isNaN(value)) return {{'textAlign': 'center'}};
+                    
+                    var min = {min_val};
+                    var max = {max_val};
+                    var range = max - min;
+                    var normalized = range > 0 ? (value - min) / range : 0.5;
+                    
+                    // Green (high) to Red (low) gradient
+                    var r, g, b;
+                    if (normalized > 0.5) {{
+                        r = Math.round(255 * 2 * (1 - normalized));
+                        g = 200;
+                        b = 0;
+                    }} else {{
+                        r = 255;
+                        g = Math.round(200 * 2 * normalized);
+                        b = 0;
+                    }}
+                    
+                    var textColor = normalized > 0.3 ? 'black' : 'white';
+                    var bgColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+                    
+                    return {{
+                        'backgroundColor': bgColor,
+                        'color': textColor,
+                        'fontWeight': 'bold',
+                        'textAlign': 'center'
+                    }};
+                }}
+            """)
+            
+            gb.configure_column(band, cellStyle=cell_style_js, width=150)
+        
+        gridOptions = gb.build()
+        AgGrid(df_teams, gridOptions=gridOptions, allow_unsafe_jscode=True, fit_columns_on_grid_load=False, height=550)
+        
+        # Display league average separately at bottom (non-sortable)
+        st.markdown("#### League Average")
+        gb_avg = GridOptionsBuilder.from_dataframe(df_league_avg)
+        gb_avg.configure_default_column(sortable=False, filter=False, resizable=False)
+        gb_avg.configure_column("Team", cellStyle={'backgroundColor': 'black', 'color': 'white', 'fontWeight': 'bold', 'textAlign': 'left'}, width=150)
+        
+        for band in AGE_BANDS:
+            gb_avg.configure_column(band, cellStyle={'backgroundColor': 'black', 'color': 'white', 'fontWeight': 'bold', 'textAlign': 'center'}, width=150)
+        
+        gridOptions_avg = gb_avg.build()
+        AgGrid(df_league_avg, gridOptions=gridOptions_avg, allow_unsafe_jscode=True, fit_columns_on_grid_load=False, height=80)
+    else:
+        # Fallback: styled table (note: boxing effect limited in pandas styler, showing with background)
+        # Separate team data from league average
+        df_teams = age_breakdown_table.copy()
+        df_league_avg = age_breakdown_with_avg[age_breakdown_with_avg["Team"] == "League Average"].copy()
+        
+        # Format percentages
+        for band in AGE_BANDS:
+            df_teams[band] = df_teams[band].apply(lambda x: f"{x:.1f}%")
+            df_league_avg[band] = df_league_avg[band].apply(lambda x: f"{x:.1f}%")
+        
+        # Helper function to apply gradient color to team cells
+        def color_gradient_teams(row):
+            styles = []
+            for col_name in df_teams.columns:
+                if col_name == "Team":
+                    styles.append('text-align: left;')
+                else:
+                    val = row[col_name]
+                    if pd.notna(val):
+                        try:
+                            value = float(str(val).replace('%', ''))
+                            min_val = age_breakdown_table[col_name].min()
+                            max_val = age_breakdown_table[col_name].max()
+                            range_val = max_val - min_val
+                            if range_val == 0:
+                                normalized = 0.5
+                            else:
+                                normalized = (value - min_val) / range_val
+                            
+                            if normalized > 0.5:
+                                r = int(255 * 2 * (1 - normalized))
+                                g = 200
+                                b = 0
+                            else:
+                                r = 255
+                                g = int(200 * 2 * normalized)
+                                b = 0
+                            
+                            text_color = 'black' if normalized > 0.3 else 'white'
+                            styles.append(f'background-color: rgb({r},{g},{b}); color: {text_color}; font-weight: bold; text-align: center;')
+                        except:
+                            styles.append('text-align: center;')
+                    else:
+                        styles.append('text-align: center;')
+            return styles
+        
+        # Style teams table
+        st.markdown("#### Teams")
+        styler_teams = df_teams.style.apply(color_gradient_teams, axis=1)
+        st.table(styler_teams)
+        
+        # Style league average table
+        st.markdown("#### League Average")
+        styler_avg = df_league_avg.style.set_properties(
+            **{'background-color': 'black', 'color': 'white', 'font-weight': 'bold', 'text-align': 'center'}
+        )
+        styler_avg = styler_avg.set_properties(
+            subset=['Team'],
+            **{'text-align': 'left'}
+        )
+        st.table(styler_avg)
