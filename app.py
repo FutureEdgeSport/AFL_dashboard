@@ -1058,7 +1058,7 @@ def predict_player_trajectory(
         # Normalize position to match depth chart logic
         normalized_pos = map_position_to_depth(position)
         position_players = all_players_df[
-            (all_players_df["Position"].apply(lambda p: map_position_to_depth(p) if pd.notna(p) else "" == normalized_pos))
+            all_players_df["Position"].apply(lambda p: map_position_to_depth(p) if pd.notna(p) else "") == normalized_pos
         ].copy()
     else:
         # Fallback: use all players
