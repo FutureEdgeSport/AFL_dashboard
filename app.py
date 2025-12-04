@@ -3,6 +3,7 @@ import warnings
 import math
 
 import altair as alt
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -1022,6 +1023,162 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
 
     html.append("</table>")
     return "".join(html)
+
+
+# ============ PLAYER PERFORMANCE PREDICTION ============
+
+
+def predict_player_trajectory(
+    player_name: str,
+    position: str,
+    current_age: float,
+    current_rating: float,
+    historical_ratings: list,
+    all_players_df: pd.DataFrame,
+    current_season: int = 2025,
+    projection_years: int = 5,
+    confidence_band: float = 0.15,
+) -> pd.DataFrame:
+    """
+    Predict player performance trajectory for next N years based on:
+    1. Historical rating trend for this player
+    2. Position-based age-performance curve from all players
+    3. Current rating percentile
+    
+    Returns DataFrame with Year, Predicted_Rating, Upper_Band, Lower_Band
+    """
+    
+    # Ensure current_age is numeric
+    current_age = float(current_age) if pd.notna(current_age) else 25.0
+    current_rating = float(current_rating) if pd.notna(current_rating) else 50.0
+    
+    # Step 1: Build age-performance curve for this position
+    # Get all historical data for this position
+    if position and isinstance(position, str):
+        # Normalize position to match depth chart logic
+        normalized_pos = map_position_to_depth(position)
+        position_players = all_players_df[
+            (all_players_df["Position"].apply(lambda p: map_position_to_depth(p) if pd.notna(p) else "" == normalized_pos))
+        ].copy()
+    else:
+        # Fallback: use all players
+        position_players = all_players_df.copy()
+    
+    if position_players.empty:
+        position_players = all_players_df.copy()
+    
+    # Ensure Age and RatingPoints_Avg are numeric
+    position_players["Age"] = pd.to_numeric(position_players["Age"], errors="coerce")
+    position_players["RatingPoints_Avg"] = pd.to_numeric(
+        position_players["RatingPoints_Avg"], errors="coerce"
+    )
+    position_players = position_players.dropna(subset=["Age", "RatingPoints_Avg"])
+    
+    if position_players.empty:
+        # No data available, return flat line at current rating
+        years = list(range(current_season, current_season + projection_years + 1))
+        data = {
+            "Year": years,
+            "Predicted_Rating": [current_rating] * len(years),
+            "Upper_Band": [current_rating * (1 + confidence_band)] * len(years),
+            "Lower_Band": [current_rating * (1 - confidence_band)] * len(years),
+        }
+        return pd.DataFrame(data)
+    
+    # Step 2: Calculate position-age trend using polynomial fit (degree 2)
+    # Group by age and get median rating
+    age_stats = (
+        position_players.groupby(pd.cut(position_players["Age"], bins=20))
+        .agg({"RatingPoints_Avg": ["median", "count"]})
+        .reset_index()
+    )
+    age_stats.columns = ["Age_Bin", "Median_Rating", "Count"]
+    
+    # Extract midpoint of age bins
+    age_stats["Age"] = age_stats["Age_Bin"].apply(lambda x: x.mid if pd.notna(x) else None)
+    age_stats = age_stats.dropna(subset=["Age", "Median_Rating"])
+    age_stats = age_stats[age_stats["Count"] >= 3]  # Only use bins with 3+ players
+    
+    if len(age_stats) < 2:
+        # Not enough data for curve fitting, use flat prediction
+        years = list(range(current_season, current_season + projection_years + 1))
+        data = {
+            "Year": years,
+            "Predicted_Rating": [current_rating] * len(years),
+            "Upper_Band": [current_rating * (1 + confidence_band)] * len(years),
+            "Lower_Band": [current_rating * (1 - confidence_band)] * len(years),
+        }
+        return pd.DataFrame(data)
+    
+    # Fit polynomial curve (degree 2)
+    try:
+        import numpy as np
+        coeffs = np.polyfit(age_stats["Age"], age_stats["Median_Rating"], 2)
+        poly = np.poly1d(coeffs)
+        
+        # Step 3: Calculate trajectory adjustment
+        # If player has historical data, calculate trend
+        if len(historical_ratings) >= 2:
+            # Simple linear trend over last few seasons
+            trend = (historical_ratings[-1] - historical_ratings[0]) / (len(historical_ratings) - 1)
+        else:
+            trend = 0
+        
+        # Step 4: Project forward
+        years = []
+        predictions = []
+        upper_bands = []
+        lower_bands = []
+        
+        for year_offset in range(projection_years + 1):
+            future_age = current_age + year_offset
+            future_year = current_season + year_offset
+            
+            # Predict rating using position-age curve plus historical trend adjustment
+            position_expected = float(poly(future_age))
+            
+            # Blend position-based prediction with historical trend
+            # For year 0 (current), use actual rating
+            if year_offset == 0:
+                predicted_rating = current_rating
+            else:
+                # For future years: position curve suggests X, but player's trend suggests they're trending Y
+                # Weight it: 70% position curve, 30% historical trend continuation
+                if pd.notna(position_expected) and position_expected > 0:
+                    predicted_rating = (0.7 * position_expected) + (0.3 * (current_rating + trend * year_offset))
+                else:
+                    predicted_rating = current_rating + trend * year_offset
+            
+            # Ensure prediction stays reasonable (> 0)
+            predicted_rating = max(predicted_rating, 5.0)
+            
+            # Calculate confidence bands
+            upper = predicted_rating * (1 + confidence_band)
+            lower = predicted_rating * (1 - confidence_band)
+            
+            years.append(future_year)
+            predictions.append(predicted_rating)
+            upper_bands.append(upper)
+            lower_bands.append(lower)
+        
+        data = {
+            "Year": years,
+            "Predicted_Rating": predictions,
+            "Upper_Band": upper_bands,
+            "Lower_Band": lower_bands,
+        }
+        return pd.DataFrame(data)
+    
+    except Exception as e:
+        # Fallback if fitting fails
+        years = list(range(current_season, current_season + projection_years + 1))
+        data = {
+            "Year": years,
+            "Predicted_Rating": [current_rating] * len(years),
+            "Upper_Band": [current_rating * (1 + confidence_band)] * len(years),
+            "Lower_Band": [current_rating * (1 - confidence_band)] * len(years),
+        }
+        return pd.DataFrame(data)
 
 
 # ---------------- PAGE NAV ----------------
@@ -2080,6 +2237,97 @@ elif page == "Player Dashboard":
             .properties(height=260)
         )
         st.altair_chart(chart, use_container_width=True)
+
+    # ---- Performance Projection (next 5 years) ----
+    st.markdown("#### Performance Projection (Next 5 Years)")
+    
+    try:
+        # Get latest rating and age
+        latest_rating_val = float(latest_record.get("RatingPoints_Avg", 50)) if pd.notna(latest_record.get("RatingPoints_Avg")) else 50
+        latest_age_val = float(latest_record.get("Age", 25)) if pd.notna(latest_record.get("Age")) else 25
+        
+        # Get historical ratings for trend analysis
+        historical_ratings = player_data_all["RatingPoints_Avg"].dropna().sort_values().reset_index(drop=True).tolist()
+        
+        # Generate prediction
+        prediction_df = predict_player_trajectory(
+            player_name=selected_player,
+            position=latest_position,
+            current_age=latest_age_val,
+            current_rating=latest_rating_val,
+            historical_ratings=historical_ratings,
+            all_players_df=players_full,
+            current_season=2025,
+            projection_years=5,
+            confidence_band=0.15,
+        )
+        
+        if prediction_df is not None and not prediction_df.empty:
+            # Create line chart with prediction bands
+            # Prepare data for Altair
+            pred_melted = prediction_df.copy()
+            pred_melted["Type"] = "Prediction"
+            
+            # Create the main line (predicted rating)
+            line = (
+                alt.Chart(pred_melted)
+                .mark_line(point=True, color="steelblue", size=3)
+                .encode(
+                    x=alt.X("Year:O", title="Year"),
+                    y=alt.Y("Predicted_Rating:Q", title="Predicted Rating", scale=alt.Scale(zero=False)),
+                    tooltip=["Year", alt.Tooltip("Predicted_Rating:Q", format=".1f")],
+                )
+            )
+            
+            # Create the confidence band (area between upper and lower)
+            band = (
+                alt.Chart(pred_melted)
+                .mark_area(opacity=0.2, color="steelblue")
+                .encode(
+                    x="Year:O",
+                    y="Lower_Band:Q",
+                    y2="Upper_Band:Q",
+                    tooltip=[
+                        alt.Tooltip("Lower_Band:Q", format=".1f", title="Lower Bound (−15%)"),
+                        alt.Tooltip("Upper_Band:Q", format=".1f", title="Upper Bound (+15%)"),
+                    ],
+                )
+            )
+            
+            # Add historical data points
+            if not player_data_all.empty:
+                hist_chart = (
+                    alt.Chart(player_data_all.reset_index(drop=True))
+                    .mark_circle(color="gray", size=100, opacity=0.6)
+                    .encode(
+                        x=alt.X("Season:O", title="Year"),
+                        y=alt.Y("RatingPoints_Avg:Q", title="Rating"),
+                        tooltip=["Season", alt.Tooltip("RatingPoints_Avg:Q", format=".1f", title="Historical Rating")],
+                    )
+                )
+            else:
+                hist_chart = None
+            
+            # Combine charts
+            combined = band + line
+            if hist_chart is not None:
+                combined = combined + hist_chart
+            
+            combined = combined.properties(height=300, width=700).interactive()
+            
+            st.altair_chart(combined, use_container_width=True)
+            
+            # Show prediction table
+            with st.expander("📊 View Detailed Predictions", expanded=False):
+                pred_table = prediction_df.copy()
+                pred_table["Predicted_Rating"] = pred_table["Predicted_Rating"].round(1)
+                pred_table["Upper_Band"] = pred_table["Upper_Band"].round(1)
+                pred_table["Lower_Band"] = pred_table["Lower_Band"].round(1)
+                st.dataframe(pred_table, hide_index=True, use_container_width=True)
+        else:
+            st.info("Unable to generate performance projection with available data.")
+    except Exception as e:
+        st.warning(f"Could not generate performance projection: {str(e)}")
 
     # ---- Raw player data table (only this player) ----
     st.markdown("#### Player Season Data")
