@@ -1005,18 +1005,20 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             rank, total, avg = age_band_rankings[band]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
+            # Determine text color based on background
+            text_color = "black" if color == "lightgreen" else "white"
             ranking_html = (
                 f"<div style='margin-top:4px;'>"
-                f"<span style='display:inline-block;background-color:{color};color:white;"
+                f"<span style='display:inline-block;background-color:{color};color:{text_color};"
                 f"padding:4px 8px;border-radius:4px;font-weight:bold;"
-                f"font-size:1em;border:2px solid white;'>{ordinal}</span>"
+                f"font-size:1em;border:2px solid #000;'>{ordinal}</span>"
                 f"</div>"
             )
         
         html.append(
             f"<th style='background-color:#8BC34A;color:black;padding:6px;"
             f"border:2px solid #000;text-align:center;vertical-align:top;'>"
-            f"<div>{band}</div>"
+            f"<div style='font-weight:bold;'>{band}</div>"
             f"{ranking_html}"
             f"</th>"
         )
@@ -1032,11 +1034,13 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             rank, total, avg = position_rankings[pos]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
+            # Determine text color based on background
+            text_color = "black" if color == "lightgreen" else "white"
             pos_cell_html += (
                 f"<div style='margin-top:4px;'>"
-                f"<span style='display:inline-block;background-color:{color};color:white;"
+                f"<span style='display:inline-block;background-color:{color};color:{text_color};"
                 f"padding:4px 8px;border-radius:4px;font-weight:bold;"
-                f"font-size:1em;border:2px solid white;'>{ordinal}</span>"
+                f"font-size:1em;border:2px solid #000;'>{ordinal}</span>"
                 f"</div>"
             )
         
@@ -2819,63 +2823,51 @@ elif page == "Team Compare":
         ordinal1 = get_ordinal(team1_rank) if not pd.isna(team1_rank) else "N/A"
         ordinal2 = get_ordinal(team2_rank) if not pd.isna(team2_rank) else "N/A"
         
-        st.markdown(f"""
-        <div style='background: rgba(30,30,30,0.5); padding: 20px; margin: 15px 0; 
-                    border-radius: 12px; border-left: 5px solid {winner_color};'>
-            <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>
-                <h4 style='color: #FFD700; margin: 0;'>{metric_name}</h4>
-                <span style='background: {winner_color}; padding: 5px 15px; border-radius: 20px; 
-                            font-weight: bold; font-size: 0.9em;'>Leader: {leader}</span>
-            </div>
-            
-            <!-- Team 1 -->
-            <div style='margin-bottom: 12px;'>
-                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
-                    <span style='font-weight: bold; color: #6496FF;'>{team1}</span>
-                    <span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team1_val:.1f}</span>
-                    <span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal1})</span>
-                </div>
-                <div style='background: rgba(100,150,255,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>
-                    <div style='background: linear-gradient(90deg, #6496FF 0%, #4070DD 100%); 
-                                height: 100%; width: {team1_pct}%; border-radius: 10px;
-                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
-                        <span style='color: white; font-size: 0.85em; font-weight: bold;'>{team1_pct:.0f}%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Team 2 -->
-            <div style='margin-bottom: 12px;'>
-                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
-                    <span style='font-weight: bold; color: #FF6B6B;'>{team2}</span>
-                    <span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team2_val:.1f}</span>
-                    <span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal2})</span>
-                </div>
-                <div style='background: rgba(255,100,100,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>
-                    <div style='background: linear-gradient(90deg, #FF6B6B 0%, #DD5050 100%); 
-                                height: 100%; width: {team2_pct}%; border-radius: 10px;
-                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
-                        <span style='color: white; font-size: 0.85em; font-weight: bold;'>{team2_pct:.0f}%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Top 4 Average -->
-            <div>
-                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
-                    <span style='font-weight: bold; color: #FFD700;'>Top 4 Average</span>
-                    <span style='color: #FFD700; font-size: 1.1em; font-weight: bold;'>{top4_avg:.1f}</span>
-                </div>
-                <div style='background: rgba(255,215,0,0.2); border-radius: 10px; height: 20px; position: relative; overflow: hidden;'>
-                    <div style='background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%); 
-                                height: 100%; width: {top4_pct}%; border-radius: 10px;
-                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
-                        <span style='color: #000; font-size: 0.8em; font-weight: bold;'>{top4_pct:.0f}%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        # Build HTML without indentation to avoid code block rendering
+        html = f"<div style='background: rgba(30,30,30,0.5); padding: 20px; margin: 15px 0; border-radius: 12px; border-left: 5px solid {winner_color};'>"
+        html += f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>"
+        html += f"<h4 style='color: #FFD700; margin: 0;'>{metric_name}</h4>"
+        html += f"<span style='background: {winner_color}; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em;'>Leader: {leader}</span>"
+        html += "</div>"
+        
+        # Team 1
+        html += "<div style='margin-bottom: 12px;'>"
+        html += f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>"
+        html += f"<span style='font-weight: bold; color: #6496FF;'>{team1}</span>"
+        html += f"<span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team1_val:.1f}</span>"
+        html += f"<span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal1})</span>"
+        html += "</div>"
+        html += f"<div style='background: rgba(100,150,255,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>"
+        html += f"<div style='background: linear-gradient(90deg, #6496FF 0%, #4070DD 100%); height: 100%; width: {team1_pct}%; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>"
+        html += f"<span style='color: white; font-size: 0.85em; font-weight: bold;'>{team1_pct:.0f}%</span>"
+        html += "</div></div></div>"
+        
+        # Team 2
+        html += "<div style='margin-bottom: 12px;'>"
+        html += f"<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>"
+        html += f"<span style='font-weight: bold; color: #FF6B6B;'>{team2}</span>"
+        html += f"<span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team2_val:.1f}</span>"
+        html += f"<span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal2})</span>"
+        html += "</div>"
+        html += f"<div style='background: rgba(255,100,100,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>"
+        html += f"<div style='background: linear-gradient(90deg, #FF6B6B 0%, #DD5050 100%); height: 100%; width: {team2_pct}%; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>"
+        html += f"<span style='color: white; font-size: 0.85em; font-weight: bold;'>{team2_pct:.0f}%</span>"
+        html += "</div></div></div>"
+        
+        # Top 4 Average
+        html += "<div>"
+        html += "<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>"
+        html += "<span style='font-weight: bold; color: #FFD700;'>Top 4 Average</span>"
+        html += f"<span style='color: #FFD700; font-size: 1.1em; font-weight: bold;'>{top4_avg:.1f}</span>"
+        html += "</div>"
+        html += f"<div style='background: rgba(255,215,0,0.2); border-radius: 10px; height: 20px; position: relative; overflow: hidden;'>"
+        html += f"<div style='background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%); height: 100%; width: {top4_pct}%; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>"
+        html += f"<span style='color: #000; font-size: 0.8em; font-weight: bold;'>{top4_pct:.0f}%</span>"
+        html += "</div></div></div>"
+        
+        html += "</div>"
+        
+        st.markdown(html, unsafe_allow_html=True)
 
 
 
