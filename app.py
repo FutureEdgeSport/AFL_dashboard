@@ -2303,67 +2303,173 @@ elif page == "Team Compare":
         except ImportError:
             st.warning("Plotly not installed. Install with: `conda install -n afl plotly -y`")
     
-    # ========== STRENGTH/WEAKNESS ANALYSIS ==========
+    # ========== STRENGTH/WEAKNESS ANALYSIS (Team 1 vs Team 2) ==========
     st.markdown("---")
-    st.subheader("Strengths & Weaknesses Analysis")
+    st.subheader(f"Strengths & Weaknesses Analysis: {team1} vs {team2}")
     
-    # Calculate metrics relative to league average
+    # Load summary data for attributes
+    try:
+        summary_year = load_team_summary_for_year(selected_year)
+    except Exception:
+        summary_year = None
+    
+    # Calculate metrics relative to Team 2 (comparison team)
     metric_analysis = []
     for i, metric_col in enumerate(spider_metrics):
         team1_val = team1_values[i]
         team2_val = team2_values[i]
         top4_avg = top4_averages[i]
         
-        team1_diff = team1_val - top4_avg
-        team2_diff = team2_val - top4_avg
+        # Team 1 vs Team 2 difference
+        team_diff = team1_val - team2_val
         
         metric_analysis.append({
             "metric": clean_metrics[i],
             "team1_val": team1_val,
             "team2_val": team2_val,
             "top4_avg": top4_avg,
-            "team1_diff": team1_diff,
-            "team2_diff": team2_diff,
+            "team_diff": team_diff,
         })
     
-    # Identify top 4 strengths and weaknesses for Team 1
+    # Identify top 4 strengths and weaknesses for Team 1 vs Team 2
     metric_df = pd.DataFrame(metric_analysis)
     
-    team1_strengths = metric_df.nlargest(4, "team1_diff")[["metric", "team1_val", "top4_avg", "team1_diff"]].reset_index(drop=True)
-    team1_weaknesses = metric_df.nsmallest(4, "team1_diff")[["metric", "team1_val", "top4_avg", "team1_diff"]].reset_index(drop=True)
+    team1_strengths = metric_df.nlargest(4, "team_diff")[["metric", "team1_val", "team2_val", "team_diff"]].reset_index(drop=True)
+    team1_weaknesses = metric_df.nsmallest(4, "team_diff")[["metric", "team1_val", "team2_val", "team_diff"]].reset_index(drop=True)
     
     # Display Team 1 analysis
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown(f"### 🟢 {team1} – Strengths")
+        st.markdown(f"### 🟢 {team1} – Strengths vs {team2}")
         for idx, row in team1_strengths.iterrows():
             metric = row["metric"]
-            val = row["team1_val"]
-            diff = row["team1_diff"]
+            team1_val = row["team1_val"]
+            team2_val = row["team2_val"]
+            diff = row["team_diff"]
             diff_str = f"+{diff:.1f}" if diff >= 0 else f"{diff:.1f}"
-            st.markdown(f"**{idx + 1}. {metric}**: {val:.1f} ({diff_str} vs Top 4)")
+            st.markdown(f"**{idx + 1}. {metric}**: {team1_val:.1f} vs {team2_val:.1f} ({diff_str})")
     
     with col2:
-        st.markdown(f"### 🔴 {team1} – Weaknesses")
+        st.markdown(f"### 🔴 {team1} – Weaknesses vs {team2}")
         for idx, row in team1_weaknesses.iterrows():
             metric = row["metric"]
-            val = row["team1_val"]
-            diff = row["team1_diff"]
+            team1_val = row["team1_val"]
+            team2_val = row["team2_val"]
+            diff = row["team_diff"]
             diff_str = f"{diff:.1f}" if diff < 0 else f"+{diff:.1f}"
-            st.markdown(f"**{idx + 1}. {metric}**: {val:.1f} ({diff_str} vs Top 4)")
+            st.markdown(f"**{idx + 1}. {metric}**: {team1_val:.1f} vs {team2_val:.1f} ({diff_str})")
+    
+    # ========== DETAILED ATTRIBUTE ANALYSIS ==========
+    st.markdown("---")
+    st.subheader("Detailed Attribute Analysis")
+    st.caption(f"Comparing all attribute-level stats between {team1} and {team2}")
+    
+    if summary_year is not None:
+        # Attribute groups to analyze
+        attribute_groups = [
+            "Ball Winning",
+            "Ball Movement",
+            "Scoring",
+            "Defence",
+            "Pressure",
+        ]
+        
+        # Collect all attribute differences
+        all_attribute_diffs = []
+        which_block = "Last10" if window == "Last 10 Games" else "Season"
+        
+        for attribute_group in attribute_groups:
+            try:
+                blocks = _extract_attribute_structure(summary_year, attribute_group)
+                if not blocks:
+                    continue
+                
+                for block in blocks:
+                    stat_name = block["stat_name"]
+                    dist_df = get_attribute_stat_distribution(
+                        summary_year,
+                        attribute_group,
+                        stat_name,
+                        block=which_block,
+                    )
+                    
+                    if not dist_df.empty:
+                        team1_row = dist_df[dist_df["Team"] == team1]
+                        team2_row = dist_df[dist_df["Team"] == team2]
+                        
+                        if not team1_row.empty and not team2_row.empty:
+                            team1_stat_val = team1_row.iloc[0]["Value"]
+                            team2_stat_val = team2_row.iloc[0]["Value"]
+                            
+                            try:
+                                team1_stat_val = float(team1_stat_val)
+                                team2_stat_val = float(team2_stat_val)
+                                stat_diff = team1_stat_val - team2_stat_val
+                                
+                                all_attribute_diffs.append({
+                                    "attribute_group": attribute_group,
+                                    "stat_name": stat_name,
+                                    "team1_val": team1_stat_val,
+                                    "team2_val": team2_stat_val,
+                                    "diff": stat_diff,
+                                })
+                            except (ValueError, TypeError):
+                                pass
+            except Exception:
+                pass
+        
+        if all_attribute_diffs:
+            attr_df = pd.DataFrame(all_attribute_diffs)
+            
+            # Get top 6 strengths and weaknesses
+            top_strengths = attr_df.nlargest(6, "diff")
+            top_weaknesses = attr_df.nsmallest(6, "diff")
+            
+            # Display in two columns
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"#### 🟢 Top Attribute Strengths ({team1} vs {team2})")
+                for idx, row in top_strengths.iterrows():
+                    attr_group = row["attribute_group"]
+                    stat_name = row["stat_name"]
+                    t1_val = row["team1_val"]
+                    t2_val = row["team2_val"]
+                    diff = row["diff"]
+                    diff_str = f"+{diff:.1f}" if diff >= 0 else f"{diff:.1f}"
+                    
+                    st.markdown(
+                        f"**{stat_name}** _{attr_group}_  \n"
+                        f"{team1}: {t1_val:.1f} | {team2}: {t2_val:.1f} | Diff: **{diff_str}**"
+                    )
+            
+            with col2:
+                st.markdown(f"#### 🔴 Top Attribute Weaknesses ({team1} vs {team2})")
+                for idx, row in top_weaknesses.iterrows():
+                    attr_group = row["attribute_group"]
+                    stat_name = row["stat_name"]
+                    t1_val = row["team1_val"]
+                    t2_val = row["team2_val"]
+                    diff = row["diff"]
+                    diff_str = f"{diff:.1f}"
+                    
+                    st.markdown(
+                        f"**{stat_name}** _{attr_group}_  \n"
+                        f"{team1}: {t1_val:.1f} | {team2}: {t2_val:.1f} | Diff: **{diff_str}**"
+                    )
+        else:
+            st.info("No attribute data available for detailed comparison.")
+    else:
+        st.info(f"Attribute data not available for {selected_year}.")
     
     # ========== ENGLISH LANGUAGE SUMMARY ==========
     st.markdown("---")
     st.subheader("Summary Analysis")
     
     # Generate summary text
-    def generate_summary(base_team, comp_team, base_strengths, base_weaknesses, metric_data, window_label):
+    def generate_summary(base_team, comp_team, base_strengths, base_weaknesses, window_label):
         """Generate English language summary comparing two teams"""
-        
-        # Find top strength and weakness
-        top_strength = base_strengths.iloc[0] if len(base_strengths) > 0 else None
-        top_weakness = base_weaknesses.iloc[0] if len(base_weaknesses) > 0 else None
         
         summary_parts = []
         
@@ -2372,55 +2478,46 @@ elif page == "Team Compare":
         summary_parts.append("")
         
         # Strengths summary
-        if top_strength is not None:
-            summary_parts.append(f"### Key Strengths of {base_team}:")
+        if len(base_strengths) > 0:
+            summary_parts.append(f"### Key Strengths of {base_team} (vs {comp_team}):")
             strengths_list = []
             for idx, row in base_strengths.iterrows():
                 metric = row["metric"]
-                val = row["team1_val"]
-                diff = row["team1_diff"]
-                strengths_list.append(f"• **{metric}** ({val:.1f}) – {diff:.1f} points above the Top 4 average")
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
+                diff = row["team_diff"]
+                strengths_list.append(f"• **{metric}**: {base_team} ({t1_val:.1f}) outperforms {comp_team} ({t2_val:.1f}) by {diff:.1f} points")
             summary_parts.append("\n".join(strengths_list))
             summary_parts.append("")
         
         # Weaknesses summary
-        if top_weakness is not None:
-            summary_parts.append(f"### Areas for Improvement ({base_team}):")
+        if len(base_weaknesses) > 0:
+            summary_parts.append(f"### Areas for Improvement ({base_team} vs {comp_team}):")
             weaknesses_list = []
             for idx, row in base_weaknesses.iterrows():
                 metric = row["metric"]
-                val = row["team1_val"]
-                diff = row["team1_diff"]
-                weaknesses_list.append(f"• **{metric}** ({val:.1f}) – {abs(diff):.1f} points below the Top 4 average")
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
+                diff = row["team_diff"]
+                weaknesses_list.append(f"• **{metric}**: {comp_team} ({t2_val:.1f}) outperforms {base_team} ({t1_val:.1f}) by {abs(diff):.1f} points")
             summary_parts.append("\n".join(weaknesses_list))
             summary_parts.append("")
         
-        # Comparative insight
-        summary_parts.append(f"### How {base_team} Compares to {comp_team}:")
+        # Overall assessment
+        summary_parts.append(f"### Overall Assessment:")
+        strengths_count = len([r for _, r in base_strengths.iterrows() if r["team_diff"] > 0])
+        weaknesses_count = len([r for _, r in base_weaknesses.iterrows() if r["team_diff"] < 0])
         
-        # Find metrics where base team outperforms comp team significantly
-        outperforms = metric_data[metric_data["team1_diff"] > metric_data["team2_diff"]].copy()
-        underperforms = metric_data[metric_data["team1_diff"] < metric_data["team2_diff"]].copy()
-        
-        if len(outperforms) > 0:
-            outperf_count = len(outperforms)
-            best_vs = outperforms.nlargest(1, "team1_diff").iloc[0]
-            summary_parts.append(
-                f"• **{base_team}** outperforms **{comp_team}** in {outperf_count} metric(s), "
-                f"most notably in **{best_vs['metric']}** (gap of {(best_vs['team1_diff'] - best_vs['team2_diff']):.1f} points)"
-            )
-        
-        if len(underperforms) > 0:
-            underperf_count = len(underperforms)
-            worst_vs = underperforms.nsmallest(1, "team1_diff").iloc[0]
-            summary_parts.append(
-                f"• **{comp_team}** outperforms **{base_team}** in {underperf_count} metric(s), "
-                f"most notably in **{worst_vs['metric']}** (gap of {(worst_vs['team2_diff'] - worst_vs['team1_diff']):.1f} points)"
-            )
+        if strengths_count > weaknesses_count:
+            summary_parts.append(f"• **{base_team}** has a competitive advantage in {strengths_count} key metric(s)")
+        elif weaknesses_count > strengths_count:
+            summary_parts.append(f"• **{comp_team}** has a competitive advantage in {weaknesses_count} key metric(s)")
+        else:
+            summary_parts.append(f"• Both teams are evenly matched across the key metrics")
         
         return "\n".join(summary_parts)
     
-    summary_text = generate_summary(team1, team2, team1_strengths, team1_weaknesses, metric_df, period_label)
+    summary_text = generate_summary(team1, team2, team1_strengths, team1_weaknesses, period_label)
     st.markdown(summary_text)
     
     # ========== DETAILED METRIC BREAKDOWN ==========
