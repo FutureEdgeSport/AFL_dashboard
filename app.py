@@ -2103,6 +2103,42 @@ elif page == "Team Compare":
         st.warning("Please select two different teams to compare.")
         st.stop()
     
+    # Display team logos with reflection effect
+    st.markdown("---")
+    logo_col1, logo_col2 = st.columns(2)
+    
+    with logo_col1:
+        st.markdown(f"<h3 style='text-align: center;'>{team1}</h3>", unsafe_allow_html=True)
+        team1_code = TEAM_CODE_MAP.get(team1, team1.lower().replace(" ", ""))
+        team1_logo_path = f"{LOGO_FOLDER}/{team1_code}.png"
+        if os.path.exists(team1_logo_path):
+            try:
+                img1 = Image.open(team1_logo_path)
+                # Center the image using columns
+                inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
+                with inner_col2:
+                    st.image(img1, use_column_width=True, caption=None)
+            except Exception as e:
+                st.warning(f"Could not load {team1} logo")
+        else:
+            st.info(f"Logo not found for {team1}")
+    
+    with logo_col2:
+        st.markdown(f"<h3 style='text-align: center;'>{team2}</h3>", unsafe_allow_html=True)
+        team2_code = TEAM_CODE_MAP.get(team2, team2.lower().replace(" ", ""))
+        team2_logo_path = f"{LOGO_FOLDER}/{team2_code}.png"
+        if os.path.exists(team2_logo_path):
+            try:
+                img2 = Image.open(team2_logo_path)
+                # Center the image using columns
+                inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
+                with inner_col2:
+                    st.image(img2, use_column_width=True, caption=None)
+            except Exception as e:
+                st.warning(f"Could not load {team2} logo")
+        else:
+            st.info(f"Logo not found for {team2}")
+    
     # Get team rows
     team1_row = ladders[ladders["Team"] == team1].iloc[0]
     team2_row = ladders[ladders["Team"] == team2].iloc[0]
@@ -2307,6 +2343,21 @@ elif page == "Team Compare":
     st.markdown("---")
     st.subheader(f"Strengths & Weaknesses Analysis: {team1} vs {team2}")
     
+    # Helper function for ordinal rank format
+    def format_rank(rank_val):
+        """Convert rank number to ordinal format like (2nd), (1st), (3rd), etc."""
+        if pd.isna(rank_val):
+            return "N/A"
+        try:
+            r = int(rank_val)
+            if 10 <= (r % 100) <= 20:
+                suffix = "th"
+            else:
+                suffix = {1: "st", 2: "nd", 3: "rd"}.get(r % 10, "th")
+            return f"({r}{suffix})"
+        except:
+            return str(rank_val)
+    
     # Load summary data for attributes
     try:
         summary_year = load_team_summary_for_year(selected_year)
@@ -2320,21 +2371,22 @@ elif page == "Team Compare":
         team2_val = team2_values[i]
         top4_avg = top4_averages[i]
         
-        # Get rankings for both teams
-        team1_rank = team1_row.get(metric_col.replace('Ranking', '').strip() + ' Ranking', np.nan)
-        team2_rank = team2_row.get(metric_col.replace('Ranking', '').strip() + ' Ranking', np.nan)
+        # Get rankings for both teams using the {metric_col} Rank pattern
+        rank_col = f"{metric_col} Rank"
+        team1_rank = team1_row.get(rank_col, np.nan)
+        team2_rank = team2_row.get(rank_col, np.nan)
         
-        # If ranking columns don't exist, try direct metric_col
-        if pd.isna(team1_rank):
-            team1_rank = team1_row.get(metric_col, np.nan)
-        if pd.isna(team2_rank):
-            team2_rank = team2_row.get(metric_col, np.nan)
-        
-        # Calculate rank difference (positive means Team 1 is ranked higher/better)
         try:
-            rank_diff = float(team2_rank) - float(team1_rank)  # Inverted: higher rank value = worse
+            team1_rank = float(team1_rank) if not pd.isna(team1_rank) else np.nan
+            team2_rank = float(team2_rank) if not pd.isna(team2_rank) else np.nan
         except (ValueError, TypeError):
-            rank_diff = 0
+            pass
+        
+        # Convert 0 ranks to 1 (same as Team Breakdown does)
+        if team1_rank == 0:
+            team1_rank = 1
+        if team2_rank == 0:
+            team2_rank = 1
         
         metric_analysis.append({
             "metric": clean_metrics[i],
@@ -2342,56 +2394,96 @@ elif page == "Team Compare":
             "team2_val": team2_val,
             "team1_rank": team1_rank,
             "team2_rank": team2_rank,
-            "rank_diff": rank_diff,
         })
     
-    # Identify strengths (where Team 1 ranked higher) and weaknesses (where Team 1 ranked lower)
+    # Separate strengths and weaknesses based on rankings
     metric_df = pd.DataFrame(metric_analysis)
     
-    team1_strengths = metric_df[metric_df["rank_diff"] > 0].sort_values("rank_diff", ascending=False)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].head(6).reset_index(drop=True)
-    team1_weaknesses = metric_df[metric_df["rank_diff"] < 0].sort_values("rank_diff", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].head(6).reset_index(drop=True)
+    # Strengths: Team 1 has BETTER ranking (lower number) than Team 2
+    team1_strengths = metric_df[
+        (metric_df["team1_rank"].notna()) & 
+        (metric_df["team2_rank"].notna()) & 
+        (metric_df["team1_rank"] < metric_df["team2_rank"])
+    ].sort_values("team1_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
     
-    # Display Team 1 analysis
+    # Weaknesses: Team 2 has BETTER ranking (lower number) than Team 1
+    team1_weaknesses = metric_df[
+        (metric_df["team1_rank"].notna()) & 
+        (metric_df["team2_rank"].notna()) & 
+        (metric_df["team1_rank"] > metric_df["team2_rank"])
+    ].sort_values("team2_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
+    
+    # Display Team 1 analysis with enhanced styling
+    st.markdown("---")
+    st.subheader(f"📊 Strengths & Weaknesses Analysis: {team1} vs {team2}")
+    
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown(f"### 🟢 {team1} – Strengths vs {team2}")
+        st.markdown(f"<h3 style='color: #00CC00;'>🟢 {team1} – Strengths</h3>", unsafe_allow_html=True)
         if len(team1_strengths) > 0:
             for idx, row in team1_strengths.iterrows():
                 metric = row["metric"]
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
                 t1_rank = row["team1_rank"]
                 t2_rank = row["team2_rank"]
-                try:
-                    t1_rank_str = f"#{int(t1_rank)}" if not pd.isna(t1_rank) else "N/A"
-                    t2_rank_str = f"#{int(t2_rank)}" if not pd.isna(t2_rank) else "N/A"
-                except:
-                    t1_rank_str = str(t1_rank)
-                    t2_rank_str = str(t2_rank)
-                st.markdown(f"**{idx + 1}. {metric}**: {team1} ({t1_rank_str}) vs {team2} ({t2_rank_str})")
+                t1_rank_str = format_rank(t1_rank)
+                t2_rank_str = format_rank(t2_rank)
+                
+                # Calculate rank difference for visual indicator
+                rank_diff = int(t2_rank - t1_rank)
+                
+                st.markdown(
+                    f"""
+                    <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                border-left: 4px solid #00CC00; padding: 12px; margin: 8px 0; border-radius: 4px;'>
+                        <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {metric}</div>
+                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                            {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.1f}</span> {t1_rank_str} 
+                            <span style='color: #888;'>vs</span> 
+                            {team2}: <span style='font-weight: bold;'>{t2_val:.1f}</span> {t2_rank_str}
+                        </div>
+                        <div style='font-size: 0.85em; color: #00CC00; margin-top: 4px;'>+{rank_diff} positions ahead</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
         else:
-            st.markdown("*No statistics where Team 1 ranks higher*")
+            st.info("No statistics where Team 1 ranks higher")
     
     with col2:
-        st.markdown(f"### 🔴 {team1} – Weaknesses vs {team2}")
+        st.markdown(f"<h3 style='color: #FF4444;'>🔴 {team1} – Weaknesses</h3>", unsafe_allow_html=True)
         if len(team1_weaknesses) > 0:
             for idx, row in team1_weaknesses.iterrows():
                 metric = row["metric"]
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
                 t1_rank = row["team1_rank"]
                 t2_rank = row["team2_rank"]
-                try:
-                    t1_rank_str = f"#{int(t1_rank)}" if not pd.isna(t1_rank) else "N/A"
-                    t2_rank_str = f"#{int(t2_rank)}" if not pd.isna(t2_rank) else "N/A"
-                except:
-                    t1_rank_str = str(t1_rank)
-                    t2_rank_str = str(t2_rank)
-                st.markdown(f"**{idx + 1}. {metric}**: {team1} ({t1_rank_str}) vs {team2} ({t2_rank_str})")
+                t1_rank_str = format_rank(t1_rank)
+                t2_rank_str = format_rank(t2_rank)
+                
+                # Calculate rank difference for visual indicator
+                rank_diff = int(t1_rank - t2_rank)
+                
+                st.markdown(
+                    f"""
+                    <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                border-left: 4px solid #FF4444; padding: 12px; margin: 8px 0; border-radius: 4px;'>
+                        <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {metric}</div>
+                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                            {team1}: <span style='font-weight: bold;'>{t1_val:.1f}</span> {t1_rank_str} 
+                            <span style='color: #888;'>vs</span> 
+                            {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.1f}</span> {t2_rank_str}
+                        </div>
+                        <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>{rank_diff} positions behind</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
         else:
-            st.markdown("*No statistics where Team 1 ranks lower*")
-    
-    # ========== DETAILED ATTRIBUTE ANALYSIS ==========
-    st.markdown("---")
-    st.subheader("Detailed Attribute Analysis")
-    st.caption(f"Comparing individual attribute-level stats between {team1} and {team2}")
+            st.info("No statistics where Team 2 ranks higher")
     
     if summary_year is not None:
         # Attribute groups to analyze
@@ -2403,11 +2495,11 @@ elif page == "Team Compare":
             "Pressure",
         ]
         
-        # Get all stats from the 6 main metrics to exclude them
-        main_metric_stats = set(clean_metrics)
+        # Get all stats from the 6 main metrics to exclude them (use spider_metrics which has the full names)
+        main_metric_stats = set(spider_metrics)
         
-        # Collect all attribute differences (excluding main metrics)
-        all_attribute_diffs = []
+        # Collect all attribute stats (excluding main metrics)
+        all_attribute_stats = []
         which_block = "Last10" if window == "Last 10 Games" else "Season"
         
         for attribute_group in attribute_groups:
@@ -2437,17 +2529,23 @@ elif page == "Team Compare":
                         if not team1_dist_row.empty and not team2_dist_row.empty:
                             team1_stat_val = team1_dist_row.iloc[0]["Value"]
                             team2_stat_val = team2_dist_row.iloc[0]["Value"]
+                            team1_rank = team1_dist_row.iloc[0].get("Rank", np.nan)
+                            team2_rank = team2_dist_row.iloc[0].get("Rank", np.nan)
                             
                             try:
                                 team1_stat_val = float(team1_stat_val)
                                 team2_stat_val = float(team2_stat_val)
+                                team1_rank = float(team1_rank) if not pd.isna(team1_rank) else np.nan
+                                team2_rank = float(team2_rank) if not pd.isna(team2_rank) else np.nan
                                 stat_diff = team1_stat_val - team2_stat_val
                                 
-                                all_attribute_diffs.append({
+                                all_attribute_stats.append({
                                     "attribute_group": attribute_group,
                                     "stat_name": stat_name,
                                     "team1_val": team1_stat_val,
                                     "team2_val": team2_stat_val,
+                                    "team1_rank": team1_rank,
+                                    "team2_rank": team2_rank,
                                     "diff": stat_diff,
                                 })
                             except (ValueError, TypeError):
@@ -2455,49 +2553,96 @@ elif page == "Team Compare":
             except Exception:
                 pass
         
-        if all_attribute_diffs:
-            attr_df = pd.DataFrame(all_attribute_diffs)
+        if all_attribute_stats:
+            attr_df = pd.DataFrame(all_attribute_stats)
             
-            # Get top 6 strengths and weaknesses
-            top_strengths = attr_df.nlargest(6, "diff")
-            top_weaknesses = attr_df.nsmallest(6, "diff")
+            # Filter for strengths/weaknesses: use ranking comparison (lower rank = better)
+            # Strengths: Team 1 has better rank (lower number) than Team 2
+            strengths_df = attr_df[
+                (attr_df["team1_rank"].notna()) & 
+                (attr_df["team2_rank"].notna()) & 
+                (attr_df["team1_rank"] < attr_df["team2_rank"])
+            ].sort_values("team1_rank", ascending=True).head(6)
+            
+            # Weaknesses: Team 2 has better rank (lower number) than Team 1
+            weaknesses_df = attr_df[
+                (attr_df["team1_rank"].notna()) & 
+                (attr_df["team2_rank"].notna()) & 
+                (attr_df["team1_rank"] > attr_df["team2_rank"])
+            ].sort_values("team2_rank", ascending=True).head(6)
             
             # Display in two columns
+            st.markdown("---")
+            st.subheader(f"🎯 Detailed Attribute Analysis")
+            st.caption(f"Individual attribute-level comparison between {team1} and {team2}")
+            
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown(f"#### 🟢 Top Detail Stats ({team1} Advantage)")
-                if len(top_strengths) > 0:
-                    for idx, row in top_strengths.iterrows():
+                st.markdown(f"<h3 style='color: #00CC00;'>🟢 Detail Stats ({team1} Advantage)</h3>", unsafe_allow_html=True)
+                if len(strengths_df) > 0:
+                    for idx, row in strengths_df.iterrows():
                         attr_group = row["attribute_group"]
                         stat_name = row["stat_name"]
                         t1_val = row["team1_val"]
                         t2_val = row["team2_val"]
-                        diff = row["diff"]
+                        t1_rank = row["team1_rank"]
+                        t2_rank = row["team2_rank"]
+                        
+                        t1_rank_str = format_rank(t1_rank)
+                        t2_rank_str = format_rank(t2_rank)
+                        rank_diff = int(t2_rank - t1_rank)
                         
                         st.markdown(
-                            f"**{stat_name}** _{attr_group}_  \n"
-                            f"{team1}: {t1_val:.1f} | {team2}: {t2_val:.1f} | +{diff:.1f}"
+                            f"""
+                            <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                        border-left: 4px solid #00CC00; padding: 10px; margin: 8px 0; border-radius: 4px;'>
+                                <div style='font-weight: bold; color: #00FF00; font-size: 0.95em;'>{stat_name}</div>
+                                <div style='font-size: 0.8em; color: #999; margin-bottom: 6px;'>{attr_group}</div>
+                                <div style='font-size: 0.9em; color: #CCCCCC;'>
+                                    {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                    <span style='color: #666;'>|</span> 
+                                    {team2}: <span style='font-weight: bold;'>{t2_val:.1f}</span> {t2_rank_str}
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
                         )
                 else:
-                    st.markdown("*No additional detail stats where Team 1 leads*")
+                    st.info("No detail stats where Team 1 leads")
             
             with col2:
-                st.markdown(f"#### 🔴 Top Detail Stats ({team2} Advantage)")
-                if len(top_weaknesses) > 0:
-                    for idx, row in top_weaknesses.iterrows():
+                st.markdown(f"<h3 style='color: #FF4444;'>🔴 Detail Stats ({team2} Advantage)</h3>", unsafe_allow_html=True)
+                if len(weaknesses_df) > 0:
+                    for idx, row in weaknesses_df.iterrows():
                         attr_group = row["attribute_group"]
                         stat_name = row["stat_name"]
                         t1_val = row["team1_val"]
                         t2_val = row["team2_val"]
-                        diff = row["diff"]
+                        t1_rank = row["team1_rank"]
+                        t2_rank = row["team2_rank"]
+                        
+                        t1_rank_str = format_rank(t1_rank)
+                        t2_rank_str = format_rank(t2_rank)
+                        rank_diff = int(t1_rank - t2_rank)
                         
                         st.markdown(
-                            f"**{stat_name}** _{attr_group}_  \n"
-                            f"{team1}: {t1_val:.1f} | {team2}: {t2_val:.1f} | -{abs(diff):.1f}"
+                            f"""
+                            <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                        border-left: 4px solid #FF4444; padding: 10px; margin: 8px 0; border-radius: 4px;'>
+                                <div style='font-weight: bold; color: #FF6666; font-size: 0.95em;'>{stat_name}</div>
+                                <div style='font-size: 0.8em; color: #999; margin-bottom: 6px;'>{attr_group}</div>
+                                <div style='font-size: 0.9em; color: #CCCCCC;'>
+                                    {team1}: <span style='font-weight: bold;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                    <span style='color: #666;'>|</span> 
+                                    {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.1f}</span> {t2_rank_str}
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
                         )
                 else:
-                    st.markdown("*No additional detail stats where Team 2 leads*")
+                    st.markdown("*No detail stats where Team 2 leads*")
         else:
             st.info("No additional attribute detail stats available for comparison.")
     else:
