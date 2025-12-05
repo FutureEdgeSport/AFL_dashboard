@@ -2036,6 +2036,19 @@ elif page == "Team Breakdown":
 
 elif page == "Team Compare":
     st.title("⚖️ Team Compare")
+    
+    # Helper function for ordinal formatting
+    def get_ordinal(n):
+        """Convert number to ordinal string (1st, 2nd, 3rd, etc.)"""
+        try:
+            n = int(n)
+            if 10 <= n % 100 <= 20:
+                suffix = "th"
+            else:
+                suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+            return f"{n}{suffix}"
+        except:
+            return str(n)
 
     # Get available years for top-level selection (same as Team Breakdown)
     available_years = get_available_summary_years()
@@ -2117,7 +2130,7 @@ elif page == "Team Compare":
                 # Center the image using columns
                 inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
                 with inner_col2:
-                    st.image(img1, use_column_width=True, caption=None)
+                    st.image(img1, width=300)
             except Exception as e:
                 st.warning(f"Could not load {team1} logo")
         else:
@@ -2133,7 +2146,7 @@ elif page == "Team Compare":
                 # Center the image using columns
                 inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
                 with inner_col2:
-                    st.image(img2, use_column_width=True, caption=None)
+                    st.image(img2, width=300)
             except Exception as e:
                 st.warning(f"Could not load {team2} logo")
         else:
@@ -2648,105 +2661,221 @@ elif page == "Team Compare":
     else:
         st.info(f"Attribute data not available for {selected_year}.")
     
-    # ========== ENGLISH LANGUAGE SUMMARY ==========
+    # ========== EXECUTIVE SUMMARY ==========
     st.markdown("---")
-    st.subheader("Summary Analysis")
+    st.markdown("<h2 style='text-align: center; color: #FFD700; margin-bottom: 30px;'>📊 Executive Summary</h2>", unsafe_allow_html=True)
     
-    # Generate summary text
-    def generate_summary(base_team, comp_team, base_strengths, base_weaknesses, window_label):
-        """Generate English language summary comparing two teams"""
-        
-        summary_parts = []
-        
-        # Overall comparison
-        summary_parts.append(f"**{base_team}** is being compared to **{comp_team}** based on {window_label}.")
-        summary_parts.append("")
-        
-        # Strengths summary
-        if len(base_strengths) > 0:
-            summary_parts.append(f"### Key Strengths of {base_team} (vs {comp_team}):")
-            strengths_list = []
-            for idx, row in base_strengths.iterrows():
+    # Overall matchup header with colored background
+    strengths_count = len(team1_strengths)
+    weaknesses_count = len(team1_weaknesses)
+    
+    if strengths_count > weaknesses_count:
+        verdict = f"<span style='color: #00FF00; font-weight: bold;'>{team1} holds the advantage</span>"
+        verdict_color = "#1a3d1a"
+    elif weaknesses_count > strengths_count:
+        verdict = f"<span style='color: #FF6B6B; font-weight: bold;'>{team2} holds the advantage</span>"
+        verdict_color = "#3d1a1a"
+    else:
+        verdict = f"<span style='color: #FFD700; font-weight: bold;'>Teams are evenly matched</span>"
+        verdict_color = "#3d3d1a"
+    
+    st.markdown(f"""
+    <div style='background: linear-gradient(135deg, {verdict_color} 0%, rgba(20,20,20,0.8) 100%); 
+                padding: 25px; border-radius: 15px; border-left: 5px solid #FFD700; margin-bottom: 25px;'>
+        <h3 style='color: #FFD700; margin: 0 0 15px 0;'>Matchup Overview - {period_label}</h3>
+        <p style='font-size: 1.2em; margin: 10px 0;'>In this head-to-head comparison, {verdict} with 
+        <span style='background: #00AA00; padding: 3px 12px; border-radius: 5px; font-weight: bold;'>{strengths_count}</span> 
+        key strengths versus 
+        <span style='background: #AA0000; padding: 3px 12px; border-radius: 5px; font-weight: bold;'>{weaknesses_count}</span> 
+        areas requiring improvement.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Strengths & Weaknesses in styled cards
+    summary_col1, summary_col2 = st.columns(2)
+    
+    with summary_col1:
+        if len(team1_strengths) > 0:
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1a3d1a 0%, rgba(20,40,20,0.6) 100%); 
+                        padding: 20px; border-radius: 12px; border-left: 4px solid #00FF00;'>
+                <h4 style='color: #00FF00; margin-top: 0;'>✅ {team1} Competitive Advantages</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            for idx, row in team1_strengths.iterrows():
                 metric = row["metric"]
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
                 t1_rank = row["team1_rank"]
                 t2_rank = row["team2_rank"]
-                try:
-                    t1_rank_str = f"#{int(t1_rank)}" if not pd.isna(t1_rank) else "unranked"
-                    t2_rank_str = f"#{int(t2_rank)}" if not pd.isna(t2_rank) else "unranked"
-                except:
-                    t1_rank_str = str(t1_rank)
-                    t2_rank_str = str(t2_rank)
-                strengths_list.append(f"• **{metric}**: {base_team} ({t1_rank_str}) ranks higher than {comp_team} ({t2_rank_str})")
-            summary_parts.append("\n".join(strengths_list))
-            summary_parts.append("")
-        
-        # Weaknesses summary
-        if len(base_weaknesses) > 0:
-            summary_parts.append(f"### Areas for Improvement ({base_team} vs {comp_team}):")
-            weaknesses_list = []
-            for idx, row in base_weaknesses.iterrows():
-                metric = row["metric"]
-                t1_rank = row["team1_rank"]
-                t2_rank = row["team2_rank"]
-                try:
-                    t1_rank_str = f"#{int(t1_rank)}" if not pd.isna(t1_rank) else "unranked"
-                    t2_rank_str = f"#{int(t2_rank)}" if not pd.isna(t2_rank) else "unranked"
-                except:
-                    t1_rank_str = str(t1_rank)
-                    t2_rank_str = str(t2_rank)
-                weaknesses_list.append(f"• **{metric}**: {comp_team} ({t2_rank_str}) ranks higher than {base_team} ({t1_rank_str})")
-            summary_parts.append("\n".join(weaknesses_list))
-            summary_parts.append("")
-        
-        # Overall assessment
-        summary_parts.append(f"### Overall Assessment:")
-        strengths_count = len(base_strengths)
-        weaknesses_count = len(base_weaknesses)
-        
-        if strengths_count > weaknesses_count:
-            summary_parts.append(f"• **{base_team}** has a competitive advantage across {strengths_count} ranked metrics")
-        elif weaknesses_count > strengths_count:
-            summary_parts.append(f"• **{comp_team}** has a competitive advantage across {weaknesses_count} ranked metrics")
+                
+                ordinal1 = get_ordinal(t1_rank)
+                ordinal2 = get_ordinal(t2_rank)
+                rank_gap = int(t2_rank - t1_rank)
+                
+                st.markdown(f"""
+                <div style='background: rgba(0,100,0,0.15); padding: 15px; margin: 10px 0; 
+                            border-radius: 8px; border-left: 3px solid #00AA00;'>
+                    <div style='font-size: 1.1em; font-weight: bold; color: #FFFFFF; margin-bottom: 8px;'>
+                        {metric}
+                    </div>
+                    <div style='display: flex; justify-content: space-between; align-items: center;'>
+                        <div style='flex: 1;'>
+                            <span style='color: #00FF00; font-size: 1.3em; font-weight: bold;'>{t1_val:.1f}</span>
+                            <span style='color: #AAAAAA; font-size: 0.9em;'> ({ordinal1})</span>
+                        </div>
+                        <div style='color: #666666; font-size: 0.9em;'>vs</div>
+                        <div style='flex: 1; text-align: right;'>
+                            <span style='color: #CCCCCC; font-size: 1.1em;'>{t2_val:.1f}</span>
+                            <span style='color: #888888; font-size: 0.9em;'> ({ordinal2})</span>
+                        </div>
+                    </div>
+                    <div style='margin-top: 8px; text-align: center; color: #00DD00; font-size: 0.85em;'>
+                        +{rank_gap} position advantage
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         else:
-            summary_parts.append(f"• Both teams are evenly matched across the ranked metrics")
-        
-        return "\n".join(summary_parts)
+            st.info(f"No areas where {team1} ranks ahead")
     
-    summary_text = generate_summary(team1, team2, team1_strengths, team1_weaknesses, period_label)
-    st.markdown(summary_text)
+    with summary_col2:
+        if len(team1_weaknesses) > 0:
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #3d1a1a 0%, rgba(40,20,20,0.6) 100%); 
+                        padding: 20px; border-radius: 12px; border-left: 4px solid #FF6B6B;'>
+                <h4 style='color: #FF6B6B; margin-top: 0;'>⚠️ Areas for Improvement</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            for idx, row in team1_weaknesses.iterrows():
+                metric = row["metric"]
+                t1_val = row["team1_val"]
+                t2_val = row["team2_val"]
+                t1_rank = row["team1_rank"]
+                t2_rank = row["team2_rank"]
+                
+                ordinal1 = get_ordinal(t1_rank)
+                ordinal2 = get_ordinal(t2_rank)
+                rank_gap = int(t1_rank - t2_rank)
+                
+                st.markdown(f"""
+                <div style='background: rgba(100,0,0,0.15); padding: 15px; margin: 10px 0; 
+                            border-radius: 8px; border-left: 3px solid #AA0000;'>
+                    <div style='font-size: 1.1em; font-weight: bold; color: #FFFFFF; margin-bottom: 8px;'>
+                        {metric}
+                    </div>
+                    <div style='display: flex; justify-content: space-between; align-items: center;'>
+                        <div style='flex: 1;'>
+                            <span style='color: #CCCCCC; font-size: 1.1em;'>{t1_val:.1f}</span>
+                            <span style='color: #888888; font-size: 0.9em;'> ({ordinal1})</span>
+                        </div>
+                        <div style='color: #666666; font-size: 0.9em;'>vs</div>
+                        <div style='flex: 1; text-align: right;'>
+                            <span style='color: #FF6B6B; font-size: 1.3em; font-weight: bold;'>{t2_val:.1f}</span>
+                            <span style='color: #AAAAAA; font-size: 0.9em;'> ({ordinal2})</span>
+                        </div>
+                    </div>
+                    <div style='margin-top: 8px; text-align: center; color: #DD0000; font-size: 0.85em;'>
+                        -{rank_gap} position deficit
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info(f"No areas where {team2} ranks ahead")
     
     # ========== DETAILED METRIC BREAKDOWN ==========
     st.markdown("---")
-    st.subheader("Detailed Metric Breakdown")
+    st.markdown("<h2 style='text-align: center; color: #FFD700; margin-bottom: 30px;'>📈 Detailed Metric Breakdown</h2>", unsafe_allow_html=True)
     
-    # Create comparison table
-    comparison_data = []
+    # Create enhanced comparison display
     for i, metric_col in enumerate(spider_metrics):
         team1_val = team1_values[i]
         team2_val = team2_values[i]
         top4_avg = top4_averages[i]
+        metric_name = clean_metrics[i]
         
-        # Calculate difference
-        diff = team1_val - team2_val
-        diff_str = f"+{diff:.1f}" if diff >= 0 else f"{diff:.1f}"
+        # Get ranks
+        team1_rank = metric_analysis[i].get("team1_rank", np.nan)
+        team2_rank = metric_analysis[i].get("team2_rank", np.nan)
         
-        comparison_data.append({
-            "Metric": clean_metrics[i],
-            team1: f"{team1_val:.1f}",
-            team2: f"{team2_val:.1f}",
-            "Top 4 Avg": f"{top4_avg:.1f}",
-            f"{team1} vs {team2}": diff_str,
-        })
-    
-    comparison_table = pd.DataFrame(comparison_data)
-    
-    # Apply styling
-    styler = comparison_table.style.set_properties(
-        subset=[team1, team2, "Top 4 Avg", f"{team1} vs {team2}"],
-        **{"text-align": "center"}
-    )
-    
-    st.dataframe(styler, use_container_width=True, height=400)
+        # Determine winner
+        if team1_val > team2_val:
+            winner_color = "#00AA00"
+            leader = team1
+        elif team2_val > team1_val:
+            winner_color = "#AA0000"
+            leader = team2
+        else:
+            winner_color = "#FFD700"
+            leader = "Tie"
+        
+        # Calculate percentages for visual bars
+        max_val = max(team1_val, team2_val, top4_avg)
+        team1_pct = (team1_val / max_val * 100) if max_val > 0 else 0
+        team2_pct = (team2_val / max_val * 100) if max_val > 0 else 0
+        top4_pct = (top4_avg / max_val * 100) if max_val > 0 else 0
+        
+        ordinal1 = get_ordinal(team1_rank) if not pd.isna(team1_rank) else "N/A"
+        ordinal2 = get_ordinal(team2_rank) if not pd.isna(team2_rank) else "N/A"
+        
+        st.markdown(f"""
+        <div style='background: rgba(30,30,30,0.5); padding: 20px; margin: 15px 0; 
+                    border-radius: 12px; border-left: 5px solid {winner_color};'>
+            <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>
+                <h4 style='color: #FFD700; margin: 0;'>{metric_name}</h4>
+                <span style='background: {winner_color}; padding: 5px 15px; border-radius: 20px; 
+                            font-weight: bold; font-size: 0.9em;'>Leader: {leader}</span>
+            </div>
+            
+            <!-- Team 1 -->
+            <div style='margin-bottom: 12px;'>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
+                    <span style='font-weight: bold; color: #6496FF;'>{team1}</span>
+                    <span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team1_val:.1f}</span>
+                    <span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal1})</span>
+                </div>
+                <div style='background: rgba(100,150,255,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>
+                    <div style='background: linear-gradient(90deg, #6496FF 0%, #4070DD 100%); 
+                                height: 100%; width: {team1_pct}%; border-radius: 10px;
+                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
+                        <span style='color: white; font-size: 0.85em; font-weight: bold;'>{team1_pct:.0f}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team 2 -->
+            <div style='margin-bottom: 12px;'>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
+                    <span style='font-weight: bold; color: #FF6B6B;'>{team2}</span>
+                    <span style='color: #FFFFFF; font-size: 1.2em; font-weight: bold;'>{team2_val:.1f}</span>
+                    <span style='color: #AAAAAA; font-size: 0.9em;'>({ordinal2})</span>
+                </div>
+                <div style='background: rgba(255,100,100,0.2); border-radius: 10px; height: 25px; position: relative; overflow: hidden;'>
+                    <div style='background: linear-gradient(90deg, #FF6B6B 0%, #DD5050 100%); 
+                                height: 100%; width: {team2_pct}%; border-radius: 10px;
+                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
+                        <span style='color: white; font-size: 0.85em; font-weight: bold;'>{team2_pct:.0f}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top 4 Average -->
+            <div>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;'>
+                    <span style='font-weight: bold; color: #FFD700;'>Top 4 Average</span>
+                    <span style='color: #FFD700; font-size: 1.1em; font-weight: bold;'>{top4_avg:.1f}</span>
+                </div>
+                <div style='background: rgba(255,215,0,0.2); border-radius: 10px; height: 20px; position: relative; overflow: hidden;'>
+                    <div style='background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%); 
+                                height: 100%; width: {top4_pct}%; border-radius: 10px;
+                                display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;'>
+                        <span style='color: #000; font-size: 0.8em; font-weight: bold;'>{top4_pct:.0f}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 
