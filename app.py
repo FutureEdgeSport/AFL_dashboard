@@ -2137,13 +2137,13 @@ elif page == "Team Compare":
         team2_values.append(team2_val)
         top4_averages.append(top4_avg)
     
+    # Clean metric names for display (outside try block so it's always available)
+    clean_metrics = [m.replace(' Ranking', '').replace('Ranking', '').strip() for m in spider_metrics]
+    
     if spider_metrics and team1_values and team2_values:
         try:
             import plotly.graph_objects as go
             from plotly.subplots import make_subplots
-            
-            # Clean metric names for display
-            clean_metrics = [m.replace(' Ranking', '').replace('Ranking', '').strip() for m in spider_metrics]
             
             # Close the polygon by appending first value to end
             team1_values_closed = team1_values + [team1_values[0]]
