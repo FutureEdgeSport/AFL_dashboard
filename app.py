@@ -1269,7 +1269,7 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -2029,6 +2029,432 @@ elif page == "Team Breakdown":
                             st.metric("Top 4", "–")
                     # close the bordered div
                     st.markdown("</div>", unsafe_allow_html=True)
+
+
+
+# ================= TEAM COMPARE =================
+
+elif page == "Team Compare":
+    st.title("⚖️ Team Compare")
+
+    # Get available years for top-level selection (same as Team Breakdown)
+    available_years = get_available_summary_years()
+    if not available_years:
+        st.error("No summary years available.")
+        st.stop()
+    
+    # Create options: years with Season, plus 2025 with Last 10 Games
+    year_options = []
+    for year in available_years:
+        year_options.append(f"{year} - Season")
+        if year == 2025:
+            year_options.append("2025 - Last 10 Games")
+    
+    # Year and data window selection combined
+    selected_option = st.selectbox(
+        "Select Year & Data Window",
+        year_options,
+        index=0 if year_options else None,
+        help="Choose which year to view. Last 10 Games only available for 2025.",
+        key="team_compare_period"
+    )
+    
+    # Parse the selection
+    if " - Last 10 Games" in selected_option:
+        selected_year = 2025
+        window = "Last 10 Games"
+    else:
+        selected_year = int(selected_option.split(" - ")[0])
+        window = "Season"
+    
+    last10 = window == "Last 10 Games"
+    period_label = f"{window} ({selected_year})"
+
+    try:
+        ladders = load_team_ladders(selected_year, last10=last10)
+    except Exception as e:
+        st.error(f"Error loading team data for {selected_year} – {window}: {e}")
+        st.stop()
+
+    if ladders.empty:
+        st.warning(f"No ladder data found for {period_label}.")
+        st.stop()
+
+    st.caption(f"Comparing: {period_label}")
+
+    # Normalize team names in ladders DataFrame
+    ladders["Team"] = ladders["Team"].replace({
+        "GWS": "GWS Giants",
+        "Greater Western Sydney": "GWS Giants"
+    })
+    
+    team_list = sorted(ladders["Team"].unique())
+    
+    # Team selection columns
+    col1, col2 = st.columns(2)
+    with col1:
+        team1 = st.selectbox("Team 1 (Base)", team_list, key="team_compare_team1")
+    with col2:
+        # Default to different team if available
+        default_idx = 1 if len(team_list) > 1 else 0
+        team2 = st.selectbox("Team 2 (Comparison)", team_list, index=default_idx, key="team_compare_team2")
+    
+    if team1 == team2:
+        st.warning("Please select two different teams to compare.")
+        st.stop()
+    
+    # Get team rows
+    team1_row = ladders[ladders["Team"] == team1].iloc[0]
+    team2_row = ladders[ladders["Team"] == team2].iloc[0]
+    
+    # ========== RADAR CHARTS AND COLUMN CHART SECTION ==========
+    st.markdown("---")
+    st.subheader("Visual Comparison")
+    
+    # Prepare data for charts
+    spider_metrics = []
+    team1_values = []
+    team2_values = []
+    top4_averages = []
+    
+    for metric_col in METRIC_ORDER:
+        if metric_col not in ladders.columns:
+            continue
+        
+        # Get team values
+        try:
+            team1_val = float(team1_row[metric_col])
+            team2_val = float(team2_row[metric_col])
+        except Exception:
+            continue
+        
+        # Calculate Top 4 average
+        top4_vals = ladders.nlargest(4, metric_col)[metric_col]
+        top4_avg = top4_vals.mean()
+        
+        spider_metrics.append(metric_col)
+        team1_values.append(team1_val)
+        team2_values.append(team2_val)
+        top4_averages.append(top4_avg)
+    
+    if spider_metrics and team1_values and team2_values:
+        try:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+            
+            # Clean metric names for display
+            clean_metrics = [m.replace(' Ranking', '').replace('Ranking', '').strip() for m in spider_metrics]
+            
+            # Close the polygon by appending first value to end
+            team1_values_closed = team1_values + [team1_values[0]]
+            team2_values_closed = team2_values + [team2_values[0]]
+            top4_averages_closed = top4_averages + [top4_averages[0]]
+            clean_metrics_closed = clean_metrics + [clean_metrics[0]]
+            
+            # Create subplots: 2 radars + 1 column chart
+            fig = make_subplots(
+                rows=1, cols=3,
+                specs=[[{'type': 'polar'}, {'type': 'polar'}, {'type': 'xy'}]],
+                horizontal_spacing=0.15
+            )
+            
+            # === RADAR 1: TEAM 1 ===
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=top4_averages_closed,
+                    theta=clean_metrics_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 215, 0, 0.1)',
+                    line=dict(color='#FFD700', width=3),
+                    name='Top 4 Avg',
+                    legendgroup='averages',
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+            
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=team1_values_closed,
+                    theta=clean_metrics_closed,
+                    fill='toself',
+                    fillcolor='rgba(100, 150, 255, 0.2)',
+                    line=dict(color='#6496FF', width=3),
+                    name=team1,
+                    legendgroup='teams',
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+            
+            # === RADAR 2: TEAM 2 ===
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=top4_averages_closed,
+                    theta=clean_metrics_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 215, 0, 0.1)',
+                    line=dict(color='#FFD700', width=3),
+                    name='Top 4 Avg',
+                    legendgroup='averages',
+                    showlegend=False
+                ),
+                row=1, col=2
+            )
+            
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=team2_values_closed,
+                    theta=clean_metrics_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 100, 100, 0.2)',
+                    line=dict(color='#FF6464', width=3),
+                    name=team2,
+                    legendgroup='teams',
+                    showlegend=True
+                ),
+                row=1, col=2
+            )
+            
+            # === COLUMN CHART: SIDE BY SIDE COMPARISON ===
+            x_positions = clean_metrics
+            fig.add_trace(
+                go.Bar(
+                    x=x_positions,
+                    y=team1_values,
+                    name=team1,
+                    marker=dict(color='#6496FF'),
+                    legendgroup='teams',
+                    showlegend=False
+                ),
+                row=1, col=3
+            )
+            
+            fig.add_trace(
+                go.Bar(
+                    x=x_positions,
+                    y=team2_values,
+                    name=team2,
+                    marker=dict(color='#FF6464'),
+                    legendgroup='teams',
+                    showlegend=False
+                ),
+                row=1, col=3
+            )
+            
+            # Update polar axes
+            fig.update_polars(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100],
+                    showticklabels=True,
+                    tickfont=dict(color='white', size=9),
+                    gridcolor='gray'
+                ),
+                angularaxis=dict(
+                    tickfont=dict(color='white', size=11, family='Arial Black'),
+                    gridcolor='gray'
+                ),
+                bgcolor='rgba(0,0,0,0)',
+                row=1, col=1
+            )
+            
+            fig.update_polars(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100],
+                    showticklabels=True,
+                    tickfont=dict(color='white', size=9),
+                    gridcolor='gray'
+                ),
+                angularaxis=dict(
+                    tickfont=dict(color='white', size=11, family='Arial Black'),
+                    gridcolor='gray'
+                ),
+                bgcolor='rgba(0,0,0,0)',
+                row=1, col=2
+            )
+            
+            # Update column chart axes
+            fig.update_xaxes(title_text="", tickfont=dict(color='white', size=10), row=1, col=3)
+            fig.update_yaxes(title_text="Rating", tickfont=dict(color='white', size=10), row=1, col=3)
+            
+            # Update layout
+            fig.update_layout(
+                title_text=f"<b>{team1} vs {team2}</b> – Radar Charts & Comparison ({period_label})",
+                title_font_size=18,
+                showlegend=True,
+                legend=dict(
+                    font=dict(color='white', size=11),
+                    bgcolor='rgba(0,0,0,0.5)',
+                    bordercolor='white',
+                    borderwidth=1,
+                    x=1.02,
+                    y=1
+                ),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=550,
+                font=dict(color='white')
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+        except ImportError:
+            st.warning("Plotly not installed. Install with: `conda install -n afl plotly -y`")
+    
+    # ========== STRENGTH/WEAKNESS ANALYSIS ==========
+    st.markdown("---")
+    st.subheader("Strengths & Weaknesses Analysis")
+    
+    # Calculate metrics relative to league average
+    metric_analysis = []
+    for i, metric_col in enumerate(spider_metrics):
+        team1_val = team1_values[i]
+        team2_val = team2_values[i]
+        top4_avg = top4_averages[i]
+        
+        team1_diff = team1_val - top4_avg
+        team2_diff = team2_val - top4_avg
+        
+        metric_analysis.append({
+            "metric": clean_metrics[i],
+            "team1_val": team1_val,
+            "team2_val": team2_val,
+            "top4_avg": top4_avg,
+            "team1_diff": team1_diff,
+            "team2_diff": team2_diff,
+        })
+    
+    # Identify top 4 strengths and weaknesses for Team 1
+    metric_df = pd.DataFrame(metric_analysis)
+    
+    team1_strengths = metric_df.nlargest(4, "team1_diff")[["metric", "team1_val", "top4_avg", "team1_diff"]].reset_index(drop=True)
+    team1_weaknesses = metric_df.nsmallest(4, "team1_diff")[["metric", "team1_val", "top4_avg", "team1_diff"]].reset_index(drop=True)
+    
+    # Display Team 1 analysis
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown(f"### 🟢 {team1} – Strengths")
+        for idx, row in team1_strengths.iterrows():
+            metric = row["metric"]
+            val = row["team1_val"]
+            diff = row["team1_diff"]
+            diff_str = f"+{diff:.1f}" if diff >= 0 else f"{diff:.1f}"
+            st.markdown(f"**{idx + 1}. {metric}**: {val:.1f} ({diff_str} vs Top 4)")
+    
+    with col2:
+        st.markdown(f"### 🔴 {team1} – Weaknesses")
+        for idx, row in team1_weaknesses.iterrows():
+            metric = row["metric"]
+            val = row["team1_val"]
+            diff = row["team1_diff"]
+            diff_str = f"{diff:.1f}" if diff < 0 else f"+{diff:.1f}"
+            st.markdown(f"**{idx + 1}. {metric}**: {val:.1f} ({diff_str} vs Top 4)")
+    
+    # ========== ENGLISH LANGUAGE SUMMARY ==========
+    st.markdown("---")
+    st.subheader("Summary Analysis")
+    
+    # Generate summary text
+    def generate_summary(base_team, comp_team, base_strengths, base_weaknesses, metric_data, window_label):
+        """Generate English language summary comparing two teams"""
+        
+        # Find top strength and weakness
+        top_strength = base_strengths.iloc[0] if len(base_strengths) > 0 else None
+        top_weakness = base_weaknesses.iloc[0] if len(base_weaknesses) > 0 else None
+        
+        summary_parts = []
+        
+        # Overall comparison
+        summary_parts.append(f"**{base_team}** is being compared to **{comp_team}** based on {window_label}.")
+        summary_parts.append("")
+        
+        # Strengths summary
+        if top_strength is not None:
+            summary_parts.append(f"### Key Strengths of {base_team}:")
+            strengths_list = []
+            for idx, row in base_strengths.iterrows():
+                metric = row["metric"]
+                val = row["team1_val"]
+                diff = row["team1_diff"]
+                strengths_list.append(f"• **{metric}** ({val:.1f}) – {diff:.1f} points above the Top 4 average")
+            summary_parts.append("\n".join(strengths_list))
+            summary_parts.append("")
+        
+        # Weaknesses summary
+        if top_weakness is not None:
+            summary_parts.append(f"### Areas for Improvement ({base_team}):")
+            weaknesses_list = []
+            for idx, row in base_weaknesses.iterrows():
+                metric = row["metric"]
+                val = row["team1_val"]
+                diff = row["team1_diff"]
+                weaknesses_list.append(f"• **{metric}** ({val:.1f}) – {abs(diff):.1f} points below the Top 4 average")
+            summary_parts.append("\n".join(weaknesses_list))
+            summary_parts.append("")
+        
+        # Comparative insight
+        summary_parts.append(f"### How {base_team} Compares to {comp_team}:")
+        
+        # Find metrics where base team outperforms comp team significantly
+        outperforms = metric_data[metric_data["team1_diff"] > metric_data["team2_diff"]].copy()
+        underperforms = metric_data[metric_data["team1_diff"] < metric_data["team2_diff"]].copy()
+        
+        if len(outperforms) > 0:
+            outperf_count = len(outperforms)
+            best_vs = outperforms.nlargest(1, "team1_diff").iloc[0]
+            summary_parts.append(
+                f"• **{base_team}** outperforms **{comp_team}** in {outperf_count} metric(s), "
+                f"most notably in **{best_vs['metric']}** (gap of {(best_vs['team1_diff'] - best_vs['team2_diff']):.1f} points)"
+            )
+        
+        if len(underperforms) > 0:
+            underperf_count = len(underperforms)
+            worst_vs = underperforms.nsmallest(1, "team1_diff").iloc[0]
+            summary_parts.append(
+                f"• **{comp_team}** outperforms **{base_team}** in {underperf_count} metric(s), "
+                f"most notably in **{worst_vs['metric']}** (gap of {(worst_vs['team2_diff'] - worst_vs['team1_diff']):.1f} points)"
+            )
+        
+        return "\n".join(summary_parts)
+    
+    summary_text = generate_summary(team1, team2, team1_strengths, team1_weaknesses, metric_df, period_label)
+    st.markdown(summary_text)
+    
+    # ========== DETAILED METRIC BREAKDOWN ==========
+    st.markdown("---")
+    st.subheader("Detailed Metric Breakdown")
+    
+    # Create comparison table
+    comparison_data = []
+    for i, metric_col in enumerate(spider_metrics):
+        team1_val = team1_values[i]
+        team2_val = team2_values[i]
+        top4_avg = top4_averages[i]
+        
+        # Calculate difference
+        diff = team1_val - team2_val
+        diff_str = f"+{diff:.1f}" if diff >= 0 else f"{diff:.1f}"
+        
+        comparison_data.append({
+            "Metric": clean_metrics[i],
+            team1: f"{team1_val:.1f}",
+            team2: f"{team2_val:.1f}",
+            "Top 4 Avg": f"{top4_avg:.1f}",
+            f"{team1} vs {team2}": diff_str,
+        })
+    
+    comparison_table = pd.DataFrame(comparison_data)
+    
+    # Apply styling
+    styler = comparison_table.style.set_properties(
+        subset=[team1, team2, "Top 4 Avg", f"{team1} vs {team2}"],
+        **{"text-align": "center"}
+    )
+    
+    st.dataframe(styler, use_container_width=True, height=400)
 
 
 
