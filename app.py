@@ -236,6 +236,43 @@ def load_team_summary_2025() -> pd.DataFrame:
     return df
 
 
+@st.cache_data
+def get_available_summary_years() -> list:
+    """Get list of years available in team summary data."""
+    # Look for individual year summary sheets (e.g., "2025 Summary", "2024 Summary", etc.)
+    try:
+        xl = pd.ExcelFile(TEAM_FILE)
+        years = []
+        
+        # Check for individual year summary sheets (like "2025 Summary")
+        for sheet in xl.sheet_names:
+            if " Summary" in sheet and sheet[0].isdigit():
+                try:
+                    year = int(sheet.split()[0])
+                    years.append(year)
+                except (ValueError, IndexError):
+                    pass
+        
+        # Return sorted years in descending order
+        return sorted(set(years), reverse=True)
+    except Exception:
+        # Fallback: return common years
+        return [2025, 2024, 2023, 2022, 2021]
+
+
+@st.cache_data
+def load_team_summary_for_year(season: int) -> pd.DataFrame:
+    """Load team summary for a specific year."""
+    try:
+        xl = pd.ExcelFile(TEAM_FILE)
+        year_sheet = f"{season} Summary"
+        df = xl.parse(year_sheet)
+        df.columns = df.columns.astype(str)
+        return df
+    except Exception:
+        return pd.DataFrame()
+
+
 # ---------------- DATA LOADERS – PLAYERS ----------------
 
 
@@ -710,14 +747,16 @@ def map_position_to_depth(pos_raw: str) -> str:
         return "Midfielder"
     p = pos_raw.lower()
 
+    # Check for Wing FIRST - it overrides all other positions
+    if "wing" in p:
+        return "Wing"
+    
     if "ruck" in p or "ruc" in p:
         return "Ruck"
     if ("key" in p and ("def" in p or "back" in p)) or "kpd" in p:
         return "Key Defender"
     if ("key" in p and ("fwd" in p or "forward" in p)) or "kpf" in p:
         return "Key Forward"
-    if "wing" in p:
-        return "Wing"
     if "mid-f" in p or "hff" in p or ("half" in p and "forward" in p):
         return "Mid-Forward"
     if "mid" in p:
@@ -1124,7 +1163,22 @@ def predict_player_trajectory(
         else:
             trend = 0
         
-        # Step 4: Project forward
+        # Define universal peak age and performance shape for each position
+        # Players follow a similar curve, just starting at different points
+        peak_age_map = {
+            "Midfielder": 28,
+            "Wing": 27,
+            "Ruck": 29,
+            "Key Forward": 29,
+            "Gen. Forward": 28,
+            "Mid-Forward": 28,
+            "Key Defender": 29,
+            "Gen. Defender": 28,
+        }
+        normalized_pos = map_position_to_depth(position) if position else "Midfielder"
+        peak_age = peak_age_map.get(normalized_pos, 28)
+        
+        # Step 4: Calculate trajectory using universal curve shape
         years = []
         predictions = []
         upper_bands = []
@@ -1134,27 +1188,59 @@ def predict_player_trajectory(
             future_age = current_age + year_offset
             future_year = current_season + year_offset
             
-            # Predict rating using position-age curve plus historical trend adjustment
-            position_expected = float(poly(future_age))
-            
-            # Blend position-based prediction with historical trend
             # For year 0 (current), use actual rating
             if year_offset == 0:
                 predicted_rating = current_rating
             else:
-                # For future years: position curve suggests X, but player's trend suggests they're trending Y
-                # Weight it: 70% position curve, 30% historical trend continuation
-                if pd.notna(position_expected) and position_expected > 0:
-                    predicted_rating = (0.7 * position_expected) + (0.3 * (current_rating + trend * year_offset))
+                # Universal performance curve shape based on age relative to peak
+                # This creates a realistic rise → peak → decline pattern for all players
+                
+                if future_age < peak_age:
+                    # Pre-peak: gradual rise toward peak
+                    # Distance to peak: how many years until peak
+                    years_to_peak = peak_age - future_age
+                    max_years_to_peak = peak_age - 20  # Assume players start rising around age 20
+                    
+                    # Calculate rise factor (0 at age 20, 1 at peak age)
+                    # Using a smooth curve that accelerates initially then slows
+                    progress_to_peak = (peak_age - future_age) / max_years_to_peak
+                    progress_to_peak = max(0, min(progress_to_peak, 1))  # Clamp between 0-1
+                    
+                    # S-curve for smoother rise: starts slow, accelerates, slows near peak
+                    rise_multiplier = 1.0 + (0.025 * (max_years_to_peak - years_to_peak))
+                    
+                    predicted_rating = current_rating * rise_multiplier
+                
+                elif future_age == peak_age:
+                    # At peak: maintain current trajectory slightly boosted
+                    predicted_rating = current_rating * 1.02
+                
                 else:
-                    predicted_rating = current_rating + trend * year_offset
+                    # Post-peak: gradual decline
+                    years_past_peak = future_age - peak_age
+                    
+                    # Decline accelerates over time
+                    # Year 1 past peak: -2%
+                    # Year 2 past peak: -4.5%
+                    # Year 3 past peak: -7.2%
+                    # etc.
+                    decline_multiplier = 1.0 - (0.02 * years_past_peak) - (0.005 * (years_past_peak ** 2))
+                    decline_multiplier = max(decline_multiplier, 0.65)  # Floor at 65% of peak
+                    
+                    predicted_rating = current_rating * decline_multiplier
             
             # Ensure prediction stays reasonable (> 0)
             predicted_rating = max(predicted_rating, 5.0)
             
-            # Calculate confidence bands
-            upper = predicted_rating * (1 + confidence_band)
-            lower = predicted_rating * (1 - confidence_band)
+            # Calculate confidence bands that widen over time
+            # Base confidence band increases with projection distance
+            dynamic_confidence = confidence_band * (1 + 0.05 * year_offset)  # +5% uncertainty per year
+            # Older players have higher uncertainty
+            if future_age > 30:
+                dynamic_confidence *= 1.2
+            
+            upper = predicted_rating * (1 + dynamic_confidence)
+            lower = predicted_rating * (1 - dynamic_confidence)
             
             years.append(future_year)
             predictions.append(predicted_rating)
@@ -1183,8 +1269,57 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Overview", "Team Breakdown", "Player Dashboard", "Depth Chart", "Team Age Breakdown"]
-page = st.sidebar.radio("Navigate", PAGES)
+PAGES = ["Home", "Overview", "Team Breakdown", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder"]
+
+# Initialize session state for page navigation
+if "selected_page" not in st.session_state:
+    st.session_state.selected_page = None
+
+# Use session state if set (from button click), otherwise use sidebar radio
+if st.session_state.selected_page:
+    page = st.session_state.selected_page
+    # Update the sidebar radio to match
+    st.sidebar.radio("Navigate", PAGES, index=PAGES.index(page))
+    # Clear the flag so subsequent reruns use the sidebar
+    st.session_state.selected_page = None
+else:
+    page = st.sidebar.radio("Navigate", PAGES)
+
+
+# ================= HOME =================
+
+if page == "Home":
+    # Center content with columns
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        # Display logo image
+        logo_path = "team_logos/Logo Transparent.png"
+        
+        if os.path.exists(logo_path):
+            st.image(logo_path, use_container_width=True)
+        else:
+            # Fallback if logo not found - show placeholder
+            st.markdown(
+                "<div style='text-align: center; font-size: 100px; color: #999;'>🏉</div>",
+                unsafe_allow_html=True
+            )
+        
+        # Heading
+        st.markdown(
+            """
+            <h1 style='text-align: center; font-size: 2.5em; margin-top: 40px;'>
+                AFL Dashboards
+            </h1>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Enter button
+        st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+        if st.button("Enter", use_container_width=True, key="home_enter_btn"):
+            st.session_state.selected_page = "Overview"
+            st.rerun()
 
 
 # ================= OVERVIEW =================
@@ -1508,19 +1643,42 @@ if page == "Overview":
 elif page == "Team Breakdown":
     st.title("📊 Team Breakdown")
 
-    selected_season = st.selectbox("Season", TEAM_SEASONS)
-    window = st.radio(
-        "Data window",
-        ["Season", "Last 10 Games"],
-        horizontal=True,
+    # Get available years for top-level selection
+    available_years = get_available_summary_years()
+    if not available_years:
+        st.error("No summary years available.")
+        st.stop()
+    
+    # Create options: years with Season, plus 2025 with Last 10 Games
+    year_options = []
+    for year in available_years:
+        year_options.append(f"{year} - Season")
+        if year == 2025:
+            year_options.append("2025 - Last 10 Games")
+    
+    # Year and data window selection combined
+    selected_option = st.selectbox(
+        "Select Year & Data Window",
+        year_options,
+        index=0 if year_options else None,
+        help="Choose which year to view. Last 10 Games only available for 2025.",
     )
+    
+    # Parse the selection
+    if " - Last 10 Games" in selected_option:
+        selected_year = 2025
+        window = "Last 10 Games"
+    else:
+        selected_year = int(selected_option.split(" - ")[0])
+        window = "Season"
+    
     last10 = window == "Last 10 Games"
-    period_label = f"{window} ({selected_season})"
+    period_label = f"{window} ({selected_year})"
 
     try:
-        ladders = load_team_ladders(selected_season, last10=last10)
+        ladders = load_team_ladders(selected_year, last10=last10)
     except Exception as e:
-        st.error(f"Error loading team data for {selected_season} – {window}: {e}")
+        st.error(f"Error loading team data for {selected_year} – {window}: {e}")
         st.stop()
 
     if ladders.empty:
@@ -1711,159 +1869,156 @@ elif page == "Team Breakdown":
 
         idx += 1
 
-
     # --- Attribute Detail – new design ---
     st.markdown("---")
-    st.subheader("Attribute Detail – Team vs Competition (2025 Summary)")
+    st.subheader("Attribute Detail – Team vs Competition")
 
-    if selected_season != 2025:
-        st.info("Attribute detail currently uses the 2025 Summary sheet only.")
+    # Load summary data for the selected year
+    summary_year = load_team_summary_for_year(selected_year)
+
+    attribute_options = [
+        "Ball Winning",
+        "Ball Movement",
+        "Scoring",
+        "Defence",
+        "Pressure",
+        "Health Check",
+        "Wheelo Ratings",
+    ]
+    selected_attribute = st.selectbox(
+        "Select attribute group",
+        attribute_options,
+        help=f"Matches the groups in the {selected_year} Summary sheet.",
+    )
+
+    blocks = _extract_attribute_structure(summary_year, selected_attribute)
+    if not blocks:
+        st.info("No stats found for this attribute group.")
     else:
-        summary_2025 = load_team_summary_2025()
-
-        attribute_options = [
-            "Ball Winning",
-            "Ball Movement",
-            "Scoring",
-            "Defence",
-            "Pressure",
-            "Health Check",
-            "Wheelo Ratings",
-        ]
-        selected_attribute = st.selectbox(
-            "Select attribute group",
-            attribute_options,
-            help="Matches the groups in the 2025 Summary sheet.",
-        )
-
-        blocks = _extract_attribute_structure(summary_2025, selected_attribute)
-        if not blocks:
-            st.info("No stats found for this attribute group.")
-        else:
-            stat_names = [b["stat_name"] for b in blocks]
-            which_block = "Last10" if window == "Last 10 Games" else "Season"
-            # Show first 4 stats in 4 columns
-            stat_cols = st.columns(4)
-            for idx, stat_name in enumerate(stat_names[:4]):
-                dist_df = get_attribute_stat_distribution(
-                    summary_2025,
-                    selected_attribute,
-                    stat_name,
-                    block=which_block,
+        stat_names = [b["stat_name"] for b in blocks]
+        which_block = "Last10" if window == "Last 10 Games" else "Season"
+        # Show first 4 stats in 4 columns
+        stat_cols = st.columns(4)
+        for idx, stat_name in enumerate(stat_names[:4]):
+            dist_df = get_attribute_stat_distribution(
+                summary_year,
+                selected_attribute,
+                stat_name,
+                block=which_block,
+            )
+            with stat_cols[idx]:
+                # add a subtle right border between columns for visual separation
+                col_border = (
+                    "border-right:1px solid #e0e0e0;padding-right:12px;margin-right:8px;"
+                    if idx < 3
+                    else ""
                 )
-                with stat_cols[idx]:
-                    # add a subtle right border between columns for visual separation
-                    col_border = (
-                        "border-right:1px solid #e0e0e0;padding-right:12px;margin-right:8px;"
-                        if idx < 3
-                        else ""
-                    )
-                    st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
-                    st.markdown(f"### {stat_name}")
-                    if dist_df.empty:
-                        st.info("No data found for this stat across teams.")
+                st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
+                st.markdown(f"### {stat_name}")
+                if dist_df.empty:
+                    st.info("No data found for this stat across teams.")
+                else:
+                    dist_df = dist_df.copy()
+                    dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
+                    dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
+                    dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                    expected_team_count = 18
+                    actual_team_count = dist_df["Team"].nunique()
+                    if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
+                        dist_df = dist_df.sort_values("Value", ascending=False)
+                        dist_df["Rank"] = range(1, len(dist_df) + 1)
                     else:
-                        dist_df = dist_df.copy()
-                        dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
-                        dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
-                        dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
-                        expected_team_count = 18
-                        actual_team_count = dist_df["Team"].nunique()
-                        if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
-                            dist_df = dist_df.sort_values("Value", ascending=False)
-                            dist_df["Rank"] = range(1, len(dist_df) + 1)
+                        dist_df = dist_df.sort_values("Rank", ascending=True)
+                    dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
+                    sel_row = dist_df[dist_df["Team"] == team_name]
+                    if sel_row.empty:
+                        st.warning(f"{team_name} has no data for this stat.")
+                    else:
+                        sel = sel_row.iloc[0]
+                        val = sel["Value"]
+                        rank = int(sel["Rank"])
+                        canonical_teams = set([
+                            "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
+                            "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
+                            "Sydney", "West Coast", "Western Bulldogs"
+                        ])
+                        missing_teams = canonical_teams - set(dist_df["Team"].unique())
+                        if actual_team_count != expected_team_count:
+                            n_teams = actual_team_count
+                            rank_str = f"{rank} / {n_teams}"
+                            st.warning(f"Warning: Only {actual_team_count} teams found in data (expected 18). Data may be incomplete.")
+                            if missing_teams:
+                                st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
                         else:
-                            dist_df = dist_df.sort_values("Rank", ascending=True)
-                        dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
-                        sel_row = dist_df[dist_df["Team"] == team_name]
-                        if sel_row.empty:
-                            st.warning(f"{team_name} has no data for this stat.")
+                            n_teams = expected_team_count
+                            rank_str = f"{rank} / {n_teams}"
+                        try:
+                            val_str = f"{float(val):.1f}"
+                        except Exception:
+                            val_str = str(val)
+                        if rank <= 4:
+                            main_color = "darkgreen"
+                        elif rank <= 9:
+                            main_color = "lightgreen"
+                        elif rank <= 14:
+                            main_color = "orange"
                         else:
-                            sel = sel_row.iloc[0]
-                            val = sel["Value"]
-                            rank = int(sel["Rank"])
-                            canonical_teams = set([
-                                "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
-                                "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
-                                "Sydney", "West Coast", "Western Bulldogs"
-                            ])
-                            missing_teams = canonical_teams - set(dist_df["Team"].unique())
-                            if actual_team_count != expected_team_count:
-                                n_teams = actual_team_count
-                                rank_str = f"{rank} / {n_teams}"
-                                st.warning(f"Warning: Only {actual_team_count} teams found in data (expected 18). Data may be incomplete.")
-                                if missing_teams:
-                                    st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
+                            main_color = "red"
+                        # compute ordinal (1st, 2nd, 3rd, 4th...)
+                        try:
+                            r_int = int(rank)
+                            if 10 <= (r_int % 100) <= 20:
+                                suf = "th"
                             else:
-                                n_teams = expected_team_count
-                                rank_str = f"{rank} / {n_teams}"
+                                suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
+                            ord_str = f"{r_int}{suf}"
+                        except Exception:
+                            ord_str = str(rank)
+                        # Match snapshot styling: 1.6em font size for value with ordinal
+                        st.markdown(
+                            f"<div style='font-size:1.6em;font-weight:900;color:{main_color};margin-top:4px;'>{val_str} ({ord_str})</div>",
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(f"<div style='font-size:0.85em;color:#aaaaaa;margin-top:2px;'>Data window: {'Last 10 Games' if which_block == 'Last10' else 'Season Total'}</div>", unsafe_allow_html=True)
+                    # Top 4 by Rank
+                    st.markdown(f"#### Top 4")
+                    top4 = (
+                        dist_df.dropna(subset=["Rank"])
+                        .sort_values("Rank", ascending=True)
+                        .head(4)
+                    )
+                    if top4.empty:
+                        st.info("No ranked teams found for this stat.")
+                    else:
+                        lines = []
+                        for _, row in top4.iterrows():
+                            t = row["Team"]
+                            val = row["Value"]
+                            r = int(row["Rank"])
                             try:
                                 val_str = f"{float(val):.1f}"
                             except Exception:
                                 val_str = str(val)
-                            if rank <= 4:
-                                main_color = "darkgreen"
-                            elif rank <= 9:
-                                main_color = "lightgreen"
-                            elif rank <= 14:
-                                main_color = "orange"
+                            if t == team_name:
+                                size = "1.05em"
+                                weight = "900"
+                                color = "#00CC00"
+                            elif r == 1:
+                                size = "1.0em"
+                                weight = "800"
+                                color = "#FFFFFF"
                             else:
-                                main_color = "red"
-                            # compute ordinal (1st, 2nd, 3rd, 4th...)
-                            try:
-                                r_int = int(rank)
-                                if 10 <= (r_int % 100) <= 20:
-                                    suf = "th"
-                                else:
-                                    suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
-                                ord_str = f"{r_int}{suf}"
-                            except Exception:
-                                ord_str = str(rank)
-                            # Match snapshot styling: 1.6em font size for value with ordinal
-                            st.markdown(
-                                f"<div style='font-size:1.6em;font-weight:900;color:{main_color};margin-top:4px;'>{val_str} ({ord_str})</div>",
-                                unsafe_allow_html=True,
+                                size = "0.9em"
+                                weight = "700"
+                                color = "#DDDDDD"
+                            line_html = (
+                                "<div style='margin-bottom:4px;"
+                                f"font-size:{size};font-weight:{weight};"
+                                f"color:{color};'>"
+                                f"{r}. {t} – {val_str}</div>"
                             )
-                            st.markdown(f"<div style='font-size:0.85em;color:#aaaaaa;margin-top:2px;'>Data window: {'Last 10 Games' if which_block == 'Last10' else 'Season Total'}</div>", unsafe_allow_html=True)
-                        # Top 4 by Rank
-                        st.markdown(f"#### Top 4")
-                        top4 = (
-                            dist_df.dropna(subset=["Rank"])
-                            .sort_values("Rank", ascending=True)
-                            .head(4)
-                        )
-                        if top4.empty:
-                            st.info("No ranked teams found for this stat.")
-                        else:
-                            lines = []
-                            for _, row in top4.iterrows():
-                                t = row["Team"]
-                                val = row["Value"]
-                                r = int(row["Rank"])
-                                try:
-                                    val_str = f"{float(val):.1f}"
-                                except Exception:
-                                    val_str = str(val)
-                                if t == team_name:
-                                    size = "1.05em"
-                                    weight = "900"
-                                    color = "#00CC00"
-                                elif r == 1:
-                                    size = "1.0em"
-                                    weight = "800"
-                                    color = "#FFFFFF"
-                                else:
-                                    size = "0.9em"
-                                    weight = "700"
-                                    color = "#DDDDDD"
-                                line_html = (
-                                    "<div style='margin-bottom:4px;"
-                                    f"font-size:{size};font-weight:{weight};"
-                                    f"color:{color};'>"
-                                    f"{r}. {t} – {val_str}</div>"
-                                )
-                                lines.append(line_html)
-                            st.markdown("".join(lines), unsafe_allow_html=True)
+                            lines.append(line_html)
+                        st.markdown("".join(lines), unsafe_allow_html=True)
                         # Averages
                         st.markdown("<hr style='border:0;border-top:2px solid #333;margin:16px 0;'>", unsafe_allow_html=True)
                         st.markdown("#### Averages")
@@ -1999,6 +2154,22 @@ elif page == "Player Dashboard":
 
     table_view = df_view[display_cols].copy()
 
+    # Helper function to convert number to ordinal (1st, 2nd, 3rd, etc)
+    def get_ordinal(n):
+        if 10 <= n % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return f"{n}{suffix}"
+
+    # Add competition rank (by rating, across all selected players)
+    table_view["Competition_Rank"] = table_view["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
+    table_view["Competition_Rank"] = table_view["Competition_Rank"].apply(get_ordinal)
+
+    # Add positional rank (by rating, within same position and season)
+    table_view["Positional_Rank"] = table_view.groupby(["Position", "Season"])["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
+    table_view["Positional_Rank"] = table_view["Positional_Rank"].apply(get_ordinal)
+
     # Round age + rating to 1 decimal
     if age_col in table_view.columns:
         table_view[age_col] = pd.to_numeric(table_view[age_col], errors="coerce").round(1)
@@ -2013,10 +2184,19 @@ elif page == "Player Dashboard":
         rename_map[age_col] = "Age"
     if "RatingPoints_Avg" in table_view.columns:
         rename_map["RatingPoints_Avg"] = "Rating"
+    rename_map["Competition_Rank"] = "Comp Rank"
+    rename_map["Positional_Rank"] = "Pos Rank"
     table_view = table_view.rename(columns=rename_map)
 
-    # Centre all columns except Player and Team
-    cols_to_center = [c for c in table_view.columns if c not in ["Player", "Team"]]
+    # Reorder columns to put ranks before Player
+    cols = list(table_view.columns)
+    cols.remove("Comp Rank")
+    cols.remove("Pos Rank")
+    cols.remove("Player")
+    table_view = table_view[["Comp Rank", "Pos Rank", "Player"] + cols]
+
+    # Centre all columns except Player, Team, Comp Rank, and Pos Rank
+    cols_to_center = [c for c in table_view.columns if c not in ["Player", "Team", "Comp Rank", "Pos Rank"]]
     styler_players = table_view.style.set_properties(
         subset=cols_to_center,
         **{"text-align": "center"},
@@ -2033,7 +2213,7 @@ elif page == "Player Dashboard":
         styler_players = styler_players.format(fmt_map)
 
     # Prefer interactive AgGrid if available, otherwise fall back to styled table
-    render_interactive_table(table_view, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in table_view.columns else None, pre_styled_styler=styler_players)
+    render_interactive_table(table_view, exclude_cols=["Player", "Team", "Comp Rank", "Pos Rank"], color_col="Rating" if "Rating" in table_view.columns else None, pre_styled_styler=styler_players)
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
@@ -2350,14 +2530,50 @@ elif page == "Player Dashboard":
     # Reset index so the displayed table does not show the original DataFrame index
     player_table = player_table.reset_index(drop=True)
 
+    # Add competition rank per season (by rating within that season, across ALL players in competition)
+    # Get all players for each season to calculate correct ranks
+    competition_ranks = []
+    positional_ranks = []
+    
+    for idx, row in player_table.iterrows():
+        season = row["Season"]
+        position = row["Position"]
+        rating = row["RatingPoints_Avg"]
+        
+        # Get all players in this season from the full competition
+        season_players = players_full[players_full["Season"] == season].copy()
+        season_players["RatingPoints_Avg"] = pd.to_numeric(season_players["RatingPoints_Avg"], errors="coerce")
+        
+        # Competition rank: rank across all players in the season
+        comp_rank = (season_players["RatingPoints_Avg"] >= rating).sum()
+        competition_ranks.append(get_ordinal(comp_rank))
+        
+        # Positional rank: rank within position and season
+        position_players = season_players[
+            season_players["Position"].apply(lambda p: map_position_to_depth(p) if pd.notna(p) else "") == map_position_to_depth(position)
+        ]
+        pos_rank = (position_players["RatingPoints_Avg"] >= rating).sum()
+        positional_ranks.append(get_ordinal(pos_rank))
+    
+    player_table["Competition_Rank"] = competition_ranks
+    player_table["Positional_Rank"] = positional_ranks
+
     rename_map_season = {}
     if age_col in player_table.columns:
         rename_map_season[age_col] = "Age"
     rename_map_season["RatingPoints_Avg"] = "Rating"
+    rename_map_season["Competition_Rank"] = "Comp Rank"
+    rename_map_season["Positional_Rank"] = "Pos Rank"
     player_table = player_table.rename(columns=rename_map_season)
 
-    # Centre all columns except Player and Team (if present)
-    cols_to_center_season = [c for c in player_table.columns if c not in ["Player", "Team"]]
+    # Reorder columns to put ranks before other info
+    cols = list(player_table.columns)
+    cols.remove("Comp Rank")
+    cols.remove("Pos Rank")
+    player_table = player_table[["Comp Rank", "Pos Rank"] + cols]
+
+    # Centre all columns except Team (if present)
+    cols_to_center_season = [c for c in player_table.columns if c not in ["Team", "Comp Rank", "Pos Rank"]]
     
     # Apply competition-wide percentile coloring to Rating column (same as Player List and graph)
     def rating_colour_style_competition(col: pd.Series):
@@ -2399,7 +2615,7 @@ elif page == "Player Dashboard":
     if fmt_map_season:
         styler_player_table = styler_player_table.format(fmt_map_season)
 
-    render_interactive_table(player_table, exclude_cols=["Player", "Team"], color_col="Rating" if "Rating" in player_table.columns else None, pre_styled_styler=styler_player_table)
+    render_interactive_table(player_table, exclude_cols=["Team", "Comp Rank", "Pos Rank"], color_col="Rating" if "Rating" in player_table.columns else None, pre_styled_styler=styler_player_table)
 
 
 # ================= DEPTH CHART =================
@@ -2546,15 +2762,39 @@ elif page == "Team Age Breakdown":
 
     # Sort by team name
     age_breakdown_table = age_breakdown_table.sort_values("Team").reset_index(drop=True)
+    
+    # Helper function to get ordinal suffix
+    def get_ordinal_suffix(n):
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+    
+    # Calculate rankings for each age band (highest % = best = rank 1)
+    for band in AGE_BANDS:
+        # Rank teams by percentage (descending - highest is best)
+        age_breakdown_table[f"{band}_Rank"] = age_breakdown_table[band].rank(ascending=False, method='min').astype(int)
+        # Format as "X.X% (Yth)"
+        age_breakdown_table[f"{band}_Display"] = age_breakdown_table.apply(
+            lambda row: f"{row[band]:.1f}% ({get_ordinal_suffix(row[f'{band}_Rank'])})", 
+            axis=1
+        )
+    
+    # Create display table with formatted values
+    display_table = age_breakdown_table[["Team"] + [f"{band}_Display" for band in AGE_BANDS]].copy()
+    # Rename columns to remove _Display suffix
+    display_table.columns = ["Team"] + AGE_BANDS
 
-    # Calculate league averages for each age band
+    # Calculate league averages for each age band (from original numeric values)
     league_averages = {"Team": "League Average"}
     for band in AGE_BANDS:
-        league_averages[band] = age_breakdown_table[band].mean()
+        avg_val = age_breakdown_table[band].mean()
+        league_averages[band] = f"{avg_val:.1f}%"
     
-    # Add league averages row to the table
+    # Add league averages row to the display table
     league_avg_df = pd.DataFrame([league_averages])
-    age_breakdown_with_avg = pd.concat([age_breakdown_table, league_avg_df], ignore_index=True)
+    age_breakdown_with_avg = pd.concat([display_table, league_avg_df], ignore_index=True)
 
     # Display the table
     st.subheader(f"Age Group Contribution by Team ({selected_season})")
@@ -2568,21 +2808,10 @@ elif page == "Team Age Breakdown":
         from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
         
         # Separate team data from league average for proper sorting
-        df_teams = age_breakdown_table.copy()
+        df_teams = display_table.copy()
         df_league_avg = age_breakdown_with_avg[age_breakdown_with_avg["Team"] == "League Average"].copy()
         
-        # Format percentages with % sign for teams
-        for band in AGE_BANDS:
-            df_teams[band] = df_teams[band].apply(lambda x: f"{x:.1f}%")
-            df_league_avg[band] = df_league_avg[band].apply(lambda x: f"{x:.1f}%")
-        
-        # Display team table (sortable)
-        st.markdown("#### Teams")
-        gb = GridOptionsBuilder.from_dataframe(df_teams)
-        gb.configure_default_column(filter=True, sortable=True, resizable=True)
-        gb.configure_column("Team", pinned='left', width=150)
-        
-        # Calculate min/max for each age band independently
+        # Calculate min/max for each age band independently (from original numeric values)
         band_ranges = {}
         for band in AGE_BANDS:
             band_ranges[band] = {
@@ -2590,15 +2819,25 @@ elif page == "Team Age Breakdown":
                 'max': age_breakdown_table[band].max()
             }
         
-        # Create separate JavaScript styling for each age band column
+        # Display team table (sortable)
+        st.markdown("#### Teams")
+        gb = GridOptionsBuilder.from_dataframe(df_teams)
+        gb.configure_default_column(filter=True, sortable=True, resizable=True)
+        gb.configure_column("Team", pinned='left', width=150)
+        
+        # Create separate JavaScript styling for each age band column with gradient color
         for band in AGE_BANDS:
             min_val = band_ranges[band]['min']
             max_val = band_ranges[band]['max']
             
             cell_style_js = JsCode(f"""
                 function(params) {{
-                    var value = parseFloat(params.value);
-                    if (isNaN(value)) return {{'textAlign': 'center'}};
+                    if (!params.value) return {{'textAlign': 'center'}};
+                    
+                    // Extract numeric value from "X.X% (Yth)" format
+                    var text = params.value;
+                    var match = text.match(/^([0-9.]+)%/);
+                    var value = match ? parseFloat(match[1]) : 0;
                     
                     var min = {min_val};
                     var max = {max_val};
@@ -2646,55 +2885,15 @@ elif page == "Team Age Breakdown":
         gridOptions_avg = gb_avg.build()
         AgGrid(df_league_avg, gridOptions=gridOptions_avg, allow_unsafe_jscode=True, fit_columns_on_grid_load=False, height=80)
     else:
-        # Fallback: styled table (note: boxing effect limited in pandas styler, showing with background)
+        # Fallback: styled table
         # Separate team data from league average
-        df_teams = age_breakdown_table.copy()
+        df_teams = display_table.copy()
         df_league_avg = age_breakdown_with_avg[age_breakdown_with_avg["Team"] == "League Average"].copy()
         
-        # Format percentages
-        for band in AGE_BANDS:
-            df_teams[band] = df_teams[band].apply(lambda x: f"{x:.1f}%")
-            df_league_avg[band] = df_league_avg[band].apply(lambda x: f"{x:.1f}%")
-        
-        # Helper function to apply gradient color to team cells
-        def color_gradient_teams(row):
-            styles = []
-            for col_name in df_teams.columns:
-                if col_name == "Team":
-                    styles.append('text-align: left;')
-                else:
-                    val = row[col_name]
-                    if pd.notna(val):
-                        try:
-                            value = float(str(val).replace('%', ''))
-                            min_val = age_breakdown_table[col_name].min()
-                            max_val = age_breakdown_table[col_name].max()
-                            range_val = max_val - min_val
-                            if range_val == 0:
-                                normalized = 0.5
-                            else:
-                                normalized = (value - min_val) / range_val
-                            
-                            if normalized > 0.5:
-                                r = int(255 * 2 * (1 - normalized))
-                                g = 200
-                                b = 0
-                            else:
-                                r = 255
-                                g = int(200 * 2 * normalized)
-                                b = 0
-                            
-                            text_color = 'black' if normalized > 0.3 else 'white'
-                            styles.append(f'background-color: rgb({r},{g},{b}); color: {text_color}; font-weight: bold; text-align: center;')
-                        except:
-                            styles.append('text-align: center;')
-                    else:
-                        styles.append('text-align: center;')
-            return styles
-        
-        # Style teams table
+        # Style teams table with centered content
         st.markdown("#### Teams")
-        styler_teams = df_teams.style.apply(color_gradient_teams, axis=1)
+        styler_teams = df_teams.style.set_properties(**{'text-align': 'center'})
+        styler_teams = styler_teams.set_properties(subset=['Team'], **{'text-align': 'left'})
         st.table(styler_teams)
         
         # Style league average table
@@ -2707,3 +2906,300 @@ elif page == "Team Age Breakdown":
             **{'text-align': 'left'}
         )
         st.table(styler_avg)
+
+
+# ================= LIST LADDER =================
+
+elif page == "List Ladder":
+    st.title("📊 List Ladder")
+    
+    # Load player data from Summary sheet (has Wing position data, unlike season sheets)
+    try:
+        players_df = load_player_summary()
+    except Exception as e:
+        st.error(f"Error loading player summary data: {e}")
+        st.stop()
+    
+    if players_df.empty:
+        st.warning(f"No player data found in Summary sheet.")
+        st.stop()
+    
+    # Ensure required columns exist
+    required_cols = ["Player", "Team", "Position"]
+    missing_cols = [c for c in required_cols if c not in players_df.columns]
+    if missing_cols:
+        st.error(f"Missing required columns: {', '.join(missing_cols)}")
+        st.stop()
+    
+    # Rating selection dropdown (just the labels, no "current" or "Average")
+    rating_options = {
+        "2025": "2025",
+        "Last 2 Seasons": "Last 2 Average",
+        "Career": "Career",
+    }
+    rating_label = st.selectbox(
+        "List Ladder Type",
+        list(rating_options.keys()),
+        index=0,
+    )
+    rating_col = rating_options[rating_label]
+    
+    # Verify rating column exists
+    if rating_col not in players_df.columns:
+        st.error(f"Column '{rating_col}' not found in Summary sheet")
+        st.stop()
+    
+    # Convert to numeric
+    players_df["RatingPoints_Avg"] = pd.to_numeric(players_df[rating_col], errors="coerce")
+    
+    # Remove players with no rating
+    players_df = players_df[players_df["RatingPoints_Avg"].notna()]
+    
+    # Get all unique teams
+    teams = sorted(players_df["Team"].dropna().unique())
+    
+    # Helper function to convert number to ordinal (1st, 2nd, 3rd, etc)
+    def get_ordinal(n):
+        if 10 <= n % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return f"{n}{suffix}"
+    
+    # Get percentile-based rating color and points for a player
+    def get_rating_points(rating_val, all_ratings):
+        """Returns points based on rating percentile"""
+        all_ratings_clean = all_ratings.dropna()
+        if len(all_ratings_clean) == 0 or pd.isna(rating_val):
+            return 0
+        
+        percentile = (all_ratings_clean <= rating_val).mean()
+        
+        if percentile >= 0.85:
+            return 3  # dark green - top 15%
+        elif percentile >= 0.60:
+            return 1  # light green - top 40%
+        elif percentile >= 0.35:
+            return 0.5  # orange - top 65%
+        else:
+            return 0  # red - bottom group
+    
+    # Build the list ladder table
+    ladder_data = []
+    all_ratings = players_df["RatingPoints_Avg"]
+    
+    for team in teams:
+        team_players = players_df[players_df["Team"] == team].copy()
+        
+        row_data = {"Team": team}
+        position_totals = {}
+        
+        # For each position, get the TOTAL points of players in that position
+        for position in DEPTH_POSITIONS:
+            position_players = team_players[
+                team_players["Position"].apply(lambda p: map_position_to_depth(p) if pd.notna(p) else "") == position
+            ]
+            
+            if len(position_players) > 0:
+                # Calculate points for each player in this position and SUM
+                position_player_points = [get_rating_points(rating, all_ratings) for rating in position_players["RatingPoints_Avg"]]
+                total_position_points = sum(position_player_points)
+            else:
+                total_position_points = 0
+            
+            position_totals[position] = total_position_points
+            row_data[position] = total_position_points
+        
+        # Calculate total points across all positions
+        total_points = sum(position_totals.values())
+        row_data["Total_Points"] = total_points
+        row_data["Position_Totals"] = position_totals
+        
+        ladder_data.append(row_data)
+    
+    # Create DataFrame
+    ladder_df = pd.DataFrame(ladder_data)
+    
+    # Calculate ranks
+    ladder_df["Overall_Rank"] = ladder_df["Total_Points"].rank(method='min', ascending=False).astype(int)
+    
+    # Calculate positional ranks (rank for each position across all teams)
+    for position in DEPTH_POSITIONS:
+        ladder_df[f"{position}_Rank"] = ladder_df[position].rank(method='min', ascending=False).astype(int)
+    
+    # Display the ladder
+    st.subheader(f"Team List Ladder - {rating_label}")
+    st.caption("Positional strength based on total player points. Points per player: Top 15% = 3pts, Top 40% = 1pt, Top 65% = 0.5pts, Rest = 0pts")
+    
+    # Create display table with ranks and total points
+    display_data = []
+    for idx, row in ladder_df.iterrows():
+        display_row = {"Team": row["Team"]}
+        
+        # Add position ranks with total points
+        for position in DEPTH_POSITIONS:
+            rank = int(row[f"{position}_Rank"])
+            points = row[position]
+            display_row[position] = f"{get_ordinal(rank)} ({points:.0f}pts)"
+        
+        # Add total points and overall rank
+        display_row["Total Points"] = f"{row['Total_Points']:.0f}pts"
+        display_row["Overall Rank"] = get_ordinal(int(row["Overall_Rank"]))
+        
+        display_data.append(display_row)
+    
+    # Convert to DataFrame and sort by overall rank
+    display_df = pd.DataFrame(display_data)
+    
+    # Create numeric version for sorting
+    numeric_df = ladder_df[["Team", "Total_Points", "Overall_Rank"]].copy()
+    numeric_df = numeric_df.sort_values("Overall_Rank")
+    
+    # Reorder display_df to match sorted order
+    display_df = display_df.set_index("Team").loc[numeric_df["Team"].values].reset_index()
+    
+    # Ensure column order: Team, all positions, Total Points, Overall Rank
+    column_order = ["Team"] + DEPTH_POSITIONS + ["Total Points", "Overall Rank"]
+    display_df = display_df[column_order]
+    
+    # Use AgGrid for sortable table if available, otherwise fallback to styled table
+    if AGGRID_AVAILABLE:
+        gb = GridOptionsBuilder.from_dataframe(display_df)
+        gb.configure_default_column(sortable=True, resizable=True, filter=True)
+        
+        # Configure Team column - left aligned, bold
+        gb.configure_column("Team", pinned="left", cellStyle={"text-align": "left", "font-weight": "bold"})
+        
+        # Configure position columns - centered
+        for pos in DEPTH_POSITIONS:
+            gb.configure_column(pos, cellStyle={"text-align": "center", "font-size": "0.9em"})
+        
+        # Configure Total Points and Overall Rank - dark grey background, white text, bold, centered
+        for col in ["Total Points", "Overall Rank"]:
+            gb.configure_column(
+                col,
+                cellStyle={
+                    "text-align": "center",
+                    "font-weight": "bold",
+                    "background-color": "#333333",
+                    "color": "white"
+                }
+            )
+        
+        gridOptions = gb.build()
+        AgGrid(display_df, gridOptions=gridOptions, height=600, fit_columns_on_grid_load=True)
+    else:
+        # Fallback to styled table
+        styler = display_df.style
+        
+        # Style position columns
+        styler = styler.set_properties(
+            subset=DEPTH_POSITIONS,
+            **{"text-align": "center", "font-size": "0.9em"}
+        )
+        
+        # Style total and rank columns - dark grey with white text
+        total_rank_cols = ["Total Points", "Overall Rank"]
+        styler = styler.set_properties(
+            subset=total_rank_cols,
+            **{"text-align": "center", "font-weight": "bold", "background-color": "#333333", "color": "white"}
+        )
+        
+        # Style team column
+        styler = styler.set_properties(
+            subset=["Team"],
+            **{"text-align": "left", "font-weight": "bold"}
+        )
+        
+        st.table(styler)
+    
+    # ---- Team Player Breakdown by Position ----
+    st.markdown("---")
+    st.subheader("Team Player Breakdown")
+    
+    # Team selector
+    selected_team = st.selectbox("Select a team to view contributing players", teams, key="list_ladder_team_select")
+    
+    if selected_team:
+        # Get players for selected team
+        team_players = players_df[players_df["Team"] == selected_team].copy()
+        
+        if team_players.empty:
+            st.warning(f"No players found for {selected_team}")
+        else:
+            # Map players to depth positions
+            team_players["Depth_Position"] = team_players["Position"].apply(
+                lambda p: map_position_to_depth(p) if pd.notna(p) else "Midfielder"
+            )
+            
+            # Calculate points for each player
+            team_players["Points"] = team_players["RatingPoints_Avg"].apply(
+                lambda r: get_rating_points(r, all_ratings)
+            )
+            
+            # Create display tables for each position
+            positions_with_players = sorted([p for p in DEPTH_POSITIONS if any(team_players["Depth_Position"] == p)])
+            
+            if not positions_with_players:
+                st.warning(f"No players found for {selected_team}")
+            else:
+                st.caption(f"Showing players for {selected_team}. Players are colored by rating percentile across the competition.")
+                
+                # Display tables in columns (2 per row)
+                for i, position in enumerate(positions_with_players):
+                    # Create new row every 2 positions
+                    if i % 2 == 0:
+                        cols = st.columns(2)
+                    
+                    col_idx = i % 2
+                    
+                    with cols[col_idx]:
+                        # Get players for this position
+                        pos_players = team_players[team_players["Depth_Position"] == position].copy()
+                        pos_players = pos_players.sort_values(
+                            ["Points", "RatingPoints_Avg"], ascending=[False, False]
+                        )
+                        
+                        # Create display table
+                        player_table = pos_players[["Player", "RatingPoints_Avg", "Points"]].copy()
+                        player_table = player_table.rename(columns={
+                            "RatingPoints_Avg": "Rating",
+                        })
+                        
+                        # Round rating to 1 decimal
+                        player_table["Rating"] = player_table["Rating"].round(1)
+                        
+                        # Format points to 1 decimal
+                        player_table["Points"] = player_table["Points"].apply(lambda x: f"{x:.1f}")
+                        
+                        # Apply styling with rating color
+                        def rating_colour_style_breakdown(col: pd.Series):
+                            """Color cells based on rating percentile"""
+                            styles = []
+                            for v in col:
+                                if pd.isna(v):
+                                    styles.append("")
+                                else:
+                                    bg, fg = rating_colour_for_value(v, all_ratings)
+                                    styles.append(f"background-color: {bg}; color: {fg}; font-weight: bold;")
+                            return styles
+                        
+                        # Style the table
+                        styler_table = player_table.style.set_properties(
+                            subset=["Rating", "Points"],
+                            **{"text-align": "center"}
+                        )
+                        
+                        # Apply rating colors to the Rating column
+                        if "Rating" in player_table.columns:
+                            styler_table = styler_table.apply(
+                                lambda col: rating_colour_style_breakdown(pos_players["RatingPoints_Avg"]) if col.name == "Rating" else [""] * len(col),
+                                axis=0
+                            )
+                        
+                        # Format Rating to 1 decimal
+                        styler_table = styler_table.format({"Rating": "{:.1f}"})
+                        
+                        # Display position header and table
+                        st.markdown(f"**{position}** ({len(player_table)} players)")
+                        st.table(styler_table)
