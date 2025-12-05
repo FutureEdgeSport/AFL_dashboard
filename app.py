@@ -848,7 +848,7 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             except Exception:
                 line1_parts.append(str(num))
         line1_parts.append(player_name)
-        line1 = " ".join(line1_parts)
+        line1 = f"<span style='font-size:1.1em;font-weight:bold;'>{' '.join(line1_parts)}</span>"
 
         # line 2 – age, height, rating box
         line2_parts = []
