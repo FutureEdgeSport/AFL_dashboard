@@ -1304,7 +1304,7 @@ df_view = pd.DataFrame({
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -3734,50 +3734,96 @@ elif page == "Player Dashboard":
     cols.remove("Pos Rank")
     player_table = player_table[["Comp Rank", "Pos Rank"] + cols]
 
-    # Centre all columns except Team (if present)
-    cols_to_center_season = [c for c in player_table.columns if c not in ["Team", "Comp Rank", "Pos Rank"]]
+    # Create professional HTML table matching Player List format
+    html_season_table = """<style>
+.player-season-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0a0e27;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin-bottom: 40px;
+}
+.player-season-table th {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000000;
+    padding: 14px 10px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+.player-season-table th:nth-child(3) {
+    text-align: left;
+}
+.player-season-table th:last-child {
+    border-right: none;
+}
+.player-season-table td {
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    color: #CCCCCC;
+}
+.player-season-table td:nth-child(3) {
+    text-align: left;
+}
+.player-season-table td:last-child {
+    border-right: none;
+}
+.player-season-table tbody tr {
+    background: #16213e;
+    transition: all 0.3s ease;
+}
+.player-season-table tbody tr:hover {
+    background: #1f2b4d;
+    transform: scale(1.002);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+}
+.player-season-table tbody tr:nth-child(even) {
+    background: #1a2540;
+}
+.player-season-table tbody tr:nth-child(even):hover {
+    background: #1f2b4d;
+}
+</style>
+<table class='player-season-table'>
+<thead>
+<tr>
+"""
     
-    # Apply competition-wide percentile coloring to Rating column (same as Player List and graph)
-    def rating_colour_style_competition(col: pd.Series):
-        """
-        Styler apply function using competition-wide percentiles (matches Player List table and graph).
-        """
-        # Use all ratings from entire competition for percentile calculation
-        all_comp_ratings = players_full["RatingPoints_Avg"].dropna()
-        if all_comp_ratings.empty:
-            return [""] * len(col)
-
-        styles = []
-        for v in col:
-            if pd.isna(v):
-                styles.append("")
+    # Add headers
+    for col in player_table.columns:
+        html_season_table += f"<th>{col}</th>"
+    html_season_table += "</tr>\n</thead>\n<tbody>\n"
+    
+    # Get all ratings for competition-wide coloring
+    all_comp_ratings = players_full["RatingPoints_Avg"].dropna()
+    
+    # Add data rows
+    for idx, row in player_table.iterrows():
+        html_season_table += "<tr>\n"
+        for col in player_table.columns:
+            if col == "Rating":
+                # Color-code rating using competition-wide percentiles
+                rating_val = row[col]
+                if pd.notna(rating_val):
+                    bg_color, text_color = rating_colour_for_value(rating_val, all_comp_ratings)
+                    html_season_table += f"<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{rating_val:.1f}</td>\n"
+                else:
+                    html_season_table += f"<td>–</td>\n"
             else:
-                bg, fg = rating_colour_for_value(float(v), all_comp_ratings)
-                styles.append(
-                    f"background-color:{bg};color:{fg};"
-                    "font-weight:bold;border-radius:4px;"
-                    "text-align:center;vertical-align:middle;"
-                )
-        return styles
+                html_season_table += f"<td>{row[col]}</td>\n"
+        html_season_table += "</tr>\n"
     
-    styler_player_table = player_table.style.set_properties(
-        subset=cols_to_center_season,
-        **{"text-align": "center"},
-    )
-    if "Rating" in player_table.columns:
-        styler_player_table = styler_player_table.apply(
-            rating_colour_style_competition, subset=["Rating"]
-        )
-    # Format Age and Rating columns to 1 decimal place where present
-    fmt_map_season = {}
-    if "Age" in player_table.columns:
-        fmt_map_season["Age"] = "{:.1f}"
-    if "Rating" in player_table.columns:
-        fmt_map_season["Rating"] = "{:.1f}"
-    if fmt_map_season:
-        styler_player_table = styler_player_table.format(fmt_map_season)
-
-    render_interactive_table(player_table, exclude_cols=["Team", "Comp Rank", "Pos Rank"], color_col="Rating" if "Rating" in player_table.columns else None, pre_styled_styler=styler_player_table)
+    html_season_table += "</tbody>\n</table>"
+    st.markdown(html_season_table, unsafe_allow_html=True)
 
 
 # ================= DEPTH CHART =================
@@ -4150,9 +4196,29 @@ elif page == "List Ladder":
     # Get unique teams
     teams = sorted(players_df["Team"].dropna().unique())
     
-    # Map players to depth positions
-    players_df["Depth_Position"] = players_df["Position"].apply(
-        lambda p: map_position_to_depth(p) if pd.notna(p) else "Midfielder"
+    # Load Summary tab to get correct positions (especially Wings)
+    summary_df = load_player_summary()
+    
+    # Create a position mapping from Summary tab
+    summary_positions = {}
+    if "Player" in summary_df.columns and "Position" in summary_df.columns:
+        for _, row in summary_df.iterrows():
+            player_name = row.get("Player", "")
+            position = row.get("Position", "")
+            if pd.notna(player_name) and pd.notna(position):
+                summary_positions[str(player_name).strip()] = str(position).strip()
+    
+    # Map players to depth positions, using Summary tab positions when available
+    def get_depth_position(player_name, fallback_position):
+        # First check if player has position in Summary tab
+        if pd.notna(player_name) and str(player_name).strip() in summary_positions:
+            summary_pos = summary_positions[str(player_name).strip()]
+            return map_position_to_depth(summary_pos)
+        # Otherwise use the position from player data
+        return map_position_to_depth(fallback_position) if pd.notna(fallback_position) else "Midfielder"
+    
+    players_df["Depth_Position"] = players_df.apply(
+        lambda row: get_depth_position(row.get("Player"), row.get("Position")), axis=1
     )
     
     # Calculate points for each player
@@ -4462,3 +4528,600 @@ elif page == "List Ladder":
 """
                         
                         st.markdown(html_player_table, unsafe_allow_html=True)
+
+
+# ================= TEAM LIST SUMMARY =================
+
+elif page == "Team List Summary":
+    st.title("📊 Team List Summary")
+    
+    # Team selection
+    # Get teams from player data
+    try:
+        players_df = load_players(2025)
+    except Exception as e:
+        st.error(f"Error loading player data: {e}")
+        st.stop()
+    
+    teams = sorted(players_df["Team"].dropna().unique())
+    
+    # Set default index based on session state
+    default_idx = 0
+    if "default_team" in st.session_state and st.session_state.default_team in teams:
+        default_idx = teams.index(st.session_state.default_team)
+    
+    selected_team = st.selectbox("Select Team", teams, index=default_idx, key="team_list_summary_team")
+    
+    st.markdown("---")
+    
+    # Display team logo
+    team_code = TEAM_CODE_MAP.get(selected_team, selected_team.lower().replace(" ", ""))
+    team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
+    
+    if os.path.exists(team_logo_path):
+        col_logo, col_title = st.columns([1, 4])
+        with col_logo:
+            st.image(team_logo_path, width=120)
+        with col_title:
+            st.markdown(f"<h2 style='color: #FFD700; margin-top: 20px;'>{selected_team}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color: #CCCCCC; font-size: 1.1em;'>2025 Season List Analysis</p>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<h2 style='text-align: center; color: #FFD700;'>{selected_team}</h2>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ================= AGE BREAKDOWN SECTION =================
+    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>👥 Age Breakdown</h2>", unsafe_allow_html=True)
+    
+    # Calculate age breakdown data (same logic as Team Age Breakdown page)
+    required_cols = ["Player", "Team", "Age", "Matches", "RatingPoints_Avg"]
+    missing_cols = [c for c in required_cols if c not in players_df.columns]
+    if missing_cols:
+        st.error(f"Missing required columns: {', '.join(missing_cols)}")
+        st.stop()
+    
+    players_df["Age"] = pd.to_numeric(players_df["Age"], errors="coerce")
+    players_df["Matches"] = pd.to_numeric(players_df["Matches"], errors="coerce")
+    players_df["RatingPoints_Avg"] = pd.to_numeric(players_df["RatingPoints_Avg"], errors="coerce")
+    
+    # Filter to players with at least 1 match
+    players_filtered = players_df[players_df["Matches"] >= 1].copy()
+    
+    AGE_BANDS = ["<22", "22-25", "26-29", "30+"]
+    
+    def assign_age_band(age):
+        if pd.isna(age):
+            return None
+        if age < 22:
+            return "<22"
+        elif age < 26:
+            return "22-25"
+        elif age < 30:
+            return "26-29"
+        else:
+            return "30+"
+    
+    players_filtered["Age_Band"] = players_filtered["Age"].apply(assign_age_band)
+    
+    # Calculate team stats
+    team_players = players_filtered[players_filtered["Team"] == selected_team]
+    
+    team_stats = {}
+    for band in AGE_BANDS:
+        band_players = team_players[team_players["Age_Band"] == band]
+        if len(band_players) > 0:
+            avg_rating = band_players["RatingPoints_Avg"].mean()
+            team_stats[band] = avg_rating
+        else:
+            team_stats[band] = 0
+    
+    # Calculate league averages and all teams for ranking
+    all_teams = sorted(players_filtered["Team"].dropna().unique())
+    league_avg_stats = {}
+    team_rankings = {band: [] for band in AGE_BANDS}
+    
+    for band in AGE_BANDS:
+        band_values = []
+        for team in all_teams:
+            team_band_players = players_filtered[
+                (players_filtered["Team"] == team) & 
+                (players_filtered["Age_Band"] == band)
+            ]
+            if len(team_band_players) > 0:
+                avg_rating = team_band_players["RatingPoints_Avg"].mean()
+                band_values.append(avg_rating)
+                team_rankings[band].append((team, avg_rating))
+        
+        league_avg_stats[band] = np.mean(band_values) if band_values else 0
+        team_rankings[band].sort(key=lambda x: x[1], reverse=True)
+    
+    # Get Top 4 teams based on total points (from List Ladder logic)
+    ladder_data = []
+    all_ratings = players_filtered["RatingPoints_Avg"].dropna()
+    
+    def get_rating_points(rating_val, all_ratings_clean):
+        if pd.isna(rating_val):
+            return 0
+        percentile = (all_ratings_clean <= rating_val).mean()
+        if percentile >= 0.85:
+            return 3
+        elif percentile >= 0.60:
+            return 1
+        elif percentile >= 0.35:
+            return 0.5
+        else:
+            return 0
+    
+    # Load Summary tab to get correct positions (especially Wings)
+    summary_df = load_player_summary()
+    
+    # Create a position mapping from Summary tab
+    summary_positions = {}
+    if "Player" in summary_df.columns and "Position" in summary_df.columns:
+        for _, row in summary_df.iterrows():
+            player_name = row.get("Player", "")
+            position = row.get("Position", "")
+            if pd.notna(player_name) and pd.notna(position):
+                summary_positions[str(player_name).strip()] = str(position).strip()
+    
+    # Map players to depth positions, using Summary tab positions when available
+    def get_depth_position(player_name, fallback_position):
+        # First check if player has position in Summary tab
+        if pd.notna(player_name) and str(player_name).strip() in summary_positions:
+            summary_pos = summary_positions[str(player_name).strip()]
+            return map_position_to_depth(summary_pos)
+        # Otherwise use the position from player data
+        return map_position_to_depth(fallback_position) if pd.notna(fallback_position) else "Midfielder"
+    
+    players_filtered["Depth_Position"] = players_filtered.apply(
+        lambda row: get_depth_position(row.get("Player"), row.get("Position")), axis=1
+    )
+    players_filtered["Points"] = players_filtered["RatingPoints_Avg"].apply(
+        lambda r: get_rating_points(r, all_ratings)
+    )
+    
+    for team in all_teams:
+        team_players_all = players_filtered[players_filtered["Team"] == team]
+        total_points = team_players_all["Points"].sum()
+        ladder_data.append({"Team": team, "Total Points": total_points})
+    
+    ladder_df = pd.DataFrame(ladder_data).sort_values("Total Points", ascending=False).reset_index(drop=True)
+    top_4_teams = ladder_df.head(4)["Team"].tolist()
+    
+    # Calculate Top 4 averages for age bands
+    top4_avg_stats = {}
+    for band in AGE_BANDS:
+        band_values = []
+        for team in top_4_teams:
+            team_band_players = players_filtered[
+                (players_filtered["Team"] == team) & 
+                (players_filtered["Age_Band"] == band)
+            ]
+            if len(team_band_players) > 0:
+                avg_rating = team_band_players["RatingPoints_Avg"].mean()
+                band_values.append(avg_rating)
+        top4_avg_stats[band] = np.mean(band_values) if band_values else 0
+    
+    # Display age breakdown comparison
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'>
+<p style='color: #DDDDDD; line-height: 1.8; margin: 0;'>
+<strong style='color: #FFD700;'>Age Group Performance:</strong> Comparing your team's average player rating in each age bracket against league averages and Top 4 teams.
+</p>
+</div>""", unsafe_allow_html=True)
+    
+    # Create comparison table
+    comparison_rows = []
+    for band in AGE_BANDS:
+        team_val = team_stats[band]
+        league_val = league_avg_stats[band]
+        top4_val = top4_avg_stats[band]
+        
+        # Get team rank
+        rank = next((i + 1 for i, (t, _) in enumerate(team_rankings[band]) if t == selected_team), 18)
+        
+        comparison_rows.append({
+            "Age Band": band,
+            f"{selected_team}": f"{team_val:.1f}",
+            "League Avg": f"{league_val:.1f}",
+            "Top 4 Avg": f"{top4_val:.1f}",
+            "Diff vs League": f"{team_val - league_val:+.1f}",
+            "Diff vs Top 4": f"{team_val - top4_val:+.1f}",
+            "Rank": rank,
+            "Team_Val": team_val,
+            "League_Val": league_val,
+            "Top4_Val": top4_val
+        })
+    
+    # Helper function to get ordinal suffix
+    def get_ordinal_suffix(n):
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+    
+    # Helper function for rank color
+    def get_rank_color_age(rank):
+        if rank <= 4:
+            return "#006400", "white"
+        elif rank <= 9:
+            return "#90EE90", "black"
+        elif rank <= 14:
+            return "#FFA500", "white"
+        else:
+            return "#FF0000", "white"
+    
+    # Create HTML table for age breakdown
+    html_age_table = """<style>
+.age-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0a0e27;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin-bottom: 40px;
+}
+.age-comparison-table th {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000000;
+    padding: 14px 10px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+.age-comparison-table th:last-child {
+    border-right: none;
+}
+.age-comparison-table td {
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 0.95em;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    color: #CCCCCC;
+}
+.age-comparison-table td:last-child {
+    border-right: none;
+}
+.age-comparison-table tbody tr {
+    background: #16213e;
+    transition: all 0.3s ease;
+}
+.age-comparison-table tbody tr:hover {
+    background: #1f2b4d;
+    transform: scale(1.002);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+}
+.age-comparison-table tbody tr:nth-child(even) {
+    background: #1a2540;
+}
+.age-comparison-table tbody tr:nth-child(even):hover {
+    background: #1f2b4d;
+}
+.rank-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.85em;
+}
+</style>
+<table class='age-comparison-table'>
+<thead>
+<tr>
+<th>Age Band</th>
+<th>""" + selected_team + """</th>
+<th>League Avg</th>
+<th>Top 4 Avg</th>
+<th>Diff vs League</th>
+<th>Diff vs Top 4</th>
+<th>Rank</th>
+</tr>
+</thead>
+<tbody>
+"""
+    
+    for row in comparison_rows:
+        rank = row["Rank"]
+        bg_color, text_color = get_rank_color_age(rank)
+        rank_display = get_ordinal_suffix(rank)
+        
+        # Color code differences
+        diff_league = float(row["Diff vs League"].replace("+", ""))
+        diff_top4 = float(row["Diff vs Top 4"].replace("+", ""))
+        
+        diff_league_color = "#90EE90" if diff_league > 0 else "#FF6666" if diff_league < 0 else "#CCCCCC"
+        diff_top4_color = "#90EE90" if diff_top4 > 0 else "#FF6666" if diff_top4 < 0 else "#CCCCCC"
+        
+        html_age_table += f"""<tr>
+<td style='font-weight: 700; color: #FFD700;'>{row['Age Band']}</td>
+<td style='font-weight: 700; color: #FFFFFF;'>{row[selected_team]}</td>
+<td>{row['League Avg']}</td>
+<td>{row['Top 4 Avg']}</td>
+<td style='color: {diff_league_color}; font-weight: 700;'>{row['Diff vs League']}</td>
+<td style='color: {diff_top4_color}; font-weight: 700;'>{row['Diff vs Top 4']}</td>
+<td><span class='rank-badge' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
+</tr>
+"""
+    
+    html_age_table += "</tbody>\n</table>"
+    st.markdown(html_age_table, unsafe_allow_html=True)
+    
+    # Age breakdown analysis
+    st.markdown("<h3 style='color: #FFD700; margin: 30px 0 15px 0;'>📈 Age Breakdown Analysis</h3>", unsafe_allow_html=True)
+    
+    analysis_points = []
+    
+    # Find strengths and weaknesses
+    strengths = [row for row in comparison_rows if row["Rank"] <= 6]
+    weaknesses = [row for row in comparison_rows if row["Rank"] >= 13]
+    
+    if strengths:
+        strength_bands = ", ".join([row["Age Band"] for row in strengths])
+        analysis_points.append(f"✅ <strong>Strong Age Groups:</strong> {strength_bands} - performing in top third of competition")
+    
+    if weaknesses:
+        weakness_bands = ", ".join([row["Age Band"] for row in weaknesses])
+        analysis_points.append(f"⚠️ <strong>Development Areas:</strong> {weakness_bands} - below competition standard")
+    
+    # Compare to Top 4
+    above_top4 = [row for row in comparison_rows if float(row["Diff vs Top 4"].replace("+", "")) > 0]
+    if above_top4:
+        above_bands = ", ".join([row["Age Band"] for row in above_top4])
+        analysis_points.append(f"⭐ <strong>Elite Performance:</strong> {above_bands} - exceeding Top 4 average")
+    
+    # Overall comparison
+    avg_diff_league = np.mean([float(row["Diff vs League"].replace("+", "")) for row in comparison_rows])
+    if avg_diff_league > 1.0:
+        analysis_points.append(f"📊 <strong>Overall:</strong> Team is performing above league average across age groups (+{avg_diff_league:.1f} average)")
+    elif avg_diff_league < -1.0:
+        analysis_points.append(f"📊 <strong>Overall:</strong> Team is performing below league average across age groups ({avg_diff_league:.1f} average)")
+    else:
+        analysis_points.append(f"📊 <strong>Overall:</strong> Team is performing at league average across age groups")
+    
+    if analysis_points:
+        analysis_html = "<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2);'>"
+        for point in analysis_points:
+            analysis_html += f"<p style='color: #DDDDDD; line-height: 1.8; margin: 10px 0;'>{point}</p>"
+        analysis_html += "</div>"
+        st.markdown(analysis_html, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ================= POSITIONAL DEPTH SECTION =================
+    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>⚡ Positional Depth</h2>", unsafe_allow_html=True)
+    
+    # Calculate positional depth using same positions as Depth Chart
+    # DEPTH_POSITIONS is already defined at top of file: ["Key Defender", "Gen. Defender", "Midfielder", "Mid-Forward", "Wing", "Gen. Forward", "Ruck", "Key Forward"]
+    
+    # Build ladder for all teams
+    position_ladder = []
+    for team in all_teams:
+        team_players_pos = players_filtered[players_filtered["Team"] == team]
+        team_row = {"Team": team}
+        total_points = 0
+        
+        for position in DEPTH_POSITIONS:
+            pos_players = team_players_pos[team_players_pos["Depth_Position"] == position]
+            pos_total = pos_players["Points"].sum()
+            team_row[position] = pos_total
+            total_points += pos_total
+        
+        team_row["Total Points"] = total_points
+        position_ladder.append(team_row)
+    
+    position_ladder_df = pd.DataFrame(position_ladder)
+    
+    # Calculate rankings for each position
+    for position in DEPTH_POSITIONS:
+        position_ladder_df[f"{position}_Rank"] = position_ladder_df[position].rank(ascending=False, method='min').astype(int)
+    
+    position_ladder_df = position_ladder_df.sort_values("Total Points", ascending=False).reset_index(drop=True)
+    
+    # Get selected team's data
+    team_pos_data = position_ladder_df[position_ladder_df["Team"] == selected_team].iloc[0]
+    
+    # Calculate league and Top 4 averages for positions
+    league_pos_avg = {}
+    top4_pos_avg = {}
+    
+    for position in DEPTH_POSITIONS:
+        league_pos_avg[position] = position_ladder_df[position].mean()
+        top4_pos_avg[position] = position_ladder_df[position_ladder_df["Team"].isin(top_4_teams)][position].mean()
+    
+    # Create comparison table for positions
+    pos_comparison_rows = []
+    for position in DEPTH_POSITIONS:
+        team_val = team_pos_data[position]
+        league_val = league_pos_avg[position]
+        top4_val = top4_pos_avg[position]
+        rank = int(team_pos_data[f"{position}_Rank"])
+        
+        pos_comparison_rows.append({
+            "Position": position,
+            f"{selected_team}": f"{team_val:.1f}",
+            "League Avg": f"{league_val:.1f}",
+            "Top 4 Avg": f"{top4_val:.1f}",
+            "Diff vs League": f"{team_val - league_val:+.1f}",
+            "Diff vs Top 4": f"{team_val - top4_val:+.1f}",
+            "Rank": rank
+        })
+    
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'>
+<p style='color: #DDDDDD; line-height: 1.8; margin: 0;'>
+<strong style='color: #FFD700;'>Positional Strength:</strong> Total points accumulated by players in each position, comparing against league and Top 4 averages. Higher points indicate stronger depth.
+</p>
+</div>""", unsafe_allow_html=True)
+    
+    # Create HTML table for positional depth
+    html_pos_table = """<style>
+.pos-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0a0e27;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin-bottom: 40px;
+}
+.pos-comparison-table th {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000000;
+    padding: 14px 10px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+.pos-comparison-table th:first-child {
+    text-align: left;
+    padding-left: 20px;
+}
+.pos-comparison-table th:last-child {
+    border-right: none;
+}
+.pos-comparison-table td {
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 0.95em;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    color: #CCCCCC;
+}
+.pos-comparison-table td:first-child {
+    text-align: left;
+    padding-left: 20px;
+}
+.pos-comparison-table td:last-child {
+    border-right: none;
+}
+.pos-comparison-table tbody tr {
+    background: #16213e;
+    transition: all 0.3s ease;
+}
+.pos-comparison-table tbody tr:hover {
+    background: #1f2b4d;
+    transform: scale(1.002);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+}
+.pos-comparison-table tbody tr:nth-child(even) {
+    background: #1a2540;
+}
+.pos-comparison-table tbody tr:nth-child(even):hover {
+    background: #1f2b4d;
+}
+</style>
+<table class='pos-comparison-table'>
+<thead>
+<tr>
+<th>Position</th>
+<th>""" + selected_team + """</th>
+<th>League Avg</th>
+<th>Top 4 Avg</th>
+<th>Diff vs League</th>
+<th>Diff vs Top 4</th>
+<th>Rank</th>
+</tr>
+</thead>
+<tbody>
+"""
+    
+    for row in pos_comparison_rows:
+        rank = row["Rank"]
+        bg_color, text_color = get_rank_color_age(rank)
+        rank_display = get_ordinal_suffix(rank)
+        
+        diff_league = float(row["Diff vs League"].replace("+", ""))
+        diff_top4 = float(row["Diff vs Top 4"].replace("+", ""))
+        
+        diff_league_color = "#90EE90" if diff_league > 0 else "#FF6666" if diff_league < 0 else "#CCCCCC"
+        diff_top4_color = "#90EE90" if diff_top4 > 0 else "#FF6666" if diff_top4 < 0 else "#CCCCCC"
+        
+        html_pos_table += f"""<tr>
+<td style='font-weight: 700; color: #FFD700;'>{row['Position']}</td>
+<td style='font-weight: 700; color: #FFFFFF;'>{row[selected_team]}</td>
+<td>{row['League Avg']}</td>
+<td>{row['Top 4 Avg']}</td>
+<td style='color: {diff_league_color}; font-weight: 700;'>{row['Diff vs League']}</td>
+<td style='color: {diff_top4_color}; font-weight: 700;'>{row['Diff vs Top 4']}</td>
+<td><span class='rank-badge' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
+</tr>
+"""
+    
+    html_pos_table += "</tbody>\n</table>"
+    st.markdown(html_pos_table, unsafe_allow_html=True)
+    
+    # Positional depth analysis
+    st.markdown("<h3 style='color: #FFD700; margin: 30px 0 15px 0;'>📈 Positional Depth Analysis</h3>", unsafe_allow_html=True)
+    
+    pos_analysis_points = []
+    
+    # Find strongest and weakest positions
+    pos_strengths = [row for row in pos_comparison_rows if row["Rank"] <= 6]
+    pos_weaknesses = [row for row in pos_comparison_rows if row["Rank"] >= 13]
+    
+    if pos_strengths:
+        strength_positions = ", ".join([row["Position"] for row in pos_strengths])
+        pos_analysis_points.append(f"✅ <strong>Strong Positions:</strong> {strength_positions} - top third depth in competition")
+    
+    if pos_weaknesses:
+        weakness_positions = ", ".join([row["Position"] for row in pos_weaknesses])
+        pos_analysis_points.append(f"⚠️ <strong>Development Needs:</strong> {weakness_positions} - below average depth requiring attention")
+    
+    # Elite positions (beating Top 4)
+    elite_positions = [row for row in pos_comparison_rows if float(row["Diff vs Top 4"].replace("+", "")) > 0]
+    if elite_positions:
+        elite_pos_names = ", ".join([row["Position"] for row in elite_positions])
+        pos_analysis_points.append(f"⭐ <strong>Elite Depth:</strong> {elite_pos_names} - exceeding Top 4 teams")
+    
+    # Overall ladder position
+    team_overall_rank = position_ladder_df[position_ladder_df["Team"] == selected_team].index[0] + 1
+    total_points = team_pos_data["Total Points"]
+    league_avg_points = position_ladder_df["Total Points"].mean()
+    
+    if team_overall_rank <= 4:
+        pos_analysis_points.append(f"🏆 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Elite list depth ({total_points:.1f} total points)")
+    elif team_overall_rank <= 9:
+        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Strong list depth ({total_points:.1f} total points)")
+    elif team_overall_rank <= 14:
+        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Average list depth ({total_points:.1f} total points)")
+    else:
+        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Below average list depth ({total_points:.1f} total points)")
+    
+    if pos_analysis_points:
+        pos_analysis_html = "<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2);'>"
+        for point in pos_analysis_points:
+            pos_analysis_html += f"<p style='color: #DDDDDD; line-height: 1.8; margin: 10px 0;'>{point}</p>"
+        pos_analysis_html += "</div>"
+        st.markdown(pos_analysis_html, unsafe_allow_html=True)
+    
+    # Summary section
+    st.markdown("---")
+    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>📋 Summary</h2>", unsafe_allow_html=True)
+    
+    summary_html = f"""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
+<h3 style='color: #FFD700; margin-top: 0;'>{selected_team} - 2025 List Profile</h3>
+<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;'>
+<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 8px;'>
+<h4 style='color: #FFD700; margin-top: 0;'>List Depth Ranking</h4>
+<p style='color: #FFFFFF; font-size: 2em; font-weight: 900; margin: 10px 0;'>{get_ordinal_suffix(team_overall_rank)}</p>
+<p style='color: #CCCCCC; margin: 0;'>Overall Competition Position</p>
+</div>
+<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 8px;'>
+<h4 style='color: #FFD700; margin-top: 0;'>Total List Points</h4>
+<p style='color: #FFFFFF; font-size: 2em; font-weight: 900; margin: 10px 0;'>{total_points:.1f}</p>
+<p style='color: #CCCCCC; margin: 0;'>League Average: {league_avg_points:.1f}</p>
+</div>
+</div>
+</div>"""
+    
+    st.markdown(summary_html, unsafe_allow_html=True)
+
