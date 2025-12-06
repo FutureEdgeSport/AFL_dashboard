@@ -2306,40 +2306,6 @@ elif page == "Team Breakdown":
                     # close the bordered div
                     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---- Full Ladder Table ----
-    st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700; margin: 30px 0 20px 0;'>📋 Full Team Ladder</h2>", unsafe_allow_html=True)
-    
-    # Prepare ladder display
-    ladder_display = ladders.copy()
-    
-    # Add rank column if not present
-    if "Ladder Rank" not in ladder_display.columns and "Overall Ranking" in ladder_display.columns:
-        ladder_display["Rank"] = ladder_display["Overall Ranking"]
-    elif "Ladder Rank" in ladder_display.columns:
-        ladder_display["Rank"] = ladder_display["Ladder Rank"]
-    else:
-        # Create rank based on Overall Ranking column or index
-        if "Overall Ranking" in ladder_display.columns:
-            ladder_display = ladder_display.sort_values("Overall Ranking")
-        ladder_display["Rank"] = range(1, len(ladder_display) + 1)
-    
-    # Select columns to display
-    display_cols = ["Rank", "Team"]
-    for col in METRIC_ORDER:
-        if col in ladder_display.columns:
-            display_cols.append(col)
-    
-    # Filter to available columns
-    display_cols = [c for c in display_cols if c in ladder_display.columns]
-    ladder_table = ladder_display[display_cols].copy()
-    
-    # Sort by rank
-    ladder_table = ladder_table.sort_values("Rank").reset_index(drop=True)
-    
-    # Display with AgGrid if available, otherwise use dataframe
-    render_interactive_table(ladder_table)
-
 
 
 # ================= TEAM COMPARE =================
@@ -3077,7 +3043,11 @@ elif page == "Player Dashboard":
     fcol3, fcol4 = st.columns(2)
     with fcol3:
         teams = sorted(players_all["Team"].dropna().unique())
-        team_filter = st.multiselect("Teams", teams, default=[])
+        # Set default team from session state if available
+        default_teams = []
+        if "default_team" in st.session_state and st.session_state.default_team in teams:
+            default_teams = [st.session_state.default_team]
+        team_filter = st.multiselect("Teams", teams, default=default_teams)
 
     with fcol4:
         positions = sorted(players_all["Position"].dropna().unique())
@@ -3115,7 +3085,8 @@ elif page == "Player Dashboard":
     df_view = df_view.sort_values("RatingPoints_Avg", ascending=False)
 
     # ---- Player list table (rounding + centred numbers) ----
-    st.subheader("Player List")
+    st.markdown("---")
+    st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📋 Player List</h3>", unsafe_allow_html=True)
 
     display_cols = [
         "Player",
@@ -3171,25 +3142,100 @@ elif page == "Player Dashboard":
     cols.remove("Player")
     table_view = table_view[["Comp Rank", "Pos Rank", "Player"] + cols]
 
-    # Centre all columns except Player, Team, Comp Rank, and Pos Rank
-    cols_to_center = [c for c in table_view.columns if c not in ["Player", "Team", "Comp Rank", "Pos Rank"]]
-    styler_players = table_view.style.set_properties(
-        subset=cols_to_center,
-        **{"text-align": "center"},
-    )
-    if "Rating" in table_view.columns:
-        styler_players = styler_players.apply(rating_colour_style, subset=["Rating"])
-    # Format Age and Rating columns to 1 decimal place where present
-    fmt_map = {}
-    if "Age" in table_view.columns:
-        fmt_map["Age"] = "{:.1f}"
-    if "Rating" in table_view.columns:
-        fmt_map["Rating"] = "{:.1f}"
-    if fmt_map:
-        styler_players = styler_players.format(fmt_map)
-
-    # Prefer interactive AgGrid if available, otherwise fall back to styled table
-    render_interactive_table(table_view, exclude_cols=["Player", "Team", "Comp Rank", "Pos Rank"], color_col="Rating" if "Rating" in table_view.columns else None, pre_styled_styler=styler_players)
+    # Create professional HTML table with color-coded ratings
+    html_player_table = """<style>
+.player-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0a0e27;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin-bottom: 40px;
+}
+.player-list-table th {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000000;
+    padding: 14px 10px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+.player-list-table th:nth-child(3) {
+    text-align: left;
+    padding-left: 20px;
+}
+.player-list-table th:nth-child(4) {
+    text-align: left;
+}
+.player-list-table th:last-child {
+    border-right: none;
+}
+.player-list-table td {
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    color: #CCCCCC;
+}
+.player-list-table td:nth-child(3) {
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+.player-list-table td:nth-child(4) {
+    text-align: left;
+}
+.player-list-table td:last-child {
+    border-right: none;
+}
+.player-list-table tbody tr {
+    background: #16213e;
+    transition: all 0.3s ease;
+}
+.player-list-table tbody tr:hover {
+    background: #1f2b4d;
+    transform: scale(1.002);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+}
+.player-list-table tbody tr:nth-child(even) {
+    background: #1a2540;
+}
+.player-list-table tbody tr:nth-child(even):hover {
+    background: #1f2b4d;
+}
+</style>
+<table class='player-list-table'>
+<thead>
+<tr>
+"""
+    
+    # Add headers
+    for col in table_view.columns:
+        html_player_table += f"<th>{col}</th>"
+    html_player_table += "</tr>\n</thead>\n<tbody>\n"
+    
+    # Add data rows
+    for idx, row in table_view.iterrows():
+        html_player_table += "<tr>\n"
+        for col in table_view.columns:
+            if col == "Rating":
+                # Color-code rating
+                rating_val = df_view.loc[idx, "RatingPoints_Avg"]
+                bg_color, text_color = rating_colour_for_value(rating_val, df_view["RatingPoints_Avg"])
+                html_player_table += f"<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{row[col]}</td>\n"
+            else:
+                html_player_table += f"<td>{row[col]}</td>\n"
+        html_player_table += "</tr>\n"
+    
+    html_player_table += "</tbody>\n</table>"
+    st.markdown(html_player_table, unsafe_allow_html=True)
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
@@ -3917,7 +3963,18 @@ elif page == "Team Age Breakdown":
     # Display the age breakdown table
     st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📊 Team Age Breakdown Table</h3>", unsafe_allow_html=True)
     
-    # Create professional HTML table
+    # Helper function to get rank color
+    def get_rank_color_age(rank_val):
+        if rank_val <= 4:
+            return "#006400", "white"  # dark green
+        elif rank_val <= 9:
+            return "#90EE90", "black"  # light green
+        elif rank_val <= 14:
+            return "#FFA500", "white"  # orange
+        else:
+            return "#FF0000", "white"  # red
+    
+    # Create professional HTML table with color-coded rankings
     html_table = """<style>
 .age-breakdown-table {
     width: 100%;
@@ -3992,6 +4049,14 @@ elif page == "Team Age Breakdown":
     background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
     transform: none !important;
 }
+.rank-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 0.85em;
+    margin-left: 4px;
+}
 </style>
 <table class='age-breakdown-table'>
 <thead>
@@ -4003,14 +4068,35 @@ elif page == "Team Age Breakdown":
         html_table += f"<th>{col}</th>"
     html_table += "</tr>\n</thead>\n<tbody>\n"
     
-    # Add data rows
+    # Add data rows with color-coded rank badges
     for idx, row in age_breakdown_with_avg.iterrows():
         # Check if this is the league average row
         is_league_avg = row["Team"] == "League Average"
         row_class = " class='league-avg-row'" if is_league_avg else ""
         html_table += f"<tr{row_class}>\n"
-        for col in age_breakdown_with_avg.columns:
-            html_table += f"<td>{row[col]}</td>\n"
+        
+        for col_idx, col in enumerate(age_breakdown_with_avg.columns):
+            if col_idx == 0:  # Team column
+                html_table += f"<td>{row[col]}</td>\n"
+            else:
+                # Age band columns with color-coded rank badges
+                if is_league_avg:
+                    html_table += f"<td>{row[col]}</td>\n"
+                else:
+                    # Extract percentage and rank from display value
+                    val_str = row[col]
+                    if "(" in val_str and ")" in val_str:
+                        pct_part = val_str.split("(")[0].strip()
+                        rank_part = val_str.split("(")[1].split(")")[0]
+                        
+                        # Get corresponding rank value from original data
+                        band_name = AGE_BANDS[col_idx - 1]
+                        rank_val = int(age_breakdown_table.loc[age_breakdown_table["Team"] == row["Team"], f"{band_name}_Rank"].iloc[0])
+                        bg_color, text_color = get_rank_color_age(rank_val)
+                        
+                        html_table += f"<td>{pct_part} <span class='rank-badge' style='background: {bg_color}; color: {text_color};'>({rank_part})</span></td>\n"
+                    else:
+                        html_table += f"<td>{val_str}</td>\n"
         html_table += "</tr>\n"
     
     html_table += "</tbody>\n</table>"
@@ -4146,7 +4232,7 @@ elif page == "List Ladder":
     # Display the main ladder table with professional HTML styling
     st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📋 Positional Depth Rankings</h3>", unsafe_allow_html=True)
     
-    # Create professional HTML table
+    # Create professional HTML table with color-coded rankings
     html_table = """<style>
 .list-ladder-table {
     width: 100%;
@@ -4224,6 +4310,14 @@ elif page == "List Ladder":
 .list-ladder-table tbody tr:nth-child(even):hover {
     background: #1f2b4d;
 }
+.rank-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 0.85em;
+    margin-left: 4px;
+}
 </style>
 <table class='list-ladder-table'>
 <thead>
@@ -4235,11 +4329,27 @@ elif page == "List Ladder":
         html_table += f"<th>{col}</th>"
     html_table += "</tr>\n</thead>\n<tbody>\n"
     
-    # Add data rows
-    for _, row in display_df.iterrows():
+    # Add data rows with color-coded rank badges
+    for row_idx, row in display_df.iterrows():
         html_table += "<tr>\n"
-        for col in display_df.columns:
-            html_table += f"<td>{row[col]}</td>\n"
+        for col_idx, col in enumerate(display_df.columns):
+            if col in ["Rank", "Team", "Total Points"]:
+                # No color coding for these columns
+                html_table += f"<td>{row[col]}</td>\n"
+            else:
+                # Position columns - extract rank and color code
+                val_str = row[col]
+                if "(" in val_str and ")" in val_str:
+                    pts_part = val_str.split("(")[0].strip()
+                    rank_part = val_str.split("(")[1].split(")")[0]
+                    
+                    # Get rank value from ladder_df
+                    rank_val = int(ladder_df.iloc[row_idx][f"{col}_Rank"])
+                    bg_color = get_rank_color(rank_val)
+                    
+                    html_table += f"<td>{pts_part} <span class='rank-badge' style='background: {bg_color}; color: white;'>({rank_part})</span></td>\n"
+                else:
+                    html_table += f"<td>{val_str}</td>\n"
         html_table += "</tr>\n"
     
     html_table += "</tbody>\n</table>"
