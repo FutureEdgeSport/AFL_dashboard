@@ -516,18 +516,25 @@ def display_logo(team_name: str, container, size: int = 80):
             return
 
 
-def display_player_photo(player_name: str, container, size: int = 160):
+def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False):
     path = get_player_photo_path(player_name)
     if not path:
         return
-    img = _resize_image(path, size)
-    if img is not None:
-        container.image(img)
-    else:
+    if use_container_width:
+        # Display at full column width
         try:
-            container.image(path, width=size)
+            container.image(path, use_container_width=True)
         except Exception:
             return
+    else:
+        img = _resize_image(path, size)
+        if img is not None:
+            container.image(img)
+        else:
+            try:
+                container.image(path, width=size)
+            except Exception:
+                return
 
 
 # ---------------- RATING COLOUR HELPERS ----------------
@@ -1321,6 +1328,21 @@ else:
     page = st.sidebar.radio("Navigate", PAGES)
 
 
+# ================= CUSTOM STYLING =================
+
+# CSS to remove drop-shadow from FutureEdge logo on home page
+st.markdown(
+    """
+    <style>
+    /* Remove shadow from the first image (FutureEdge logo) on home page */
+    div[data-testid="column"]:nth-child(2) > div:first-child div[data-testid="stImage"] img {
+        filter: none !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # ================= HOME =================
 
 if page == "Home":
@@ -1368,6 +1390,18 @@ if page == "Home":
             "Richmond", "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
         ]
         
+        # Add CSS to give logos a white glow/shadow effect so dark logos pop
+        st.markdown(
+            """
+            <style>
+            div[data-testid="stImage"] img {
+                filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        
         # First row of 9 teams
         row1_cols = st.columns(9)
         for idx, team in enumerate(all_teams[:9]):
@@ -1377,11 +1411,12 @@ if page == "Home":
                 
                 if os.path.exists(team_logo_path):
                     try:
-                        # Display logo with fixed dimensions
+                        # Display logo
                         img = Image.open(team_logo_path)
                         # Resize image to fixed dimensions for consistency
                         img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized)
+                        st.image(img_resized, use_container_width=False)
+                        
                         # Add small spacer before button
                         st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                         # Create clickable button
@@ -1394,7 +1429,7 @@ if page == "Home":
                         st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
         
         # Second row of 9 teams
-        st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
         row2_cols = st.columns(9)
         for idx, team in enumerate(all_teams[9:]):
             with row2_cols[idx]:
@@ -1403,11 +1438,12 @@ if page == "Home":
                 
                 if os.path.exists(team_logo_path):
                     try:
-                        # Display logo with fixed dimensions
+                        # Display logo
                         img = Image.open(team_logo_path)
                         # Resize image to fixed dimensions for consistency
                         img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized)
+                        st.image(img_resized, use_container_width=False)
+                        
                         # Add small spacer before button
                         st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                         # Create clickable button
@@ -3239,7 +3275,7 @@ elif page == "Player Dashboard":
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700; margin-top: 30px; margin-bottom: 25px;'>👤 Individual Player View</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #000000; margin-top: 30px; margin-bottom: 25px;'>👤 Individual Player View</h2>", unsafe_allow_html=True)
 
     player_names = sorted(df_view["Player"].dropna().unique())
     selected_player = st.selectbox("Select player", player_names)
@@ -3265,13 +3301,15 @@ elif page == "Player Dashboard":
 
     col_photo, col_meta = st.columns([1, 3])
 
-    # Player photo
-    display_player_photo(selected_player, col_photo, size=160)
-
-    # Team logo (latest team)
+    # Team logo (latest team) - displayed above photo, centered
     latest_team = latest_record.get("Team", "")
     if latest_team:
-        display_logo(latest_team, col_photo, size=70)
+        # Center the logo using columns
+        _, logo_col, _ = col_photo.columns([1, 2, 1])
+        display_logo(latest_team, logo_col, size=160)
+    
+    # Player photo - full width of column
+    display_player_photo(selected_player, col_photo, use_container_width=True)
 
     # Meta info from Summary tab (Age, Draft, Draft #, Height, Total Matches, Contract Expiry)
     summary_df = load_player_summary()
@@ -3298,10 +3336,10 @@ elif page == "Player Dashboard":
 
     # Header with gradient background
     header_html = f"""
-    <div style='background: linear-gradient(135deg, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.1) 100%);
+    <div style='background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
                 border-left: 5px solid #FFD700; padding: 20px; border-radius: 12px; margin-bottom: 20px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
-        <h2 style='color: #FFD700; margin: 0; font-size: 2.2em; font-weight: 900;'>{selected_player}</h2>
+        <h2 style='color: #FFFFFF; margin: 0; font-size: 2.2em; font-weight: 900;'>{selected_player}</h2>
     </div>
     """
     col_meta.markdown(header_html, unsafe_allow_html=True)
@@ -3310,18 +3348,18 @@ elif page == "Player Dashboard":
     info_cards = []
     if latest_team:
         info_cards.append(f"""
-        <div style='background: linear-gradient(135deg, rgba(100,150,255,0.2) 0%, rgba(100,150,255,0.1) 100%);
-                    border-left: 4px solid #6496FF; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-            <div style='color: #888888; font-size: 0.85em; margin-bottom: 4px;'>TEAM</div>
+        <div style='background: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(59, 130, 246, 0.6) 100%);
+                    border-left: 4px solid #3b82f6; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.85em; margin-bottom: 4px;'>TEAM</div>
             <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{latest_team}</div>
         </div>
         """)
     
     if latest_position:
         info_cards.append(f"""
-        <div style='background: linear-gradient(135deg, rgba(255,150,100,0.2) 0%, rgba(255,150,100,0.1) 100%);
-                    border-left: 4px solid #FF9664; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-            <div style='color: #888888; font-size: 0.85em; margin-bottom: 4px;'>POSITION</div>
+        <div style='background: linear-gradient(135deg, rgba(180, 83, 9, 0.8) 0%, rgba(245, 158, 11, 0.6) 100%);
+                    border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.85em; margin-bottom: 4px;'>POSITION</div>
             <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{latest_position}</div>
         </div>
         """)
@@ -3335,8 +3373,8 @@ elif page == "Player Dashboard":
     # Age
     try:
         if age_summary is not None and pd.notna(age_summary):
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{float(age_summary):.1f}</div>
 </div>""")
     except Exception:
@@ -3351,14 +3389,14 @@ elif page == "Player Dashboard":
         try:
             rating_val = float(rating_pct_2025)
             # Display as percentage
-            stats_grid.append(f"""<div style='background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,215,0,0.3);'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>2025 RATING %</div>
-<div style='color: #FFD700; font-size: 1.4em; font-weight: 700;'>{rating_val:.1f}%</div>
+            stats_grid.append(f"""<div style='background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>2025 RATING %</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{rating_val:.1f}%</div>
 </div>""")
         except (ValueError, TypeError):
-            stats_grid.append(f"""<div style='background: rgba(255,215,0,0.1); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,215,0,0.3);'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>2025 RATING %</div>
-<div style='color: #FFD700; font-size: 1.4em; font-weight: 700;'>{rating_pct_2025}%</div>
+            stats_grid.append(f"""<div style='background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>2025 RATING %</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{rating_pct_2025}%</div>
 </div>""")
     
     # 2025 Cap Value
@@ -3366,39 +3404,39 @@ elif page == "Player Dashboard":
         try:
             cap_val = float(cap_value_2025)
             # Display as currency with dollar sign
-            stats_grid.append(f"""<div style='background: rgba(100,200,100,0.1); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(100,200,100,0.3);'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>2025 CAP VALUE</div>
-<div style='color: #64C864; font-size: 1.4em; font-weight: 700;'>${cap_val:,.0f}</div>
+            stats_grid.append(f"""<div style='background: rgba(100,100,100,0.2); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(100,100,100,0.5);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>2025 CAP VALUE</div>
+<div style='color: rgba(255, 255, 255, 0.95); font-size: 1.4em; font-weight: 700;'>${cap_val:,.0f}</div>
 </div>""")
         except (ValueError, TypeError):
-            stats_grid.append(f"""<div style='background: rgba(100,200,100,0.1); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(100,200,100,0.3);'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>2025 CAP VALUE</div>
-<div style='color: #64C864; font-size: 1.4em; font-weight: 700;'>${cap_value_2025}</div>
+            stats_grid.append(f"""<div style='background: rgba(100,100,100,0.2); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(100,100,100,0.5);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>2025 CAP VALUE</div>
+<div style='color: rgba(255, 255, 255, 0.95); font-size: 1.4em; font-weight: 700;'>${cap_value_2025}</div>
 </div>""")
     
     # Draft #
     if draft_no not in [None, ""] and pd.notna(draft_no):
         try:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>DRAFT #</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>DRAFT #</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(float(draft_no))}</div>
 </div>""")
         except (ValueError, TypeError):
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>DRAFT #</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>DRAFT #</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{draft_no}</div>
 </div>""")
     
     # Draft Year
     if draft_year not in [None, ""] and pd.notna(draft_year):
         try:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>DRAFT YEAR</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>DRAFT YEAR</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(float(draft_year))}</div>
 </div>""")
         except (ValueError, TypeError):
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>DRAFT YEAR</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>DRAFT YEAR</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{draft_year}</div>
 </div>""")
 
@@ -3406,39 +3444,39 @@ elif page == "Player Dashboard":
     # Height
     if height_summary not in [None, ""]:
         try:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>HEIGHT</div>
-<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{float(height_summary):.0f} <span style='font-size: 0.7em; color: #888888;'>cm</span></div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>HEIGHT</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{float(height_summary):.0f} <span style='font-size: 0.7em; color: rgba(255,255,255,0.7);'>cm</span></div>
 </div>""")
         except Exception:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>HEIGHT</div>
-<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{height_summary} <span style='font-size: 0.7em; color: #888888;'>cm</span></div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>HEIGHT</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{height_summary} <span style='font-size: 0.7em; color: rgba(255,255,255,0.7);'>cm</span></div>
 </div>""")
     
     # Total Matches
     if total_matches not in [None, ""] and pd.notna(total_matches):
         try:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>TOTAL MATCHES</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>TOTAL MATCHES</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(total_matches)}</div>
 </div>""")
         except Exception:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>TOTAL MATCHES</div>
+            stats_grid.append(f"""<div style='background: #3a3a3a; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #4a4a4a;'>
+<div style='color: #AAAAAA; font-size: 0.75em; margin-bottom: 4px;'>TOTAL MATCHES</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{total_matches}</div>
 </div>""")
     
     # Contract Expiry
     if contract_expiry not in [None, ""]:
         try:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(contract_expiry)}</div>
 </div>""")
         except Exception:
-            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;'>
-<div style='color: #888888; font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{contract_expiry}</div>
 </div>""")
     

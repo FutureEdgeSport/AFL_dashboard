@@ -1,0 +1,3691 @@
+/Users/marcuswagner/Desktop/Coding/AFL_dashboard/.venv/lib/python3.10/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Unknown extension is not supported and will be removed
+  warn(msg)
+/Users/marcuswagner/Desktop/Coding/AFL_dashboard/.venv/lib/python3.10/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Conditional Formatting extension is not supported and will be removed
+  warn(msg)
+
+✓ Found 808 unique players from AFL Player Ratings.xlsx
+Starting download for 808 players...
+
+=== Downloading Player Photos ===
+
+[19/808] Matt Crouch (Adelaide)
+  → Loading Adelaide player data...
+  ✗ Player not found in team data
+
+[24/808] Brodie Smith (Adelaide)
+  ✗ Player not f
+=== Downloading Player Photos ===
+
+[19/808] Matt Crouch (Adelaide)
+  → Loading Adelaide player data...
+  ✗ Player not found in team data
+
+[24/808] Brodie Smith (Adelaide)
+  ✗ Player not found in team data
+
+[28/808] Lachlan Murphy (Adelaide)
+  ✗ Player not found in team data
+
+[36/808] Tyler Welsh (Adelaide)
+  ✗ Player not found in team data
+
+[37/808] Chris Burgess (Adelaide)
+  ✗ Player not found in team data
+
+[39/808] Harry Schoenberg (Adelaide)
+  ✗ Player not found in team data
+
+[41/808] Karl Gallagher (Adelaide)
+  ✗ Player not found in team data
+
+[44/808] Kieran Strachan (Adelaide)
+  ✗ Player not found in team data
+
+[45/808] Lachie Neale (Brisbane)
+  → Loading Brisbane player data...
+  ✓ Found: ID=354, ProviderID=293535
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[46/808] Hugh McCluggage (Brisbane)
+  ✓ Found: ID=1301, ProviderID=1000978
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[47/808] Josh Dunkley (Brisbane)
+  ✓ Found: ID=1083, ProviderID=993834
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[48/808] Dayne Zorko (Brisbane)
+  ✓ Found: ID=7, ProviderID=261224
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[49/808] Cam Rayner (Brisbane)
+  ✓ Found: ID=1664, ProviderID=1002235
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[50/808] Darcy Wilmot (Brisbane)
+  ✓ Found: ID=2788, ProviderID=1017067
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[51/808] Harris Andrews (Brisbane)
+  ✓ Found: ID=822, ProviderID=996059
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[52/808] Zac Bailey (Brisbane)
+  ✓ Found: ID=1577, ProviderID=1002312
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[53/808] Ryan Lester (Brisbane)
+  ✓ Found: ID=125, ProviderID=291548
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[54/808] Jaspa Fletcher (Brisbane)
+  ✓ Found: ID=5372, ProviderID=1023708
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[55/808] Oscar McInerney (Brisbane)
+  ✓ Found: ID=1317, ProviderID=1005521
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[56/808] Jarrod Berry (Brisbane)
+  ✓ Found: ID=1343, ProviderID=998133
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[57/808] Will Ashcroft (Brisbane)
+  ✓ Found: ID=5518, ProviderID=1023517
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[58/808] Callum Ah Chee (Brisbane)
+  ✓ Found: ID=850, ProviderID=298437
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[59/808] Charlie Cameron (Brisbane)
+  ✓ Found: ID=151, ProviderID=990609
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[60/808] Kai Lohmann (Brisbane)
+  ✓ Found: ID=5146, ProviderID=1014026
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[61/808] Logan Morris (Brisbane)
+  ✓ Found: ID=6773, ProviderID=1028019
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[62/808] Eric Hipwood (Brisbane)
+  ✓ Found: ID=864, ProviderID=993953
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[63/808] Jack Payne (Brisbane)
+  ✓ Found: ID=1661, ProviderID=1002347
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[64/808] Noah Answerth (Brisbane)
+  ✓ Found: ID=1775, ProviderID=1005053
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[65/808] Brandon Starcevich (Brisbane)
+  ✓ Found: ID=1609, ProviderID=1002401
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[66/808] Darcy Fort (Brisbane)
+  ✓ Found: ID=1940, ProviderID=298211
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[68/808] Bruce Reville (Brisbane)
+  ✓ Found: ID=2221, ProviderID=1009317
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[70/808] Conor McKenna (Brisbane)
+  ✓ Found: ID=982, ProviderID=997846
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[72/808] Lincoln McCarthy (Brisbane)
+  ✓ Found: ID=293, ProviderID=293581
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[74/808] Deven Robertson (Brisbane)
+  ✓ Found: ID=3714, ProviderID=1009385
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[76/808] Luke Beecken (Brisbane)
+  ✓ Found: ID=10205, ProviderID=1008805
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[78/808] Luke Lloyd (Brisbane)
+  ✓ Found: ID=6741, ProviderID=1027985
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[79/808] Sam Marshall (Brisbane)
+  ✓ Found: ID=9042, ProviderID=1028520
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[80/808] Zane Zakostelsky (Brisbane)
+  ✓ Found: ID=11333, ProviderID=1032650
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[81/808] Ty Gallop (Brisbane)
+  ✓ Found: ID=12141, ProviderID=1034411
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[82/808] Brandon Ryan (Brisbane)
+  ✓ Found: ID=8921, ProviderID=1012127
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[83/808] Henry Smith (Brisbane)
+  ✓ Found: ID=4053, ProviderID=1016189
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[84/808] Will McLachlan (Brisbane)
+  ✓ Found: ID=8472, ProviderID=1029405
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[85/808] James Tunstill (Brisbane)
+  ✓ Found: ID=5673, ProviderID=1021108
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[86/808] Reece Torrent (Brisbane)
+  ✓ Found: ID=7481, ProviderID=1024187
+  → Trying: https://s.afl.co
+[140/808] Darcy Moore (Collingwood)
+  ✓ Found: ID=895, ProviderID=298288
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[141/808] Scott Pendlebury (Collingwood)
+  ✓ Found: ID=118, ProviderID=260257
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[142/808] Steele Sidebottom (Collingwood)
+  ✓ Found: ID=154, ProviderID=280965
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[143/808] Patrick Lipinski (Collingwood)
+  ✓ Found: ID=1353, ProviderID=1003130
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[144/808] Brayden Maynard (Collingwood)
+  ✓ Found: ID=862, ProviderID=992010
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[145/808] Harry Perryman (Collingwood)
+  ✓ Found: ID=1394, ProviderID=998205
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[146/808] Isaac Quaynor (Collingwood)
+  ✓ Found: ID=1773, ProviderID=1008089
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[147/808] Jeremy Howe (Collingwood)
+  ✓ Found: ID=504, ProviderID=291313
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[148/808] Jamie Elliott (Collingwood)
+  ✓ Found: ID=110, ProviderID=293801
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[149/808] Bobby Hill (Collingwood)
+  ✓ Found: ID=1835, ProviderID=1006148
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[150/808] Beau McCreery (Collingwood)
+  ✓ Found: ID=4056, ProviderID=1004757
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[151/808] Tim Membrey (Collingwood)
+  ✓ Found: ID=836, ProviderID=294596
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[152/808] Will Hoskin-Elliott (Collingwood)
+  ✓ Found: ID=505, ProviderID=291720
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[153/808] Ned Long (Collingwood)
+  ✓ Found: ID=2880, ProviderID=1017124
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[154/808] Brody Mihocek (Collingwood)
+  ✓ Found: ID=1685, ProviderID=291849
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[155/808] Lachie Schultz (Collingwood)
+  ✓ Found: ID=1802, ProviderID=1000860
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[156/808] Billy Frampton (Collingwood)
+  ✓ Found: ID=1037, ProviderID=991773
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[157/808] Jordan De Goey (Collingwood)
+  ✓ Found: ID=782, ProviderID=994185
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[158/808] Lachlan Sullivan (Collingwood)
+  ✓ Found: ID=4850, ProviderID=998480
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[159/808] Daniel McStay (Collingwood)
+  ✓ Found: ID=249, ProviderID=297504
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[160/808] Mason Cox (Collingwood)
+  ✓ Found: ID=810, ProviderID=998647
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[161/808] Oleg Markov (Collingwood)
+  ✓ Found: ID=954, ProviderID=298358
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[162/808] Edward Allan (Collingwood)
+  ✓ Found: ID=7853, ProviderID=1022915
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[163/808] Tom Mitchell (Collingwood)
+  ✓ Found: ID=586, ProviderID=291856
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[164/808] Charlie Dean (Collingwood)
+  ✓ Found: ID=2680, ProviderID=1009197
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[165/808] Harvey Harrison (Collingwood)
+  ✓ Found: ID=5677, ProviderID=1015332
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[166/808] Reef McInnes (Collingwood)
+  ✓ Found: ID=2921, ProviderID=1013278
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[167/808] Finlay Macrae (Collingwood)
+  ✓ Found: ID=2698, ProviderID=1012828
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[168/808] Harry DeMattia (Collingwood)
+  ✓ Found: ID=6453, ProviderID=1027673
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[169/808] Wil Parker (Collingwood)
+  ✓ Found: ID=2479, ProviderID=1012873
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[170/808] Tew Jiath (Collingwood)
+  ✓ Found: ID=9264, ProviderID=1032017
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[171/808] Iliro Smit (Collingwood)
+  ✓ Found: ID=6467, ProviderID=1027834
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[173/808] Jakob Ryan (Collingwood)
+  ✓ Found: ID=8623, ProviderID=1020104
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[175/808] Charlie West (Collingwood)
+  ✓ Found: ID=10794, ProviderID=1027382
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[177/808] Ash Johnson (Collingwood)
+  ✓ Found: ID=5557, ProviderID=997974
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[179/808] Noah Howes (Collingwood)
+  ✓ Found: ID=10242, ProviderID=1022614
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[180/808] Zach Merrett (Essendon)
+  → Loading Essendon player data...
+  ✓ Found: ID=169, ProviderID=992016
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[181/808] Sam Durham (Essendon)
+  ✓ Found: ID=3073, ProviderID=1015810
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[182/808] Nic Martin (Essendon)
+  ✓ Found: ID=6178, ProviderID=1012013
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[183/808] Andrew McGrath (Essendon)
+  ✓ Found: ID=1331, ProviderID=998102
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[184/808] Mason Redman (Essendon)
+  ✓ Found: ID=944, ProviderID=997078
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/C
+[128/808] Harry Charleson (Carlton)
+  ✓ Found: ID=9200, ProviderID=1028496
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[129/808] Harry Lemmey (Carlton)
+  ✓ Found: ID=8621, ProviderID=1020072
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[130/808] Rob Monahan (Carlton)
+  ✓ Found: ID=12079, ProviderID=1035129
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[131/808] Billy Wilson (Carlton)
+  ✓ Found: ID=6442, ProviderID=1027678
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[132/808] Hudson O'Keeffe (Carlton)
+  ✓ Found: ID=5528, ProviderID=1023489
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[133/808] Matt Duffy (Carlton)
+  ✓ Found: ID=13966, ProviderID=1039720
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[134/808] Flynn Young (Carlton)
+  ✓ Found: ID=5141, ProviderID=1020877
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[135/808] Nick Daicos (Collingwood)
+  → Loading Collingwood player data...
+  ✓ Found: ID=5256, ProviderID=1023261
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[136/808] Darcy Cameron (Collingwood)
+  ✓ Found: ID=1330, ProviderID=990291
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[137/808] Jack Crisp (Collingwood)
+  ✓ Found: ID=212, ProviderID=293871
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[138/808] Josh Daicos (Collingwood)
+  ✓ Found: ID=1321, ProviderID=1005054
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[139/808] Dan Houston (Collingwood)
+  ✓ Found: ID=1042, ProviderID=994295
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[140/808] Darcy Moore (Collingwood)
+  ✓ Found: ID=895, ProviderID=298288
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[141/808] Scott Pendlebury (Collingwood)
+  ✓ Found: ID=118, ProviderID=260257
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[142/808] Steele Sidebottom (Collingwood)
+  ✓ Found: ID=154, ProviderID=280965
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[143/808] Patrick Lipinski (Collingwood)
+  ✓ Found: ID=1353, ProviderID=1003130
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[144/808] Brayden Maynard (Collingwood)
+  ✓ Found: ID=862, ProviderID=992010
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[145/808] Harry Perryman (Collingwood)
+  ✓ Found: ID=1394, ProviderID=998205
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[146/808] Isaac Quaynor (Collingwood)
+  ✓ Found: ID=1773, ProviderID=1008089
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[147/808] Jeremy Howe (Collingwood)
+  ✓ Found: ID=504, ProviderID=291313
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[148/808] Jamie Elliott (Collingwood)
+  ✓ Found: ID=110, ProviderID=293801
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[149/808] Bobby Hill (Collingwood)
+  ✓ Found: ID=1835, ProviderID=1006148
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[150/808] Beau McCreery (Collingwood)
+  ✓ Found: ID=4056, ProviderID=1004757
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[151/808] Tim Membrey (Collingwood)
+  ✓ Found: ID=836, ProviderID=294596
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[152/808] Will Hoskin-Elliott (Collingwood)
+  ✓ Found: ID=505, ProviderID=291720
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[153/808] Ned Long (Collingwood)
+  ✓ Found: ID=2880, ProviderID=1017124
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[154/808] Brody Mihocek (Collingwood)
+  ✓ Found: ID=1685, ProviderID=291849
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[155/808] Lachie Schultz (Collingwood)
+  ✓ Found: ID=1802, ProviderID=1000860
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[156/808] Billy Frampton (Collingwood)
+  ✓ Found: ID=1037, ProviderID=991773
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[157/808] Jordan De Goey (Collingwood)
+  ✓ Found: ID=782, ProviderID=994185
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[158/808] Lachlan Sullivan (Collingwood)
+  ✓ Found: ID=4850, ProviderID=998480
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[159/808] Daniel McStay (Collingwood)
+  ✓ Found: ID=249, ProviderID=297504
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[160/808] Mason Cox (Collingwood)
+  ✓ Found: ID=810, ProviderID=998647
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[161/808] Oleg Markov (Collingwood)
+  ✓ Found: ID=954, ProviderID=298358
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[162/808] Edward Allan (Collingwood)
+  ✓ Found: ID=7853, ProviderID=1022915
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[163/808] Tom Mitchell (Collingwood)
+  ✓ Found: ID=586, ProviderID=291856
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[164/808] Charlie Dean (Collingwood)
+  ✓ Found: ID=2680, ProviderID=1009197
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[165/808] Harvey Harrison (Collingwood)
+  ✓ Found: ID=5677, ProviderID=1015332
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfu  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[224/808] Thomas Edwards (Essendon)
+  ✓ Found: ID=7530, ProviderID=1018323
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[225/808] Oskar Smartt (Essendon)
+  ✓ Found: ID=6376, ProviderID=1027644
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[226/808] Liam McMahon (Essendon)
+  ✓ Found: ID=2677, ProviderID=1012842
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[227/808] Caleb Serong (Fremantle)
+  → Loading Fremantle player data...
+  ✓ Found: ID=2308, ProviderID=1009420
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[228/808] Andrew Brayshaw (Fremantle)
+  ✓ Found: ID=1684, ProviderID=1002232
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[229/808] Luke Jackson (Fremantle)
+  ✓ Found: ID=3728, ProviderID=1009399
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[230/808] Jordan Clark (Fremantle)
+  ✓ Found: ID=1928, ProviderID=1006152
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[231/808] Shai Bolton (Fremantle)
+  ✓ Found: ID=1407, ProviderID=993993
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[232/808] Luke Ryan (Fremantle)
+  ✓ Found: ID=1310, ProviderID=998659
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[233/808] Josh Treacy (Fremantle)
+  ✓ Found: ID=2361, ProviderID=1012819
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[234/808] Hayden Young (Fremantle)
+  ✓ Found: ID=2286, ProviderID=1009256
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[235/808] Sam Switkowski (Fremantle)
+  ✓ Found: ID=1699, ProviderID=992059
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[236/808] Bailey Banfield (Fremantle)
+  ✓ Found: ID=1594, ProviderID=998180
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[237/808] Michael Frederick (Fremantle)
+  ✓ Found: ID=3718, ProviderID=999321
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[238/808] Sean Darcy (Fremantle)
+  ✓ Found: ID=1392, ProviderID=998145
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[239/808] Alex Pearce (Fremantle)
+  ✓ Found: ID=463, ProviderID=298409
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[240/808] Jaeger O'Meara (Fremantle)
+  ✓ Found: ID=613, ProviderID=294613
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[241/808] Matthew Johnson (Fremantle)
+  ✓ Found: ID=5679, ProviderID=1016825
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[242/808] Heath Chapman (Fremantle)
+  ✓ Found: ID=4061, ProviderID=1013224
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[243/808] Brennan Cox (Fremantle)
+  ✓ Found: ID=1390, ProviderID=997033
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[244/808] Jeremy Sharp (Fremantle)
+  ✓ Found: ID=3721, ProviderID=1009380
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[245/808] Corey Wagner (Fremantle)
+  ✓ Found: ID=1089, ProviderID=993940
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[246/808] Jye Amiss (Fremantle)
+  ✓ Found: ID=5681, ProviderID=1020594
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[247/808] Nat Fyfe (Fremantle)
+  ✓ Found: ID=351, ProviderID=291570
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[248/808] Murphy Reid (Fremantle)
+  ✓ Found: ID=9363, ProviderID=1028513
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[249/808] Joshua Draper (Fremantle)
+  ✓ Found: ID=7400, ProviderID=1020668
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[250/808] Patrick Voss (Fremantle)
+  ✓ Found: ID=5233, ProviderID=1017754
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[251/808] Brandon Walker (Fremantle)
+  ✓ Found: ID=4060, ProviderID=1009410
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[252/808] Karl Worner (Fremantle)
+  ✓ Found: ID=4905, ProviderID=1021015
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[253/808] James Aish (Fremantle)
+  ✓ Found: ID=136, ProviderID=295067
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[254/808] Neil Erasmus (Fremantle)
+  ✓ Found: ID=5680, ProviderID=1020250
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[255/808] Sam Sturt (Fremantle)
+  ✓ Found: ID=1806, ProviderID=1013611
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[256/808] Nathan O'Driscoll (Fremantle)
+  ✓ Found: ID=4059, ProviderID=1013220
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[257/808] Michael Walters (Fremantle)
+  ✓ Found: ID=333, ProviderID=281007
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[258/808] Isaiah Dudley (Fremantle)
+  ✓ Found: ID=9530, ProviderID=1011558
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[259/808] Quinton Narkle (Fremantle)
+  ✓ Found: ID=1393, ProviderID=999824
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+  ⊘ Skipped 100 existing photos...
+
+[261/808] Will Brodie (Fremantle)
+  ✓ Found: ID=1397, ProviderID=998129
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[263/808] Oscar McDonald (Fremantle)
+  ✓ Found: ID=926, ProviderID=992472
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[265/808] Odin Jones (Fremantle)
+  ✓ Found: ID=7721, ProviderID=1028371
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[266/808] Cooper Simpson (Fremantle)
+  ✓ Found: ID=6403, ProviderID=1027656
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[267/808] Ollie Murphy (Fremantle)
+  ✓ Found: ID=67  ✓ Found: ID=5529, ProviderID=1023785
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[211/808] Angus Clarke (Essendon)
+  ✓ Found: ID=9954, ProviderID=1027284
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[212/808] Jye Menzie (Essendon)
+  ✓ Found: ID=3367, ProviderID=1013201
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[213/808] Zak Johnson (Essendon)
+  ✓ Found: ID=8418, ProviderID=1028519
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[214/808] Archer May (Essendon)
+  ✓ Found: ID=8423, ProviderID=1029084
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[215/808] Luamon Lual (Essendon)
+  ✓ Found: ID=6567, ProviderID=1027706
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[216/808] Lewis Hayes (Essendon)
+  ✓ Found: ID=5392, ProviderID=1023487
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[217/808] Kayle Gerreyn (Essendon)
+  ✓ Found: ID=11568, ProviderID=1029159
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[218/808] Alwyn Davey Jnr (Essendon)
+  ✓ Found: ID=6634, ProviderID=1017933
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[219/808] Rhys Unwin (Essendon)
+  ✓ Found: ID=9201, ProviderID=1032023
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[220/808] Vigo Visentini (Essendon)
+  ✓ Found: ID=6698, ProviderID=1027966
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[221/808] Saad El-Hawli (Essendon)
+  ✓ Found: ID=3440, ProviderID=1015919
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[222/808] Jayden Nguyen (Essendon)
+  ✓ Found: ID=8521, ProviderID=1018987
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[223/808] Archer Day-Wicks (Essendon)
+  ✓ Found: ID=8454, ProviderID=1029265
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[224/808] Thomas Edwards (Essendon)
+  ✓ Found: ID=7530, ProviderID=1018323
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[225/808] Oskar Smartt (Essendon)
+  ✓ Found: ID=6376, ProviderID=1027644
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[226/808] Liam McMahon (Essendon)
+  ✓ Found: ID=2677, ProviderID=1012842
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[227/808] Caleb Serong (Fremantle)
+  → Loading Fremantle player data...
+  ✓ Found: ID=2308, ProviderID=1009420
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[228/808] Andrew Brayshaw (Fremantle)
+  ✓ Found: ID=1684, ProviderID=1002232
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[229/808] Luke Jackson (Fremantle)
+  ✓ Found: ID=3728, ProviderID=1009399
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[230/808] Jordan Clark (Fremantle)
+  ✓ Found: ID=1928, ProviderID=1006152
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[231/808] Shai Bolton (Fremantle)
+  ✓ Found: ID=1407, ProviderID=993993
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[232/808] Luke Ryan (Fremantle)
+  ✓ Found: ID=1310, ProviderID=998659
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[233/808] Josh Treacy (Fremantle)
+  ✓ Found: ID=2361, ProviderID=1012819
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[234/808] Hayden Young (Fremantle)
+  ✓ Found: ID=2286, ProviderID=1009256
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[235/808] Sam Switkowski (Fremantle)
+  ✓ Found: ID=1699, ProviderID=992059
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[236/808] Bailey Banfield (Fremantle)
+  ✓ Found: ID=1594, ProviderID=998180
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[237/808] Michael Frederick (Fremantle)
+  ✓ Found: ID=3718, ProviderID=999321
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[238/808] Sean Darcy (Fremantle)
+  ✓ Found: ID=1392, ProviderID=998145
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[239/808] Alex Pearce (Fremantle)
+  ✓ Found: ID=463, ProviderID=298409
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[240/808] Jaeger O'Meara (Fremantle)
+  ✓ Found: ID=613, ProviderID=294613
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[241/808] Matthew Johnson (Fremantle)
+  ✓ Found: ID=5679, ProviderID=1016825
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[242/808] Heath Chapman (Fremantle)
+  ✓ Found: ID=4061, ProviderID=1013224
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[243/808] Brennan Cox (Fremantle)
+  ✓ Found: ID=1390, ProviderID=997033
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[244/808] Jeremy Sharp (Fremantle)
+  ✓ Found: ID=3721, ProviderID=1009380
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[245/808] Corey Wagner (Fremantle)
+  ✓ Found: ID=1089, ProviderID=993940
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[246/808] Jye Amiss (Fremantle)
+  ✓ Found: ID=5681, ProviderID=1020594
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[247/808] Nat Fyfe (Fremantle)
+  ✓ Found: ID=351, ProviderID=291570
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[248/808] Murphy Reid (Fremantle)
+  ✓ Found: ID=9363, ProviderID=1028513
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampI  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[308/808] Xavier Ivisic (Geelong)
+  ✗ Player not found in team data
+
+[309/808] Patrick Retschko (Geelong)
+  ✗ Player not found in team data
+
+[310/808] Cameron Guthrie (Geelong)
+  ✗ Player not found in team data
+
+[311/808] Keighton Matofai-Forbes (Geelong)
+  ✗ Player not found in team data
+
+[312/808] Joe Pike (Geelong)
+  ✓ Found: ID=6503, ProviderID=1027854
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[313/808] Ted Clohesy (Geelong)
+  ✗ Player not found in team data
+
+[314/808] Cillian Burke (Geelong)
+  ✓ Found: ID=13963, ProviderID=1039509
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[315/808] Noah Anderson (Gold Coast)
+  → Loading Gold Coast player data...
+  ✓ Found: ID=2784, ProviderID=1009199
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[316/808] Matt Rowell (Gold Coast)
+  ✓ Found: ID=2791, ProviderID=1009208
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[317/808] Touk Miller (Gold Coast)
+  ✓ Found: ID=990, ProviderID=298272
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[318/808] Sam Collins (Gold Coast)
+  ✓ Found: ID=824, ProviderID=295446
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[319/808] Jarrod Witts (Gold Coast)
+  ✓ Found: ID=160, ProviderID=291975
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[320/808] Sam Flanders (Gold Coast)
+  ✓ Found: ID=2340, ProviderID=1009260
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[321/808] Daniel Rioli (Gold Coast)
+  ✓ Found: ID=919, ProviderID=1000981
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[322/808] Bailey Humphrey (Gold Coast)
+  ✓ Found: ID=5434, ProviderID=1023500
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[323/808] Wil Powell (Gold Coast)
+  ✓ Found: ID=1474, ProviderID=1007881
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[324/808] John Noble (Gold Coast)
+  ✓ Found: ID=1768, ProviderID=1000072
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[325/808] Bodhi Uwland (Gold Coast)
+  ✓ Found: ID=4868, ProviderID=1017665
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[326/808] Ben King (Gold Coast)
+  ✓ Found: ID=1810, ProviderID=1006144
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[327/808] Mac Andrew (Gold Coast)
+  ✓ Found: ID=5063, ProviderID=1017396
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[328/808] Joel Jeffrey (Gold Coast)
+  ✓ Found: ID=2567, ProviderID=1005992
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[329/808] Ben Long (Gold Coast)
+  ✓ Found: ID=1408, ProviderID=993917
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[330/808] Brayden Fiorini (Gold Coast)
+  ✓ Found: ID=988, ProviderID=993799
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[331/808] Sam Clohesy (Gold Coast)
+  ✓ Found: ID=4320, ProviderID=1013257
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[332/808] Ben Ainsworth (Gold Coast)
+  ✓ Found: ID=1401, ProviderID=998130
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[333/808] Nick Holman (Gold Coast)
+  ✓ Found: ID=128, ProviderID=297456
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[334/808] Will Graham (Gold Coast)
+  ✓ Found: ID=6513, ProviderID=1026960
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[335/808] Charlie Ballard (Gold Coast)
+  ✓ Found: ID=1475, ProviderID=1008882
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[337/808] David Swallow (Gold Coast)
+  ✓ Found: ID=406, ProviderID=290832
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[339/808] Connor Budarick (Gold Coast)
+  ✓ Found: ID=2388, ProviderID=1008454
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[341/808] Alex Sexton (Gold Coast)
+  ✓ Found: ID=308, ProviderID=294643
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[343/808] Jed Walter (Gold Coast)
+  ✓ Found: ID=5440, ProviderID=1023736
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[345/808] Ethan Read (Gold Coast)
+  ✓ Found: ID=6526, ProviderID=1027033
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[347/808] Malcolm Rosas (Gold Coast)
+  ✓ Found: ID=2602, ProviderID=1005986
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[348/808] Lloyd Johnston (Gold Coast)
+  ✓ Found: ID=8302, ProviderID=1024666
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[349/808] Sean Lemmens (Gold Coast)
+  ✓ Found: ID=611, ProviderID=294013
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[350/808] Leonardo Lombard (Gold Coast)
+  ✓ Found: ID=9247, ProviderID=1029301
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[351/808] Cooper Bell (Gold Coast)
+  ✓ Found: ID=9199, ProviderID=1029065
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[352/808] Zak Evans (Gold Coast)
+  ✓ Found: ID=13856, ProviderID=1038801
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[353/808] Max Knobel (Gold Coast)
+  ✓ Found: ID=6530, ProviderID=1027701
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[354/808] Lachlan Gulbin (Gold Coast)
+  ✓ Found: ID=9266, ProviderID=1029304
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[355/808] Asher Eastham (Gold Coast)
+  ✓ Found: ID=9217, ProviderID=1028541
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[356/808] Ben Jepson (Gold Coast)
+  ✓ Found: ID=2691, ProviderID=1011950
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[357/808] Caleb Lewis (Gold Coast)
+  ✓ Found: ID=5267, Prov  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[294/808] Jake Kolodjashnij (Geelong)
+  ✓ Found: ID=373, ProviderID=296291
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[295/808] Oisin Mullin (Geelong)
+  ✓ Found: ID=5684, ProviderID=1024982
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[296/808] Tanner Bruhn (Geelong)
+  ✓ Found: ID=2540, ProviderID=1012805
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[297/808] Jhye Clark (Geelong)
+  ✓ Found: ID=5544, ProviderID=1023537
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[298/808] Jack Martin (Geelong)
+  ✓ Found: ID=219, ProviderID=296190
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[299/808] Jed Bews (Geelong)
+  ✓ Found: ID=464, ProviderID=293883
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[300/808] Mitch Knevitt (Geelong)
+  ✓ Found: ID=5176, ProviderID=1021103
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[301/808] Toby Conway (Geelong)
+  ✓ Found: ID=5112, ProviderID=1017063
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[302/808] Jay Polkinghorne (Geelong)
+  ✓ Found: ID=10409, ProviderID=1027428
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[303/808] Mitchell Edwards (Geelong)
+  ✓ Found: ID=7501, ProviderID=1024304
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[304/808] George Stevens (Geelong)
+  ✗ Player not found in team data
+
+[305/808] Jacob Molier (Geelong)
+  ✓ Found: ID=10640, ProviderID=1027006
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[306/808] Oliver Wiltshire (Geelong)
+  ✓ Found: ID=5133, ProviderID=1020881
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[307/808] Lennox Hofmann (Geelong)
+  ✓ Found: ID=9457, ProviderID=1032114
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[308/808] Xavier Ivisic (Geelong)
+  ✗ Player not found in team data
+
+[309/808] Patrick Retschko (Geelong)
+  ✗ Player not found in team data
+
+[310/808] Cameron Guthrie (Geelong)
+  ✗ Player not found in team data
+
+[311/808] Keighton Matofai-Forbes (Geelong)
+  ✗ Player not found in team data
+
+[312/808] Joe Pike (Geelong)
+  ✓ Found: ID=6503, ProviderID=1027854
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[313/808] Ted Clohesy (Geelong)
+  ✗ Player not found in team data
+
+[314/808] Cillian Burke (Geelong)
+  ✓ Found: ID=13963, ProviderID=1039509
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[315/808] Noah Anderson (Gold Coast)
+  → Loading Gold Coast player data...
+  ✓ Found: ID=2784, ProviderID=1009199
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[316/808] Matt Rowell (Gold Coast)
+  ✓ Found: ID=2791, ProviderID=1009208
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[317/808] Touk Miller (Gold Coast)
+  ✓ Found: ID=990, ProviderID=298272
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[318/808] Sam Collins (Gold Coast)
+  ✓ Found: ID=824, ProviderID=295446
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[319/808] Jarrod Witts (Gold Coast)
+  ✓ Found: ID=160, ProviderID=291975
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[320/808] Sam Flanders (Gold Coast)
+  ✓ Found: ID=2340, ProviderID=1009260
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[321/808] Daniel Rioli (Gold Coast)
+  ✓ Found: ID=919, ProviderID=1000981
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[322/808] Bailey Humphrey (Gold Coast)
+  ✓ Found: ID=5434, ProviderID=1023500
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[323/808] Wil Powell (Gold Coast)
+  ✓ Found: ID=1474, ProviderID=1007881
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[324/808] John Noble (Gold Coast)
+  ✓ Found: ID=1768, ProviderID=1000072
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[325/808] Bodhi Uwland (Gold Coast)
+  ✓ Found: ID=4868, ProviderID=1017665
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[326/808] Ben King (Gold Coast)
+  ✓ Found: ID=1810, ProviderID=1006144
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[327/808] Mac Andrew (Gold Coast)
+  ✓ Found: ID=5063, ProviderID=1017396
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[328/808] Joel Jeffrey (Gold Coast)
+  ✓ Found: ID=2567, ProviderID=1005992
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[329/808] Ben Long (Gold Coast)
+  ✓ Found: ID=1408, ProviderID=993917
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[330/808] Brayden Fiorini (Gold Coast)
+  ✓ Found: ID=988, ProviderID=993799
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[331/808] Sam Clohesy (Gold Coast)
+  ✓ Found: ID=4320, ProviderID=1013257
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[332/808] Ben Ainsworth (Gold Coast)
+  ✓ Found: ID=1401, ProviderID=998130
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[333/808] Nick Holman (Gold Coast)
+  ✓ Found: ID=128, ProviderID=297456
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[334/808] Will Graham (Gold Coast)
+  ✓ Found: ID=6513, ProviderID=1026960
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[335/808] Charlie Ballard (Gold Coast)
+  ✓ Found: ID=1475, ProviderID=1008882
+  → Trying: https://s.afl.com.au/st  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[394/808] Lachlan Keeffe (Greater Western Sydney)
+  ✓ Found: ID=196, ProviderID=290314
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[395/808] Jack Ough (Greater Western Sydney)
+  ✓ Found: ID=8429, ProviderID=1028539
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[396/808] Cody Angove (Greater Western Sydney)
+  ✓ Found: ID=11287, ProviderID=1032619
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[397/808] James Leake (Greater Western Sydney)
+  ✓ Found: ID=9439, ProviderID=1032119
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[398/808] Josh Fahey (Greater Western Sydney)
+  ✓ Found: ID=4884, ProviderID=1017751
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[399/808] Max Gruzewski (Greater Western Sydney)
+  ✓ Found: ID=6638, ProviderID=1027921
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[400/808] Logan Smith (Greater Western Sydney)
+  ✓ Found: ID=9221, ProviderID=1032161
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[401/808] Josaia Delana (Greater Western Sydney)
+  ✓ Found: ID=9175, ProviderID=1029030
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[402/808] Nicholas Madden (Greater Western Sydney)
+  ✓ Found: ID=5466, ProviderID=1023743
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[403/808] Nathan Wardius (Greater Western Sydney)
+  ✓ Found: ID=11935, ProviderID=1034066
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[404/808] Wade Derksen (Greater Western Sydney)
+  ✓ Found: ID=2886, ProviderID=1016140
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[405/808] Jai Newcombe (Hawthorn)
+  → Loading Hawthorn player data...
+  ✓ Found: ID=4711, ProviderID=1020895
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[406/808] Dylan Moore (Hawthorn)
+  ✓ Found: ID=1595, ProviderID=1006314
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[407/808] Lloyd Meek (Hawthorn)
+  ✓ Found: ID=1560, ProviderID=1000980
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[408/808] James Worpel (Hawthorn)
+  ✓ Found: ID=1713, ProviderID=1002222
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[409/808] Karl Amon (Hawthorn)
+  ✓ Found: ID=801, ProviderID=297354
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[410/808] Massimo D'Ambrosio (Hawthorn)
+  ✓ Found: ID=4349, ProviderID=1005144
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[411/808] James Sicily (Hawthorn)
+  ✓ Found: ID=514, ProviderID=297566
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[412/808] Josh Weddle (Hawthorn)
+  ✓ Found: ID=6669, ProviderID=1027935
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[413/808] Blake Hardwick (Hawthorn)
+  ✓ Found: ID=924, ProviderID=993794
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[414/808] Josh Battle (Hawthorn)
+  ✓ Found: ID=1412, ProviderID=998134
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[415/808] Jarman Impey (Hawthorn)
+  ✓ Found: ID=702, ProviderID=296254
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[416/808] Tom Barrass (Hawthorn)
+  ✓ Found: ID=790, ProviderID=990290
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[417/808] Conor Nash (Hawthorn)
+  ✓ Found: ID=1302, ProviderID=1007124
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[418/808] Jack Ginnivan (Hawthorn)
+  ✓ Found: ID=2237, ProviderID=1012857
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[420/808] Connor Macdonald (Hawthorn)
+  ✓ Found: ID=2723, ProviderID=1017094
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[421/808] Jack Scrimshaw (Hawthorn)
+  ✓ Found: ID=1336, ProviderID=998114
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[422/808] Mabior Chol (Hawthorn)
+  ✓ Found: ID=1125, ProviderID=994077
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[423/808] Jack Gunston (Hawthorn)
+  ✓ Found: ID=500, ProviderID=291351
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[424/808] Josh Ward (Hawthorn)
+  ✓ Found: ID=5252, ProviderID=1017110
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[425/808] Harry Morrison (Hawthorn)
+  ✓ Found: ID=1341, ProviderID=1000963
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[426/808] Will Day (Hawthorn)
+  ✓ Found: ID=3726, ProviderID=1008550
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[427/808] Cam Mackenzie (Hawthorn)
+  ✓ Found: ID=5630, ProviderID=1023482
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[428/808] Changkuoth Jiath (Hawthorn)
+  ✓ Found: ID=1574, ProviderID=998390
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[429/808] Sam Frost (Hawthorn)
+  ✓ Found: ID=306, ProviderID=293738
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[430/808] Luke Breust (Hawthorn)
+  ✓ Found: ID=312, ProviderID=280744
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[431/808] Calsher Dear (Hawthorn)
+  ✓ Found: ID=9423, ProviderID=1032100
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[432/808] Finn Maginness (Hawthorn)
+  ✓ Found: ID=2812, ProviderID=1009421
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[433/808] Mitch Lewis (Hawthorn)
+  ✓ Found: ID=1333, ProviderID=1000887
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[434/808] Ned Reeves (Hawthorn)
+  ✓ Found: ID=1822, ProviderID=1001024
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[435/808] Noah Mr  ✓ Found: ID=458, ProviderID=280109
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[381/808] Harvey Thomas (Greater Western Sydney)
+  ✓ Found: ID=6643, ProviderID=1027925
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[382/808] Jake Riccardi (Greater Western Sydney)
+  ✓ Found: ID=3723, ProviderID=1008123
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[383/808] Stephen Coniglio (Greater Western Sydney)
+  ✓ Found: ID=217, ProviderID=291969
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[384/808] Jacob Wehr (Greater Western Sydney)
+  ✓ Found: ID=4064, ProviderID=1004530
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[385/808] Leek Aleer (Greater Western Sydney)
+  ✓ Found: ID=5686, ProviderID=1008691
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[386/808] Toby McMullin (Greater Western Sydney)
+  ✓ Found: ID=6703, ProviderID=1027971
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[387/808] Joe Fonti (Greater Western Sydney)
+  ✓ Found: ID=11301, ProviderID=1032629
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[388/808] Ryan Angwin (Greater Western Sydney)
+  ✓ Found: ID=2725, ProviderID=1015777
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[389/808] Harry Rowston (Greater Western Sydney)
+  ✓ Found: ID=5550, ProviderID=1021122
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[390/808] Phoenix Gothard (Greater Western Sydney)
+  ✓ Found: ID=9298, ProviderID=1032042
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[391/808] Oliver Hannaford (Greater Western Sydney)
+  ✓ Found: ID=8575, ProviderID=1028485
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[392/808] Conor Stone (Greater Western Sydney)
+  ✓ Found: ID=3031, ProviderID=1015862
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[393/808] Harrison Oliver (Greater Western Sydney)
+  ✓ Found: ID=8430, ProviderID=1028562
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[394/808] Lachlan Keeffe (Greater Western Sydney)
+  ✓ Found: ID=196, ProviderID=290314
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[395/808] Jack Ough (Greater Western Sydney)
+  ✓ Found: ID=8429, ProviderID=1028539
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[396/808] Cody Angove (Greater Western Sydney)
+  ✓ Found: ID=11287, ProviderID=1032619
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[397/808] James Leake (Greater Western Sydney)
+  ✓ Found: ID=9439, ProviderID=1032119
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[398/808] Josh Fahey (Greater Western Sydney)
+  ✓ Found: ID=4884, ProviderID=1017751
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[399/808] Max Gruzewski (Greater Western Sydney)
+  ✓ Found: ID=6638, ProviderID=1027921
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[400/808] Logan Smith (Greater Western Sydney)
+  ✓ Found: ID=9221, ProviderID=1032161
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[401/808] Josaia Delana (Greater Western Sydney)
+  ✓ Found: ID=9175, ProviderID=1029030
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[402/808] Nicholas Madden (Greater Western Sydney)
+  ✓ Found: ID=5466, ProviderID=1023743
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[403/808] Nathan Wardius (Greater Western Sydney)
+  ✓ Found: ID=11935, ProviderID=1034066
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[404/808] Wade Derksen (Greater Western Sydney)
+  ✓ Found: ID=2886, ProviderID=1016140
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[405/808] Jai Newcombe (Hawthorn)
+  → Loading Hawthorn player data...
+  ✓ Found: ID=4711, ProviderID=1020895
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[406/808] Dylan Moore (Hawthorn)
+  ✓ Found: ID=1595, ProviderID=1006314
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[407/808] Lloyd Meek (Hawthorn)
+  ✓ Found: ID=1560, ProviderID=1000980
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[408/808] James Worpel (Hawthorn)
+  ✓ Found: ID=1713, ProviderID=1002222
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[409/808] Karl Amon (Hawthorn)
+  ✓ Found: ID=801, ProviderID=297354
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[410/808] Massimo D'Ambrosio (Hawthorn)
+  ✓ Found: ID=4349, ProviderID=1005144
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[411/808] James Sicily (Hawthorn)
+  ✓ Found: ID=514, ProviderID=297566
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[412/808] Josh Weddle (Hawthorn)
+  ✓ Found: ID=6669, ProviderID=1027935
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[413/808] Blake Hardwick (Hawthorn)
+  ✓ Found: ID=924, ProviderID=993794
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[414/808] Josh Battle (Hawthorn)
+  ✓ Found: ID=1412, ProviderID=998134
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[415/808] Jarman Impey (Hawthorn)
+  ✓ Found: ID=702, ProviderID=296254
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[416/808] Tom Barrass (Hawthorn)
+  ✓ Found: ID=790, ProviderID=990290
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDIma  ✓ Found: ID=723, ProviderID=296351
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[474/808] Harry Sharp (Melbourne)
+  ✓ Found: ID=2670, ProviderID=1007099
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[475/808] Xavier Lindsay (Melbourne)
+  ✓ Found: ID=8524, ProviderID=1028531
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[476/808] Taj Woewodin (Melbourne)
+  ✓ Found: ID=5690, ProviderID=1018425
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[477/808] Jai Culley (Melbourne)
+  ✓ Found: ID=5064, ProviderID=1020802
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[478/808] Charlie Spargo (Melbourne)
+  ✓ Found: ID=1742, ProviderID=1002282
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[479/808] Bailey Laurie (Melbourne)
+  ✓ Found: ID=2811, ProviderID=1012826
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[480/808] Matthew Jefferson (Melbourne)
+  ✓ Found: ID=5498, ProviderID=1023486
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[481/808] Shane McAdam (Melbourne)
+  ✓ Found: ID=1924, ProviderID=298470
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[482/808] Jed Adams (Melbourne)
+  ✓ Found: ID=7416, ProviderID=1023174
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[483/808] Marty Hore (Melbourne)
+  ✓ Found: ID=1850, ProviderID=996692
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[484/808] Will Verrall (Melbourne)
+  ✓ Found: ID=8628, ProviderID=1015473
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[485/808] Tom Campbell (Melbourne)
+  ✓ Found: ID=692, ProviderID=290246
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[486/808] Tom Fullarton (Melbourne)
+  ✓ Found: ID=1771, ProviderID=1013532
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[487/808] Oliver Sestan (Melbourne)
+  ✓ Found: ID=8630, ProviderID=1029973
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[488/808] Ricky Mentha (Melbourne)
+  ✓ Found: ID=11741, ProviderID=1029211
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[489/808] Kynan Brown (Melbourne)
+  ✓ Found: ID=6692, ProviderID=1027949
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[490/808] Aidan Johnson (Melbourne)
+  ✓ Found: ID=5627, ProviderID=1024173
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[491/808] Jack Henderson (Melbourne)
+  ✓ Found: ID=5007, ProviderID=1008183
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[492/808] Luker Kentfield (Melbourne)
+  ✓ Found: ID=7630, ProviderID=1024337
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[493/808] Andy Moniz-Wakefield (Melbourne)
+  ✓ Found: ID=5472, ProviderID=1013165
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[494/808] Tristan Xerri (North Melbourne)
+  → Loading North Melbourne player data...
+  ✓ Found: ID=1694, ProviderID=1004965
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[495/808] Luke Davies-Uniacke (North Melbourne)
+  ✓ Found: ID=1607, ProviderID=1002267
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[496/808] Harry Sheezel (North Melbourne)
+  ✓ Found: ID=5521, ProviderID=1023518
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[497/808] Tom Powell (North Melbourne)
+  ✓ Found: ID=4068, ProviderID=1011659
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[498/808] Jy Simpkin (North Melbourne)
+  ✓ Found: ID=1405, ProviderID=993998
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[499/808] Paul Curtis (North Melbourne)
+  ✓ Found: ID=4350, ProviderID=1002947
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[500/808] Cameron Zurhaar (North Melbourne)
+  ✓ Found: ID=1404, ProviderID=998484
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[501/808] George Wardlaw (North Melbourne)
+  ✓ Found: ID=5508, ProviderID=1023477
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[502/808] Nick Larkey (North Melbourne)
+  ✓ Found: ID=1355, ProviderID=1001017
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[503/808] Luke Parker (North Melbourne)
+  ✓ Found: ID=817, ProviderID=290778
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[504/808] Jack Darling (North Melbourne)
+  ✓ Found: ID=843, ProviderID=290838
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[505/808] Colby McKercher (North Melbourne)
+  ✓ Found: ID=6706, ProviderID=1024272
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[506/808] Caleb Daniel (North Melbourne)
+  ✓ Found: ID=952, ProviderID=295136
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[507/808] Charlie Comben (North Melbourne)
+  ✓ Found: ID=2398, ProviderID=1015781
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[508/808] Luke McDonald (North Melbourne)
+  ✓ Found: ID=426, ProviderID=296355
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[509/808] Aidan Corr (North Melbourne)
+  ✓ Found: ID=436, ProviderID=294508
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[510/808] Dylan Stephens (North Melbourne)
+  ✓ Found: ID=3734, ProviderID=1004848
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[511/808] Bailey Scott (North Melbourne)
+  ✓ Found: ID=1837, ProviderID=1006058
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[512/808] Darcy Tucker (North Melbourne)
+  ✓ Found: ID=935, ProviderID=993816
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[513/808] Toby Pink (North Melbourne)
+  ✓ Found: ID=1338, ProviderID=1002138
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/Cha  ✓ Found: ID=809, ProviderID=298264
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[460/808] Steven May (Melbourne)
+  ✓ Found: ID=287, ProviderID=281085
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[461/808] Judd McVee (Melbourne)
+  ✓ Found: ID=5688, ProviderID=1017703
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[462/808] Tom Sparrow (Melbourne)
+  ✓ Found: ID=1947, ProviderID=999391
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[463/808] Jake Bowey (Melbourne)
+  ✓ Found: ID=3133, ProviderID=1012825
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[464/808] Daniel Turner (Melbourne)
+  ✓ Found: ID=5217, ProviderID=1020959
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[465/808] Caleb Windsor (Melbourne)
+  ✓ Found: ID=6443, ProviderID=1027821
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[466/808] Jacob van Rooyen (Melbourne)
+  ✓ Found: ID=5689, ProviderID=1017720
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[467/808] Jake Melksham (Melbourne)
+  ✓ Found: ID=137, ProviderID=280824
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[468/808] Jake Lever (Melbourne)
+  ✓ Found: ID=856, ProviderID=298281
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[469/808] Harrison Petty (Melbourne)
+  ✓ Found: ID=1590, ProviderID=1008893
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[470/808] Harvey Langford (Melbourne)
+  ✓ Found: ID=8503, ProviderID=1028546
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[471/808] Blake Howes (Melbourne)
+  ✓ Found: ID=5236, ProviderID=1017122
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[472/808] Koltyn Tholstrup (Melbourne)
+  ✓ Found: ID=7638, ProviderID=1023640
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[473/808] Jack Billings (Melbourne)
+  ✓ Found: ID=723, ProviderID=296351
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[474/808] Harry Sharp (Melbourne)
+  ✓ Found: ID=2670, ProviderID=1007099
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[475/808] Xavier Lindsay (Melbourne)
+  ✓ Found: ID=8524, ProviderID=1028531
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[476/808] Taj Woewodin (Melbourne)
+  ✓ Found: ID=5690, ProviderID=1018425
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[477/808] Jai Culley (Melbourne)
+  ✓ Found: ID=5064, ProviderID=1020802
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[478/808] Charlie Spargo (Melbourne)
+  ✓ Found: ID=1742, ProviderID=1002282
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[479/808] Bailey Laurie (Melbourne)
+  ✓ Found: ID=2811, ProviderID=1012826
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[480/808] Matthew Jefferson (Melbourne)
+  ✓ Found: ID=5498, ProviderID=1023486
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[481/808] Shane McAdam (Melbourne)
+  ✓ Found: ID=1924, ProviderID=298470
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[482/808] Jed Adams (Melbourne)
+  ✓ Found: ID=7416, ProviderID=1023174
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[483/808] Marty Hore (Melbourne)
+  ✓ Found: ID=1850, ProviderID=996692
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[484/808] Will Verrall (Melbourne)
+  ✓ Found: ID=8628, ProviderID=1015473
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[485/808] Tom Campbell (Melbourne)
+  ✓ Found: ID=692, ProviderID=290246
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[486/808] Tom Fullarton (Melbourne)
+  ✓ Found: ID=1771, ProviderID=1013532
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[487/808] Oliver Sestan (Melbourne)
+  ✓ Found: ID=8630, ProviderID=1029973
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[488/808] Ricky Mentha (Melbourne)
+  ✓ Found: ID=11741, ProviderID=1029211
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[489/808] Kynan Brown (Melbourne)
+  ✓ Found: ID=6692, ProviderID=1027949
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[490/808] Aidan Johnson (Melbourne)
+  ✓ Found: ID=5627, ProviderID=1024173
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[491/808] Jack Henderson (Melbourne)
+  ✓ Found: ID=5007, ProviderID=1008183
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[492/808] Luker Kentfield (Melbourne)
+  ✓ Found: ID=7630, ProviderID=1024337
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[493/808] Andy Moniz-Wakefield (Melbourne)
+  ✓ Found: ID=5472, ProviderID=1013165
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[494/808] Tristan Xerri (North Melbourne)
+  → Loading North Melbourne player data...
+  ✓ Found: ID=1694, ProviderID=1004965
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[495/808] Luke Davies-Uniacke (North Melbourne)
+  ✓ Found: ID=1607, ProviderID=1002267
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[496/808] Harry Sheezel (North Melbourne)
+  ✓ Found: ID=5521, ProviderID=1023518
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[497/808] Tom Powell (  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[552/808] Jackson Mead (Port Adelaide)
+  ✓ Found: ID=3732, ProviderID=1005326
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[553/808] Willie Rioli (Port Adelaide)
+  ✗ Player not found in team data
+
+[554/808] Mitch Georgiades (Port Adelaide)
+  ✓ Found: ID=3733, ProviderID=1010174
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[555/808] Lachie Jones (Port Adelaide)
+  ✓ Found: ID=4070, ProviderID=1011583
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[556/808] Esava Ratugolea (Port Adelaide)
+  ✓ Found: ID=1375, ProviderID=1002220
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[557/808] Brandon Zerk-Thatcher (Port Adelaide)
+  ✓ Found: ID=1469, ProviderID=1004034
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[558/808] Joe Richards (Port Adelaide)
+  ✓ Found: ID=8622, ProviderID=1008239
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[559/808] Jack Lukosius (Port Adelaide)
+  ✓ Found: ID=1831, ProviderID=1004095
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[560/808] Ryan Burton (Port Adelaide)
+  ✗ Player not found in team data
+
+[561/808] Logan Evans (Port Adelaide)
+  ✓ Found: ID=9923, ProviderID=1019938
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[562/808] Sam Powell-Pepper (Port Adelaide)
+  ✓ Found: ID=1406, ProviderID=993979
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[563/808] Josh Sinn (Port Adelaide)
+  ✓ Found: ID=5294, ProviderID=1017078
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[564/808] Jeremy Finlayson (Port Adelaide)
+  ✗ Player not found in team data
+
+[565/808] Todd Marshall (Port Adelaide)
+  ✓ Found: ID=1356, ProviderID=1004998
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[566/808] Ivan Soldo (Port Adelaide)
+  ✓ Found: ID=949, ProviderID=998529
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[567/808] Jed McEntee (Port Adelaide)
+  ✗ Player not found in team data
+
+[568/808] Ollie Lord (Port Adelaide)
+  ✓ Found: ID=2983, ProviderID=1012881
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[569/808] Christian Moraes (Port Adelaide)
+  ✓ Found: ID=9104, ProviderID=1028563
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[570/808] Dante Visentini (Port Adelaide)
+  ✓ Found: ID=5229, ProviderID=1017128
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[571/808] Hugh Jackson (Port Adelaide)
+  ✗ Player not found in team data
+
+[572/808] Joe Berry (Port Adelaide)
+  ✓ Found: ID=9296, ProviderID=1028529
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[573/808] Jack Whitlock (Port Adelaide)
+  ✓ Found: ID=9320, ProviderID=1032053
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[574/808] Dylan Williams (Port Adelaide)
+  ✗ Player not found in team data
+
+[575/808] Lachlan Charleson (Port Adelaide)
+  ✗ Player not found in team data
+
+[576/808] Tom Anastasopoulos (Port Adelaide)
+  ✓ Found: ID=6561, ProviderID=1027870
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[577/808] Rory Atkins (Port Adelaide)
+  ✗ Player not found in team data
+
+[578/808] Will Lorenz (Port Adelaide)
+  ✓ Found: ID=8447, ProviderID=1029262
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[579/808] Tom Cochrane (Port Adelaide)
+  ✓ Found: ID=9611, ProviderID=1022371
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[580/808] Benny Barrett (Port Adelaide)
+  ✓ Found: ID=10184, ProviderID=1022601
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[581/808] Jacob Moss (Port Adelaide)
+  ✓ Found: ID=13923, ProviderID=1038914
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[582/808] Josh Lai (Port Adelaide)
+  ✓ Found: ID=13968, ProviderID=1040300
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[583/808] Xavier Walsh (Port Adelaide)
+  ✓ Found: ID=11321, ProviderID=1029158
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[584/808] Harrison Ramm (Port Adelaide)
+  ✓ Found: ID=10080, ProviderID=1027311
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[585/808] Ewan Mackinlay (Port Adelaide)
+  ✓ Found: ID=6597, ProviderID=1027887
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[586/808] Mani Liddy (Port Adelaide)
+  ✓ Found: ID=9993, ProviderID=1008649
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[587/808] Toby Nankervis (Richmond)
+  → Loading Richmond player data...
+  ✓ Found: ID=789, ProviderID=298174
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[588/808] Nick Vlastuin (Richmond)
+  ✓ Found: ID=443, ProviderID=294674
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[589/808] Tim Taranto (Richmond)
+  ✓ Found: ID=1395, ProviderID=998172
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[590/808] Ben Miller (Richmond)
+  ✓ Found: ID=1572, ProviderID=1002403
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[591/808] Seth Campbell (Richmond)
+  ✓ Found: ID=5275, ProviderID=1023275
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[592/808] Jacob Hopper (Richmond)
+  ✓ Found: ID=918, ProviderID=993903
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[593/808] Nathan Broad (Richmond)
+  ✓ Found: ID=1033, ProviderID=295203
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[594/808] Rhyan Mansell (Richmond)
+  ✓ Found: ID=2853, ProviderID=1008478
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[595/808] Tom Brown (Richmond)
+  ✓ Found: ID=2877, ProviderID=1017086
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[596/808] Jayden Short (Richmond)
+  ✓ Found: ID=964, ProviderID=992049
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDIm
+[537/808] Finnbar Maley (North Melbourne)
+  ✓ Found: ID=8920, ProviderID=1031792
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[538/808] Zac Banch (North Melbourne)
+  ✓ Found: ID=11960, ProviderID=1020930
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[539/808] Cooper Trembath (North Melbourne)
+  ✓ Found: ID=9159, ProviderID=1031988
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[540/808] Zak Butters (Port Adelaide)
+  → Loading Port Adelaide player data...
+  ✓ Found: ID=1856, ProviderID=1006121
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[541/808] Willem Drew (Port Adelaide)
+  ✓ Found: ID=1400, ProviderID=1000972
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[542/808] Connor Rozee (Port Adelaide)
+  ✓ Found: ID=1848, ProviderID=1001299
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[543/808] Ollie Wines (Port Adelaide)
+  ✓ Found: ID=678, ProviderID=294318
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[544/808] Jason Horne-Francis (Port Adelaide)
+  ✓ Found: ID=5691, ProviderID=1011640
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[545/808] Aliir Aliir (Port Adelaide)
+  ✓ Found: ID=695, ProviderID=294469
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[546/808] Miles Bergman (Port Adelaide)
+  ✓ Found: ID=2847, ProviderID=1009191
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[547/808] Darcy Byrne-Jones (Port Adelaide)
+  ✓ Found: ID=654, ProviderID=991930
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[548/808] Kane Farrell (Port Adelaide)
+  ✓ Found: ID=1758, ProviderID=1002253
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[549/808] Jase Burgoyne (Port Adelaide)
+  ✓ Found: ID=5692, ProviderID=1013462
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[550/808] Travis Boak (Port Adelaide)
+  ✗ Player not found in team data
+
+[551/808] Jordon Sweet (Port Adelaide)
+  ✓ Found: ID=1943, ProviderID=992330
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[552/808] Jackson Mead (Port Adelaide)
+  ✓ Found: ID=3732, ProviderID=1005326
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[553/808] Willie Rioli (Port Adelaide)
+  ✗ Player not found in team data
+
+[554/808] Mitch Georgiades (Port Adelaide)
+  ✓ Found: ID=3733, ProviderID=1010174
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[555/808] Lachie Jones (Port Adelaide)
+  ✓ Found: ID=4070, ProviderID=1011583
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[556/808] Esava Ratugolea (Port Adelaide)
+  ✓ Found: ID=1375, ProviderID=1002220
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[557/808] Brandon Zerk-Thatcher (Port Adelaide)
+  ✓ Found: ID=1469, ProviderID=1004034
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[558/808] Joe Richards (Port Adelaide)
+  ✓ Found: ID=8622, ProviderID=1008239
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[559/808] Jack Lukosius (Port Adelaide)
+  ✓ Found: ID=1831, ProviderID=1004095
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[560/808] Ryan Burton (Port Adelaide)
+  ✗ Player not found in team data
+
+[561/808] Logan Evans (Port Adelaide)
+  ✓ Found: ID=9923, ProviderID=1019938
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[562/808] Sam Powell-Pepper (Port Adelaide)
+  ✓ Found: ID=1406, ProviderID=993979
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[563/808] Josh Sinn (Port Adelaide)
+  ✓ Found: ID=5294, ProviderID=1017078
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[564/808] Jeremy Finlayson (Port Adelaide)
+  ✗ Player not found in team data
+
+[565/808] Todd Marshall (Port Adelaide)
+  ✓ Found: ID=1356, ProviderID=1004998
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[566/808] Ivan Soldo (Port Adelaide)
+  ✓ Found: ID=949, ProviderID=998529
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[567/808] Jed McEntee (Port Adelaide)
+  ✗ Player not found in team data
+
+[568/808] Ollie Lord (Port Adelaide)
+  ✓ Found: ID=2983, ProviderID=1012881
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[569/808] Christian Moraes (Port Adelaide)
+  ✓ Found: ID=9104, ProviderID=1028563
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[570/808] Dante Visentini (Port Adelaide)
+  ✓ Found: ID=5229, ProviderID=1017128
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[571/808] Hugh Jackson (Port Adelaide)
+  ✗ Player not found in team data
+
+[572/808] Joe Berry (Port Adelaide)
+  ✓ Found: ID=9296, ProviderID=1028529
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[573/808] Jack Whitlock (Port Adelaide)
+  ✓ Found: ID=9320, ProviderID=1032053
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[574/808] Dylan Williams (Port Adelaide)
+  ✗ Player not found in team data
+
+[575/808] Lachlan Charleson (Port Adelaide)
+  ✗ Player not found in team data
+
+[576/808] Tom Anastasopoulos (Port Adelaide)
+  ✓ Found: ID=6561, ProviderID=1027870
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[577/808] Rory Atkins (Port Adelaide)
+  ✗ Player not found in team data
+
+[578/808] Will Lorenz (Port Adelaide)
+  ✓ Found: ID=8447, ProviderID=1029262
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[579/808] Tom Cochrane (Port Adelaide)
+  ✓ Found: ID=9611, ProviderID=1022371
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[580/808] Benny  ✗ Could not load team player data
+
+[646/808] Ryan Byrnes (St Kilda)
+  ✗ Could not load team player data
+
+[647/808] Hunter Clark (St Kilda)
+  ✗ Could not load team player data
+
+[648/808] Zak Jones (St Kilda)
+  ✗ Could not load team player data
+
+[649/808] Liam Stocker (St Kilda)
+  ✗ Could not load team player data
+
+[650/808] Hugo Garcia (St Kilda)
+  ✗ Could not load team player data
+
+[651/808] Jimmy Webster (St Kilda)
+  ✗ Could not load team player data
+
+[652/808] Liam Henry (St Kilda)
+  ✗ Could not load team player data
+
+[653/808] Mattaes Phillipou (St Kilda)
+  ✗ Could not load team player data
+
+[654/808] Dougal Howard (St Kilda)
+  ✗ Could not load team player data
+
+[655/808] Jack Carroll (St Kilda)
+  ✗ Could not load team player data
+
+[656/808] Dan Butler (St Kilda)
+  ✗ Could not load team player data
+
+[657/808] Paddy Dow (St Kilda)
+  ✗ Could not load team player data
+
+[658/808] Max King (St Kilda)
+  ✗ Could not load team player data
+
+[659/808] Hugh Boxshall (St Kilda)
+  ✗ Could not load team player data
+
+[660/808] Zaine Cordy (St Kilda)
+  ✗ Could not load team player data
+
+[661/808] Isaac Keeler (St Kilda)
+  ✗ Could not load team player data
+
+[662/808] Lance Collard (St Kilda)
+  ✗ Could not load team player data
+
+[663/808] Alixzander Tauru (St Kilda)
+  ✗ Could not load team player data
+
+[664/808] Tobie Travaglia (St Kilda)
+  ✗ Could not load team player data
+
+[665/808] Angus Hastie (St Kilda)
+  ✗ Could not load team player data
+
+[666/808] Arie Schoenmaker (St Kilda)
+  ✗ Could not load team player data
+
+[667/808] James Barrat (St Kilda)
+  ✗ Could not load team player data
+
+[668/808] Alex Dodson (St Kilda)
+  ✗ Could not load team player data
+
+[669/808] Harry Boyd (St Kilda)
+  ✗ Could not load team player data
+
+[670/808] Patrick Said (St Kilda)
+  ✗ Could not load team player data
+
+[671/808] Angus McLennan (St Kilda)
+  ✗ Could not load team player data
+
+[672/808] Max Heath (St Kilda)
+  ✗ Could not load team player data
+
+[673/808] Liam O'Connell (St Kilda)
+  ✗ Could not load team player data
+
+[674/808] Eamonn Armstrong (St Kilda)
+  ✗ Could not load team player data
+
+[675/808] Isaac Heeney (Sydney)
+  → Loading Sydney player data...
+  ✓ Found: ID=966, ProviderID=298539
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[676/808] Chad Warner (Sydney)
+  ✓ Found: ID=3735, ProviderID=1012014
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[677/808] Nick Blakey (Sydney)
+  ✓ Found: ID=1948, ProviderID=1006028
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[678/808] Brodie Grundy (Sydney)
+  ✓ Found: ID=113, ProviderID=293957
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[679/808] James Rowbottom (Sydney)
+  ✓ Found: ID=1908, ProviderID=1006126
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[680/808] Errol Gulden (Sydney)
+  ✓ Found: ID=3338, ProviderID=1013128
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[681/808] Jake Lloyd (Sydney)
+  ✓ Found: ID=842, ProviderID=295342
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[682/808] Will Hayward (Sydney)
+  ✓ Found: ID=1413, ProviderID=997100
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[683/808] Oliver Florent (Sydney)
+  ✓ Found: ID=1363, ProviderID=998103
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[684/808] Justin McInerney (Sydney)
+  ✓ Found: ID=1864, ProviderID=1011936
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[685/808] James Jordon (Sydney)
+  ✓ Found: ID=1813, ProviderID=1013409
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[686/808] Tom McCartin (Sydney)
+  ✓ Found: ID=1786, ProviderID=1008198
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[687/808] Matt Roberts (Sydney)
+  ✓ Found: ID=5696, ProviderID=1012210
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[688/808] Hayden McLean (Sydney)
+  ✓ Found: ID=1956, ProviderID=1003203
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[689/808] Lewis Melican (Sydney)
+  ✓ Found: ID=1040, ProviderID=996743
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[690/808] Tom Papley (Sydney)
+  ✓ Found: ID=1134, ProviderID=996765
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[691/808] Braeden Campbell (Sydney)
+  ✓ Found: ID=2940, ProviderID=1013133
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[692/808] Dane Rampe (Sydney)
+  ✓ Found: ID=727, ProviderID=290307
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[693/808] Sam Wicks (Sydney)
+  ✓ Found: ID=1903, ProviderID=1006232
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[694/808] Callum Mills (Sydney)
+  ✓ Found: ID=1133, ProviderID=993905
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[695/808] Angus Sheldrick (Sydney)
+  ✓ Found: ID=5698, ProviderID=1020339
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[696/808] Logan McDonald (Sydney)
+  ✓ Found: ID=4074, ProviderID=1013230
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[697/808] Taylor Adams (Sydney)
+  ✓ Found: ID=144, ProviderID=291776
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[698/808] Joel Amartey (Sydney)
+  ✓ Found: ID=1598, ProviderID=1008091
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[699/808] Harry Cunningham (Sydney)
+  ✓ Found: ID=559, ProviderID=291978
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[700/808] Riley Bice (Sydney)
+  ✓ Found: ID=8470, ProviderID=1008224
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[701/808] Corey Warner (Sydney)
+  ✓ Found: ID=5697, ProviderID=1018424
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[702/808] Robbie Fox (Sydney)
+  ✓ Found: ID=1351, ProviderID=291848
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[703/808] Aaron Francis (Sydney)
+  ✓ Found: ID=934, ProviderID=990816
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[704/808] Joel Hamling (Sydney)
+  ✓ Found: ID=457, ProviderID=295222
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[705/808] Caiden Cleary (Sydney)
+  ✓ Found: ID=6816, ProviderID=1024057
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloade  ✓ Found: ID=8507, ProviderID=1028572
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[622/808] Josh Gibcus (Richmond)
+  ✓ Found: ID=5157, ProviderID=1017059
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[623/808] Judson Clarke (Richmond)
+  ✓ Found: ID=5068, ProviderID=1017043
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[624/808] Jasper Alger (Richmond)
+  ✓ Found: ID=8588, ProviderID=1028537
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[625/808] Harry Armstrong (Richmond)
+  ✓ Found: ID=9370, ProviderID=1028525
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[626/808] Liam Fawcett (Richmond)
+  ✓ Found: ID=9612, ProviderID=1022383
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[627/808] Mate Colina (Richmond)
+  ✓ Found: ID=4072, ProviderID=1021660
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[628/808] Jacob Bauer (Richmond)
+  ✓ Found: ID=5517, ProviderID=1021152
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[629/808] Oliver Hayes-Brown (Richmond)
+  ✓ Found: ID=12081, ProviderID=1035199
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[630/808] Campbell Gray (Richmond)
+  ✓ Found: ID=12568, ProviderID=1036103
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[631/808] Jack Sinclair (St Kilda)
+  → Loading St Kilda player data...
+  ✗ Could not load team player data
+
+[632/808] Nasiah Wanganeen-Milera (St Kilda)
+  ✗ Could not load team player data
+
+[633/808] Rowan Marshall (St Kilda)
+  ✗ Could not load team player data
+
+[634/808] Jack Steele (St Kilda)
+  ✗ Could not load team player data
+
+[635/808] Callum Wilkie (St Kilda)
+  ✗ Could not load team player data
+
+[636/808] Jack Macrae (St Kilda)
+  ✗ Could not load team player data
+
+[637/808] Jack Higgins (St Kilda)
+  ✗ Could not load team player data
+
+[638/808] Bradley Hill (St Kilda)
+  ✗ Could not load team player data
+
+[639/808] Mitch Owens (St Kilda)
+  ✗ Could not load team player data
+
+[640/808] Mason Wood (St Kilda)
+  ✗ Could not load team player data
+
+[641/808] Cooper Sharman (St Kilda)
+  ✗ Could not load team player data
+
+[642/808] Marcus Windhager (St Kilda)
+  ✗ Could not load team player data
+
+[643/808] Darcy Wilson (St Kilda)
+  ✗ Could not load team player data
+
+[644/808] Max Hall (St Kilda)
+  ✗ Could not load team player data
+
+[645/808] Anthony Caminiti (St Kilda)
+  ✗ Could not load team player data
+
+[646/808] Ryan Byrnes (St Kilda)
+  ✗ Could not load team player data
+
+[647/808] Hunter Clark (St Kilda)
+  ✗ Could not load team player data
+
+[648/808] Zak Jones (St Kilda)
+  ✗ Could not load team player data
+
+[649/808] Liam Stocker (St Kilda)
+  ✗ Could not load team player data
+
+[650/808] Hugo Garcia (St Kilda)
+  ✗ Could not load team player data
+
+[651/808] Jimmy Webster (St Kilda)
+  ✗ Could not load team player data
+
+[652/808] Liam Henry (St Kilda)
+  ✗ Could not load team player data
+
+[653/808] Mattaes Phillipou (St Kilda)
+  ✗ Could not load team player data
+
+[654/808] Dougal Howard (St Kilda)
+  ✗ Could not load team player data
+
+[655/808] Jack Carroll (St Kilda)
+  ✗ Could not load team player data
+
+[656/808] Dan Butler (St Kilda)
+  ✗ Could not load team player data
+
+[657/808] Paddy Dow (St Kilda)
+  ✗ Could not load team player data
+
+[658/808] Max King (St Kilda)
+  ✗ Could not load team player data
+
+[659/808] Hugh Boxshall (St Kilda)
+  ✗ Could not load team player data
+
+[660/808] Zaine Cordy (St Kilda)
+  ✗ Could not load team player data
+
+[661/808] Isaac Keeler (St Kilda)
+  ✗ Could not load team player data
+
+[662/808] Lance Collard (St Kilda)
+  ✗ Could not load team player data
+
+[663/808] Alixzander Tauru (St Kilda)
+  ✗ Could not load team player data
+
+[664/808] Tobie Travaglia (St Kilda)
+  ✗ Could not load team player data
+
+[665/808] Angus Hastie (St Kilda)
+  ✗ Could not load team player data
+
+[666/808] Arie Schoenmaker (St Kilda)
+  ✗ Could not load team player data
+
+[667/808] James Barrat (St Kilda)
+  ✗ Could not load team player data
+
+[668/808] Alex Dodson (St Kilda)
+  ✗ Could not load team player data
+
+[669/808] Harry Boyd (St Kilda)
+  ✗ Could not load team player data
+
+[670/808] Patrick Said (St Kilda)
+  ✗ Could not load team player data
+
+[671/808] Angus McLennan (St Kilda)
+  ✗ Could not load team player data
+
+[672/808] Max Heath (St Kilda)
+  ✗ Could not load team player data
+
+[673/808] Liam O'Connell (St Kilda)
+  ✗ Could not load team player data
+
+[674/808] Eamonn Armstrong (St Kilda)
+  ✗ Could not load team player data
+
+[675/808] Isaac Heeney (Sydney)
+  → Loading Sydney player data...
+  ✓ Found: ID=966, ProviderID=298539
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[676/808] Chad Warner (Sydney)
+  ✓ Found: ID=3735, ProviderID=1012014
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[677/808] Nick Blakey (Sydney)
+  ✓ Found: ID=1948, ProviderID=1006028
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[678/808] Brodie Grundy (Sydney)
+  ✓ Found: ID=113, ProviderID=293957
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[679/808] James Rowbottom (Sydney)
+  ✓ Found: ID=1908, ProviderID=1006126
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[680/808] Errol Gulden (Sydney)
+  ✓ Found: ID=3338, ProviderID=1013128
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[681/808] Jake Lloyd (Sydney)
+  ✓ Found: ID=842, ProviderID=295342
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[682/808] Will Hayward (Sydney)
+  ✓ Found: ID=1413, ProviderID=997100
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[683/808] Oliver Florent (Sydney)
+  ✓ Found: ID=1363, ProviderID=998103
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[684/808] Justin McInerney (Sydney)
+  ✓ Found: ID=1864, ProviderID=1011936
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[685/808] James Jordon (Sydney)
+  ✓ Found: ID=1813, ProviderID=1013409
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[686/808] Tom McCartin (Sydney)
+  ✓ Found: ID=1786, ProviderID=1008198
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[687/808] Matt Roberts (Sydney)
+  ✓ Found: ID=5696, ProviderID=1012210
+  → Trying: https://s.afl.c  ✓ Found: ID=2873, ProviderID=1013315
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[746/808] Jack Petruccelle (West Coast)
+  ✓ Found: ID=1720, ProviderID=1006550
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[747/808] Clay Hall (West Coast)
+  ✓ Found: ID=7522, ProviderID=1024188
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[748/808] Tom McCarthy (West Coast)
+  ✓ Found: ID=12572, ProviderID=1036124
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[749/808] Archer Reid (West Coast)
+  ✓ Found: ID=6499, ProviderID=1027693
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[750/808] Noah Long (West Coast)
+  ✓ Found: ID=5375, ProviderID=1023496
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[751/808] Hamish Davis (West Coast)
+  ✓ Found: ID=11298, ProviderID=1032624
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[752/808] Jobe Shanahan (West Coast)
+  ✓ Found: ID=9050, ProviderID=1031913
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[753/808] Dom Sheed (West Coast)
+  ✓ Found: ID=849, ProviderID=296296
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[754/808] Harvey Johnston (West Coast)
+  ✓ Found: ID=6702, ProviderID=1027969
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[755/808] Bo Allan (West Coast)
+  ✓ Found: ID=8325, ProviderID=1028449
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[756/808] Tom Gross (West Coast)
+  ✓ Found: ID=8579, ProviderID=1028561
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[757/808] Harry Barnett (West Coast)
+  ✓ Found: ID=8637, ProviderID=1020057
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[758/808] Lucca Grego (West Coast)
+  ✓ Found: ID=8511, ProviderID=1018992
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[759/808] Rhett Bazzo (West Coast)
+  ✓ Found: ID=5699, ProviderID=1017718
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[760/808] Loch Rawlinson (West Coast)
+  ✓ Found: ID=10275, ProviderID=1020032
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[761/808] Malakai Champion (West Coast)
+  ✓ Found: ID=8496, ProviderID=1029136
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[762/808] Coen Livingstone (West Coast)
+  ✓ Found: ID=7593, ProviderID=1028291
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[763/808] Callum Jamieson (West Coast)
+  ✓ Found: ID=3739, ProviderID=1011243
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[764/808] Jacob Newton (West Coast)
+  ✓ Found: ID=10103, ProviderID=1022486
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[765/808] Marcus Bontempelli (Western Bulldogs)
+  → Loading Western Bulldogs player data...
+  ✓ Found: ID=857, ProviderID=297373
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[766/808] Ed Richards (Western Bulldogs)
+  ✓ Found: ID=1722, ProviderID=1008280
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[767/808] Bailey Dale (Western Bulldogs)
+  ✓ Found: ID=1053, ProviderID=996708
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[768/808] Tom Liberatore (Western Bulldogs)
+  ✓ Found: ID=848, ProviderID=290799
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[769/808] Tim English (Western Bulldogs)
+  ✓ Found: ID=1409, ProviderID=1004592
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[770/808] Matthew Kennedy (Western Bulldogs)
+  ✓ Found: ID=922, ProviderID=1001398
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[771/808] Sam Darcy (Western Bulldogs)
+  ✓ Found: ID=5292, ProviderID=1017126
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[772/808] Bailey Williams (Western Bulldogs)
+  ✓ Found: ID=969, ProviderID=992351
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[773/808] Aaron Naughton (Western Bulldogs)
+  ✓ Found: ID=1621, ProviderID=1002404
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[774/808] Rhylee West (Western Bulldogs)
+  ✓ Found: ID=1912, ProviderID=1006127
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[775/808] Adam Treloar (Western Bulldogs)
+  ✓ Found: ID=492, ProviderID=291790
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[776/808] Joel Freijah (Western Bulldogs)
+  ✓ Found: ID=6564, ProviderID=1027704
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[777/808] Rory Lobb (Western Bulldogs)
+  ✓ Found: ID=604, ProviderID=990740
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[778/808] Lachlan Bramble (Western Bulldogs)
+  ✓ Found: ID=4313, ProviderID=1000864
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[779/808] Ryley Sanders (Western Bulldogs)
+  ✓ Found: ID=5296, ProviderID=1017939
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[780/808] Laitham Vandermeer (Western Bulldogs)
+  ✓ Found: ID=1931, ProviderID=1005000
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[781/808] James O'Donnell (Western Bulldogs)
+  ✓ Found: ID=11626, ProviderID=1032966
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[782/808] Liam Jones (Western Bulldogs)
+  ✗ Player not found in team data
+
+[783/808] Lachlan McNeil (Western Bulldogs)
+  ✓ Found: ID=4079, ProviderID=1009015
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[784/808] Buku Khamis (Western Bulldogs)
+  ✓ Found: ID=1959, ProviderID=998782
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[785/808] James Harmes (Western Bulldogs)
+  ✓ Found: ID=742, ProviderID=297899
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[786/808] Jason Johannisen (Western Bulldogs)
+  ✗ Player not found in team data
+
+[787/808] Sam Davidson (Western Bulldogs)
+  ✓ Found: ID=12573, ProviderID=1036123
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[788/808] Riley Garcia (Western Bulldogs)
+  ✓ Found: ID=3741, ProviderID=1006533
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[789/808] Taylor Duryea (Western Bulldogs)
+  ✗ Player not found in team data
+
+[790/808] Jamarra Ugle-Hagan (Western Bulldogs)
+  ✗ Player not found in team data
+
+[791/808] Cody Weightman (Western Bulldogs)
+  ✓ Found: ID=2402, ProviderID=1011803
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[792/808] Luke Cleary (Western Bulldogs)
+  ✓ Found: ID=3190, ProviderID=1015929
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[793/808] Harvey Gallagher (Western Bulldogs)
+  ✓ Found: ID=5036, ProviderID=1017087
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[794/808] Oskar Baker (Western Bulldogs)
+  ✓ Found: ID=1739, ProviderID=1008855
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[795/808] Caleb Poulter (Western Bulldogs)
+  ✗ Player not found in team data
+
+[796/808] Jedd Busslinger (Western Bulldogs)
+  ✓ Found: ID=7960, ProviderID=1023017
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[797/808] Cooper Hynes (Western Bulldogs)
+  ✓ Found: ID=8502, ProviderID=1029456
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[798/808] Lachie Jaques (Western Bulldogs)
+  ✓ Found: ID=9248, ProviderID=1028493
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[799/808] Jordan Croft (Western Bulldogs)
+  ✓ Found: ID=6385, ProviderID=1013996
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[800/808] Nick Coffield (Western Bulldogs)
+  ✓ Found: ID=1707, ProviderID=1005717
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[802/808] Anthony Scott (Western Bulldogs)
+  ✗ Player not found in team data
+
+[803/808] Arthur Jones (Western Bulldogs)
+  ✓ Found: ID=5703, ProviderID=1020586
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[804/808] Luke Kennedy (Western Bulldogs)
+  ✓ Found: ID=9475, ProviderID=1032112
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[805/808] Michael Sellwood (Western Bulldogs)
+  ✓ Found: ID=7394, ProviderID=1020621
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[806/808] Lachlan Smith (Western Bulldogs)
+  ✓ Found: ID=6524, ProviderID=1027702
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[807/808] Zac Walker (Western Bulldogs)
+  ✓ Found: ID=14555, ProviderID=1041619
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[808/808] Ryan Gardner (Western Bulldogs)
+  ✓ Found: ID=901, ProviderID=997501
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+=== Summary ===
+Downloaded: 622
+Skipped: 112
+Failed: 74
+
+✓ All done!
+ully
+
+[750/808] Noah Long (West Coast)
+  ✓ Found: ID=5375, ProviderID=1023496
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[751/808] Hamish Davis (West Coast)
+  ✓ Found: ID=11298, ProviderID=1032624
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[752/808] Jobe Shanahan (West Coast)
+  ✓ Found: ID=9050, ProviderID=1031913
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[753/808] Dom Sheed (West Coast)
+  ✓ Found: ID=849, ProviderID=296296
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[754/808] Harvey Johnston (West Coast)
+  ✓ Found: ID=6702, ProviderID=1027969
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[755/808] Bo Allan (West Coast)
+  ✓ Found: ID=8325, ProviderID=1028449
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[756/808] Tom Gross (West Coast)
+  ✓ Found: ID=8579, ProviderID=1028561
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[757/808] Harry Barnett (West Coast)
+  ✓ Found: ID=8637, ProviderID=1020057
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[758/808] Lucca Grego (West Coast)
+  ✓ Found: ID=8511, ProviderID=1018992
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[759/808] Rhett Bazzo (West Coast)
+  ✓ Found: ID=5699, ProviderID=1017718
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[760/808] Loch Rawlinson (West Coast)
+  ✓ Found: ID=10275, ProviderID=1020032
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[761/808] Malakai Champion (West Coast)
+  ✓ Found: ID=8496, ProviderID=1029136
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[762/808] Coen Livingstone (West Coast)
+  ✓ Found: ID=7593, ProviderID=1028291
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[763/808] Callum Jamieson (West Coast)
+  ✓ Found: ID=3739, ProviderID=1011243
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[764/808] Jacob Newton (West Coast)
+  ✓ Found: ID=10103, ProviderID=1022486
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[765/808] Marcus Bontempelli (Western Bulldogs)
+  → Loading Western Bulldogs player data...
+  ✓ Found: ID=857, ProviderID=297373
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[766/808] Ed Richards (Western Bulldogs)
+  ✓ Found: ID=1722, ProviderID=1008280
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[767/808] Bailey Dale (Western Bulldogs)
+  ✓ Found: ID=1053, ProviderID=996708
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[768/808] Tom Liberatore (Western Bulldogs)
+  ✓ Found: ID=848, ProviderID=290799
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[769/808] Tim English (Western Bulldogs)
+  ✓ Found: ID=1409, ProviderID=1004592
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[770/808] Matthew Kennedy (Western Bulldogs)
+  ✓ Found: ID=922, ProviderID=1001398
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[771/808] Sam Darcy (Western Bulldogs)
+  ✓ Found: ID=5292, ProviderID=1017126
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[772/808] Bailey Williams (Western Bulldogs)
+  ✓ Found: ID=969, ProviderID=992351
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[773/808] Aaron Naughton (Western Bulldogs)
+  ✓ Found: ID=1621, ProviderID=1002404
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[774/808] Rhylee West (Western Bulldogs)
+  ✓ Found: ID=1912, ProviderID=1006127
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[775/808] Adam Treloar (Western Bulldogs)
+  ✓ Found: ID=492, ProviderID=291790
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[776/808] Joel Freijah (Western Bulldogs)
+  ✓ Found: ID=6564, ProviderID=1027704
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[777/808] Rory Lobb (Western Bulldogs)
+  ✓ Found: ID=604, ProviderID=990740
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[778/808] Lachlan Bramble (Western Bulldogs)
+  ✓ Found: ID=4313, ProviderID=1000864
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[779/808] Ryley Sanders (Western Bulldogs)
+  ✓ Found: ID=5296, ProviderID=1017939
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[780/808] Laitham Vandermeer (Western Bulldogs)
+  ✓ Found: ID=1931, ProviderID=1005000
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[781/808] James O'Donnell (Western Bulldogs)
+  ✓ Found: ID=11626, ProviderID=1032966
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[782/808] Liam Jones (Western Bulldogs)
+  ✗ Player not found in team data
+
+[783/808] Lachlan McNeil (Western Bulldogs)
+  ✓ Found: ID=4079, ProviderID=1009015
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[784/808] Buku Khamis (Western Bulldogs)
+  ✓ Found: ID=1959, ProviderID=998782
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[785/808] James Harmes (Western Bulldogs)
+  ✓ Found: ID=742, ProviderID=297899
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[786/808] Jason Johannisen (Western Bulldogs)
+  ✗ Player not found in team data
+
+[787/808] Sam Davidson (Western Bulldogs)
+  ✓ Found: ID=12573, ProviderID=1036123
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[788/808] Riley Garcia (Western Bulldogs)
+  ✓ Found: ID=3741, ProviderID=1006533
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[789/808] Taylor Duryea (Western Bulldogs)
+  ✗ Player not found in team data
+
+[790/808] Jamarra Ugle-Hagan (Western Bulldogs)
+  ✗ Player not found in team data
+
+[791/808] Cody Weightman (Western Bulldogs)
+  ✓ Found: ID=2402, ProviderID=1011803
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[792/808] Luke Cleary (Western Bulldogs)
+  ✓ Found: ID=3190, ProviderID=1015929
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[793/808] Harvey Gallagher (Western Bulldogs)
+  ✓ Found: ID=5036, ProviderID=1017087
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[794/808] Oskar Baker (Western Bulldogs)
+  ✓ Found: ID=1739, ProviderID=1008855
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[795/808] Caleb Poulter (Western Bulldogs)
+  ✗ Player not found in team data
+
+[796/808] Jedd Busslinger (Western Bulldogs)
+  ✓ Found: ID=7960, ProviderID=1023017
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[797/808] Cooper Hynes (Western Bulldogs)
+  ✓ Found: ID=8502, ProviderID=1029456
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[798/808] Lachie Jaques (Western Bulldogs)
+  ✓ Found: ID=9248, ProviderID=1028493
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[799/808] Jordan Croft (Western Bulldogs)
+  ✓ Found: ID=6385, ProviderID=1013996
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[800/808] Nick Coffield (Western Bulldogs)
+  ✓ Found: ID=1707, ProviderID=1005717
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[801/808] Josh Dolan (Western Bulldogs)
+  ✓ Found: ID=11957, ProviderID=1034235
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[802/808] Anthony Scott (Western Bulldogs)
+  ✗ Player not found in team data
+
+[804/808] Luke Kennedy (Western Bulldogs)
+  ✓ Found: ID=9475, ProviderID=1032112
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[805/808] Michael Sellwood (Western Bulldogs)
+  ✓ Found: ID=7394, ProviderID=1020621
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[806/808] Lachlan Smith (Western Bulldogs)
+  ✓ Found: ID=6524, ProviderID=1027702
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[807/808] Zac Walker (Western Bulldogs)
+  ✓ Found: ID=14555, ProviderID=1041619
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+[808/808] Ryan Gardner (Western Bulldogs)
+  ✓ Found: ID=901, ProviderID=997501
+  → Trying: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/20250...
+  ✓ Downloaded successfully
+
+=== Summary ===
+Downloaded: 678
+Skipped: 56
+Failed: 74
