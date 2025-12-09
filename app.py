@@ -469,13 +469,17 @@ def load_players(season: int) -> pd.DataFrame:
 
 
 @st.cache_data
-def load_traits() -> pd.DataFrame:
-    """Load the 2025 Traits data."""
+def load_traits(season: int = 2025) -> pd.DataFrame:
+    """Load the Traits data for the specified season."""
     try:
-        df = pd.read_excel("2025 Traits.xlsx")
+        # Load from the appropriate sheet (2024 or 2025)
+        df = pd.read_excel("2025 Traits.xlsx", sheet_name=str(season))
+        # Add Season column if not present
+        if "Season" not in df.columns:
+            df["Season"] = season
         return df
     except Exception as e:
-        st.error(f"Error loading traits data: {e}")
+        st.error(f"Error loading traits data for {season}: {e}")
         return pd.DataFrame()
 
 # ---------------- ATTRIBUTE STRUCTURE HELPERS (2025 SUMMARY) ----------------
@@ -996,7 +1000,13 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         depth_pos = map_position_to_depth(row.get(pos_col, ""))
         age_band = map_age_to_band(age)
 
-        # line 1 – jumper + name
+        # Build player info with rating box positioned on the right side, top-aligned
+        info_parts = []
+        
+        # Left side: jumper + name, age, height
+        left_parts = []
+        
+        # Line 1: jumper + name
         line1_parts = []
         if pd.notna(num) and str(num).strip() != "":
             try:
@@ -1004,11 +1014,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             except Exception:
                 line1_parts.append(str(num))
         line1_parts.append(player_name)
-        line1 = f"<span style='font-size:1.1em;font-weight:bold;'>{' '.join(line1_parts)}</span>"
-
-        # line 2 – age, height, rating box
+        left_parts.append(f"<span style='font-size:1.1em;font-weight:bold;'>{' '.join(line1_parts)}</span>")
+        
+        # Line 2: age, height
         line2_parts = []
-
         if pd.notna(age) and str(age).strip() != "":
             try:
                 line2_parts.append(f"{float(age):.1f}yrs")
@@ -1020,7 +1029,14 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 line2_parts.append(f"{float(height):.0f}cm")
             except Exception:
                 line2_parts.append(f"{height}cm")
-
+        
+        if line2_parts:
+            left_parts.append(", ".join(line2_parts))
+        
+        left_html = "<br>".join(left_parts)
+        
+        # Right side: rating box (if exists)
+        rating_box_html = ""
         if rating_col in df_team.columns and pd.notna(rating) and str(rating).strip() != "":
             try:
                 rating_float = float(rating)
@@ -1030,17 +1046,24 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
 
                 rating_box_html = (
                     f"<span style='display:inline-block;"
-                    f"padding:1px 6px;border-radius:4px;"
+                    f"padding:4px 12px;border-radius:6px;"
                     f"background-color:{bg_color};color:{text_color};"
-                    f"border:1px solid #000;font-weight:bold;'>"
+                    f"border:2px solid #000;font-weight:bold;font-size:1.4em;'>"
                     f"{rating_float:.1f}</span>"
                 )
-                line2_parts.append(f"Rating {rating_box_html}")
             except Exception:
-                line2_parts.append(f"Rating {rating}")
-
-        line2 = ", ".join(line2_parts)
-        player_html = f"{line1}<br>{line2}"
+                rating_box_html = f"<span>{rating}</span>"
+        
+        # Combine left and right with flexbox, top-aligned
+        if rating_box_html:
+            player_html = (
+                f"<div style='display:flex;justify-content:space-between;align-items:flex-start;gap:8px;'>"
+                f"<div>{left_html}</div>"
+                f"<div>{rating_box_html}</div>"
+                f"</div>"
+            )
+        else:
+            player_html = left_html
 
         if depth_pos in grid and age_band in grid[depth_pos]:
             grid[depth_pos][age_band].append(player_html)
@@ -1180,10 +1203,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             # Determine text color based on background
             text_color = "black" if color == "lightgreen" else "white"
             ranking_html = (
-                f"<div style='margin-top:4px;'>"
+                f"<div style='margin-top:8px;'>"
                 f"<span style='display:inline-block;background-color:{color};color:{text_color};"
-                f"padding:4px 8px;border-radius:4px;font-weight:bold;"
-                f"font-size:1em;border:2px solid #000;'>{ordinal}</span>"
+                f"padding:8px 16px;border-radius:8px;font-weight:bold;"
+                f"font-size:1.4em;border:3px solid #000;'>{ordinal}</span>"
                 f"</div>"
             )
         
@@ -1209,10 +1232,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             # Determine text color based on background
             text_color = "black" if color == "lightgreen" else "white"
             pos_cell_html += (
-                f"<div style='margin-top:4px;'>"
+                f"<div style='margin-top:8px;'>"
                 f"<span style='display:inline-block;background-color:{color};color:{text_color};"
-                f"padding:4px 8px;border-radius:4px;font-weight:bold;"
-                f"font-size:1em;border:2px solid #000;'>{ordinal}</span>"
+                f"padding:8px 16px;border-radius:8px;font-weight:bold;"
+                f"font-size:1.4em;border:3px solid #000;'>{ordinal}</span>"
                 f"</div>"
             )
         
@@ -1460,7 +1483,7 @@ df_view = pd.DataFrame({
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -3310,8 +3333,8 @@ elif page == "Team Compare":
 
 # ================= PLAYER DASHBOARD =================
 
-elif page == "Player Dashboard":
-    st.title("👤 Player Dashboard")
+elif page == "Club List":
+    st.title("📋 Club List")
 
     # ---- Season selection (main area) ----
     seasons_available = get_player_seasons()
@@ -3443,21 +3466,21 @@ elif page == "Player Dashboard":
 
     # Calculate competition rank on FULL unfiltered dataset (players_all) to get overall competition ranking
     # Create a temporary dataframe with all players and their competition rank
-    players_all_ranked = players_all[["Player", "Team", "Season", "RatingPoints_Avg"]].copy()
+    players_all_ranked = players_all[["Player", "Team", "Season", "Position", "RatingPoints_Avg"]].copy()
     players_all_ranked["RatingPoints_Avg"] = pd.to_numeric(players_all_ranked["RatingPoints_Avg"], errors="coerce")
     players_all_ranked["Competition_Rank_Full"] = players_all_ranked["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
     
-    # Merge the full competition rank back to the filtered view
+    # Calculate positional rank on the full competition dataset (by position and season)
+    players_all_ranked["Positional_Rank_Full"] = players_all_ranked.groupby(["Position", "Season"])["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
+    
+    # Merge the full competition rank and positional rank back to the filtered view
     table_view = table_view.merge(
-        players_all_ranked[["Player", "Team", "Season", "Competition_Rank_Full"]],
+        players_all_ranked[["Player", "Team", "Season", "Competition_Rank_Full", "Positional_Rank_Full"]],
         on=["Player", "Team", "Season"],
         how="left"
     )
     table_view["Competition_Rank"] = table_view["Competition_Rank_Full"].apply(get_ordinal)
-
-    # Add positional rank (by rating, within same position and season)
-    table_view["Positional_Rank"] = table_view.groupby(["Position", "Season"])["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
-    table_view["Positional_Rank"] = table_view["Positional_Rank"].apply(get_ordinal)
+    table_view["Positional_Rank"] = table_view["Positional_Rank_Full"].apply(get_ordinal)
 
     # Round age + rating to 1 decimal
     if age_col in table_view.columns:
@@ -3482,6 +3505,11 @@ elif page == "Player Dashboard":
     cols.remove("Comp Rank")
     cols.remove("Pos Rank")
     cols.remove("Player")
+    # Remove the _Full columns (we don't need to display them)
+    if "Competition_Rank_Full" in cols:
+        cols.remove("Competition_Rank_Full")
+    if "Positional_Rank_Full" in cols:
+        cols.remove("Positional_Rank_Full")
     table_view = table_view[["Comp Rank", "Pos Rank", "Player"] + cols]
 
     # Create professional HTML table with color-coded ratings
@@ -3581,14 +3609,21 @@ elif page == "Player Dashboard":
     html_player_table += "</tbody>\n</table>"
     st.markdown(html_player_table, unsafe_allow_html=True)
 
-    # ---- Individual Player View (all seasons, photos, logos, summary info) ----
-    st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>👤 Individual Player View</h2>", unsafe_allow_html=True)
 
-    player_names = sorted(df_view["Player"].dropna().unique())
-    selected_player = st.selectbox("Select player", player_names)
+# ================= PLAYER PROFILE =================
 
-    # Load ALL seasons for this player, regardless of selected_seasons
+elif page == "Player Profile":
+    st.title("👤 Player Profile")
+
+    # Helper function to convert number to ordinal (1st, 2nd, 3rd, etc)
+    def get_ordinal(n):
+        if 10 <= n % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return f"{n}{suffix}"
+
+    # Load ALL player data for all seasons
     all_players_all = []
     for s in get_player_seasons():
         df_s = load_players(s)
@@ -3597,6 +3632,38 @@ elif page == "Player Dashboard":
     players_full = pd.concat(all_players_all, ignore_index=True)
     players_full = _normalise_rating_column(players_full)
 
+    # Season filter - default to 2025
+    seasons_available = sorted(players_full["Season"].dropna().unique(), reverse=True)
+    default_season_idx = 0
+    if 2025 in seasons_available:
+        default_season_idx = seasons_available.index(2025)
+    
+    selected_season = st.selectbox("Select Season", seasons_available, index=default_season_idx)
+    
+    # Filter by selected season
+    players_season = players_full[players_full["Season"] == selected_season].copy()
+
+    # Get unique teams from selected season
+    teams = sorted(players_season["Team"].dropna().unique())
+    
+    # Team selection - use default_team from Home page if available
+    default_idx = 0
+    if "default_team" in st.session_state and st.session_state.default_team in teams:
+        default_idx = teams.index(st.session_state.default_team)
+    
+    selected_team = st.selectbox("Select Team", teams, index=default_idx)
+    
+    # Filter players by selected team and season
+    team_players = players_season[players_season["Team"] == selected_team].copy()
+    player_names = sorted(team_players["Player"].dropna().unique())
+    
+    if not player_names:
+        st.warning("No players found for this team.")
+        st.stop()
+    
+    selected_player = st.selectbox("Select Player", player_names)
+
+    # Get all data for this player
     player_data_all = players_full[players_full["Player"] == selected_player].copy()
     if player_data_all.empty:
         st.info("No data found for this player.")
@@ -4316,23 +4383,27 @@ elif page == "Player Dashboard":
                     bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
                     rating_label = get_trait_label(rating_val)
                     
-                    # Determine gradient based on color
+                    # Determine gradient and best text color based on background
                     if bg_color == "#008000":  # dark green
                         rating_gradient = "rgba(0,128,0,0.3)"
+                        rating_text_color = "#FFFFFF"  # white for dark green
                     elif bg_color == "#90EE90":  # light green
                         rating_gradient = "rgba(144,238,144,0.3)"
+                        rating_text_color = "#000000"  # black for light green
                     elif bg_color == "#FFA500":  # orange
                         rating_gradient = "rgba(255,165,0,0.3)"
+                        rating_text_color = "#000000"  # black for orange
                     else:  # red
                         rating_gradient = "rgba(255,0,0,0.3)"
+                        rating_text_color = "#FFFFFF"  # white for red
                     
                     key_metrics.append(f"""
                     <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
                                 border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
                                 box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
                         <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
-                        <div style='color: {text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
-                        <div style='color: {text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
+                        <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+                        <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
                     </div>
                     """)
                 except:
@@ -4474,8 +4545,12 @@ elif page == "Player Dashboard":
 elif page == "Player Traits":
     st.title("🎯 Player Traits")
     
-    # Load data
-    traits_df = load_traits()
+    # Season selection (before loading data)
+    available_seasons = [2025, 2024]
+    selected_season = st.selectbox("Select Season", available_seasons, index=0)
+    
+    # Load data for selected season
+    traits_df = load_traits(selected_season)
     if traits_df.empty:
         st.error("Could not load traits data.")
         st.stop()
@@ -4561,29 +4636,18 @@ elif page == "Player Traits":
         st.warning("No players found for this team.")
         st.stop()
     
-    # Get unique seasons (should be just 2025 for now)
-    seasons = sorted(team_traits["Season"].dropna().unique(), reverse=True)
-    selected_season = st.selectbox("Select Season", seasons)
-    
-    # Filter by season
-    season_traits = team_traits[team_traits["Season"] == selected_season].copy()
-    
-    if season_traits.empty:
-        st.warning("No data for this season.")
-        st.stop()
-    
     # Map abbreviated player names to full names for display
-    season_traits["Player_Full"] = season_traits.apply(
+    team_traits["Player_Full"] = team_traits.apply(
         lambda row: find_full_player_name(row["Player"], row["Team_Full"], player_ratings_2025),
         axis=1
     )
     
     # Get player names (show full names in dropdown)
-    player_names_display = sorted(season_traits["Player_Full"].dropna().unique())
+    player_names_display = sorted(team_traits["Player_Full"].dropna().unique())
     selected_player_full = st.selectbox("Select Player", player_names_display)
     
     # Get player data
-    player_trait = season_traits[season_traits["Player_Full"] == selected_player_full].iloc[0]
+    player_trait = team_traits[team_traits["Player_Full"] == selected_player_full].iloc[0]
     
     # Try to match with player ratings for standardized name and additional info
     player_rating_match = player_ratings_2025[player_ratings_2025["Player"] == selected_player_full]
@@ -4786,23 +4850,27 @@ elif page == "Player Traits":
             bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
             rating_label = get_trait_label(rating_val)
             
-            # Determine gradient based on color
+            # Determine gradient and best text color based on background
             if bg_color == "#008000":  # dark green
                 rating_gradient = "rgba(0,128,0,0.3)"
+                rating_text_color = "#FFFFFF"  # white for dark green
             elif bg_color == "#90EE90":  # light green
                 rating_gradient = "rgba(144,238,144,0.3)"
+                rating_text_color = "#000000"  # black for light green
             elif bg_color == "#FFA500":  # orange
                 rating_gradient = "rgba(255,165,0,0.3)"
+                rating_text_color = "#000000"  # black for orange
             else:  # red
                 rating_gradient = "rgba(255,0,0,0.3)"
+                rating_text_color = "#FFFFFF"  # white for red
             
             key_metrics.append(f"""
             <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
                         border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
                         box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
                 <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
-                <div style='color: {text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
-                <div style='color: {text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
+                <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+                <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
             </div>
             """)
         except:
