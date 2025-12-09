@@ -225,6 +225,145 @@ def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
     return _normalise_ladder_df(raw)
 
 
+@st.cache_data
+def load_afl_ladder_positions() -> pd.DataFrame:
+    """Load AFL ladder positions from scraped data."""
+    try:
+        df = pd.read_excel('afl_ladders_2011_2025.xlsx')
+        # Normalize team names to match the app's conventions (short names)
+        team_name_mapping = {
+            'Adelaide Crows': 'Adelaide',
+            'Brisbane Lions': 'Brisbane',
+            'Carlton Blues': 'Carlton',
+            'Collingwood Magpies': 'Collingwood',
+            'Essendon Bombers': 'Essendon',
+            'Fremantle Dockers': 'Fremantle',
+            'Geelong Cats': 'Geelong',
+            'Gold Coast Suns': 'Gold Coast',
+            'GWS Giants': 'GWS Giants',
+            'GWS': 'GWS Giants',
+            'Greater Western Sydney': 'GWS Giants',
+            'Hawthorn Hawks': 'Hawthorn',
+            'Melbourne Demons': 'Melbourne',
+            'North Melbourne Kangaroos': 'North Melbourne',
+            'Port Adelaide Power': 'Port Adelaide',
+            'Richmond Tigers': 'Richmond',
+            'St Kilda Saints': 'St Kilda',
+            'Sydney Swans': 'Sydney',
+            'West Coast Eagles': 'West Coast',
+            'Western Bulldogs': 'Western Bulldogs',
+        }
+        df['Team'] = df['Team'].replace(team_name_mapping)
+        return df
+    except Exception as e:
+        st.warning(f"Could not load ladder positions: {e}")
+        return pd.DataFrame()
+
+
+def get_ordinal_suffix(n: int) -> str:
+    """Return ordinal suffix for a number (1st, 2nd, 3rd, etc.)."""
+    if 10 <= n % 100 <= 20:
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+    return f"{n}{suffix}"
+
+
+def get_ladder_position(team_name: str, season: int) -> tuple:
+    """Get ladder position for a team in a given season. Returns (position_str, position_int, color)."""
+    ladder_df = load_afl_ladder_positions()
+    if ladder_df.empty:
+        return "N/A", None, "#888888"
+    
+    # Filter for the team and season
+    team_data = ladder_df[(ladder_df['Team'] == team_name) & (ladder_df['Season'] == season)]
+    
+    if team_data.empty:
+        return "N/A", None, "#888888"
+    
+    position = team_data['Position'].iloc[0]
+    try:
+        pos_int = int(position)
+        # Get color based on ranking
+        if pos_int <= 4:
+            color = "#006400"  # dark green (elite)
+        elif pos_int <= 9:
+            color = "#90EE90"  # light green (strong)
+        elif pos_int <= 14:
+            color = "#FFA500"  # orange (mid-tier)
+        else:
+            color = "#FF0000"  # red (bottom tier)
+        
+        return get_ordinal_suffix(pos_int), pos_int, color
+    except (ValueError, TypeError):
+        return str(position), None, "#888888"
+
+
+def get_ladder_percentage(team_name: str, season: int) -> tuple:
+    """Get ladder percentage for a team in a given season. Returns (percentage_str, rank, color)."""
+    ladder_df = load_afl_ladder_positions()
+    if ladder_df.empty:
+        return "N/A", None, "#888888"
+    
+    # Filter for the team and season
+    team_data = ladder_df[(ladder_df['Team'] == team_name) & (ladder_df['Season'] == season)]
+    
+    if team_data.empty:
+        return "N/A", None, "#888888"
+    
+    percentage = team_data['Percentage'].iloc[0]
+    
+    # The percentage might already have % in it, or be a number
+    percentage_str = str(percentage).strip()
+    
+    # If it already has %, return as is
+    if '%' in percentage_str:
+        percentage_clean = percentage_str.replace('%', '')
+    else:
+        percentage_clean = percentage_str
+    
+    # Get percentage ranking by comparing with all teams in that season
+    season_data = ladder_df[ladder_df['Season'] == season].copy()
+    
+    # Extract numeric percentage values for ranking
+    def extract_pct(val):
+        s = str(val).strip().replace('%', '')
+        try:
+            return float(s)
+        except:
+            return 0.0
+    
+    season_data['pct_numeric'] = season_data['Percentage'].apply(extract_pct)
+    season_data = season_data.sort_values('pct_numeric', ascending=False).reset_index(drop=True)
+    
+    # Find team's rank in percentage
+    team_rank = None
+    for idx, row in season_data.iterrows():
+        if row['Team'] == team_name:
+            team_rank = idx + 1
+            break
+    
+    # Determine color based on percentage rank
+    if team_rank:
+        if team_rank <= 4:
+            color = "#006400"  # dark green
+        elif team_rank <= 9:
+            color = "#90EE90"  # light green
+        elif team_rank <= 14:
+            color = "#FFA500"  # orange
+        else:
+            color = "#FF0000"  # red
+    else:
+        color = "#888888"
+    
+    # Format the percentage
+    try:
+        pct_float = float(percentage_clean)
+        return f"{pct_float:.1f}%", team_rank, color
+    except (ValueError, TypeError):
+        return percentage_str if '%' in percentage_str else percentage_str + '%', team_rank, "#888888"
+
+
 # ---------------- DATA LOADERS – TEAM SUMMARY (2025) ----------------
 
 
@@ -591,7 +730,7 @@ def rating_colour_style(col: pd.Series):
 
 def style_ladder_table(ladder_view: pd.DataFrame):
     colour_map = {
-        "Team Rating": ("black", "white"),
+        "Team Rating": ("#000000", "white"),
         "Ball Winning Ranking": ("#0066CC", "white"),
         "Ball Movement Ranking": ("#009933", "white"),
         "Scoring Ranking": ("#FFEB3B", "black"),
@@ -1315,25 +1454,35 @@ PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
-    st.session_state.selected_page = None
+    st.session_state.selected_page = "Home"
+if "page_override" not in st.session_state:
+    st.session_state.page_override = False
 
-# Use session state if set (from button click), otherwise use sidebar radio
-if st.session_state.selected_page:
+# Check if there's a page override from a button click
+if st.session_state.page_override:
     page = st.session_state.selected_page
-    # Update the sidebar radio to match
-    st.sidebar.radio("Navigate", PAGES, index=PAGES.index(page))
-    # Clear the flag so subsequent reruns use the sidebar
-    st.session_state.selected_page = None
+    # Show sidebar with the current page selected
+    st.sidebar.radio("Navigate", PAGES, index=PAGES.index(page) if page in PAGES else 0, key="page_nav")
+    # Clear the override flag for next rerun
+    st.session_state.page_override = False
 else:
-    page = st.sidebar.radio("Navigate", PAGES)
+    # Normal sidebar navigation
+    page = st.sidebar.radio("Navigate", PAGES, index=PAGES.index(st.session_state.selected_page) if st.session_state.selected_page in PAGES else 0, key="page_nav")
+    # Update session state with the current page selection
+    st.session_state.selected_page = page
 
 
 # ================= CUSTOM STYLING =================
 
-# CSS to remove drop-shadow from FutureEdge logo on home page
+# Add CSS to give all team logos a white glow/shadow effect so dark logos pop
 st.markdown(
     """
     <style>
+    /* Apply drop-shadow to all images */
+    div[data-testid="stImage"] img {
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+    }
+    
     /* Remove shadow from the first image (FutureEdge logo) on home page */
     div[data-testid="column"]:nth-child(2) > div:first-child div[data-testid="stImage"] img {
         filter: none !important;
@@ -1375,7 +1524,7 @@ if page == "Home":
         # Team selection instruction
         st.markdown(
             """
-            <h3 style='text-align: center; color: #FFD700; margin-top: 30px; margin-bottom: 30px;'>
+            <h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 30px;'>
                 Select Your Team
             </h3>
             """,
@@ -1389,18 +1538,6 @@ if page == "Home":
             "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", 
             "Richmond", "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
         ]
-        
-        # Add CSS to give logos a white glow/shadow effect so dark logos pop
-        st.markdown(
-            """
-            <style>
-            div[data-testid="stImage"] img {
-                filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
         
         # First row of 9 teams
         row1_cols = st.columns(9)
@@ -1423,7 +1560,8 @@ if page == "Home":
                         if st.button("Select", key=f"home_team_{team}_{idx}", use_container_width=True, help=f"Select {team}"):
                             # Set default team in session state
                             st.session_state.default_team = team
-                            st.session_state.selected_page = "Overview"
+                            st.session_state.selected_page = "Team Breakdown"
+                            st.session_state.page_override = True
                             st.rerun()
                     except Exception:
                         st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
@@ -1450,7 +1588,8 @@ if page == "Home":
                         if st.button("Select", key=f"home_team_{team}_{idx+9}", use_container_width=True, help=f"Select {team}"):
                             # Set default team in session state
                             st.session_state.default_team = team
-                            st.session_state.selected_page = "Overview"
+                            st.session_state.selected_page = "Team Breakdown"
+                            st.session_state.page_override = True
                             st.rerun()
                     except Exception:
                         st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
@@ -1504,7 +1643,7 @@ if page == "Overview":
         st.stop()
 
     top4_colour_map = {
-        "Team Rating": ("black", "white"),
+        "Team Rating": ("#000000", "white"),
         "Ball Winning Ranking": ("#0066CC", "white"),
         "Ball Movement Ranking": ("#009933", "white"),
         "Scoring Ranking": ("#FFEB3B", "black"),
@@ -1513,7 +1652,7 @@ if page == "Overview":
     }
 
     st.markdown("---")
-    st.markdown(f"<h2 style='text-align: center; color: #FFD700; margin-bottom: 25px;'>🏆 Team Leaders – {period_label}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center; color: #FFFFFF; margin-bottom: 25px;'>🏆 Team Leaders – {period_label}</h2>", unsafe_allow_html=True)
 
     metric_configs = [
         {"label": "Team Rating", "metric_col": "Team Rating"},
@@ -1678,7 +1817,7 @@ if page == "Overview":
         container.markdown("".join(lines), unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown(f"<h2 style='text-align: center; color: #FFD700; margin-top: 30px; margin-bottom: 25px;'>📊 Team Ladder – {period_label}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Team Ladder – {period_label}</h2>", unsafe_allow_html=True)
 
     ladder_cols = ["Team"]
     # Add both value and rank columns for each metric
@@ -1738,7 +1877,7 @@ if page == "Overview":
         
         # Build professional HTML table
         metric_colors = {
-            "Team\nRating": ("black", "white"),
+            "Team\nRating": ("#000000", "white"),
             "Ball Winning\nRanking": ("#0066CC", "white"),
             "Ball Movement\nRanking": ("#009933", "white"),
             "Scoring\nRanking": ("#FFEB3B", "black"),
@@ -1747,6 +1886,7 @@ if page == "Overview":
         }
         
         rank_colors = {
+            "Team Rating\nRank": ("#404040", "white"),
             "Team\nRating": ("#404040", "white"),
             "Ball Winning\nRanking": ("#3399FF", "white"),
             "Ball Movement\nRanking": ("#33CC66", "white"),
@@ -1761,30 +1901,31 @@ width: 100%;
 border-collapse: separate;
 border-spacing: 0;
 margin: 20px 0;
-box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 border-radius: 12px;
 overflow: hidden;
-background: #1a1a2e;
+background: #ffffff;
 font-size: 0.9em;
 }
 .overview-ladder-table thead {
-background: linear-gradient(135deg, #2c5364 0%, #1a2940 100%);
+background: #f8f9fa;
 }
 .overview-ladder-table th {
 padding: 14px 8px;
 text-align: center;
-font-weight: 800;
-font-size: 0.8em;
-color: #FFD700;
-text-transform: uppercase;
+font-weight: 900;
+font-size: 0.85em;
+color: #FFFFFF;
 letter-spacing: 0.5px;
-border-right: 1px solid rgba(255,255,255,0.1);
+border-right: 1px solid #e0e0e0;
 white-space: pre-line;
 line-height: 1.3;
+border-bottom: 2px solid #dee2e6;
 }
 .overview-ladder-table th:first-child {
 text-align: left;
 padding-left: 20px;
+background: #f8f9fa;
 }
 .overview-ladder-table th:last-child {
 border-right: none;
@@ -1793,35 +1934,29 @@ border-right: none;
 padding: 12px 8px;
 text-align: center;
 font-size: 0.95em;
-font-weight: 600;
-border-bottom: 1px solid rgba(255,255,255,0.1);
-border-right: 1px solid rgba(255,255,255,0.05);
+font-weight: 700;
+border-bottom: 1px solid #f0f0f0;
+border-right: 1px solid #f5f5f5;
 }
 .overview-ladder-table td:first-child {
 text-align: left;
 padding-left: 20px;
 font-weight: 700;
-color: #FFFFFF;
+color: #1a1a1a;
+background: #fafafa !important;
+border-right: 2px solid #e0e0e0;
 }
 .overview-ladder-table td:last-child {
 border-right: none;
-background: rgba(255,215,0,0.05);
-font-weight: 700;
 }
 .overview-ladder-table tbody tr {
-background: #16213e;
-transition: all 0.3s ease;
+background: #ffffff;
+transition: all 0.2s ease;
 }
 .overview-ladder-table tbody tr:hover {
-background: #1f2b4d;
-transform: scale(1.005);
-box-shadow: 0 4px 12px rgba(255,215,0,0.2);
-}
-.overview-ladder-table tbody tr:nth-child(even) {
-background: #1a2540;
-}
-.overview-ladder-table tbody tr:nth-child(even):hover {
-background: #1f2b4d;
+transform: scale(1.002);
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+background: #fafafa;
 }
 .rank-badge {
 display: inline-block;
@@ -1838,7 +1973,7 @@ border-top: 3px solid #FFD700 !important;
 }
 .league-avg-row td {
 font-weight: 800 !important;
-color: #FFD700 !important;
+color: #FFFFFF !important;
 font-size: 1.05em !important;
 }
 .league-avg-row:hover {
@@ -1851,10 +1986,67 @@ transform: none !important;
 <tr>
 """
         
-        # Add headers
+        # Helper function to darken a hex color by a percentage
+        def darken_color(hex_color, factor=0.4):
+            """Darken a hex color by reducing RGB values by factor (0-1)"""
+            hex_color = hex_color.lstrip('#')
+            r, g, b = int(hex_color[:2], 16), int(hex_color[2:4], 16), int(hex_color[4:], 16)
+            r, g, b = int(r * factor), int(g * factor), int(b * factor)
+            return f"#{r:02x}{g:02x}{b:02x}"
+        
+        # Add headers with gradient backgrounds
         for col in ladder_view.columns:
-            html_table += f"<th>{col}</th>"
+            # Determine header styling based on column type
+            if col == "Team":
+                bg = "#1a1a1a"
+                bg_dark = darken_color(bg, 0.5)
+                gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                html_table += f"<th style='background: {gradient}; color: #FFFFFF;'>{col}</th>"
+            elif col in metric_colors:
+                bg, fg = metric_colors[col]
+                bg_dark = darken_color(bg, 0.6)
+                gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                html_table += f"<th style='background: {gradient}; color: {fg};'>{col}</th>"
+            elif "Rank" in col and "Ranking" not in col:
+                # Check if this specific rank column has its own color definition
+                if col in rank_colors:
+                    bg, fg = rank_colors[col]
+                    bg_dark = darken_color(bg, 0.6)
+                    gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                    html_table += f"<th style='background: {gradient}; color: {fg};'>{col}</th>"
+                else:
+                    # Try to find parent metric by replacing Rank with Ranking
+                    parent_metric = col.replace("\nRank", "\nRanking")
+                    if parent_metric in rank_colors:
+                        bg, fg = rank_colors[parent_metric]
+                        bg_dark = darken_color(bg, 0.6)
+                        gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                        html_table += f"<th style='background: {gradient}; color: {fg};'>{col}</th>"
+                    else:
+                        bg = "#1a1a1a"
+                        bg_dark = darken_color(bg, 0.5)
+                        gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                        html_table += f"<th style='background: {gradient}; color: #FFFFFF;'>{col}</th>"
+            else:
+                bg = "#1a1a1a"
+                bg_dark = darken_color(bg, 0.5)
+                gradient = f"linear-gradient(135deg, {bg} 0%, {bg_dark} 100%)"
+                html_table += f"<th style='background: {gradient}; color: #FFFFFF;'>{col}</th>"
         html_table += "</tr>\n</thead>\n<tbody>\n"
+        
+        # Calculate rankings for opacity (higher value = better = higher opacity)
+        column_rankings = {}
+        for col in ladder_view.columns:
+            # Skip Team column and Rank columns (but NOT Ranking columns)
+            if col != "Team" and not col.endswith("\nRank"):
+                # For metric columns, rank by value (higher is better)
+                try:
+                    numeric_col = pd.to_numeric(ladder_view[col], errors='coerce')
+                    if not numeric_col.isna().all():
+                        # Rank descending (higher values get lower rank numbers)
+                        column_rankings[col] = numeric_col.rank(ascending=False, method='min')
+                except Exception as e:
+                    pass
         
         # Add data rows
         for idx, row in ladder_view.iterrows():
@@ -1867,16 +2059,74 @@ transform: none !important;
                     html_table += f"<td>{value}</td>\n"
                 elif col in metric_colors:
                     bg, fg = metric_colors[col]
-                    html_table += f"<td style='background-color: {bg}; color: {fg}; font-weight: 800;'>{value}</td>\n"
+                    # Calculate opacity based on ranking (100% for rank 1, 30% for rank 18)
+                    opacity = 1.0
+                    if col in column_rankings:
+                        rank = column_rankings[col].loc[idx]
+                        if pd.notna(rank):
+                            # Linear interpolation: rank 1 = 1.0, rank 18 = 0.3
+                            opacity = 1.0 - (rank - 1) / 17 * 0.7
+                    
+                    # Apply solid color with opacity (no gradient for better visibility)
+                    r, g, b = int(bg.lstrip('#')[:2], 16), int(bg.lstrip('#')[2:4], 16), int(bg.lstrip('#')[4:], 16)
+                    html_table += f"<td style='background: rgba({r}, {g}, {b}, {opacity}); color: {fg}; font-weight: 800;'>{value}</td>\n"
                 elif "Rank" in col and "Ranking" not in col:
-                    parent_metric = col.replace("\nRank", "\nRanking")
-                    if parent_metric in rank_colors:
-                        bg, fg = rank_colors[parent_metric]
-                        html_table += f"<td style='background-color: {bg}; color: {fg}; font-weight: 800;'>{value}</td>\n"
+                    # Check if this specific rank column has its own color definition
+                    if col in rank_colors:
+                        bg, fg = rank_colors[col]
+                        # For rank columns, use the same ranking as parent metric
+                        opacity = 1.0
+                        # Special handling for Team Rating Rank
+                        if col == "Team Rating\nRank":
+                            parent_check = "Team\nRating"
+                        else:
+                            parent_check = col.replace("\nRank", "\nRating") if "Rating" in col else col.replace("\nRank", "\nRanking")
+                        
+                        if parent_check in column_rankings:
+                            rank = column_rankings[parent_check].loc[idx]
+                            if pd.notna(rank):
+                                opacity = 1.0 - (rank - 1) / 17 * 0.7
+                        
+                        r, g, b = int(bg.lstrip('#')[:2], 16), int(bg.lstrip('#')[2:4], 16), int(bg.lstrip('#')[4:], 16)
+                        html_table += f"<td style='background: rgba({r}, {g}, {b}, {opacity}); color: {fg}; font-weight: 800;'>{value}</td>\n"
+                    else:
+                        # Try to find parent metric by replacing Rank with Ranking
+                        parent_metric = col.replace("\nRank", "\nRanking")
+                        if parent_metric in rank_colors:
+                            bg, fg = rank_colors[parent_metric]
+                            # For rank columns, use the same ranking as parent metric
+                            opacity = 1.0
+                            parent_ranking_col = parent_metric
+                            if parent_ranking_col in column_rankings:
+                                rank = column_rankings[parent_ranking_col].loc[idx]
+                                if pd.notna(rank):
+                                    opacity = 1.0 - (rank - 1) / 17 * 0.7
+                            
+                            r, g, b = int(bg.lstrip('#')[:2], 16), int(bg.lstrip('#')[2:4], 16), int(bg.lstrip('#')[4:], 16)
+                            html_table += f"<td style='background: rgba({r}, {g}, {b}, {opacity}); color: {fg}; font-weight: 800;'>{value}</td>\n"
+                        else:
+                            # Default rank column styling
+                            bg = "#404040"
+                            fg = "white"
+                            opacity = 1.0
+                            parent_check = col.replace("\nRank", "\nRating") if "Rating" in col else col.replace("\nRank", "\nRanking")
+                            if parent_check in column_rankings:
+                                rank = column_rankings[parent_check].loc[idx]
+                                if pd.notna(rank):
+                                    opacity = 1.0 - (rank - 1) / 17 * 0.7
+                            html_table += f"<td style='background: rgba(64, 64, 64, {opacity}); color: {fg}; font-weight: 800;'>{value}</td>\n"
+                else:
+                    # Handle other columns (like Team Rating) with black/grey gradient and opacity
+                    if col in column_rankings:
+                        bg = "#000000"
+                        fg = "white"
+                        opacity = 1.0
+                        rank = column_rankings[col].loc[idx]
+                        if pd.notna(rank):
+                            opacity = 1.0 - (rank - 1) / 17 * 0.7
+                        html_table += f"<td style='background: rgba(0, 0, 0, {opacity}); color: {fg}; font-weight: 800;'>{value}</td>\n"
                     else:
                         html_table += f"<td>{value}</td>\n"
-                else:
-                    html_table += f"<td>{value}</td>\n"
             html_table += "</tr>\n"
         
         html_table += '</tbody>\n</table>\n'
@@ -1967,17 +2217,53 @@ elif page == "Team Breakdown":
     
     # Display team logo with centered positioning
     st.markdown("---")
-    st.markdown(f"<h2 style='text-align: center; color: #FFD700; margin-bottom: 20px;'>{team_name}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center; color: #FFFFFF; margin-bottom: 20px;'>{team_name}</h2>", unsafe_allow_html=True)
     
     team_code = TEAM_CODE_MAP.get(team_name, team_name.lower().replace(" ", ""))
     team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
+    
+    # Get ladder position and percentage for this team and season with colors
+    ladder_position_str, ladder_position_rank, position_color = get_ladder_position(team_name, selected_year)
+    ladder_percentage_str, percentage_rank, percentage_color = get_ladder_percentage(team_name, selected_year)
+    
+    # Determine text color based on background color
+    def get_text_color(bg_color):
+        if bg_color in ["#006400", "#FF0000"]:  # dark colors
+            return "white"
+        else:  # light colors
+            return "black"
+    
+    position_text_color = get_text_color(position_color)
+    percentage_text_color = get_text_color(percentage_color)
+    
     if os.path.exists(team_logo_path):
         try:
             img = Image.open(team_logo_path)
-            # Center the image using columns
-            logo_col1, logo_col2, logo_col3 = st.columns([1, 1, 1])
+            # Create columns: left spacer, logo, ladder stats, right spacer
+            logo_col1, logo_col2, logo_col3, logo_col4 = st.columns([1, 1, 1, 1])
             with logo_col2:
                 st.image(img)
+            with logo_col3:
+                # Display ladder position and percentage to the right of logo, centered vertically with colored backgrounds
+                st.markdown(
+                    f"""
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+                        <div style="margin-bottom: 30px; width: 100%;">
+                            <p style="font-size: 12px; color: #888; margin: 0 0 5px 0; text-align: center;">Ladder Position</p>
+                            <div style="background-color: {position_color}; padding: 10px 20px; border-radius: 8px; text-align: center;">
+                                <p style="font-size: 48px; font-weight: bold; color: {position_text_color}; margin: 0;">{ladder_position_str}</p>
+                            </div>
+                        </div>
+                        <div style="width: 100%;">
+                            <p style="font-size: 12px; color: #888; margin: 0 0 5px 0; text-align: center;">Percentage</p>
+                            <div style="background-color: {percentage_color}; padding: 10px 20px; border-radius: 8px; text-align: center;">
+                                <p style="font-size: 48px; font-weight: bold; color: {percentage_text_color}; margin: 0;">{ladder_percentage_str}</p>
+                            </div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
         except Exception as e:
             st.warning(f"Could not load {team_name} logo")
     else:
@@ -1985,7 +2271,7 @@ elif page == "Team Breakdown":
 
     # --- Team Ratings Snapshot ---
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700; margin-bottom: 20px;'>📊 Team Ratings Snapshot</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #FFFFFF; margin-bottom: 20px;'>📊 Team Ratings Snapshot</h2>", unsafe_allow_html=True)
 
     # Prepare data for spider chart
     spider_metrics = []
@@ -2164,7 +2450,7 @@ elif page == "Team Breakdown":
 
     # --- Attribute Detail – new design ---
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700; margin-bottom: 20px;'>📈 Detailed Attribute Analysis</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #FFFFFF; margin-bottom: 20px;'>📈 Detailed Attribute Analysis</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #AAAAAA; margin-bottom: 25px;'>Team Performance vs League Competition</p>", unsafe_allow_html=True)
 
     # Load summary data for the selected year
@@ -2208,7 +2494,7 @@ elif page == "Team Breakdown":
                     else ""
                 )
                 st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
-                st.markdown(f"<h3 style='color: #FFD700; font-size: 1.2em; margin-bottom: 15px;'>{stat_name}</h3>", unsafe_allow_html=True)
+                st.markdown(f"<h3 style='color: #FFFFFF; font-size: 1.2em; margin-bottom: 15px;'>{stat_name}</h3>", unsafe_allow_html=True)
                 if dist_df.empty:
                     st.info("No data found for this stat across teams.")
                 else:
@@ -2287,7 +2573,7 @@ elif page == "Team Breakdown":
                         """
                         st.markdown(card_html, unsafe_allow_html=True)
                     # Top 4 by Rank
-                    st.markdown("<h4 style='color: #FFD700; margin-top: 20px; margin-bottom: 10px;'>🏆 Top 4 Teams</h4>", unsafe_allow_html=True)
+                    st.markdown("<h4 style='color: #FFFFFF; margin-top: 20px; margin-bottom: 10px;'>🏆 Top 4 Teams</h4>", unsafe_allow_html=True)
                     top4 = (
                         dist_df.dropna(subset=["Rank"])
                         .sort_values("Rank", ascending=True)
@@ -2333,7 +2619,7 @@ elif page == "Team Breakdown":
                         st.markdown("".join(lines), unsafe_allow_html=True)
                         # Averages
                         st.markdown("<hr style='border:0;border-top:2px solid rgba(255,215,0,0.3);margin:16px 0;'>", unsafe_allow_html=True)
-                        st.markdown("<h4 style='color: #FFD700; margin-bottom: 10px;'>📊 Averages</h4>", unsafe_allow_html=True)
+                        st.markdown("<h4 style='color: #FFFFFF; margin-bottom: 10px;'>📊 Averages</h4>", unsafe_allow_html=True)
                         if not top4.empty and top4["Value"].notna().any():
                             avg_top4 = top4["Value"].dropna().mean()
                             st.metric("Top 4", f"{avg_top4:.1f}")
@@ -2854,7 +3140,7 @@ elif page == "Team Compare":
             st.markdown("---")
             st.subheader(f"📊 Detailed Attribute Stats Breakdown: {team1} vs {team2}")
             
-            st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFD700; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of specific attribute statistics across both teams. Stats are color-coded based on team rankings (green = elite, orange = average, red = needs work).</span></p></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of specific attribute statistics across both teams. Stats are color-coded based on team rankings (green = elite, orange = average, red = needs work).</span></p></div>""", unsafe_allow_html=True)
             
             # Helper function for ordinal rank
             def get_ordinal_suffix(n):
@@ -3122,7 +3408,7 @@ elif page == "Player Dashboard":
 
     # ---- Player list table (rounding + centred numbers) ----
     st.markdown("---")
-    st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📋 Player List</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #CCCCCC; margin: 20px 0;'>📋 Player List</h3>", unsafe_allow_html=True)
 
     display_cols = [
         "Player",
@@ -3145,9 +3431,19 @@ elif page == "Player Dashboard":
             suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
         return f"{n}{suffix}"
 
-    # Add competition rank (by rating, across all selected players)
-    table_view["Competition_Rank"] = table_view["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
-    table_view["Competition_Rank"] = table_view["Competition_Rank"].apply(get_ordinal)
+    # Calculate competition rank on FULL unfiltered dataset (players_all) to get overall competition ranking
+    # Create a temporary dataframe with all players and their competition rank
+    players_all_ranked = players_all[["Player", "Team", "Season", "RatingPoints_Avg"]].copy()
+    players_all_ranked["RatingPoints_Avg"] = pd.to_numeric(players_all_ranked["RatingPoints_Avg"], errors="coerce")
+    players_all_ranked["Competition_Rank_Full"] = players_all_ranked["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
+    
+    # Merge the full competition rank back to the filtered view
+    table_view = table_view.merge(
+        players_all_ranked[["Player", "Team", "Season", "Competition_Rank_Full"]],
+        on=["Player", "Team", "Season"],
+        how="left"
+    )
+    table_view["Competition_Rank"] = table_view["Competition_Rank_Full"].apply(get_ordinal)
 
     # Add positional rank (by rating, within same position and season)
     table_view["Positional_Rank"] = table_view.groupby(["Position", "Season"])["RatingPoints_Avg"].rank(method='min', ascending=False).astype(int)
@@ -3183,22 +3479,22 @@ elif page == "Player Dashboard":
 .player-list-table {
     width: 100%;
     border-collapse: collapse;
-    background: #0a0e27;
+    background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin-bottom: 40px;
 }
 .player-list-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 14px 10px;
     text-align: center;
     font-weight: 900;
     font-size: 0.9em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .player-list-table th:nth-child(3) {
     text-align: left;
@@ -3232,19 +3528,19 @@ elif page == "Player Dashboard":
     border-right: none;
 }
 .player-list-table tbody tr {
-    background: #16213e;
+    background: #3a3a3a;
     transition: all 0.3s ease;
 }
 .player-list-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
 }
 .player-list-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #333333;
 }
 .player-list-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
 }
 </style>
 <table class='player-list-table'>
@@ -3262,9 +3558,11 @@ elif page == "Player Dashboard":
         html_player_table += "<tr>\n"
         for col in table_view.columns:
             if col == "Rating":
-                # Color-code rating
-                rating_val = df_view.loc[idx, "RatingPoints_Avg"]
-                bg_color, text_color = rating_colour_for_value(rating_val, df_view["RatingPoints_Avg"])
+                # Color-code rating - use the rating value from the current row
+                rating_val = row[col]
+                # Get all rating values for color comparison
+                all_ratings = table_view["Rating"].dropna()
+                bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
                 html_player_table += f"<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{row[col]}</td>\n"
             else:
                 html_player_table += f"<td>{row[col]}</td>\n"
@@ -3275,7 +3573,7 @@ elif page == "Player Dashboard":
 
     # ---- Individual Player View (all seasons, photos, logos, summary info) ----
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #000000; margin-top: 30px; margin-bottom: 25px;'>👤 Individual Player View</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>👤 Individual Player View</h2>", unsafe_allow_html=True)
 
     player_names = sorted(df_view["Player"].dropna().unique())
     selected_player = st.selectbox("Select player", player_names)
@@ -3336,8 +3634,8 @@ elif page == "Player Dashboard":
 
     # Header with gradient background
     header_html = f"""
-    <div style='background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-                border-left: 5px solid #FFD700; padding: 20px; border-radius: 12px; margin-bottom: 20px;
+    <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+                border-left: 5px solid #FFFFFF; padding: 20px; border-radius: 12px; margin-bottom: 20px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
         <h2 style='color: #FFFFFF; margin: 0; font-size: 2.2em; font-weight: 900;'>{selected_player}</h2>
     </div>
@@ -3348,8 +3646,8 @@ elif page == "Player Dashboard":
     info_cards = []
     if latest_team:
         info_cards.append(f"""
-        <div style='background: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(59, 130, 246, 0.6) 100%);
-                    border-left: 4px solid #3b82f6; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+        <div style='background: linear-gradient(135deg, #2a2a2a 0%, #404040 100%);
+                    border-left: 4px solid #CCCCCC; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
             <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.85em; margin-bottom: 4px;'>TEAM</div>
             <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{latest_team}</div>
         </div>
@@ -3387,11 +3685,25 @@ elif page == "Player Dashboard":
     # 2025 Rating %
     if rating_pct_2025 not in [None, ""] and pd.notna(rating_pct_2025):
         try:
-            rating_val = float(rating_pct_2025)
-            # Display as percentage
-            stats_grid.append(f"""<div style='background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+            rating_pct_val = float(rating_pct_2025)
+            # Get all 2025 Rating % values for comparison
+            rating_pct_values = summary_df["2025 Rating %"].dropna()
+            # Color based on percentile for Rating %
+            pct_bg, pct_fg = rating_colour_for_value(rating_pct_val, rating_pct_values)
+            
+            # Determine gradient based on color
+            if pct_bg == "#008000":  # dark green
+                pct_gradient = "rgba(0,128,0,0.3)"
+            elif pct_bg == "#90EE90":  # light green
+                pct_gradient = "rgba(144,238,144,0.3)"
+            elif pct_bg == "#FFA500":  # orange
+                pct_gradient = "rgba(255,165,0,0.3)"
+            else:  # red
+                pct_gradient = "rgba(255,0,0,0.3)"
+            
+            stats_grid.append(f"""<div style='background: {pct_gradient}; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>2025 RATING %</div>
-<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{rating_val:.1f}%</div>
+<div style='color: {pct_fg}; font-size: 1.4em; font-weight: 700;'>{rating_pct_val:.1f}%</div>
 </div>""")
         except (ValueError, TypeError):
             stats_grid.append(f"""<div style='background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
@@ -3574,7 +3886,7 @@ elif page == "Player Dashboard":
 
     # ---- Rating by Season bar chart (all seasons for this player) ----
     st.markdown("---")
-    st.markdown("<h3 style='color: #FFD700; margin-bottom: 15px;'>📊 Rating by Season</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #FFFFFF; margin-bottom: 15px;'>📊 Rating by Season</h3>", unsafe_allow_html=True)
 
     player_data_all["RatingPoints_Avg"] = pd.to_numeric(
         player_data_all["RatingPoints_Avg"], errors="coerce"
@@ -3616,7 +3928,7 @@ elif page == "Player Dashboard":
 
     # ---- Performance Projection (next 5 years) ----
     st.markdown("---")
-    st.markdown("<h3 style='color: #FFD700; margin-bottom: 15px;'>🔮 Performance Projection (Next 5 Years)</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #FFFFFF; margin-bottom: 15px;'>🔮 Performance Projection (Next 5 Years)</h3>", unsafe_allow_html=True)
     
     try:
         # Get latest rating and age
@@ -3708,7 +4020,7 @@ elif page == "Player Dashboard":
 
     # ---- Raw player data table (only this player) ----
     st.markdown("---")
-    st.markdown("<h3 style='color: #FFD700; margin-bottom: 15px;'>📋 Player Season Data</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #CCCCCC; margin-bottom: 15px;'>📋 Player Season Data</h3>", unsafe_allow_html=True)
 
     player_table = player_data_all.copy()
 
@@ -3777,22 +4089,22 @@ elif page == "Player Dashboard":
 .player-season-table {
     width: 100%;
     border-collapse: collapse;
-    background: #0a0e27;
+    background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin-bottom: 40px;
 }
 .player-season-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 14px 10px;
     text-align: center;
     font-weight: 900;
     font-size: 0.9em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .player-season-table th:nth-child(3) {
     text-align: left;
@@ -3816,19 +4128,19 @@ elif page == "Player Dashboard":
     border-right: none;
 }
 .player-season-table tbody tr {
-    background: #16213e;
+    background: #3a3a3a;
     transition: all 0.3s ease;
 }
 .player-season-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
 }
 .player-season-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #333333;
 }
 .player-season-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
 }
 </style>
 <table class='player-season-table'>
@@ -3932,7 +4244,7 @@ elif page == "Depth Chart":
 
 elif page == "Team Age Breakdown":
     # Professional header
-    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFD700; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
 
     selected_season = 2025
 
@@ -4042,10 +4354,10 @@ elif page == "Team Age Breakdown":
     age_breakdown_with_avg = pd.concat([display_table, league_avg_df], ignore_index=True)
 
     # Professional subtitle
-    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFD700; margin-top: 0; font-size: 1.3em;'>Understanding the Table</h4><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFD700;'>How to Read:</strong> Each age band column shows the percentage of total rating points contributed by players in that age group, along with the team's rank (1st-18th). Higher percentages in prime age bands (23-25, 26-28) typically indicate stronger current performance, while higher percentages in younger bands suggest future potential.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: rgba(50,50,50,0.3); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Understanding the Table</h4><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each age band column shows the percentage of total rating points contributed by players in that age group, along with the team's rank (1st-18th). Higher percentages in prime age bands (23-25, 26-28) typically indicate stronger current performance, while higher percentages in younger bands suggest future potential.</p></div>""", unsafe_allow_html=True)
     
     # Display the age breakdown table
-    st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📊 Team Age Breakdown Table</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #CCCCCC; margin: 20px 0;'>📊 Team Age Breakdown Table</h3>", unsafe_allow_html=True)
     
     # Helper function to get rank color
     def get_rank_color_age(rank_val):
@@ -4063,22 +4375,22 @@ elif page == "Team Age Breakdown":
 .age-breakdown-table {
     width: 100%;
     border-collapse: collapse;
-    background: #0a0e27;
+    background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin-bottom: 40px;
 }
 .age-breakdown-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 16px 12px;
     text-align: center;
     font-weight: 900;
     font-size: 0.95em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .age-breakdown-table th:first-child {
     text-align: left;
@@ -4106,31 +4418,31 @@ elif page == "Team Age Breakdown":
     border-right: none;
 }
 .age-breakdown-table tbody tr {
-    background: #16213e;
+    background: #3a3a3a;
     transition: all 0.3s ease;
 }
 .age-breakdown-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
 }
 .age-breakdown-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #333333;
 }
 .age-breakdown-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
 }
 .age-breakdown-table .league-avg-row {
-    background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
-    border-top: 3px solid #FFD700 !important;
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
+    border-top: 3px solid #CCCCCC !important;
 }
 .age-breakdown-table .league-avg-row td {
     font-weight: 800 !important;
-    color: #FFD700 !important;
+    color: #FFFFFF !important;
     font-size: 1.05em !important;
 }
 .age-breakdown-table .league-avg-row:hover {
-    background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
     transform: none !important;
 }
 .rank-badge {
@@ -4191,7 +4503,7 @@ elif page == "Team Age Breakdown":
 
 elif page == "List Ladder":
     # Professional header
-    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFD700; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
 
     # Load player data
     try:
@@ -4293,7 +4605,7 @@ elif page == "List Ladder":
     ladder_df["Rank"] = range(1, len(ladder_df) + 1)
     
     # Professional explanation
-    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFD700; margin-top: 0; font-size: 1.3em;'>Ranking Guide</h4><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;'><div style='text-align: center; padding: 15px; background: #006400; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.9em;'>Elite</span></div><div style='text-align: center; padding: 15px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1.1em;'>5th - 9th</strong><br><span style='color: #333333; font-size: 0.9em;'>Strong</span></div><div style='text-align: center; padding: 15px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>10th - 14th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Average</span></div><div style='text-align: center; padding: 15px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>15th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Needs Work</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFD700;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide</h4><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;'><div style='text-align: center; padding: 15px; background: #006400; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.9em;'>Elite</span></div><div style='text-align: center; padding: 15px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1.1em;'>5th - 9th</strong><br><span style='color: #333333; font-size: 0.9em;'>Strong</span></div><div style='text-align: center; padding: 15px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>10th - 14th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Average</span></div><div style='text-align: center; padding: 15px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>15th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Needs Work</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
     
     # Helper function to get ordinal suffix
     def get_ordinal_suffix(n):
@@ -4334,29 +4646,29 @@ elif page == "List Ladder":
     display_df = pd.DataFrame(display_data)
     
     # Display the main ladder table with professional HTML styling
-    st.markdown("<h3 style='color: #FFD700; margin: 20px 0;'>📋 Positional Depth Rankings</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #FFFFFF; margin: 20px 0;'>📋 Positional Depth Rankings</h3>", unsafe_allow_html=True)
     
     # Create professional HTML table with color-coded rankings
     html_table = """<style>
 .list-ladder-table {
     width: 100%;
     border-collapse: collapse;
-    background: #0a0e27;
+    background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin-bottom: 40px;
 }
 .list-ladder-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 16px 12px;
     text-align: center;
     font-weight: 900;
     font-size: 0.95em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .list-ladder-table th:first-child {
     text-align: center;
@@ -4368,7 +4680,7 @@ elif page == "List Ladder":
 }
 .list-ladder-table th:last-child {
     border-right: none;
-    background: linear-gradient(135deg, #00AA00 0%, #008800 100%);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
     color: white;
 }
 .list-ladder-table td {
@@ -4383,7 +4695,7 @@ elif page == "List Ladder":
 .list-ladder-table td:first-child {
     text-align: center;
     font-weight: 800;
-    color: #FFD700;
+    color: #FFFFFF;
     font-size: 1em;
 }
 .list-ladder-table td:nth-child(2) {
@@ -4394,25 +4706,25 @@ elif page == "List Ladder":
 }
 .list-ladder-table td:last-child {
     border-right: none;
-    background: rgba(0,170,0,0.1);
+    background: rgba(100,100,100,0.2);
     font-weight: 800;
-    color: #00FF00;
+    color: #FFFFFF;
     font-size: 1em;
 }
 .list-ladder-table tbody tr {
-    background: #16213e;
+    background: #3a3a3a;
     transition: all 0.3s ease;
 }
 .list-ladder-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
 }
 .list-ladder-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #333333;
 }
 .list-ladder-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
 }
 .rank-badge {
     display: inline-block;
@@ -4461,7 +4773,7 @@ elif page == "List Ladder":
     
     # ---- Team Selector for Positional Breakdown ----
     st.markdown("---")
-    st.markdown("""<div style='background: linear-gradient(135deg, #2c5364 0%, #203a43 50%, #0f2027 100%); padding: 35px 20px; border-radius: 15px; margin: 40px 0 30px 0; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'><h2 style='text-align: center; color: #FFD700; margin: 0; font-size: 2.5em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📋 TEAM PLAYER BREAKDOWN</h2><p style='text-align: center; color: #FFFFFF; margin: 12px 0 0 0; font-size: 1.15em; font-weight: 400; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);'>Positional Depth Analysis by Player Contributions</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #3a3a3a 100%); padding: 35px 20px; border-radius: 15px; margin: 40px 0 30px 0; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'><h2 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.5em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📋 TEAM PLAYER BREAKDOWN</h2><p style='text-align: center; color: #FFFFFF; margin: 12px 0 0 0; font-size: 1.15em; font-weight: 400; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);'>Positional Depth Analysis by Player Contributions</p></div>""", unsafe_allow_html=True)
     
     # Team selector
     default_idx = 0
@@ -4470,7 +4782,7 @@ elif page == "List Ladder":
     selected_team = st.selectbox("Select a team to view contributing players", teams, index=default_idx, key="list_ladder_team_select")
     
     # Professional explanation
-    st.markdown("""<div style='background: rgba(44,83,100,0.25); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFD700; font-size: 1.2em;'>Player Contribution Analysis</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>View all players by position with their individual rating and point contributions. Players are color-coded by percentile ranking across the entire competition.</span></p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: rgba(50,50,50,0.25); padding: 18px; border-radius: 10px; border-left: 5px solid #FFFFFF; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>Player Contribution Analysis</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>View all players by position with their individual rating and point contributions. Players are color-coded by percentile ranking across the entire competition.</span></p></div>""", unsafe_allow_html=True)
     
     if selected_team:
         # Get players for selected team
@@ -4510,7 +4822,7 @@ elif page == "List Ladder":
                         player_table = player_table[["Player", "Rating", "Points"]]
                         
                         # Position header with gradient
-                        st.markdown(f"""<div style='background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 12px; border-radius: 8px 8px 0 0; margin-top: 15px;'><h4 style='margin: 0; color: #000000; text-align: center; font-weight: 900; font-size: 1.2em;'>{position}</h4></div>""", unsafe_allow_html=True)
+                        st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%); padding: 12px; border-radius: 8px 8px 0 0; margin-top: 15px;'><h4 style='margin: 0; color: #FFFFFF; text-align: center; font-weight: 900; font-size: 1.2em;'>{position}</h4></div>""", unsafe_allow_html=True)
                         
                         # Create HTML table with color coding
                         html_player_table = """<style>
@@ -4523,7 +4835,7 @@ elif page == "List Ladder":
 }
 .player-breakdown-table th {
     background: rgba(255,215,0,0.2);
-    color: #FFD700;
+    color: #FFFFFF;
     padding: 10px;
     text-align: left;
     font-weight: 800;
@@ -4601,15 +4913,15 @@ elif page == "Team List Summary":
         with col_logo:
             st.image(team_logo_path, width=120)
         with col_title:
-            st.markdown(f"<h2 style='color: #FFD700; margin-top: 20px;'>{selected_team}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color: #FFFFFF; margin-top: 20px;'>{selected_team}</h2>", unsafe_allow_html=True)
             st.markdown(f"<p style='color: #CCCCCC; font-size: 1.1em;'>2025 Season List Analysis</p>", unsafe_allow_html=True)
     else:
-        st.markdown(f"<h2 style='text-align: center; color: #FFD700;'>{selected_team}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center; color: #FFFFFF;'>{selected_team}</h2>", unsafe_allow_html=True)
     
     st.markdown("---")
     
     # ================= AGE BREAKDOWN SECTION =================
-    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>👥 Age Breakdown</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #FFFFFF; margin: 30px 0 20px 0;'>👥 Age Breakdown</h2>", unsafe_allow_html=True)
     
     # Calculate age breakdown data (same logic as Team Age Breakdown page)
     required_cols = ["Player", "Team", "Age", "Matches", "RatingPoints_Avg"]
@@ -4743,7 +5055,7 @@ elif page == "Team List Summary":
     # Display age breakdown comparison
     st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'>
 <p style='color: #DDDDDD; line-height: 1.8; margin: 0;'>
-<strong style='color: #FFD700;'>Age Group Performance:</strong> Comparing your team's average player rating in each age bracket against league averages and Top 4 teams.
+<strong style='color: #FFFFFF;'>Age Group Performance:</strong> Comparing your team's average player rating in each age bracket against league averages and Top 4 teams.
 </p>
 </div>""", unsafe_allow_html=True)
     
@@ -4794,22 +5106,22 @@ elif page == "Team List Summary":
 .age-comparison-table {
     width: 100%;
     border-collapse: collapse;
-    background: #0a0e27;
+    background: #2a2a2a;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin-bottom: 40px;
 }
 .age-comparison-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 14px 10px;
     text-align: center;
     font-weight: 900;
     font-size: 0.9em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .age-comparison-table th:last-child {
     border-right: none;
@@ -4827,19 +5139,19 @@ elif page == "Team List Summary":
     border-right: none;
 }
 .age-comparison-table tbody tr {
-    background: #16213e;
+    background: #3a3a3a;
     transition: all 0.3s ease;
 }
 .age-comparison-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
 }
 .age-comparison-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #333333;
 }
 .age-comparison-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #4a4a4a;
 }
 .rank-badge {
     display: inline-block;
@@ -4877,7 +5189,7 @@ elif page == "Team List Summary":
         diff_top4_color = "#90EE90" if diff_top4 > 0 else "#FF6666" if diff_top4 < 0 else "#CCCCCC"
         
         html_age_table += f"""<tr>
-<td style='font-weight: 700; color: #FFD700;'>{row['Age Band']}</td>
+<td style='font-weight: 700; color: #FFFFFF;'>{row['Age Band']}</td>
 <td style='font-weight: 700; color: #FFFFFF;'>{row[selected_team]}</td>
 <td>{row['League Avg']}</td>
 <td>{row['Top 4 Avg']}</td>
@@ -4891,7 +5203,7 @@ elif page == "Team List Summary":
     st.markdown(html_age_table, unsafe_allow_html=True)
     
     # Age breakdown analysis
-    st.markdown("<h3 style='color: #FFD700; margin: 30px 0 15px 0;'>📈 Age Breakdown Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #FFFFFF; margin: 30px 0 15px 0;'>📈 Age Breakdown Analysis</h3>", unsafe_allow_html=True)
     
     analysis_points = []
     
@@ -4932,7 +5244,7 @@ elif page == "Team List Summary":
     st.markdown("---")
     
     # ================= POSITIONAL DEPTH SECTION =================
-    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>⚡ Positional Depth</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #FFFFFF; margin: 30px 0 20px 0;'>⚡ Positional Depth</h2>", unsafe_allow_html=True)
     
     # Calculate positional depth using same positions as Depth Chart
     # DEPTH_POSITIONS is already defined at top of file: ["Key Defender", "Gen. Defender", "Midfielder", "Mid-Forward", "Wing", "Gen. Forward", "Ruck", "Key Forward"]
@@ -4990,9 +5302,9 @@ elif page == "Team List Summary":
             "Rank": rank
         })
     
-    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'>
+    st.markdown("""<div style='background: rgba(50,50,50,0.3); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 25px;'>
 <p style='color: #DDDDDD; line-height: 1.8; margin: 0;'>
-<strong style='color: #FFD700;'>Positional Strength:</strong> Total points accumulated by players in each position, comparing against league and Top 4 averages. Higher points indicate stronger depth.
+<strong style='color: #FFFFFF;'>Positional Strength:</strong> Total points accumulated by players in each position, comparing against league and Top 4 averages. Higher points indicate stronger depth.
 </p>
 </div>""", unsafe_allow_html=True)
     
@@ -5008,15 +5320,14 @@ elif page == "Team List Summary":
     margin-bottom: 40px;
 }
 .pos-comparison-table th {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #000000;
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    color: #FFFFFF;
     padding: 14px 10px;
     text-align: center;
     font-weight: 900;
     font-size: 0.9em;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0,0,0,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 .pos-comparison-table th:first-child {
     text-align: left;
@@ -5042,19 +5353,19 @@ elif page == "Team List Summary":
     border-right: none;
 }
 .pos-comparison-table tbody tr {
-    background: #16213e;
+    background: #1a1a1a;
     transition: all 0.3s ease;
 }
 .pos-comparison-table tbody tr:hover {
-    background: #1f2b4d;
+    background: #2a2a2a;
     transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.1);
 }
 .pos-comparison-table tbody tr:nth-child(even) {
-    background: #1a2540;
+    background: #222222;
 }
 .pos-comparison-table tbody tr:nth-child(even):hover {
-    background: #1f2b4d;
+    background: #2a2a2a;
 }
 </style>
 <table class='pos-comparison-table'>
@@ -5084,7 +5395,7 @@ elif page == "Team List Summary":
         diff_top4_color = "#90EE90" if diff_top4 > 0 else "#FF6666" if diff_top4 < 0 else "#CCCCCC"
         
         html_pos_table += f"""<tr>
-<td style='font-weight: 700; color: #FFD700;'>{row['Position']}</td>
+<td style='font-weight: 700; color: #FFFFFF;'>{row['Position']}</td>
 <td style='font-weight: 700; color: #FFFFFF;'>{row[selected_team]}</td>
 <td>{row['League Avg']}</td>
 <td>{row['Top 4 Avg']}</td>
@@ -5098,7 +5409,7 @@ elif page == "Team List Summary":
     st.markdown(html_pos_table, unsafe_allow_html=True)
     
     # Positional depth analysis
-    st.markdown("<h3 style='color: #FFD700; margin: 30px 0 15px 0;'>📈 Positional Depth Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #FFFFFF; margin: 30px 0 15px 0;'>📈 Positional Depth Analysis</h3>", unsafe_allow_html=True)
     
     pos_analysis_points = []
     
@@ -5143,18 +5454,18 @@ elif page == "Team List Summary":
     
     # Summary section
     st.markdown("---")
-    st.markdown("<h2 style='color: #FFD700; margin: 30px 0 20px 0;'>📋 Summary</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #FFFFFF; margin: 30px 0 20px 0;'>📋 Summary</h2>", unsafe_allow_html=True)
     
-    summary_html = f"""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
-<h3 style='color: #FFD700; margin-top: 0;'>{selected_team} - 2025 List Profile</h3>
+    summary_html = f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
+<h3 style='color: #FFFFFF; margin-top: 0;'>{selected_team} - 2025 List Profile</h3>
 <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;'>
-<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 8px;'>
-<h4 style='color: #FFD700; margin-top: 0;'>List Depth Ranking</h4>
+<div style='background: rgba(80,80,80,0.3); padding: 20px; border-radius: 8px;'>
+<h4 style='color: #FFFFFF; margin-top: 0;'>List Depth Ranking</h4>
 <p style='color: #FFFFFF; font-size: 2em; font-weight: 900; margin: 10px 0;'>{get_ordinal_suffix(team_overall_rank)}</p>
 <p style='color: #CCCCCC; margin: 0;'>Overall Competition Position</p>
 </div>
-<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 8px;'>
-<h4 style='color: #FFD700; margin-top: 0;'>Total List Points</h4>
+<div style='background: rgba(80,80,80,0.3); padding: 20px; border-radius: 8px;'>
+<h4 style='color: #FFFFFF; margin-top: 0;'>Total List Points</h4>
 <p style='color: #FFFFFF; font-size: 2em; font-weight: 900; margin: 10px 0;'>{total_points:.1f}</p>
 <p style='color: #CCCCCC; margin: 0;'>League Average: {league_avg_points:.1f}</p>
 </div>
