@@ -468,6 +468,16 @@ def load_players(season: int) -> pd.DataFrame:
     return df[existing].copy()
 
 
+@st.cache_data
+def load_traits() -> pd.DataFrame:
+    """Load the 2025 Traits data."""
+    try:
+        df = pd.read_excel("2025 Traits.xlsx")
+        return df
+    except Exception as e:
+        st.error(f"Error loading traits data: {e}")
+        return pd.DataFrame()
+
 # ---------------- ATTRIBUTE STRUCTURE HELPERS (2025 SUMMARY) ----------------
 
 
@@ -1450,7 +1460,7 @@ df_view = pd.DataFrame({
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Player Dashboard", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -4174,6 +4184,756 @@ elif page == "Player Dashboard":
     
     html_season_table += "</tbody>\n</table>"
     st.markdown(html_season_table, unsafe_allow_html=True)
+
+    # ---- Player Traits Section (from 2025 Traits spreadsheet) ----
+    try:
+        # Helper function for trait labels
+        def get_trait_label(value):
+            """Get label based on trait value"""
+            try:
+                val = float(value)
+                if val > 3.0:
+                    return "Elite"
+                elif val >= 2.5:
+                    return "Above Average"
+                elif val >= 2.0:
+                    return "Below Average"
+                else:
+                    return "Poor"
+            except:
+                return ""
+        
+        # Load traits data
+        traits_df = load_traits()
+        
+        if not traits_df.empty:
+            # Load player ratings for name matching
+            player_ratings_2025 = load_players(2025)
+            
+            # Create reverse team code mapping (AFC -> Adelaide, etc.)
+            TEAM_CODE_TO_NAME = {
+                "AFC": "Adelaide",
+                "BFC": "Brisbane",
+                "CFC": "Carlton",
+                "COFC": "Collingwood",
+                "EFC": "Essendon",
+                "FRFC": "Fremantle",
+                "GFC": "Geelong",
+                "GCFC": "Gold Coast",
+                "GWS": "GWS Giants",
+                "HFC": "Hawthorn",
+                "MFC": "Melbourne",
+                "NMFC": "North Melbourne",
+                "PAFC": "Port Adelaide",
+                "RFC": "Richmond",
+                "SKFC": "St Kilda",
+                "SFC": "Sydney",
+                "WCFC": "West Coast",
+                "WBFC": "Western Bulldogs",
+            }
+            
+            # Map abbreviated team names to full names
+            traits_df["Team_Full"] = traits_df["Team"].map(TEAM_CODE_TO_NAME)
+            
+            # Function to match abbreviated player name to full name
+            def find_full_player_name(abbreviated_name, team_full_name, player_ratings_df):
+                """Match abbreviated name like 'R. Laird' to full name like 'Rory Laird'"""
+                parts = abbreviated_name.split('. ')
+                if len(parts) != 2:
+                    return abbreviated_name
+                
+                initial = parts[0]
+                last_name = parts[1]
+                
+                if team_full_name and not pd.isna(team_full_name):
+                    team_players = player_ratings_df[player_ratings_df["Team"] == team_full_name]
+                else:
+                    team_players = player_ratings_df
+                
+                for idx, player_row in team_players.iterrows():
+                    full_name = player_row["Player"]
+                    name_parts = full_name.split()
+                    if name_parts:
+                        first_name = name_parts[0]
+                        player_last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ""
+                        
+                        if first_name and first_name[0].upper() == initial.upper() and player_last_name.upper() == last_name.upper():
+                            return full_name
+                
+                return abbreviated_name
+            
+            # Map abbreviated player names to full names
+            traits_df["Player_Full"] = traits_df.apply(
+                lambda row: find_full_player_name(row["Player"], row["Team_Full"], player_ratings_2025),
+                axis=1
+            )
+        
+        # Get traits for this player (2025 season)
+        player_traits_2025 = traits_df[
+            (traits_df["Player_Full"] == selected_player) & 
+            (traits_df["Season"] == 2025)
+        ]
+        
+        if not player_traits_2025.empty:
+            player_trait = player_traits_2025.iloc[0]
+            
+            # Extract trait values
+            rating = player_trait.get("Rating", None)
+            ball_winning = player_trait.get("Ball Winning", None)
+            ball_use = player_trait.get("Ball Use", None)
+            aerial = player_trait.get("Aerial", None)
+            defence = player_trait.get("Defence", None)
+            position = player_trait.get("Position", latest_position)
+            
+            # Calculate rankings
+            all_traits_sorted = traits_df[traits_df["Season"] == 2025].copy()
+            all_traits_sorted["Rating"] = pd.to_numeric(all_traits_sorted["Rating"], errors="coerce")
+            all_traits_sorted = all_traits_sorted.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
+            
+            overall_rank = None
+            position_rank = None
+            
+            if rating and pd.notna(rating):
+                rating_val = float(rating)
+                overall_rank = (all_traits_sorted["Rating"] >= rating_val).sum()
+                
+                # Position rank
+                if position and pd.notna(position):
+                    position_traits = all_traits_sorted[all_traits_sorted["Position"] == position]
+                    position_rank = (position_traits["Rating"] >= rating_val).sum()
+            
+            # Key Metrics Section (Rating, Overall Rank, Position Rank) - Large and Prominent
+            st.markdown("---")
+            st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>⭐ Key Performance Metrics (2025 Traits)</h3>", unsafe_allow_html=True)
+            
+            key_metrics = []
+            
+            # Rating (large, color-coded with label)
+            if rating not in [None, ""] and pd.notna(rating):
+                try:
+                    rating_val = float(rating)
+                    all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna()
+                    bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
+                    rating_label = get_trait_label(rating_val)
+                    
+                    # Determine gradient based on color
+                    if bg_color == "#008000":  # dark green
+                        rating_gradient = "rgba(0,128,0,0.3)"
+                    elif bg_color == "#90EE90":  # light green
+                        rating_gradient = "rgba(144,238,144,0.3)"
+                    elif bg_color == "#FFA500":  # orange
+                        rating_gradient = "rgba(255,165,0,0.3)"
+                    else:  # red
+                        rating_gradient = "rgba(255,0,0,0.3)"
+                    
+                    key_metrics.append(f"""
+                    <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
+                                border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+                        <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
+                        <div style='color: {text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+                        <div style='color: {text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
+                    </div>
+                    """)
+                except:
+                    pass
+            
+            # Overall Rank (large)
+            if overall_rank:
+                key_metrics.append(f"""
+                <div style='background: linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%);
+                            border-left: 5px solid #FFD700; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>OVERALL RANK</div>
+                    <div style='color: #FFD700; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(overall_rank)}</div>
+                    <div style='color: rgba(255,215,0,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>Out of {len(all_traits_sorted)} Players</div>
+                </div>
+                """)
+            
+            # Position Rank (large)
+            if position_rank and position:
+                key_metrics.append(f"""
+                <div style='background: linear-gradient(135deg, rgba(100,149,237,0.25) 0%, rgba(100,149,237,0.05) 100%);
+                            border-left: 5px solid #6495ED; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>POSITION RANK</div>
+                    <div style='color: #6495ED; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(position_rank)}</div>
+                    <div style='color: rgba(100,149,237,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>{position}</div>
+                </div>
+                """)
+            
+            # Display key metrics in a 3-column grid
+            if key_metrics:
+                col1, col2, col3 = st.columns(3)
+                if len(key_metrics) > 0:
+                    col1.markdown(key_metrics[0], unsafe_allow_html=True)
+                if len(key_metrics) > 1:
+                    col2.markdown(key_metrics[1], unsafe_allow_html=True)
+                if len(key_metrics) > 2:
+                    col3.markdown(key_metrics[2], unsafe_allow_html=True)
+            
+            # Trait Values Section
+            st.markdown("---")
+            st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>", unsafe_allow_html=True)
+            
+            # Get sub-stats for each trait
+            ball_winning_substats = {
+                "Stoppage": player_trait.get("Stoppage", ""),
+                "Contest": player_trait.get("Contest", ""),
+                "Power": player_trait.get("Power", ""),
+                "Receives": player_trait.get("Receives", "")
+            }
+            
+            ball_use_substats = {
+                "Handballing": player_trait.get("Handballing", ""),
+                "Kicking": player_trait.get("Kicking", ""),
+                "Goal Kicking": player_trait.get("Goal Kicking", ""),
+                "Connecting": player_trait.get("Connecting", "")
+            }
+            
+            aerial_substats = {
+                "Marking": player_trait.get("Marking", ""),
+                "Contested": player_trait.get("Contested", ""),
+                "Moks": player_trait.get("Moks", ""),
+                "Ruck": player_trait.get("Ruck", "")
+            }
+            
+            defence_substats = {
+                "Pressure": player_trait.get("Pressure", ""),
+                "Tackling": player_trait.get("Tackling", ""),
+                "Intercepting": player_trait.get("Intercepting", ""),
+                "Neutralise": player_trait.get("Neutralise", "")
+            }
+            
+            # Create trait cards with sub-stats
+            trait_cards = []
+            
+            trait_data = [
+                ("Ball Winning", ball_winning, "#0066CC", ball_winning_substats),
+                ("Ball Use", ball_use, "#009933", ball_use_substats),
+                ("Aerial", aerial, "#FFEB3B", aerial_substats),
+                ("Defence", defence, "#CC0000", defence_substats),
+            ]
+            
+            for trait_name, trait_value, trait_color, substats in trait_data:
+                if trait_value not in [None, ""] and pd.notna(trait_value):
+                    try:
+                        trait_val = float(trait_value)
+                        trait_label = get_trait_label(trait_val)
+                        # Convert hex to RGB for gradient
+                        r, g, b = int(trait_color.lstrip('#')[:2], 16), int(trait_color.lstrip('#')[2:4], 16), int(trait_color.lstrip('#')[4:], 16)
+                        
+                        # Build sub-stats HTML
+                        substats_html = ""
+                        for substat_name, substat_value in substats.items():
+                            if substat_value not in [None, ""] and pd.notna(substat_value):
+                                try:
+                                    substat_val = float(substat_value)
+                                    substat_label = get_trait_label(substat_val)
+                                    substats_html += f"""<div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>{substat_name}</div>
+<div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>{substat_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span></div>
+</div>"""
+                                except:
+                                    pass
+                        
+                        trait_cards.append(f"""
+                        <div style='background: linear-gradient(135deg, rgba({r},{g},{b},0.3) 0%, rgba({r},{g},{b},0.1) 100%);
+                                    border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
+                                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
+                            <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>{trait_name}</div>
+                            <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
+                            <div style='color: rgba(255, 255, 255, 0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>{trait_label}</div>
+                            {substats_html}
+                        </div>
+                        """)
+                    except:
+                        trait_cards.append(f"""
+                        <div style='background: linear-gradient(135deg, rgba(100,100,100,0.3) 0%, rgba(100,100,100,0.1) 100%);
+                                    border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
+                            <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px;'>{trait_name}</div>
+                            <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_value}</div>
+                        </div>
+                        """)
+            
+            # Display trait cards in a 2x2 grid
+            if trait_cards:
+                col1, col2 = st.columns(2)
+                for i, card in enumerate(trait_cards):
+                    if i % 2 == 0:
+                        col1.markdown(card, unsafe_allow_html=True)
+                    else:
+                        col2.markdown(card, unsafe_allow_html=True)
+    except Exception as e:
+        # If traits data not available, silently skip this section
+        pass
+
+
+# ================= PLAYER TRAITS =================
+
+elif page == "Player Traits":
+    st.title("🎯 Player Traits")
+    
+    # Load data
+    traits_df = load_traits()
+    if traits_df.empty:
+        st.error("Could not load traits data.")
+        st.stop()
+    
+    # Load player ratings for name format and additional info
+    player_ratings_2025 = load_players(2025)
+    
+    # Create reverse team code mapping (AFC -> Adelaide, etc.)
+    TEAM_CODE_TO_NAME = {
+        "AFC": "Adelaide",
+        "BFC": "Brisbane",
+        "CFC": "Carlton",
+        "COFC": "Collingwood",
+        "EFC": "Essendon",
+        "FRFC": "Fremantle",
+        "GFC": "Geelong",
+        "GCFC": "Gold Coast",
+        "GWS": "GWS Giants",
+        "HFC": "Hawthorn",
+        "MFC": "Melbourne",
+        "NMFC": "North Melbourne",
+        "PAFC": "Port Adelaide",
+        "RFC": "Richmond",
+        "SKFC": "St Kilda",
+        "SFC": "Sydney",
+        "WCFC": "West Coast",
+        "WBFC": "Western Bulldogs",
+    }
+    
+    # Map abbreviated team names to full names
+    traits_df["Team_Full"] = traits_df["Team"].map(TEAM_CODE_TO_NAME)
+    
+    # Function to match abbreviated player name to full name
+    def find_full_player_name(abbreviated_name, team_full_name, player_ratings_df):
+        """
+        Match abbreviated name like 'R. Laird' to full name like 'Rory Laird'
+        """
+        # Extract last name from abbreviated format
+        parts = abbreviated_name.split('. ')
+        if len(parts) != 2:
+            return abbreviated_name
+        
+        initial = parts[0]
+        last_name = parts[1]
+        
+        # Filter by team first if we have it
+        if team_full_name and not pd.isna(team_full_name):
+            team_players = player_ratings_df[player_ratings_df["Team"] == team_full_name]
+        else:
+            team_players = player_ratings_df
+        
+        # Look for players with matching last name and first initial
+        for idx, player_row in team_players.iterrows():
+            full_name = player_row["Player"]
+            # Split on space or hyphen to handle names like "Neal-Bullen"
+            name_parts = full_name.split()
+            if name_parts:
+                first_name = name_parts[0]
+                # Get the rest as last name (could be hyphenated)
+                player_last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ""
+                
+                # Check if first initial matches and last name matches
+                if first_name and first_name[0].upper() == initial.upper() and player_last_name.upper() == last_name.upper():
+                    return full_name
+        
+        # If no match found, return the abbreviated name
+        return abbreviated_name
+    
+    # Get unique teams from traits data (using full names)
+    teams = sorted(traits_df["Team_Full"].dropna().unique())
+    
+    # Team selection - use default_team from Home page if available
+    default_idx = 0
+    if "default_team" in st.session_state and st.session_state.default_team in teams:
+        default_idx = teams.index(st.session_state.default_team)
+    
+    selected_team_full = st.selectbox("Select Team", teams, index=default_idx)
+    
+    # Filter traits by team
+    team_traits = traits_df[traits_df["Team_Full"] == selected_team_full].copy()
+    
+    if team_traits.empty:
+        st.warning("No players found for this team.")
+        st.stop()
+    
+    # Get unique seasons (should be just 2025 for now)
+    seasons = sorted(team_traits["Season"].dropna().unique(), reverse=True)
+    selected_season = st.selectbox("Select Season", seasons)
+    
+    # Filter by season
+    season_traits = team_traits[team_traits["Season"] == selected_season].copy()
+    
+    if season_traits.empty:
+        st.warning("No data for this season.")
+        st.stop()
+    
+    # Map abbreviated player names to full names for display
+    season_traits["Player_Full"] = season_traits.apply(
+        lambda row: find_full_player_name(row["Player"], row["Team_Full"], player_ratings_2025),
+        axis=1
+    )
+    
+    # Get player names (show full names in dropdown)
+    player_names_display = sorted(season_traits["Player_Full"].dropna().unique())
+    selected_player_full = st.selectbox("Select Player", player_names_display)
+    
+    # Get player data
+    player_trait = season_traits[season_traits["Player_Full"] == selected_player_full].iloc[0]
+    
+    # Try to match with player ratings for standardized name and additional info
+    player_rating_match = player_ratings_2025[player_ratings_2025["Player"] == selected_player_full]
+    
+    # Use player ratings data if available, otherwise fall back to traits data
+    if not player_rating_match.empty:
+        player_rating = player_rating_match.iloc[0]
+        display_name = player_rating["Player"]
+        # Prefer position from player ratings (full name format)
+        position = player_rating.get("Position", "")
+        if not position or pd.isna(position):
+            position = player_trait.get("Position", "")
+        age = player_rating.get("Age", player_trait.get("Age", ""))
+        matches = player_rating.get("Matches", player_trait.get("Total Appearances", ""))
+        # Always use rating from traits spreadsheet
+        rating = player_trait.get("Rating", "")
+    else:
+        display_name = selected_player_full
+        position = player_trait.get("Position", "")
+        age = player_trait.get("Age", "")
+        matches = player_trait.get("Total Appearances", "")
+        rating = player_trait.get("Rating", "")
+    
+    # Get trait values
+    ball_winning = player_trait.get("Ball Winning", "")
+    ball_use = player_trait.get("Ball Use", "")
+    aerial = player_trait.get("Aerial", "")
+    defence = player_trait.get("Defence", "")
+    
+    # Calculate overall trait ranking (by Rating)
+    all_traits_sorted = traits_df.copy()
+    all_traits_sorted["Rating"] = pd.to_numeric(all_traits_sorted["Rating"], errors="coerce")
+    all_traits_sorted = all_traits_sorted.dropna(subset=["Rating"])
+    all_traits_sorted = all_traits_sorted.sort_values("Rating", ascending=False).reset_index(drop=True)
+    
+    # Map full names for ranking
+    all_traits_sorted["Player_Full"] = all_traits_sorted.apply(
+        lambda row: find_full_player_name(row["Player"], row.get("Team_Full"), player_ratings_2025),
+        axis=1
+    )
+    
+    try:
+        overall_rank = all_traits_sorted[all_traits_sorted["Player_Full"] == selected_player_full].index[0] + 1
+    except:
+        overall_rank = None
+    
+    # Calculate position ranking (use position from player ratings if available)
+    if position:
+        # First try to match by the position abbreviation in traits
+        position_traits = traits_df[traits_df["Position"] == player_trait.get("Position", "")].copy()
+        position_traits["Rating"] = pd.to_numeric(position_traits["Rating"], errors="coerce")
+        position_traits = position_traits.dropna(subset=["Rating"])
+        position_traits = position_traits.sort_values("Rating", ascending=False).reset_index(drop=True)
+        
+        # Map full names for ranking
+        position_traits["Player_Full"] = position_traits.apply(
+            lambda row: find_full_player_name(row["Player"], row.get("Team_Full"), player_ratings_2025),
+            axis=1
+        )
+        
+        try:
+            position_rank = position_traits[position_traits["Player_Full"] == selected_player_full].index[0] + 1
+        except:
+            position_rank = None
+    else:
+        position_rank = None
+    
+    # Helper function for ordinal numbers
+    def get_ordinal(n):
+        if pd.isna(n) or n is None:
+            return "N/A"
+        n = int(n)
+        if 10 <= n % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return f"{n}{suffix}"
+    
+    # Helper function for trait/rating labels
+    def get_trait_label(value):
+        """Get label based on trait value"""
+        try:
+            val = float(value)
+            if val > 3.0:
+                return "Elite"
+            elif val >= 2.5:
+                return "Above Average"
+            elif val >= 2.0:
+                return "Below Average"
+            else:
+                return "Poor"
+        except:
+            return ""
+    
+    st.markdown("---")
+    
+    # Layout: Photo/Logo on left, Info on right
+    col_photo, col_info = st.columns([1, 3])
+    
+    # Team logo (centered above photo) - use full team name
+    team_name_full = player_trait["Team_Full"]
+    if team_name_full and not pd.isna(team_name_full):
+        _, logo_col, _ = col_photo.columns([1, 2, 1])
+        display_logo(team_name_full, logo_col, size=160)
+    
+    # Player photo - use full player name
+    display_player_photo(selected_player_full, col_photo, use_container_width=True)
+    
+    # Header with player name
+    header_html = f"""
+    <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+                border-left: 5px solid #FFFFFF; padding: 20px; border-radius: 12px; margin-bottom: 20px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
+        <h2 style='color: #FFFFFF; margin: 0; font-size: 2.2em; font-weight: 900;'>{display_name}</h2>
+    </div>
+    """
+    col_info.markdown(header_html, unsafe_allow_html=True)
+    
+    # Team and Position cards
+    info_cards = []
+    if team_name_full and not pd.isna(team_name_full):
+        info_cards.append(f"""
+        <div style='background: linear-gradient(135deg, #2a2a2a 0%, #404040 100%);
+                    border-left: 4px solid #CCCCCC; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.85em; margin-bottom: 4px;'>TEAM</div>
+            <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{team_name_full}</div>
+        </div>
+        """)
+    
+    if position:
+        info_cards.append(f"""
+        <div style='background: linear-gradient(135deg, rgba(180, 83, 9, 0.8) 0%, rgba(245, 158, 11, 0.6) 100%);
+                    border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.85em; margin-bottom: 4px;'>POSITION</div>
+            <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{position}</div>
+        </div>
+        """)
+    
+    if info_cards:
+        col_info.markdown(''.join(info_cards), unsafe_allow_html=True)
+    
+    # Stats grid (Age, Season, Games only - smaller stats)
+    stats_grid = []
+    
+    # Age
+    if age not in [None, ""] and pd.notna(age):
+        try:
+            age_val = float(age)
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age_val:.1f}</div>
+</div>""")
+        except:
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age}</div>
+</div>""")
+    
+    # Season
+    if selected_season not in [None, ""] and pd.notna(selected_season):
+        stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>SEASON</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(selected_season)}</div>
+</div>""")
+    
+    # Games
+    if matches not in [None, ""] and pd.notna(matches):
+        try:
+            matches_val = int(float(matches))
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches_val}</div>
+</div>""")
+        except:
+            stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches}</div>
+</div>""")
+    
+    # Display smaller stats grid
+    if stats_grid:
+        grid_html = f"""
+        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;'>
+            {''.join(stats_grid)}
+        </div>
+        """
+        col_info.markdown(grid_html, unsafe_allow_html=True)
+    
+    # Key Metrics Section (Rating, Overall Rank, Position Rank) - Large and Prominent
+    st.markdown("---")
+    st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>⭐ Key Performance Metrics</h3>", unsafe_allow_html=True)
+    
+    key_metrics = []
+    
+    # Rating (large, color-coded with label)
+    if rating not in [None, ""] and pd.notna(rating):
+        try:
+            rating_val = float(rating)
+            all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna()
+            bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
+            rating_label = get_trait_label(rating_val)
+            
+            # Determine gradient based on color
+            if bg_color == "#008000":  # dark green
+                rating_gradient = "rgba(0,128,0,0.3)"
+            elif bg_color == "#90EE90":  # light green
+                rating_gradient = "rgba(144,238,144,0.3)"
+            elif bg_color == "#FFA500":  # orange
+                rating_gradient = "rgba(255,165,0,0.3)"
+            else:  # red
+                rating_gradient = "rgba(255,0,0,0.3)"
+            
+            key_metrics.append(f"""
+            <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
+                        border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+                <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
+                <div style='color: {text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+                <div style='color: {text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
+            </div>
+            """)
+        except:
+            pass
+    
+    # Overall Rank (large)
+    if overall_rank:
+        key_metrics.append(f"""
+        <div style='background: linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%);
+                    border-left: 5px solid #FFD700; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+            <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>OVERALL RANK</div>
+            <div style='color: #FFD700; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(overall_rank)}</div>
+            <div style='color: rgba(255,215,0,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>Out of {len(all_traits_sorted)} Players</div>
+        </div>
+        """)
+    
+    # Position Rank (large)
+    if position_rank and position:
+        key_metrics.append(f"""
+        <div style='background: linear-gradient(135deg, rgba(100,149,237,0.25) 0%, rgba(100,149,237,0.05) 100%);
+                    border-left: 5px solid #6495ED; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+            <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>POSITION RANK</div>
+            <div style='color: #6495ED; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(position_rank)}</div>
+            <div style='color: rgba(100,149,237,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>{position}</div>
+        </div>
+        """)
+    
+    # Display key metrics in a 3-column grid
+    if key_metrics:
+        col1, col2, col3 = st.columns(3)
+        if len(key_metrics) > 0:
+            col1.markdown(key_metrics[0], unsafe_allow_html=True)
+        if len(key_metrics) > 1:
+            col2.markdown(key_metrics[1], unsafe_allow_html=True)
+        if len(key_metrics) > 2:
+            col3.markdown(key_metrics[2], unsafe_allow_html=True)
+    
+    # Trait Values Section
+    st.markdown("---")
+    st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>", unsafe_allow_html=True)
+    
+    # Get sub-stats for each trait
+    ball_winning_substats = {
+        "Stoppage": player_trait.get("Stoppage", ""),
+        "Contest": player_trait.get("Contest", ""),
+        "Power": player_trait.get("Power", ""),
+        "Receives": player_trait.get("Receives", "")
+    }
+    
+    ball_use_substats = {
+        "Handballing": player_trait.get("Handballing", ""),
+        "Kicking": player_trait.get("Kicking", ""),
+        "Goal Kicking": player_trait.get("Goal Kicking", ""),
+        "Connecting": player_trait.get("Connecting", "")
+    }
+    
+    aerial_substats = {
+        "Marking": player_trait.get("Marking", ""),
+        "Contested": player_trait.get("Contested", ""),
+        "Moks": player_trait.get("Moks", ""),
+        "Ruck": player_trait.get("Ruck", "")
+    }
+    
+    defence_substats = {
+        "Pressure": player_trait.get("Pressure", ""),
+        "Tackling": player_trait.get("Tackling", ""),
+        "Intercepting": player_trait.get("Intercepting", ""),
+        "Neutralise": player_trait.get("Neutralise", "")
+    }
+    
+    # Create trait cards with sub-stats
+    trait_cards = []
+    
+    trait_data = [
+        ("Ball Winning", ball_winning, "#0066CC", ball_winning_substats),
+        ("Ball Use", ball_use, "#009933", ball_use_substats),
+        ("Aerial", aerial, "#FFEB3B", aerial_substats),
+        ("Defence", defence, "#CC0000", defence_substats),
+    ]
+    
+    for trait_name, trait_value, trait_color, substats in trait_data:
+        if trait_value not in [None, ""] and pd.notna(trait_value):
+            try:
+                trait_val = float(trait_value)
+                trait_label = get_trait_label(trait_val)
+                # Convert hex to RGB for gradient
+                r, g, b = int(trait_color.lstrip('#')[:2], 16), int(trait_color.lstrip('#')[2:4], 16), int(trait_color.lstrip('#')[4:], 16)
+                
+                # Build sub-stats HTML
+                substats_html = ""
+                for substat_name, substat_value in substats.items():
+                    if substat_value not in [None, ""] and pd.notna(substat_value):
+                        try:
+                            substat_val = float(substat_value)
+                            substat_label = get_trait_label(substat_val)
+                            substats_html += f"""<div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>
+<div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>{substat_name}</div>
+<div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>{substat_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span></div>
+</div>"""
+                        except:
+                            pass
+                
+                trait_cards.append(f"""
+                <div style='background: linear-gradient(135deg, rgba({r},{g},{b},0.3) 0%, rgba({r},{g},{b},0.1) 100%);
+                            border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
+                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>{trait_name}</div>
+                    <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
+                    <div style='color: rgba(255, 255, 255, 0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>{trait_label}</div>
+                    {substats_html}
+                </div>
+                """)
+            except:
+                trait_cards.append(f"""
+                <div style='background: linear-gradient(135deg, rgba(100,100,100,0.3) 0%, rgba(100,100,100,0.1) 100%);
+                            border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
+                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px;'>{trait_name}</div>
+                    <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_value}</div>
+                </div>
+                """)
+    
+    # Display trait cards in a 2x2 grid
+    if trait_cards:
+        col1, col2 = st.columns(2)
+        for i, card in enumerate(trait_cards):
+            if i % 2 == 0:
+                col1.markdown(card, unsafe_allow_html=True)
+            else:
+                col2.markdown(card, unsafe_allow_html=True)
 
 
 # ================= DEPTH CHART =================
