@@ -6,7 +6,7 @@
 set -e
 
 CONDA_ENV="afl"
-STREAMLIT_PORT="8501"
+STREAMLIT_PORT="8502"
 
 # Source conda initialization
 eval "$(conda shell.bash hook)"

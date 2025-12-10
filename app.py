@@ -3897,7 +3897,7 @@ elif page == "Player Profile":
             rating_2025_val = float(rating_2025)
             # Color based on all players in competition
             bg, fg = rating_colour_for_value(rating_2025_val, players_full["RatingPoints_Avg"])
-            
+
             # Calculate positional ranking for 2025
             if latest_position:
                 position_players_2025 = players_full[
@@ -3911,7 +3911,7 @@ elif page == "Player Profile":
                     pos_rank = None
             else:
                 pos_rank = None
-            
+
             # Calculate overall ranking for 2025
             all_players_2025 = players_full[players_full["Season"] == 2025]
             if not all_players_2025.empty:
@@ -3919,7 +3919,7 @@ elif page == "Player Profile":
                 overall_rank = all_players_2025[all_players_2025["Player"] == selected_player].index[0] + 1 if selected_player in all_players_2025["Player"].values else None
             else:
                 overall_rank = None
-            
+
             # Helper function for ordinal suffix
             def get_ordinal(n):
                 if 10 <= n % 100 <= 20:
@@ -3927,21 +3927,21 @@ elif page == "Player Profile":
                 else:
                     suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
                 return f"{n}{suffix}"
-            
-            # Gradient background based on rating tier
-            if bg == "#006400":  # dark green
-                card_gradient = "linear-gradient(135deg, rgba(0,100,0,0.3) 0%, rgba(0,100,0,0.1) 100%)"
-                border_color = "#00AA00"
+
+            # Gradient background based on rating tier (match rating_colour_for_value)
+            if bg == "#008000":  # dark green
+                card_gradient = "linear-gradient(135deg, rgba(0,128,0,0.3) 0%, rgba(0,128,0,0.1) 100%)"
+                border_color = "#008000"
             elif bg == "#90EE90":  # light green
                 card_gradient = "linear-gradient(135deg, rgba(144,238,144,0.3) 0%, rgba(144,238,144,0.1) 100%)"
                 border_color = "#90EE90"
-            elif bg == "orange":
+            elif bg == "#FFA500":  # orange
                 card_gradient = "linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.1) 100%)"
                 border_color = "#FFA500"
             else:  # red
                 card_gradient = "linear-gradient(135deg, rgba(255,0,0,0.3) 0%, rgba(255,0,0,0.1) 100%)"
-                border_color = "#DD0000"
-            
+                border_color = "#FF0000"
+
             rating_html = f"""
             <div style='background: {card_gradient}; border-left: 4px solid {border_color};
                         padding: 15px; border-radius: 10px; margin-bottom: 10px;'>
@@ -3950,7 +3950,7 @@ elif page == "Player Profile":
             </div>
             """
             col_meta.markdown(rating_html, unsafe_allow_html=True)
-            
+
             # Rankings with badges
             ranking_parts = []
             if pos_rank:
@@ -4546,9 +4546,20 @@ elif page == "Player Traits":
     st.title("🎯 Player Traits")
     
     # Season selection (before loading data)
-    available_seasons = [2025, 2024]
+    def get_trait_seasons():
+        try:
+            xl = pd.ExcelFile("2025 Traits.xlsx")
+            seasons = []
+            for s in xl.sheet_names:
+                if str(s).isdigit():
+                    seasons.append(int(s))
+            return sorted(seasons, reverse=True)
+        except Exception:
+            return [2025, 2024]
+
+    available_seasons = get_trait_seasons()
     selected_season = st.selectbox("Select Season", available_seasons, index=0)
-    
+
     # Load data for selected season
     traits_df = load_traits(selected_season)
     if traits_df.empty:
@@ -4642,8 +4653,12 @@ elif page == "Player Traits":
         axis=1
     )
     
-    # Get player names (show full names in dropdown)
-    player_names_display = sorted(team_traits["Player_Full"].dropna().unique())
+    # Restrict selectable players for 2021-2024 to those present in 2025
+    if selected_season in [2021, 2022, 2023, 2024]:
+        valid_players_2025 = set(player_ratings_2025["Player"].dropna().unique())
+        player_names_display = sorted([name for name in team_traits["Player_Full"].dropna().unique() if name in valid_players_2025])
+    else:
+        player_names_display = sorted(team_traits["Player_Full"].dropna().unique())
     selected_player_full = st.selectbox("Select Player", player_names_display)
     
     # Get player data
