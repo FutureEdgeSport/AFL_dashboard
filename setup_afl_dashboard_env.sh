@@ -15,9 +15,14 @@ conda env create -f environment.yml || conda env update -f environment.yml
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate afl
 
-# 4. (Re)install pip requirements for safety (if needed)
-pip install --upgrade pip
-pip install -r requirements.txt
+# 4. Optional: pip extras
+#
+# IMPORTANT: avoid `pip install -r requirements.txt` inside this conda env.
+# Mixing conda + pip for compiled packages (numpy/pyarrow/pandas) is a common
+# cause of ABI/import errors on macOS (e.g. "numpy.core.multiarray failed to import").
+#
+# If you *must* install a pure-python helper lib, do it ad-hoc:
+#   pip install <package>
 
 # 5. Set protobuf workaround for macOS
 export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python

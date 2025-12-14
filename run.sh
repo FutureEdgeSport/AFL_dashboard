@@ -6,7 +6,9 @@
 set -e
 
 CONDA_ENV="afl"
-STREAMLIT_PORT="8502"
+STREAMLIT_PORT="8501"
+
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Source conda initialization
 eval "$(conda shell.bash hook)"
@@ -23,4 +25,4 @@ echo "   Port: $STREAMLIT_PORT"
 echo "   Local URL: http://localhost:$STREAMLIT_PORT"
 echo ""
 
-python -m streamlit run app.py --server.port "$STREAMLIT_PORT"
+python -m streamlit run "$ROOT_DIR/app.py" --server.port "$STREAMLIT_PORT"

@@ -1,11 +1,122 @@
+from pathlib import Path
+
 import os
 import warnings
 import math
-
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+
+# -------------------------
+# Global season defaults (safe)
+# -------------------------
+def get_default_season() -> int:
+    if "TEAM_SEASONS" in globals():
+        try:
+            vals = [int(x) for x in TEAM_SEASONS]
+            if vals:
+                return max(vals)
+        except Exception:
+            pass
+    return 2025  # fallback
+
+if "selected_season" not in st.session_state:
+    st.session_state["selected_season"] = get_default_season()
+
+if "primary_season" not in st.session_state:
+    st.session_state["primary_season"] = st.session_state["selected_season"]
+
+
+BASE_DIR = Path(__file__).resolve().parent
+
+
+# --- PLAYER REGISTRY INTEGRATION HELPERS (STRICT) ---
+import string
+
+def make_name_key(name: str) -> str:
+    if not isinstance(name, str):
+        return ""
+    name = name.lower().strip()
+    name = name.translate(str.maketrans("", "", string.punctuation))
+    name = " ".join(name.split())
+    return name
+
+@st.cache_data(show_spinner=False)
+
+@st.cache_data
+
+@st.cache_data
+def load_player_registry():
+    """
+    Returns:
+      reg_df: DataFrame (player_registry sheet)
+      name_key_to_uid: dict (name_key/alias_key -> player_uid)  [safe, can be empty]
+      uid_to_name: dict (player_uid -> full_name_canonical)
+    """
+    try:
+        # Always load from the repo root file
+        path = BASE_DIR / "player_registry.xlsx"
+        if not path.exists():
+            st.error(f"Missing player registry file: {path}")
+            st.stop()
+
+        xl = pd.ExcelFile(path)
+
+        # Main sheet
+        sheet_name = "player_registry" if "player_registry" in xl.sheet_names else xl.sheet_names[0]
+        reg = xl.parse(sheet_name)
+
+        required = {"player_uid", "full_name_canonical"}
+        missing = [c for c in required if c not in reg.columns]
+        if missing:
+            st.error(f"player_registry.xlsx is missing required columns: {missing}")
+            st.stop()
+
+        # Trim whitespace in string columns
+        for c in reg.columns:
+            if reg[c].dtype == "object":
+                reg[c] = reg[c].astype(str).str.strip()
+
+        reg["player_uid"] = reg["player_uid"].astype(str).str.strip()
+        reg["full_name_canonical"] = reg["full_name_canonical"].astype(str).str.strip()
+
+        uid_to_name = dict(zip(reg["player_uid"], reg["full_name_canonical"]))
+
+        # Build name_key_to_uid safely (optional)
+        name_key_to_uid = {}
+
+        # If name_key exists in registry, use it
+        if "name_key" in reg.columns:
+            reg["name_key"] = reg["name_key"].astype(str).str.strip()
+            name_key_to_uid.update(dict(zip(reg["name_key"], reg["player_uid"])))
+
+        # If aliases sheet exists, add it
+        if "aliases" in xl.sheet_names:
+            aliases = xl.parse("aliases")
+            for c in aliases.columns:
+                if aliases[c].dtype == "object":
+                    aliases[c] = aliases[c].astype(str).str.strip()
+
+            if "alias_key" in aliases.columns and "player_uid" in aliases.columns:
+                for _, row in aliases.iterrows():
+                    ak = str(row["alias_key"]).strip()
+                    pu = str(row["player_uid"]).strip()
+                    if ak and ak.lower() != "nan" and pu and pu.lower() != "nan":
+                        name_key_to_uid[ak] = pu
+
+        return reg, name_key_to_uid, uid_to_name
+
+    except Exception as e:
+        st.error(f"Failed to load player_registry.xlsx: {e}")
+        st.stop()
+
+
+def attach_player_uid(df, name_col, name_key_to_uid):
+    df = df.copy()
+    df["_name_key"] = df[name_col].astype(str).map(make_name_key)
+    df["player_uid"] = df["_name_key"].map(name_key_to_uid)
+    return df
 
 try:
     from PIL import Image
@@ -447,7 +558,6 @@ def load_players(season: int) -> pd.DataFrame:
     xl = pd.ExcelFile(PLAYER_FILE)
     df = xl.parse(str(season))
     df = _normalise_rating_column(df)
-
     cols = [
         "Player",
         "Team",
@@ -465,18 +575,48 @@ def load_players(season: int) -> pd.DataFrame:
         "No",
     ]
     existing = [c for c in cols if c in df.columns]
-    return df[existing].copy()
+    df = df[existing].copy()
+    registry_df, name_key_to_uid, uid_to_name = load_player_registry()
+    name_col = "Player_Full" if "Player_Full" in df.columns else "Player"
+    df = attach_player_uid(df, name_col, name_key_to_uid)
+    if "_name_key" in df.columns:
+        df = df.drop(columns=["_name_key"])
+    return df
+
+@st.cache_data(show_spinner=False)
+def load_player_registry_df() -> pd.DataFrame:
+    """
+    Loads the player registry as a DataFrame only.
+    This is used by the Player Traits history table.
+    """
+    path = BASE_DIR / "player_registry.xlsx"  # <-- confirm filename
+
+    if not path.exists():
+        st.error(f"Missing player registry file: {path}")
+        st.stop()
+
+    df = pd.read_excel(path)
+
+    # Clean string columns
+    for c in df.columns:
+        if df[c].dtype == "object":
+            df[c] = df[c].astype(str).str.strip()
+
+    return df
 
 
 @st.cache_data
 def load_traits(season: int = 2025) -> pd.DataFrame:
     """Load the Traits data for the specified season."""
     try:
-        # Load from the appropriate sheet (2024 or 2025)
         df = pd.read_excel("2025 Traits.xlsx", sheet_name=str(season))
-        # Add Season column if not present
         if "Season" not in df.columns:
             df["Season"] = season
+        registry_df, name_key_to_uid, uid_to_name = load_player_registry()
+        name_col = "Player_Full" if "Player_Full" in df.columns else "Player"
+        df = attach_player_uid(df, name_col, name_key_to_uid)
+        if "_name_key" in df.columns:
+            df = df.drop(columns=["_name_key"])
         return df
     except Exception as e:
         st.error(f"Error loading traits data for {season}: {e}")
@@ -890,6 +1030,208 @@ def render_interactive_table(df: pd.DataFrame, exclude_cols=None, color_col=None
 
     gridOptions = gb.build()
     AgGrid(df2, gridOptions=gridOptions, allow_unsafe_jscode=True, fit_columns_on_grid_load=False)
+
+# ---------------- PLAYER TRAIT TABLE HELPERS --------------
+
+def _opacity_from_pct(pct: float) -> float:
+    # pct is 0..1 (higher is better)
+    if pd.isna(pct):
+        return 0.0
+    if pct >= 0.85:  # top 15%
+        return 1.0
+    if pct >= 0.65:  # next 20% (top 35%)
+        return 0.75
+    if pct >= 0.45:  # next 20% (top 55%)
+        return 0.50
+    return 0.25      # bottom 45%
+
+
+def _rgba(rgb, a: float) -> str:
+    r, g, b = rgb
+    return f"rgba({r},{g},{b},{a})"
+
+
+def build_player_traits_history_table(
+    traits_df: pd.DataFrame,
+    player_registry_df: pd.DataFrame,
+    selected_player_uid: str,
+    team_full_map: dict | None = None,
+    position_full_map: dict | None = None,
+):
+    import numpy as np
+    import pandas as pd
+
+    required_traits_cols = [
+        "player_uid", "Team", "Season", "Position",
+        "Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"
+    ]
+    missing = [c for c in required_traits_cols if c not in traits_df.columns]
+    if missing:
+        raise KeyError(f"Traits DF missing required columns: {missing}")
+
+    needed_reg = ["player_uid", "full_name_canonical"]
+    missing_reg = [c for c in needed_reg if c not in player_registry_df.columns]
+    if missing_reg:
+        raise KeyError(f"player_registry_df missing required columns: {missing_reg}")
+
+    # -------------------------
+    # Clean traits
+    # -------------------------
+    t_all = traits_df.copy()
+    t_all["player_uid"] = t_all["player_uid"].astype(str).str.strip()
+    t_all["Season"] = pd.to_numeric(t_all["Season"], errors="coerce")
+    t_all["Team"] = t_all["Team"].astype(str).str.strip()
+    t_all["Position"] = t_all["Position"].astype(str).str.strip()
+
+    for c in ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
+        t_all[c] = pd.to_numeric(t_all[c], errors="coerce")
+
+    # Registry
+    reg = player_registry_df[["player_uid", "full_name_canonical"]].copy()
+    reg["player_uid"] = reg["player_uid"].astype(str).str.strip()
+    reg["full_name_canonical"] = reg["full_name_canonical"].astype(str).str.strip()
+
+    # -------------------------
+    # Player seasons (dedupe to 1 row per Season)
+    # -------------------------
+    puid = str(selected_player_uid).strip()
+    t = t_all[t_all["player_uid"] == puid].copy()
+    if t.empty:
+        out_cols = ["Player name", "Club", "Season", "Position",
+                    "Rating", "Ball Winning Rating", "Ball Use Rating", "Aerial Rating", "Defence Rating"]
+        empty = pd.DataFrame(columns=out_cols)
+        return empty, ""
+
+    # choose best row per season for the player (highest Rating)
+    t = t.sort_values(["Season", "Rating"], ascending=[False, False]).drop_duplicates(
+        subset=["player_uid", "Season"], keep="first"
+    ).copy()
+
+    # attach full name
+    t = t.drop(columns=["full_name_canonical"], errors="ignore")
+    t = t.merge(reg, on="player_uid", how="left", validate="m:1")
+
+    # -------------------------
+    # Full team/position names
+    # -------------------------
+    if team_full_map:
+        t["Team_full"] = t["Team"].map(team_full_map).fillna(t["Team"])
+    else:
+        t["Team_full"] = t["Team"]
+
+    if position_full_map:
+        t["Position_full"] = t["Position"].map(position_full_map).fillna(t["Position"])
+    else:
+        t["Position_full"] = t["Position"]
+
+    # -------------------------
+    # Output DF
+    # -------------------------
+    out = pd.DataFrame({
+        "Player name": t["full_name_canonical"],
+        "Club": t["Team_full"],
+        "Season": t["Season"].astype("Int64"),
+        "Position": t["Position_full"],
+        "Rating": t["Rating"],
+        "Ball Winning Rating": t["Ball Winning"],
+        "Ball Use Rating": t["Ball Use"],
+        "Aerial Rating": t["Aerial"],
+        "Defence Rating": t["Defence"],
+    }).sort_values("Season", ascending=False).reset_index(drop=True)
+
+    # -------------------------
+    # Competition percentiles (DEDUPED to unique keys)
+    # -------------------------
+    comp = t_all.sort_values(["Season", "Rating"], ascending=[False, False]).drop_duplicates(
+        subset=["player_uid", "Season"], keep="first"
+    ).copy()
+
+    metric_map = {
+        "Rating": "Rating",
+        "Ball Winning Rating": "Ball Winning",
+        "Ball Use Rating": "Ball Use",
+        "Aerial Rating": "Aerial",
+        "Defence Rating": "Defence",
+    }
+
+    comp_pct = comp[["player_uid", "Season"]].copy()
+    for out_col, comp_col in metric_map.items():
+        comp_pct[f"{out_col}__pct"] = comp.groupby("Season")[comp_col].rank(pct=True, ascending=True)
+
+    pcts = t[["player_uid", "Season"]].merge(comp_pct, on=["player_uid", "Season"], how="left", validate="1:1")
+
+    # merge onto out by Season (stable order)
+    out["_Season_num"] = pd.to_numeric(out["Season"], errors="coerce")
+    pcts["_Season_num"] = pd.to_numeric(pcts["Season"], errors="coerce")
+
+    pct_cols = [f"{k}__pct" for k in metric_map.keys()]
+    out = out.merge(pcts[["_Season_num"] + pct_cols], on="_Season_num", how="left", validate="1:1").drop(
+        columns=["_Season_num"]
+    )
+
+    # -------------------------
+    # Inline-colour HTML renderer
+    # -------------------------
+    def opacity_from_pct(p):
+        if p is None or (isinstance(p, float) and np.isnan(p)):
+            return 0.25
+        if p >= 0.85:
+            return 1.0
+        if p >= 0.65:
+            return 0.75
+        if p >= 0.45:
+            return 0.50
+        return 0.25
+
+    base_colors = {
+        "Rating": (0, 0, 0),
+        "Ball Winning Rating": (0, 102, 204),
+        "Ball Use Rating": (0, 153, 0),
+        "Aerial Rating": (255, 204, 0),
+        "Defence Rating": (204, 0, 0),
+    }
+
+    display_cols = ["Player name", "Club", "Season", "Position"] + list(metric_map.keys())
+
+    def fmt2(x):
+        try:
+            return f"{float(x):.2f}"
+        except Exception:
+            return "—"
+
+    headers = "".join([f"<th>{c}</th>" for c in display_cols])
+
+    rows_html = []
+    for _, r in out[display_cols + pct_cols].iterrows():
+        tds = []
+        for c in display_cols:
+            if c in base_colors:
+                pct = r.get(f"{c}__pct", np.nan)
+                a = opacity_from_pct(pct)
+                rr, gg, bb = base_colors[c]
+                bg = f"rgba({rr},{gg},{bb},{a})"
+                text = "white" if (c == "Rating" and a >= 0.75) else "#111111"
+                val = fmt2(r.get(c))
+                tds.append(
+                    f"<td style='background-color:{bg} !important; color:{text} !important;"
+                    f" font-weight:800; text-align:center;'>{val}</td>"
+                )
+            else:
+                v = r.get(c, "—")
+                tds.append(f"<td style='text-align:center;'>{v}</td>")
+        rows_html.append("<tr>" + "".join(tds) + "</tr>")
+
+    table_html = (
+        "<table>"
+        "<thead><tr>" + headers + "</tr></thead>"
+        "<tbody>" + "".join(rows_html) + "</tbody>"
+        "</table>"
+    )
+
+    return out[display_cols], table_html
+
+
+
 
 
 # ---------------- DEPTH CHART HELPERS ----------------
@@ -1929,95 +2271,95 @@ if page == "Overview":
         }
         
         html_table = """<style>
-.overview-ladder-table {
-width: 100%;
-border-collapse: separate;
-border-spacing: 0;
-margin: 20px 0;
-box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-border-radius: 12px;
-overflow: hidden;
-background: #ffffff;
-font-size: 0.9em;
-}
-.overview-ladder-table thead {
-background: #f8f9fa;
-}
-.overview-ladder-table th {
-padding: 14px 8px;
-text-align: center;
-font-weight: 900;
-font-size: 0.85em;
-color: #FFFFFF;
-letter-spacing: 0.5px;
-border-right: 1px solid #e0e0e0;
-white-space: pre-line;
-line-height: 1.3;
-border-bottom: 2px solid #dee2e6;
-}
-.overview-ladder-table th:first-child {
-text-align: left;
-padding-left: 20px;
-background: #f8f9fa;
-}
-.overview-ladder-table th:last-child {
-border-right: none;
-}
-.overview-ladder-table td {
-padding: 12px 8px;
-text-align: center;
-font-size: 0.95em;
-font-weight: 700;
-border-bottom: 1px solid #f0f0f0;
-border-right: 1px solid #f5f5f5;
-}
-.overview-ladder-table td:first-child {
-text-align: left;
-padding-left: 20px;
-font-weight: 700;
-color: #1a1a1a;
-background: #fafafa !important;
-border-right: 2px solid #e0e0e0;
-}
-.overview-ladder-table td:last-child {
-border-right: none;
-}
-.overview-ladder-table tbody tr {
-background: #ffffff;
-transition: all 0.2s ease;
-}
-.overview-ladder-table tbody tr:hover {
-transform: scale(1.002);
-box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-background: #fafafa;
-}
-.rank-badge {
-display: inline-block;
-padding: 4px 10px;
-border-radius: 6px;
-font-weight: 800;
-font-size: 0.85em;
-margin-right: 6px;
-box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-.league-avg-row {
-background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
-border-top: 3px solid #FFD700 !important;
-}
-.league-avg-row td {
-font-weight: 800 !important;
-color: #FFFFFF !important;
-font-size: 1.05em !important;
-}
-.league-avg-row:hover {
-background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
-transform: none !important;
-}
-</style>
-<table class='overview-ladder-table'>
-<thead>
-<tr>
-"""
+        overview-ladder-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 20px 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+        font-size: 0.9em;
+        }
+        .overview-ladder-table thead {
+        background: #f8f9fa;
+        }
+        .overview-ladder-table th {
+        padding: 14px 8px;
+        text-align: center;
+        font-weight: 900;
+        font-size: 0.85em;
+        color: #FFFFFF;
+        letter-spacing: 0.5px;
+        border-right: 1px solid #e0e0e0;
+        white-space: pre-line;
+        line-height: 1.3;
+        border-bottom: 2px solid #dee2e6;
+        }
+        .overview-ladder-table th:first-child {
+        text-align: left;
+        padding-left: 20px;
+        background: #f8f9fa;
+        }
+        .overview-ladder-table th:last-child {
+        border-right: none;
+        }
+        .overview-ladder-table td {
+        padding: 12px 8px;
+        text-align: center;
+        font-size: 0.95em;
+        font-weight: 700;
+        border-bottom: 1px solid #f0f0f0;
+        border-right: 1px solid #f5f5f5;
+        }
+        .overview-ladder-table td:first-child {
+        text-align: left;
+        padding-left: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        background: #fafafa !important;
+        border-right: 2px solid #e0e0e0;
+        }
+        .overview-ladder-table td:last-child {
+        border-right: none;
+        }
+        .overview-ladder-table tbody tr {
+        background: #ffffff;
+        transition: all 0.2s ease;
+        }
+        .overview-ladder-table tbody tr:hover {
+        transform: scale(1.002);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background: #fafafa;
+        }
+        .rank-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 800;
+        font-size: 0.85em;
+        margin-right: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .league-avg-row {
+        background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
+        border-top: 3px solid #FFD700 !important;
+        }
+        .league-avg-row td {
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        font-size: 1.05em !important;
+        }
+        .league-avg-row:hover {
+        background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%) !important;
+        transform: none !important;
+        }
+        </style>
+        <table class='overview-ladder-table'>
+        <thead>
+        <tr>
+        """
         
         # Helper function to darken a hex color by a percentage
         def darken_color(hex_color, factor=0.4):
@@ -4542,34 +4884,72 @@ elif page == "Player Profile":
 
 # ================= PLAYER TRAITS =================
 
+# ================= PLAYER TRAITS =================
 elif page == "Player Traits":
+
+    # Always define this early so Pylance + runtime are happy
+    player_ratings_primary = pd.DataFrame()
+
+
+    st.markdown("""
+    <style>
+    /* Wrapper */
+    .traits-card-table table {
+        width: 100%;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border-radius: 16px;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(22,22,22,0.98) 0%, rgba(48,48,48,0.75) 100%);
+        box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+    }
+
+    /* Header */
+    .traits-card-table th {
+        background: rgba(255,255,255,0.08);
+        color: #FFFFFF;
+        font-weight: 800;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        padding: 14px 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* Cells – DO NOT set background-color */
+    .traits-card-table td {
+        color: #EDEDED;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 12px 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        background-clip: padding-box;
+    }
+
+    /* Identity columns */
+    .traits-card-table td:nth-child(1),
+    .traits-card-table td:nth-child(2),
+    .traits-card-table td:nth-child(4) {
+        text-align: left;
+        font-weight: 700;
+    }
+
+    /* Hover */
+    .traits-card-table tbody tr:hover {
+        background: rgba(255,255,255,0.04);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+    
     st.title("🎯 Player Traits")
-    
-    # Season selection (before loading data)
-    def get_trait_seasons():
-        try:
-            xl = pd.ExcelFile("2025 Traits.xlsx")
-            seasons = []
-            for s in xl.sheet_names:
-                if str(s).isdigit():
-                    seasons.append(int(s))
-            return sorted(seasons, reverse=True)
-        except Exception:
-            return [2025, 2024]
 
-    available_seasons = get_trait_seasons()
-    selected_season = st.selectbox("Select Season", available_seasons, index=0)
-
-    # Load data for selected season
-    traits_df = load_traits(selected_season)
-    if traits_df.empty:
-        st.error("Could not load traits data.")
-        st.stop()
-    
-    # Load player ratings for name format and additional info
-    player_ratings_2025 = load_players(2025)
-    
-    # Create reverse team code mapping (AFC -> Adelaide, etc.)
+    # -------------------------
+    # Config / season selection
+    # -------------------------
     TEAM_CODE_TO_NAME = {
         "AFC": "Adelaide",
         "BFC": "Brisbane",
@@ -4590,188 +4970,360 @@ elif page == "Player Traits":
         "WCFC": "West Coast",
         "WBFC": "Western Bulldogs",
     }
-    
-    # Map abbreviated team names to full names
-    traits_df["Team_Full"] = traits_df["Team"].map(TEAM_CODE_TO_NAME)
-    
-    # Function to match abbreviated player name to full name
-    def find_full_player_name(abbreviated_name, team_full_name, player_ratings_df):
-        """
-        Match abbreviated name like 'R. Laird' to full name like 'Rory Laird'
-        """
-        # Extract last name from abbreviated format
-        parts = abbreviated_name.split('. ')
-        if len(parts) != 2:
-            return abbreviated_name
-        
-        initial = parts[0]
-        last_name = parts[1]
-        
-        # Filter by team first if we have it
-        if team_full_name and not pd.isna(team_full_name):
-            team_players = player_ratings_df[player_ratings_df["Team"] == team_full_name]
-        else:
-            team_players = player_ratings_df
-        
-        # Look for players with matching last name and first initial
-        for idx, player_row in team_players.iterrows():
-            full_name = player_row["Player"]
-            # Split on space or hyphen to handle names like "Neal-Bullen"
-            name_parts = full_name.split()
-            if name_parts:
-                first_name = name_parts[0]
-                # Get the rest as last name (could be hyphenated)
-                player_last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ""
-                
-                # Check if first initial matches and last name matches
-                if first_name and first_name[0].upper() == initial.upper() and player_last_name.upper() == last_name.upper():
-                    return full_name
-        
-        # If no match found, return the abbreviated name
-        return abbreviated_name
-    
-    # Get unique teams from traits data (using full names)
-    teams = sorted(traits_df["Team_Full"].dropna().unique())
-    
-    # Team selection - use default_team from Home page if available
-    default_idx = 0
-    if "default_team" in st.session_state and st.session_state.default_team in teams:
-        default_idx = teams.index(st.session_state.default_team)
-    
-    selected_team_full = st.selectbox("Select Team", teams, index=default_idx)
-    
-    # Filter traits by team
-    team_traits = traits_df[traits_df["Team_Full"] == selected_team_full].copy()
-    
-    if team_traits.empty:
-        st.warning("No players found for this team.")
-        st.stop()
-    
-    # Map abbreviated player names to full names for display
-    team_traits["Player_Full"] = team_traits.apply(
-        lambda row: find_full_player_name(row["Player"], row["Team_Full"], player_ratings_2025),
-        axis=1
+
+    available_seasons = sorted(list(TEAM_SEASONS), reverse=True) if "TEAM_SEASONS" in globals() else [2025, 2024]
+
+    # Primary season drives the cards/ranks on the page
+    primary_season = st.selectbox("Select Season", available_seasons, index=0, key="traits_primary_season")
+
+    # History seasons drives the bottom history table (multi-season)
+    default_history = [s for s in available_seasons if s >= (primary_season - 2)]
+    history_seasons = st.multiselect(
+        "History Seasons (for table)",
+        options=available_seasons,
+        default=default_history if default_history else [primary_season],
+        key="traits_history_seasons",
     )
-    
-    # Restrict selectable players for 2021-2024 to those present in 2025
-    if selected_season in [2021, 2022, 2023, 2024]:
-        valid_players_2025 = set(player_ratings_2025["Player"].dropna().unique())
-        player_names_display = sorted([name for name in team_traits["Player_Full"].dropna().unique() if name in valid_players_2025])
+    if not history_seasons:
+        history_seasons = [primary_season]
+
+    # -------------------------
+    # Load registry (authoritative identity)
+    # -------------------------
+    # Expect: returns a DataFrame only
+    player_registry_df = load_player_registry_df()
+    if player_registry_df is None or player_registry_df.empty:
+        st.error("Could not load player registry.")
+        st.stop()
+
+    # Ensure expected registry cols exist
+    for col in ["player_uid", "full_name_canonical"]:
+        if col not in player_registry_df.columns:
+            st.error(f"player_registry_df missing required column: {col}")
+            st.stop()
+
+    # uid -> display name map
+    uid_to_name = dict(
+        zip(
+            player_registry_df["player_uid"].astype(str).str.strip(),
+            player_registry_df["full_name_canonical"].astype(str).str.strip()
+        )
+    )
+
+    # -------------------------
+    # Load traits for PRIMARY season (cards/ranks)
+    # -------------------------
+    traits_df = load_traits(primary_season)
+    if traits_df is None or traits_df.empty:
+        st.error("Could not load traits data.")
+        st.stop()
+
+# Optional enrichment (safe)
+    _tmp = load_players(int(st.session_state.get("primary_season", st.session_state.get("selected_season", get_default_season()))))
+    if isinstance(_tmp, pd.DataFrame) and not _tmp.empty:
+        player_ratings_primary = _tmp
+
+    # -------------------------
+    # Primary season (safe)
+    # -------------------------
+    if "Season" in traits_df.columns and not traits_df["Season"].dropna().empty:
+        primary_season = int(
+            pd.to_numeric(traits_df["Season"], errors="coerce")
+            .dropna()
+            .max()
+        )
     else:
-        player_names_display = sorted(team_traits["Player_Full"].dropna().unique())
-    selected_player_full = st.selectbox("Select Player", player_names_display)
-    
-    # Get player data
-    player_trait = team_traits[team_traits["Player_Full"] == selected_player_full].iloc[0]
-    
-    # Try to match with player ratings for standardized name and additional info
-    player_rating_match = player_ratings_2025[player_ratings_2025["Player"] == selected_player_full]
-    
-    # Use player ratings data if available, otherwise fall back to traits data
-    if not player_rating_match.empty:
-        player_rating = player_rating_match.iloc[0]
-        display_name = player_rating["Player"]
-        # Prefer position from player ratings (full name format)
-        position = player_rating.get("Position", "")
-        if not position or pd.isna(position):
-            position = player_trait.get("Position", "")
-        age = player_rating.get("Age", player_trait.get("Age", ""))
-        matches = player_rating.get("Matches", player_trait.get("Total Appearances", ""))
-        # Always use rating from traits spreadsheet
-        rating = player_trait.get("Rating", "")
-    else:
-        display_name = selected_player_full
-        position = player_trait.get("Position", "")
-        age = player_trait.get("Age", "")
-        matches = player_trait.get("Total Appearances", "")
-        rating = player_trait.get("Rating", "")
-    
-    # Get trait values
+        primary_season = None
+
+
+
+
+    # Ensure Team_Full exists
+    if "Team" in traits_df.columns and "Team_Full" not in traits_df.columns:
+        traits_df["Team_Full"] = (
+            traits_df["Team"].astype(str).str.strip().map(TEAM_CODE_TO_NAME).fillna(traits_df["Team"])
+        )
+
+    # -------------------------
+    # Ensure player_uid exists in traits_df (hard requirement)
+    # -------------------------
+    if "player_uid" not in traits_df.columns:
+        st.error("Traits data is missing player_uid. You must merge registry into traits before this page can work.")
+        st.stop()
+
+    # Normalize uid
+    traits_df["player_uid"] = traits_df["player_uid"].astype(str).str.strip()
+
+    # -------------------------
+    # Team selection (UID-safe, season-aware)
+    # -------------------------
+    teams = sorted(traits_df["Team_Full"].dropna().unique().tolist())
+
+    default_team = st.session_state.get("default_team")
+    team_idx = teams.index(default_team) if default_team in teams else 0
+
+    selected_team_full = st.selectbox(
+        "Select Team",
+        teams,
+        index=team_idx,
+        key="traits_team_select",
+    )
+
+    # -------------------------
+    # Filter traits to PRIMARY season + team
+    # -------------------------
+    team_traits = traits_df[
+    (traits_df["Team_Full"] == selected_team_full) &
+    (pd.to_numeric(traits_df["Season"], errors="coerce") == int(primary_season))
+].copy()
+
+
+    if team_traits.empty:
+        st.warning("No players found for this team in the selected season.")
+        st.stop()
+
+    # Ensure UID is clean
+    team_traits["player_uid"] = team_traits["player_uid"].astype(str).str.strip()
+
+    # -------------------------
+    # Player selection (UID-first — FIXES surname collision bug)
+    # -------------------------
+    uid_options = sorted(
+        team_traits["player_uid"].dropna().unique().tolist(),
+        key=lambda u: uid_to_name.get(str(u), "")
+    )
+
+    if not uid_options:
+        st.warning("No players available for selection.")
+        st.stop()
+
+    prev_uid = st.session_state.get("selected_player_uid")
+    if prev_uid not in uid_options:
+        prev_uid = uid_options[0]
+
+    selected_player_uid = st.selectbox(
+        "Select Player",
+        uid_options,
+        index=uid_options.index(prev_uid),
+        format_func=lambda u: uid_to_name.get(str(u), f"UID {u}"),
+        key=f"traits_player_uid_{primary_season}_{selected_team_full}",
+    )
+
+    st.session_state["selected_player_uid"] = selected_player_uid
+    selected_player_full = uid_to_name.get(str(selected_player_uid), "")
+
+    # -------------------------
+    # Resolve selected player row (PRIMARY season)
+    # -------------------------
+    player_trait_df = team_traits[
+        team_traits["player_uid"].astype(str) == str(selected_player_uid)
+    ]
+
+    if player_trait_df.empty:
+        st.warning("Could not resolve selected player for this team/season.")
+        st.stop()
+
+    player_trait = player_trait_df.iloc[0]
+
+    # -------------------------
+    # Helper functions
+    # -------------------------
+
+    def get_ordinal(n):
+        """Convert integer to ordinal string (1 -> 1st, 2 -> 2nd, etc)."""
+        try:
+            n = int(n)
+        except Exception:
+            return "N/A"
+
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+
+        return f"{n}{suffix}"
+
+
+    def get_trait_label(value):
+        """Return qualitative label for a trait value."""
+        try:
+            val = float(value)
+        except Exception:
+            return ""
+
+        if val >= 3.0:
+            return "Elite"
+        elif val >= 2.5:
+            return "Above Average"
+        elif val >= 2.0:
+            return "Below Average"
+        else:
+            return "Poor"
+
+
+    def rating_colour_for_value(value, all_values):
+        """
+        Colour logic used by rating cards.
+        Returns (border_colour, text_colour).
+        """
+        try:
+            v = float(value)
+            series = pd.to_numeric(all_values, errors="coerce").dropna()
+        except Exception:
+            return "#666666", "#FFFFFF"
+
+        if series.empty:
+            return "#666666", "#FFFFFF"
+
+        p = (series < v).mean()
+
+        if p >= 0.85:
+            return "#008000", "#FFFFFF"   # elite green
+        elif p >= 0.65:
+            return "#90EE90", "#000000"   # light green
+        elif p >= 0.45:
+            return "#FFA500", "#000000"   # amber
+        else:
+            return "#FF0000", "#FFFFFF"   # red
+
+
+
+    # -------------------------
+    # Resolve display fields for the header/cards
+    # -------------------------
+    display_name = selected_player_full
+    position = player_trait.get("Position", "")
+    age = player_trait.get("Age", "")
+    matches = player_trait.get("Total Appearances", "")
+    rating = player_trait.get("Rating", "")
+
+    # If players dataset has cleaner fields, use them
+    if not player_ratings_primary.empty and "Player" in player_ratings_primary.columns:
+        pr_match = player_ratings_primary[player_ratings_primary["Player"] == selected_player_full]
+        if pr_match is not None and not pr_match.empty:
+            pr = pr_match.iloc[0]
+            display_name = pr.get("Player", display_name)
+            position = pr.get("Position", position) or position
+            age = pr.get("Age", age)
+            matches = pr.get("Matches", matches)
+
+    # Trait values
     ball_winning = player_trait.get("Ball Winning", "")
     ball_use = player_trait.get("Ball Use", "")
     aerial = player_trait.get("Aerial", "")
     defence = player_trait.get("Defence", "")
-    
-    # Calculate overall trait ranking (by Rating)
+
+    # -------------------------
+    # Rankings (within PRIMARY season)
+    # -------------------------
     all_traits_sorted = traits_df.copy()
-    all_traits_sorted["Rating"] = pd.to_numeric(all_traits_sorted["Rating"], errors="coerce")
-    all_traits_sorted = all_traits_sorted.dropna(subset=["Rating"])
-    all_traits_sorted = all_traits_sorted.sort_values("Rating", ascending=False).reset_index(drop=True)
-    
-    # Map full names for ranking
-    all_traits_sorted["Player_Full"] = all_traits_sorted.apply(
-        lambda row: find_full_player_name(row["Player"], row.get("Team_Full"), player_ratings_2025),
-        axis=1
-    )
-    
+    all_traits_sorted["Rating"] = pd.to_numeric(all_traits_sorted.get("Rating"), errors="coerce")
+    all_traits_sorted = all_traits_sorted.dropna(subset=["Rating"]).sort_values("Rating", ascending=False).reset_index(drop=True)
+
+    # overall rank by UID (robust)
+    overall_rank = None
     try:
-        overall_rank = all_traits_sorted[all_traits_sorted["Player_Full"] == selected_player_full].index[0] + 1
-    except:
+        overall_rank = all_traits_sorted[all_traits_sorted["player_uid"] == str(selected_player_uid)].index[0] + 1
+    except Exception:
         overall_rank = None
-    
-    # Calculate position ranking (use position from player ratings if available)
+
+    # position rank by UID
+    position_rank = None
     if position:
-        # First try to match by the position abbreviation in traits
-        position_traits = traits_df[traits_df["Position"] == player_trait.get("Position", "")].copy()
-        position_traits["Rating"] = pd.to_numeric(position_traits["Rating"], errors="coerce")
-        position_traits = position_traits.dropna(subset=["Rating"])
-        position_traits = position_traits.sort_values("Rating", ascending=False).reset_index(drop=True)
-        
-        # Map full names for ranking
-        position_traits["Player_Full"] = position_traits.apply(
-            lambda row: find_full_player_name(row["Player"], row.get("Team_Full"), player_ratings_2025),
-            axis=1
-        )
-        
         try:
-            position_rank = position_traits[position_traits["Player_Full"] == selected_player_full].index[0] + 1
-        except:
+            pos_df = traits_df[traits_df.get("Position") == position].copy()
+            pos_df["Rating"] = pd.to_numeric(pos_df.get("Rating"), errors="coerce")
+            pos_df = pos_df.dropna(subset=["Rating"]).sort_values("Rating", ascending=False).reset_index(drop=True)
+            position_rank = pos_df[pos_df["player_uid"] == str(selected_player_uid)].index[0] + 1
+        except Exception:
             position_rank = None
-    else:
-        position_rank = None
-    
-    # Helper function for ordinal numbers
-    def get_ordinal(n):
-        if pd.isna(n) or n is None:
-            return "N/A"
-        n = int(n)
-        if 10 <= n % 100 <= 20:
-            suffix = 'th'
-        else:
-            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
-        return f"{n}{suffix}"
-    
-    # Helper function for trait/rating labels
-    def get_trait_label(value):
-        """Get label based on trait value"""
-        try:
-            val = float(value)
-            if val > 3.0:
-                return "Elite"
-            elif val >= 2.5:
-                return "Above Average"
-            elif val >= 2.0:
-                return "Below Average"
-            else:
-                return "Poor"
-        except:
-            return ""
-    
+
+    # -------------------------
+    # Traits history (by season) + Year filters
+    # -------------------------
     st.markdown("---")
-    
-    # Layout: Photo/Logo on left, Info on right
+    st.subheader("Traits history (by season)")
+
+    # Seasons available from your app constant (preferred), else fall back to traits_df
+    available_seasons = sorted(list(TEAM_SEASONS), reverse=True) if "TEAM_SEASONS" in globals() else \
+        sorted(traits_df["Season"].dropna().unique().tolist(), reverse=True)
+
+    # Default: selected season + previous 2 if available
+    default_years = []
+    for y in [int(primary_season), int(primary_season) - 1, int(primary_season) - 2]:
+
+        if y in available_seasons and y not in default_years:
+            default_years.append(y)
+
+    selected_years = st.multiselect(
+        "Select Seasons (History)",
+        options=available_seasons,
+        default=default_years,
+        key=f"traits_history_years_{selected_team_full}_{selected_player_uid}",
+    )
+
+    # Build historical dataset
+    traits_history_parts = []
+    for y in sorted(selected_years, reverse=True):
+        df_y = load_traits(int(y))
+        if df_y is None or df_y.empty:
+            continue
+
+        # Ensure Team_Full exists for each season’s df
+        if "Team" in df_y.columns and "Team_Full" not in df_y.columns:
+            df_y["Team_Full"] = df_y["Team"].map(TEAM_CODE_TO_NAME).fillna(df_y["Team"])
+
+        traits_history_parts.append(df_y)
+
+    traits_history_df = pd.concat(traits_history_parts, ignore_index=True) if traits_history_parts else pd.DataFrame()
+
+    TEAM_FULL_MAP = TEAM_CODE_TO_NAME  # <-- ensures full team names (not abbreviations)
+    POSITION_FULL_MAP = None           # set this if you have a proper position map
+
+    try:
+        if traits_history_df.empty:
+            st.info("No historical traits data available for selected seasons.")
+        else:
+            table_df, table_html = build_player_traits_history_table(
+                traits_df=traits_history_df,
+                player_registry_df=player_registry_df,
+                selected_player_uid=selected_player_uid,
+                team_full_map=TEAM_FULL_MAP,
+                position_full_map=POSITION_FULL_MAP,
+            )
+
+            if table_df.empty:
+                st.info("No historical traits available for this player.")
+            else:
+                st.markdown(f"<div class='traits-card-table'>{table_html}</div>", unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"Traits table failed to render: {e}")
+
+
+
+    st.markdown("---")
+
+    # -------------------------
+    # Page layout (photo/logo + cards)
+    # -------------------------
     col_photo, col_info = st.columns([1, 3])
-    
-    # Team logo (centered above photo) - use full team name
-    team_name_full = player_trait["Team_Full"]
+
+    team_name_full = player_trait.get("Team_Full", selected_team_full)
+
     if team_name_full and not pd.isna(team_name_full):
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(team_name_full, logo_col, size=160)
-    
-    # Player photo - use full player name
-    display_player_photo(selected_player_full, col_photo, use_container_width=True)
-    
-    # Header with player name
+
+    # Streamlit deprecation-safe: use width instead of use_container_width
+    display_player_photo(
+    selected_player_full,
+    col_photo,
+    use_container_width=True
+)
+
+
+
     header_html = f"""
     <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
                 border-left: 5px solid #FFFFFF; padding: 20px; border-radius: 12px; margin-bottom: 20px;
@@ -4780,8 +5332,7 @@ elif page == "Player Traits":
     </div>
     """
     col_info.markdown(header_html, unsafe_allow_html=True)
-    
-    # Team and Position cards
+
     info_cards = []
     if team_name_full and not pd.isna(team_name_full):
         info_cards.append(f"""
@@ -4791,7 +5342,7 @@ elif page == "Player Traits":
             <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{team_name_full}</div>
         </div>
         """)
-    
+
     if position:
         info_cards.append(f"""
         <div style='background: linear-gradient(135deg, rgba(180, 83, 9, 0.8) 0%, rgba(245, 158, 11, 0.6) 100%);
@@ -4800,14 +5351,12 @@ elif page == "Player Traits":
             <div style='color: #FFFFFF; font-size: 1.3em; font-weight: 800;'>{position}</div>
         </div>
         """)
-    
+
     if info_cards:
-        col_info.markdown(''.join(info_cards), unsafe_allow_html=True)
-    
-    # Stats grid (Age, Season, Games only - smaller stats)
+        col_info.markdown("".join(info_cards), unsafe_allow_html=True)
+
     stats_grid = []
-    
-    # Age
+
     if age not in [None, ""] and pd.notna(age):
         try:
             age_val = float(age)
@@ -4815,20 +5364,17 @@ elif page == "Player Traits":
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age_val:.1f}</div>
 </div>""")
-        except:
+        except Exception:
             stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age}</div>
 </div>""")
-    
-    # Season
-    if selected_season not in [None, ""] and pd.notna(selected_season):
-        stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+
+    stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>SEASON</div>
-<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(selected_season)}</div>
+<div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(primary_season)}</div>
 </div>""")
-    
-    # Games
+
     if matches not in [None, ""] and pd.notna(matches):
         try:
             matches_val = int(float(matches))
@@ -4836,13 +5382,12 @@ elif page == "Player Traits":
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches_val}</div>
 </div>""")
-        except:
+        except Exception:
             stats_grid.append(f"""<div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
 <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches}</div>
 </div>""")
-    
-    # Display smaller stats grid
+
     if stats_grid:
         grid_html = f"""
         <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;'>
@@ -4850,35 +5395,64 @@ elif page == "Player Traits":
         </div>
         """
         col_info.markdown(grid_html, unsafe_allow_html=True)
-    
-    # Key Metrics Section (Rating, Overall Rank, Position Rank) - Large and Prominent
+
+    # -------------------------
+    # Compute POSITION RANK (UID-first, within selected season)
+    # -------------------------
+    position_rank = None
+    try:
+        player_pos = str(player_trait.get("Position", "")).strip()
+
+        if (
+            player_pos
+            and "Position" in traits_df.columns
+            and "Rating" in traits_df.columns
+            and "player_uid" in traits_df.columns
+        ):
+            pos_df = traits_df.copy()
+            pos_df["Position"] = pos_df["Position"].astype(str).str.strip()
+            pos_df = pos_df[pos_df["Position"] == player_pos].copy()
+
+            pos_df["Rating"] = pd.to_numeric(pos_df["Rating"], errors="coerce")
+            pos_df = pos_df.dropna(subset=["Rating"]).sort_values("Rating", ascending=False).reset_index(drop=True)
+
+            # Find this player’s index in the sorted position group
+            uid_str = str(selected_player_uid).strip()
+            idxs = pos_df.index[pos_df["player_uid"].astype(str).str.strip() == uid_str].tolist()
+            if idxs:
+                position_rank = idxs[0] + 1  # 1-based rank
+    except Exception:
+        position_rank = None
+
+
+    # -------------------------
+    # Key metrics (rating + ranks)
+    # -------------------------
     st.markdown("---")
     st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>⭐ Key Performance Metrics</h3>", unsafe_allow_html=True)
-    
+
     key_metrics = []
-    
-    # Rating (large, color-coded with label)
+
     if rating not in [None, ""] and pd.notna(rating):
         try:
             rating_val = float(rating)
             all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna()
             bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
             rating_label = get_trait_label(rating_val)
-            
-            # Determine gradient and best text color based on background
-            if bg_color == "#008000":  # dark green
+
+            if bg_color == "#008000":
                 rating_gradient = "rgba(0,128,0,0.3)"
-                rating_text_color = "#FFFFFF"  # white for dark green
-            elif bg_color == "#90EE90":  # light green
+                rating_text_color = "#FFFFFF"
+            elif bg_color == "#90EE90":
                 rating_gradient = "rgba(144,238,144,0.3)"
-                rating_text_color = "#000000"  # black for light green
-            elif bg_color == "#FFA500":  # orange
+                rating_text_color = "#000000"
+            elif bg_color == "#FFA500":
                 rating_gradient = "rgba(255,165,0,0.3)"
-                rating_text_color = "#000000"  # black for orange
-            else:  # red
+                rating_text_color = "#000000"
+            else:
                 rating_gradient = "rgba(255,0,0,0.3)"
-                rating_text_color = "#FFFFFF"  # white for red
-            
+                rating_text_color = "#FFFFFF"
+
             key_metrics.append(f"""
             <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
                         border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
@@ -4888,10 +5462,9 @@ elif page == "Player Traits":
                 <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
             </div>
             """)
-        except:
+        except Exception:
             pass
-    
-    # Overall Rank (large)
+
     if overall_rank:
         key_metrics.append(f"""
         <div style='background: linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%);
@@ -4902,8 +5475,7 @@ elif page == "Player Traits":
             <div style='color: rgba(255,215,0,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>Out of {len(all_traits_sorted)} Players</div>
         </div>
         """)
-    
-    # Position Rank (large)
+
     if position_rank and position:
         key_metrics.append(f"""
         <div style='background: linear-gradient(135deg, rgba(100,149,237,0.25) 0%, rgba(100,149,237,0.05) 100%);
@@ -4914,8 +5486,7 @@ elif page == "Player Traits":
             <div style='color: rgba(100,149,237,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>{position}</div>
         </div>
         """)
-    
-    # Display key metrics in a 3-column grid
+
     if key_metrics:
         col1, col2, col3 = st.columns(3)
         if len(key_metrics) > 0:
@@ -4924,59 +5495,55 @@ elif page == "Player Traits":
             col2.markdown(key_metrics[1], unsafe_allow_html=True)
         if len(key_metrics) > 2:
             col3.markdown(key_metrics[2], unsafe_allow_html=True)
-    
-    # Trait Values Section
+
+    # -------------------------
+    # Trait cards (your existing style)
+    # -------------------------
     st.markdown("---")
     st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>", unsafe_allow_html=True)
-    
-    # Get sub-stats for each trait
+
     ball_winning_substats = {
         "Stoppage": player_trait.get("Stoppage", ""),
         "Contest": player_trait.get("Contest", ""),
         "Power": player_trait.get("Power", ""),
         "Receives": player_trait.get("Receives", "")
     }
-    
     ball_use_substats = {
         "Handballing": player_trait.get("Handballing", ""),
         "Kicking": player_trait.get("Kicking", ""),
         "Goal Kicking": player_trait.get("Goal Kicking", ""),
         "Connecting": player_trait.get("Connecting", "")
     }
-    
     aerial_substats = {
         "Marking": player_trait.get("Marking", ""),
         "Contested": player_trait.get("Contested", ""),
         "Moks": player_trait.get("Moks", ""),
         "Ruck": player_trait.get("Ruck", "")
     }
-    
     defence_substats = {
         "Pressure": player_trait.get("Pressure", ""),
         "Tackling": player_trait.get("Tackling", ""),
         "Intercepting": player_trait.get("Intercepting", ""),
         "Neutralise": player_trait.get("Neutralise", "")
     }
-    
-    # Create trait cards with sub-stats
-    trait_cards = []
-    
+
     trait_data = [
         ("Ball Winning", ball_winning, "#0066CC", ball_winning_substats),
         ("Ball Use", ball_use, "#009933", ball_use_substats),
         ("Aerial", aerial, "#FFEB3B", aerial_substats),
         ("Defence", defence, "#CC0000", defence_substats),
     ]
-    
+
+    trait_cards = []
     for trait_name, trait_value, trait_color, substats in trait_data:
         if trait_value not in [None, ""] and pd.notna(trait_value):
             try:
                 trait_val = float(trait_value)
                 trait_label = get_trait_label(trait_val)
-                # Convert hex to RGB for gradient
-                r, g, b = int(trait_color.lstrip('#')[:2], 16), int(trait_color.lstrip('#')[2:4], 16), int(trait_color.lstrip('#')[4:], 16)
-                
-                # Build sub-stats HTML
+                r = int(trait_color.lstrip("#")[:2], 16)
+                g = int(trait_color.lstrip("#")[2:4], 16)
+                b = int(trait_color.lstrip("#")[4:], 16)
+
                 substats_html = ""
                 for substat_name, substat_value in substats.items():
                     if substat_value not in [None, ""] and pd.notna(substat_value):
@@ -4987,9 +5554,9 @@ elif page == "Player Traits":
 <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>{substat_name}</div>
 <div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>{substat_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span></div>
 </div>"""
-                        except:
+                        except Exception:
                             pass
-                
+
                 trait_cards.append(f"""
                 <div style='background: linear-gradient(135deg, rgba({r},{g},{b},0.3) 0%, rgba({r},{g},{b},0.1) 100%);
                             border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
@@ -5000,23 +5567,17 @@ elif page == "Player Traits":
                     {substats_html}
                 </div>
                 """)
-            except:
-                trait_cards.append(f"""
-                <div style='background: linear-gradient(135deg, rgba(100,100,100,0.3) 0%, rgba(100,100,100,0.1) 100%);
-                            border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
-                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px;'>{trait_name}</div>
-                    <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_value}</div>
-                </div>
-                """)
-    
-    # Display trait cards in a 2x2 grid
+            except Exception:
+                pass
+
+
+
+
     if trait_cards:
-        col1, col2 = st.columns(2)
+        c1, c2 = st.columns(2)
         for i, card in enumerate(trait_cards):
-            if i % 2 == 0:
-                col1.markdown(card, unsafe_allow_html=True)
-            else:
-                col2.markdown(card, unsafe_allow_html=True)
+            (c1 if i % 2 == 0 else c2).markdown(card, unsafe_allow_html=True)
+
 
 
 # ================= DEPTH CHART =================
