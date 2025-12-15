@@ -19,6 +19,77 @@ st.set_page_config(
     layout="wide",
 )
 
+import streamlit.components.v1 as components
+
+def inject_app_css():
+    st.markdown(
+        """
+        <style>
+        .fe-card{
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 16px;
+            padding: 18px 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+        .fe-title{
+            font-size: 34px;
+            font-weight: 800;
+            margin: 0 0 14px 0;
+            color: #FFFFFF;
+        }
+        .fe-kv-label{
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 6px;
+        }
+        .fe-kv-value{
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .fe-pill{
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,0.10);
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-top: 10px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+inject_app_css()
+
+def render_player_profile_card(player_name: str, team: str, position: str):
+    # Position colour fallback
+    bg, fg = POSITION_COLOURS.get(position, ("#444444", "white"))
+
+    st.markdown(
+        f"""
+        <div class="fe-card">
+            <div class="fe-title">{player_name}</div>
+
+            <div class="fe-card" style="padding:14px 16px; margin-bottom:10px;">
+                <div class="fe-kv-label">Team</div>
+                <div class="fe-kv-value">{team}</div>
+            </div>
+
+            <div class="fe-pill" style="background:{bg}; color:{fg};">
+                <div class="fe-kv-label" style="color: rgba(255,255,255,0.85);">Position</div>
+                <div style="font-size:16px; font-weight:900;">{position}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -623,6 +694,11 @@ def _opacity_from_pct(pct: float) -> float:
     if pct >= 0.45:
         return 0.50
     return 0.25
+
+
+def render_traits_html_table(table_html: str, height: int = 520):
+    # This renders HTML properly (no raw tags showing)
+    components.html(table_html, height=height, scrolling=True)
 
 
 def build_player_traits_history_table(
@@ -3587,35 +3663,6 @@ elif page == "Player Traits":
     # -------------------------
     # Helpers
     # -------------------------
-    import re
-    import html
-
-    def sanitize_text(x) -> str:
-        """Remove any HTML tags/entities and return safe plain text."""
-        if x is None or (isinstance(x, float) and pd.isna(x)):
-            return ""
-        s = str(x)
-        # Unescape entities (&lt;div&gt; -> <div>)
-        s = html.unescape(s)
-        # Strip tags if any snuck in
-        s = re.sub(r"<[^>]+>", "", s)
-        # Remove any leftover angle brackets
-        s = s.replace("<", "").replace(">", "")
-        return s.strip()
-
-    def safe_float(x):
-        """Convert to float safely. Returns None if not a clean number."""
-        if x is None or (isinstance(x, float) and pd.isna(x)):
-            return None
-        # If there's any HTML-ish content, reject it
-        sx = sanitize_text(x)
-        sx = sx.replace("%", "").strip()
-        # Allow numbers like 2, 2.5, -1.2
-        try:
-            return float(sx)
-        except Exception:
-            return None
-
     def get_ordinal(n):
         try:
             n = int(n)
@@ -3659,16 +3706,10 @@ elif page == "Player Traits":
         else:
             return "#FF0000", "#FFFFFF"
 
-    import textwrap
-
-    def render_html(container, html_str: str):
-        """Prevents Streamlit markdown from treating indented HTML as a code block."""
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
-
     # -------------------------
     # Season selection
     # -------------------------
+    # Use ratings seasons as the master list (usually consistent)
     seasons_available = sorted(get_player_seasons(), reverse=True)
     if not seasons_available:
         seasons_available = [2025, 2024, 2023]
@@ -3730,9 +3771,9 @@ elif page == "Player Traits":
 
     player_trait = player_trait_df.iloc[0]
 
-    # Display fields (sanitised for safety)
-    team_name_full = sanitize_text(player_trait.get("Team_Full", selected_team_full))
-    position = sanitize_text(player_trait.get("Position_Full", ""))
+    # Display fields
+    team_name_full = player_trait.get("Team_Full", selected_team_full)
+    position = player_trait.get("Position_Full", "")
     age = player_trait.get("Age", "")
     matches = player_trait.get("Total Appearances", player_trait.get("Matches", ""))
     rating = player_trait.get("Rating", "")
@@ -3750,11 +3791,13 @@ elif page == "Player Traits":
     all_traits_sorted["Rating"] = pd.to_numeric(all_traits_sorted.get("Rating"), errors="coerce")
     all_traits_sorted = all_traits_sorted.dropna(subset=["Rating"]).sort_values("Rating", ascending=False).reset_index(drop=True)
 
+    overall_rank = None
     try:
         overall_rank = all_traits_sorted[all_traits_sorted["Player_Full"] == selected_player_full].index[0] + 1
     except Exception:
         overall_rank = None
 
+    position_rank = None
     try:
         pos_df = traits_df.copy()
         pos_df = pos_df[pos_df["Position_Full"].astype(str) == str(position)]
@@ -3765,7 +3808,7 @@ elif page == "Player Traits":
         position_rank = None
 
     # -------------------------
-    # Traits history (by season)
+    # Traits history (by season) — Full-name world
     # -------------------------
     st.markdown("---")
     st.subheader("Traits history (by season)")
@@ -3780,6 +3823,7 @@ elif page == "Player Traits":
             df_y["Season"] = int(y)
         df_y["Season"] = pd.to_numeric(df_y["Season"], errors="coerce").fillna(int(y)).astype(int)
 
+        # keep same player by full name
         df_y = df_y[df_y["Player_Full"] == selected_player_full].copy()
         traits_history_parts.append(df_y)
 
@@ -3788,10 +3832,12 @@ elif page == "Player Traits":
     if traits_history_df.empty:
         st.info("No historical traits data available for this player in the selected seasons.")
     else:
+        # Simple history table (you can swap back to your HTML builder later)
         cols_to_show = ["Season", "Team_Full", "Position_Full", "Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
         cols_to_show = [c for c in cols_to_show if c in traits_history_df.columns]
         view = traits_history_df[cols_to_show].copy()
 
+        # Round key fields
         for c in ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
             if c in view.columns:
                 view[c] = pd.to_numeric(view[c], errors="coerce").round(2)
@@ -3805,7 +3851,7 @@ elif page == "Player Traits":
     # -------------------------
     col_photo, col_info = st.columns([1, 3])
 
-    if team_name_full:
+    if team_name_full and not pd.isna(team_name_full):
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(team_name_full, logo_col, size=160)
 
@@ -3815,14 +3861,13 @@ elif page == "Player Traits":
     <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
                 border-left: 5px solid #FFFFFF; padding: 20px; border-radius: 12px; margin-bottom: 20px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
-        <h2 style='color: #FFFFFF; margin: 0; font-size: 2.2em; font-weight: 900;'>{sanitize_text(selected_player_full)}</h2>
+        <h2 style='color: #FFFFFF; margin: 0; font-size: 2.2em; font-weight: 900;'>{selected_player_full}</h2>
     </div>
     """
-    render_html(col_info, header_html)
-
+    col_info.markdown(header_html, unsafe_allow_html=True)
 
     info_cards = []
-    if team_name_full:
+    if team_name_full and not pd.isna(team_name_full):
         info_cards.append(f"""
         <div style='background: linear-gradient(135deg, #2a2a2a 0%, #404040 100%);
                     border-left: 4px solid #CCCCCC; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
@@ -3839,20 +3884,25 @@ elif page == "Player Traits":
         </div>
         """)
     if info_cards:
-        if info_cards:
-            render_html(col_info, "".join(info_cards))
-
+        col_info.markdown("".join(info_cards), unsafe_allow_html=True)
 
     # Small stats grid
     stats_grid = []
 
-    age_val = safe_float(age)
-    if age_val is not None:
-        stats_grid.append(f"""
-        <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
-            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
-            <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age_val:.1f}</div>
-        </div>""")
+    if age not in [None, ""] and pd.notna(age):
+        try:
+            age_val = float(age)
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age_val:.1f}</div>
+            </div>""")
+        except Exception:
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>AGE</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{age}</div>
+            </div>""")
 
     stats_grid.append(f"""
     <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
@@ -3860,13 +3910,20 @@ elif page == "Player Traits":
         <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(primary_season)}</div>
     </div>""")
 
-    matches_val = safe_float(matches)
-    if matches_val is not None:
-        stats_grid.append(f"""
-        <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
-            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
-            <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(matches_val)}</div>
-        </div>""")
+    if matches not in [None, ""] and pd.notna(matches):
+        try:
+            matches_val = int(float(matches))
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches_val}</div>
+            </div>""")
+        except Exception:
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{matches}</div>
+            </div>""")
 
     if stats_grid:
         grid_html = f"""
@@ -3874,14 +3931,7 @@ elif page == "Player Traits":
             {''.join(stats_grid)}
         </div>
         """
-        if stats_grid:
-            grid_html = (
-                "<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;'>"
-                + "".join(stats_grid) +
-                "</div>"
-            )
-            render_html(col_info, grid_html)
-
+        col_info.markdown(grid_html, unsafe_allow_html=True)
 
     # -------------------------
     # Key metrics (rating + ranks)
@@ -3891,34 +3941,37 @@ elif page == "Player Traits":
 
     key_metrics = []
 
-    rating_val = safe_float(rating)
-    if rating_val is not None:
-        all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna() if "Rating" in traits_df.columns else pd.Series(dtype=float)
-        bg_color, _ = rating_colour_for_value(rating_val, all_ratings)
-        rating_label = get_trait_label(rating_val)
+    if rating not in [None, ""] and pd.notna(rating):
+        try:
+            rating_val = float(rating)
+            all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna() if "Rating" in traits_df.columns else pd.Series(dtype=float)
+            bg_color, _ = rating_colour_for_value(rating_val, all_ratings)
+            rating_label = get_trait_label(rating_val)
 
-        if bg_color == "#008000":
-            rating_gradient = "rgba(0,128,0,0.3)"
-            rating_text_color = "#FFFFFF"
-        elif bg_color == "#90EE90":
-            rating_gradient = "rgba(144,238,144,0.3)"
-            rating_text_color = "#000000"
-        elif bg_color == "#FFA500":
-            rating_gradient = "rgba(255,165,0,0.3)"
-            rating_text_color = "#000000"
-        else:
-            rating_gradient = "rgba(255,0,0,0.3)"
-            rating_text_color = "#FFFFFF"
+            if bg_color == "#008000":
+                rating_gradient = "rgba(0,128,0,0.3)"
+                rating_text_color = "#FFFFFF"
+            elif bg_color == "#90EE90":
+                rating_gradient = "rgba(144,238,144,0.3)"
+                rating_text_color = "#000000"
+            elif bg_color == "#FFA500":
+                rating_gradient = "rgba(255,165,0,0.3)"
+                rating_text_color = "#000000"
+            else:
+                rating_gradient = "rgba(255,0,0,0.3)"
+                rating_text_color = "#FFFFFF"
 
-        key_metrics.append(f"""
-        <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
-                    border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
-            <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
-            <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
-            <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
-        </div>
-        """)
+            key_metrics.append(f"""
+            <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
+                        border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
+                <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
+                <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+                <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
+            </div>
+            """)
+        except Exception:
+            pass
 
     if overall_rank:
         key_metrics.append(f"""
@@ -3952,23 +4005,10 @@ elif page == "Player Traits":
             col3.markdown(key_metrics[2], unsafe_allow_html=True)
 
     # -------------------------
-    # Trait cards  ✅ FIXED: no HTML-as-code blocks
+    # Trait cards
     # -------------------------
-    import textwrap
-
     st.markdown("---")
-    st.markdown(
-        "<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>",
-        unsafe_allow_html=True
-    )
-
-    def render_html(html_str: str, container=None):
-        """Ensure Streamlit doesn't treat indented HTML as a markdown code block."""
-        clean = textwrap.dedent(html_str).strip()
-        if container is None:
-            st.markdown(clean, unsafe_allow_html=True)
-        else:
-            container.markdown(clean, unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>", unsafe_allow_html=True)
 
     ball_winning_substats = {
         "Stoppage": player_trait.get("Stoppage", ""),
@@ -3985,7 +4025,7 @@ elif page == "Player Traits":
     aerial_substats = {
         "Marking": player_trait.get("Marking", ""),
         "Contested": player_trait.get("Contested", ""),
-        "Moks": player_trait.get("Moks", ""),   # keep as-is if that's your column name
+        "Moks": player_trait.get("Moks", ""),
         "Ruck": player_trait.get("Ruck", "")
     }
     defence_substats = {
@@ -4003,60 +4043,50 @@ elif page == "Player Traits":
     ]
 
     trait_cards = []
-
     for trait_name, trait_value, trait_color, substats in trait_data:
-        trait_val = safe_float(trait_value)
-        if trait_val is None:
-            continue
+        if trait_value not in [None, ""] and pd.notna(trait_value):
+            try:
+                trait_val = float(trait_value)
+                trait_label = get_trait_label(trait_val)
 
-        trait_label = get_trait_label(trait_val)
+                r = int(trait_color.lstrip("#")[:2], 16)
+                g = int(trait_color.lstrip("#")[2:4], 16)
+                b = int(trait_color.lstrip("#")[4:], 16)
 
-        r = int(trait_color.lstrip("#")[:2], 16)
-        g = int(trait_color.lstrip("#")[2:4], 16)
-        b = int(trait_color.lstrip("#")[4:], 16)
+                substats_html = ""
+                for substat_name, substat_value in substats.items():
+                    if substat_value not in [None, ""] and pd.notna(substat_value):
+                        try:
+                            substat_val = float(substat_value)
+                            substat_label = get_trait_label(substat_val)
+                            substats_html += f"""
+                            <div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>
+                                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>{substat_name}</div>
+                                <div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>
+                                    {substat_val:.2f}
+                                    <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span>
+                                </div>
+                            </div>"""
+                        except Exception:
+                            pass
 
-        # Build substats HTML with NO leading indentation (prevents markdown code-block behaviour)
-        substats_html_parts = []
-        for substat_name, substat_value in substats.items():
-            sub_val = safe_float(substat_value)
-            if sub_val is None:
-                continue
-            sub_label = get_trait_label(sub_val)
-
-            substats_html_parts.append(
-                f"<div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>"
-                f"  <div style='color: rgba(255,255,255,0.7); font-size: 0.75em; margin-bottom: 4px;'>{sanitize_text(substat_name)}</div>"
-                f"  <div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>"
-                f"    {sub_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'> {sanitize_text(sub_label)}</span>"
-                f"  </div>"
-                f"</div>"
-            )
-
-        substats_html = "".join(substats_html_parts)
-
-        card_html = f"""
-        <div style='background: linear-gradient(135deg, rgba({r},{g},{b},0.3) 0%, rgba({r},{g},{b},0.1) 100%);
-                    border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
-            <div style='color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>
-                {sanitize_text(trait_name)}
-            </div>
-            <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
-            <div style='color: rgba(255,255,255,0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>
-                {sanitize_text(trait_label)}
-            </div>
-            {substats_html}
-        </div>
-        """
-        trait_cards.append(card_html)
+                trait_cards.append(f"""
+                <div style='background: linear-gradient(135deg, rgba({r},{g},{b},0.3) 0%, rgba({r},{g},{b},0.1) 100%);
+                            border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
+                    <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>{trait_name}</div>
+                    <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
+                    <div style='color: rgba(255, 255, 255, 0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>{trait_label}</div>
+                    {substats_html}
+                </div>
+                """)
+            except Exception:
+                pass
 
     if trait_cards:
         c1, c2 = st.columns(2)
         for i, card in enumerate(trait_cards):
-            render_html(card, container=(c1 if i % 2 == 0 else c2))
-    else:
-        st.info("No trait card values available for this player.")
-
+            (c1 if i % 2 == 0 else c2).markdown(card, unsafe_allow_html=True)
 
 
 # ================= DEPTH CHART =================
