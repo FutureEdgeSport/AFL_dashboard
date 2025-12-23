@@ -1,4 +1,5 @@
 from pathlib import Path
+from io import BytesIO
 import os
 import warnings
 import math
@@ -18,6 +19,14 @@ st.set_page_config(
     page_icon="🏉",
     layout="wide",
 )
+
+
+# ---------------- CACHED RESOURCES ----------------
+@st.cache_resource(show_spinner=False)
+def _get_excel_file(path: str) -> pd.ExcelFile:
+    """Cache Excel workbook handles to reduce repeated open/parse costs across reruns."""
+    return _get_excel_file(path)
+
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -228,7 +237,7 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
-    xl = pd.ExcelFile(TEAM_FILE)
+    xl = _get_excel_file(TEAM_FILE)
     sheet_name = f"{season} Ladders (L10)" if last10 else f"{season} Ladders"
     raw = xl.parse(sheet_name)
     return _normalise_ladder_df(raw)
@@ -277,9 +286,28 @@ def get_ordinal_suffix(n: int) -> str:
 
 # ---------------- DATA LOADERS – TEAM SUMMARY ----------------
 @st.cache_data(show_spinner=False)
+
+def to_ordinal_safe(n) -> str:
+    """Safe ordinal formatting for values that may be NaN/blank."""
+    if n is None:
+        return ""
+    try:
+        # handle pandas/numpy NaN
+        if isinstance(n, float) and np.isnan(n):
+            return ""
+    except Exception:
+        pass
+    if str(n).strip() == "":
+        return ""
+    try:
+        n_int = int(float(n))
+    except Exception:
+        return ""
+    return get_ordinal_suffix(n_int)
+
 def load_team_summary_for_year(season: int) -> pd.DataFrame:
     try:
-        xl = pd.ExcelFile(TEAM_FILE)
+        xl = _get_excel_file(TEAM_FILE)
         year_sheet = f"{season} Summary"
         df = xl.parse(year_sheet)
         df.columns = df.columns.astype(str)
@@ -291,7 +319,7 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
 # ---------------- DATA LOADERS – PLAYERS ----------------
 @st.cache_data(show_spinner=False)
 def load_player_summary() -> pd.DataFrame:
-    xl = pd.ExcelFile(PLAYER_FILE)
+    xl = _get_excel_file(PLAYER_FILE)
     df = xl.parse("Summary")
     df.columns = df.columns.astype(str).str.strip()
     return df
@@ -299,7 +327,7 @@ def load_player_summary() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def get_player_seasons() -> list[int]:
-    xl = pd.ExcelFile(PLAYER_FILE)
+    xl = _get_excel_file(PLAYER_FILE)
     seasons = []
     for s in xl.sheet_names:
         if str(s).isdigit():
@@ -322,7 +350,7 @@ def load_players(season: int) -> pd.DataFrame:
     Player Ratings loader (AFL Player Ratings.xlsx per-season sheets).
     This should NOT enforce traits columns.
     """
-    xl = pd.ExcelFile(PLAYER_FILE)
+    xl = _get_excel_file(PLAYER_FILE)
     df = xl.parse(str(season))
     df.columns = df.columns.astype(str).str.strip()
     df = _normalise_rating_column(df)
@@ -563,27 +591,48 @@ def get_player_photo_path(player_name: str):
     return None
 
 
-def _resize_image(path: str, size: int):
+@st.cache_data(show_spinner=False, max_entries=512)
+def _load_image_bytes(path: str, size: int):
+    """Load image from disk, resize, and return PNG bytes (cached)."""
     try:
         img = Image.open(path).convert("RGBA")
         img = img.resize((size, size))
-        return img
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
     except Exception:
         return None
 
 
-def display_logo(team_name: str, container, size: int = 80):
-    path = get_team_logo_path(team_name)
-    if not path:
-        return
-    img = _resize_image(path, size)
-    if img is not None:
-        container.image(img)
-    else:
-        try:
-            container.image(path, width=size)
-        except Exception:
-            return
+
+import io
+from PIL import Image
+import streamlit as st
+
+@st.cache_data(show_spinner=False)
+def _load_image_bytes(img_path: str, max_width: int | None = None) -> bytes | None:
+    try:
+        with Image.open(img_path) as im:
+            im = im.convert("RGBA")
+            if max_width and im.width and im.width > max_width:
+                new_h = int(im.height * (max_width / im.width))
+                im = im.resize((max_width, new_h))
+            buf = io.BytesIO()
+            im.save(buf, format="PNG")
+            return buf.getvalue()
+    except Exception:
+        return None
+
+
+def display_logo(team_name: str, container, max_width: int = 160):
+    img_bytes = None  # <-- MUST exist for all code paths
+
+    logo_path = f"assets/logos/{team_name}.png"
+    img_bytes = _load_image_bytes(logo_path, max_width=max_width)
+
+    if img_bytes:
+        container.image(img_bytes, width=max_width)
+
 
 
 def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False):
@@ -594,8 +643,8 @@ def display_player_photo(player_name: str, container, size: int = 160, use_conta
         if use_container_width:
             container.image(path, use_container_width=True)
         else:
-            img = _resize_image(path, size)
-            container.image(img if img is not None else path, width=size)
+            img_bytes = _load_image_bytes(path, size)
+            container.image(img_bytes if img_bytes is not None else path, width=size)
     except Exception:
         return
 
@@ -733,7 +782,7 @@ def get_available_summary_years() -> list[int]:
     Falls back to common years if workbook can't be read.
     """
     try:
-        xl = pd.ExcelFile(TEAM_FILE)
+        xl = _get_excel_file(TEAM_FILE)
         years = []
         for sheet in xl.sheet_names:
             s = str(sheet).strip()
@@ -1103,14 +1152,7 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                     break
 
     # Helper function to get ordinal suffix
-    def get_ordinal(n):
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-    
-    # Helper function to get ranking color (same as Team Breakdown)
+    get_ordinal = get_ordinal_suffix  # use shared helper
     def get_ranking_color(rank, total=18):
         if rank <= 4:
             return "#006400"  # dark green
@@ -1407,7 +1449,7 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -1563,23 +1605,7 @@ if page == "Overview":
     # ----------------------------
     # Helpers
     # ----------------------------
-    def render_html(container, html_str: str):
-        """Always dedent/strip so Streamlit markdown doesn't treat it as a code block."""
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
-    def to_ordinal(n):
-        if pd.isna(n) or n == "":
-            return ""
-        try:
-            n = int(float(n))
-        except Exception:
-            return ""
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-
+    to_ordinal = to_ordinal_safe  # use shared helper
     def safe_int_str(x):
         try:
             return f"{int(round(float(x)))}"
@@ -2109,7 +2135,7 @@ elif page == "Team Breakdown":
             # Create columns: left spacer, logo, ladder stats, right spacer
             logo_col1, logo_col2, logo_col3, logo_col4 = st.columns([1, 1, 1, 1])
             with logo_col2:
-                st.image(img)
+                st.image(img_bytes)
             with logo_col3:
                 # Display ladder position and percentage to the right of logo, centered vertically with colored backgrounds
                 st.markdown(
@@ -2503,19 +2529,7 @@ elif page == "Team Compare":
     st.title("⚖️ Team Compare")
     
     # Helper function for ordinal formatting
-    def get_ordinal(n):
-        """Convert number to ordinal string (1st, 2nd, 3rd, etc.)"""
-        try:
-            n = int(n)
-            if 10 <= n % 100 <= 20:
-                suffix = "th"
-            else:
-                suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-            return f"{n}{suffix}"
-        except:
-            return str(n)
-
-    # Get available years for top-level selection (same as Team Breakdown)
+    get_ordinal = get_ordinal_suffix  # use shared helper
     available_years = get_available_summary_years()
     if not available_years:
         st.error("No summary years available.")
@@ -3010,14 +3024,6 @@ elif page == "Team Compare":
             st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of specific attribute statistics across both teams. Stats are color-coded based on team rankings (green = elite, orange = average, red = needs work).</span></p></div>""", unsafe_allow_html=True)
             
             # Helper function for ordinal rank
-            def get_ordinal_suffix(n):
-                if 10 <= n % 100 <= 20:
-                    suffix = "th"
-                else:
-                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-                return suffix
-            
-            # Group stats by attribute for display
             for attribute_group in attribute_groups:
                 # Get stats for this group
                 group_stats = [(grp, stat) for grp, stat in all_attribute_stats if grp == attribute_group]
@@ -3410,21 +3416,7 @@ elif page == "Player Profile":
     # -------------------------------------------------
     # HTML render helper (prevents raw <div> showing)
     # -------------------------------------------------
-    def render_html(container, html_str: str):
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
-    # Helper: ordinal
-    def get_ordinal(n):
-        try:
-            n = int(n)
-        except Exception:
-            return "N/A"
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-
+    get_ordinal = get_ordinal_suffix  # use shared helper
     def safe_float(x):
         try:
             return float(x)
@@ -4363,17 +4355,7 @@ elif page == "Player Traits":
         except Exception:
             return None
 
-    def get_ordinal(n):
-        try:
-            n = int(n)
-        except Exception:
-            return "N/A"
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-
+    get_ordinal = get_ordinal_suffix  # use shared helper
     def get_trait_label(value):
         try:
             val = float(value)
@@ -4388,34 +4370,8 @@ elif page == "Player Traits":
         else:
             return "Poor"
 
-    def rating_colour_for_value(value, all_values):
-        try:
-            v = float(value)
-            series = pd.to_numeric(all_values, errors="coerce").dropna()
-        except Exception:
-            return "#666666", "#FFFFFF"
-        if series.empty:
-            return "#666666", "#FFFFFF"
-        p = (series < v).mean()
-        if p >= 0.85:
-            return "#008000", "#FFFFFF"
-        elif p >= 0.65:
-            return "#90EE90", "#000000"
-        elif p >= 0.45:
-            return "#FFA500", "#000000"
-        else:
-            return "#FF0000", "#FFFFFF"
-
     import textwrap
 
-    def render_html(container, html_str: str):
-        """Prevents Streamlit markdown from treating indented HTML as a code block."""
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
-
-    # -------------------------
-    # Season selection
-    # -------------------------
     seasons_available = sorted(get_player_seasons(), reverse=True)
     if not seasons_available:
         seasons_available = [2025, 2024, 2023]
@@ -4518,9 +4474,6 @@ elif page == "Player Traits":
     st.subheader("Traits history (by season)")
 
     import textwrap
-
-    def render_html(container, html_str: str):
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
 
     traits_history_parts = []
     for y in sorted([int(s) for s in history_seasons], reverse=True):
@@ -4830,14 +4783,6 @@ elif page == "Player Traits":
         unsafe_allow_html=True
     )
 
-    def render_html(html_str: str, container=None):
-        """Ensure Streamlit doesn't treat indented HTML as a markdown code block."""
-        clean = textwrap.dedent(html_str).strip()
-        if container is None:
-            st.markdown(clean, unsafe_allow_html=True)
-        else:
-            container.markdown(clean, unsafe_allow_html=True)
-
     ball_winning_substats = {
         "Stoppage": player_trait.get("Stoppage", ""),
         "Contest": player_trait.get("Contest", ""),
@@ -5072,14 +5017,6 @@ elif page == "Team Age Breakdown":
     age_breakdown_table = age_breakdown_table.sort_values("Team").reset_index(drop=True)
     
     # Helper function to get ordinal suffix
-    def get_ordinal_suffix(n):
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-    
-    # Calculate rankings for each age band (highest % = best = rank 1)
     for band in AGE_BANDS:
         # Rank teams by percentage (descending - highest is best)
         age_breakdown_table[f"{band}_Rank"] = age_breakdown_table[band].rank(ascending=False, method='min').astype(int)
@@ -5359,14 +5296,6 @@ elif page == "List Ladder":
     st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide</h4><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;'><div style='text-align: center; padding: 15px; background: #006400; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.9em;'>Elite</span></div><div style='text-align: center; padding: 15px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1.1em;'>5th - 9th</strong><br><span style='color: #333333; font-size: 0.9em;'>Strong</span></div><div style='text-align: center; padding: 15px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>10th - 14th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Average</span></div><div style='text-align: center; padding: 15px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>15th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Needs Work</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
     
     # Helper function to get ordinal suffix
-    def get_ordinal_suffix(n):
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-    
-    # Helper function to get color based on rank
     def get_rank_color(rank):
         if rank <= 4:
             return "#006400"  # Dark green
@@ -5834,14 +5763,6 @@ elif page == "Team List Summary":
         })
     
     # Helper function to get ordinal suffix
-    def get_ordinal_suffix(n):
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-    
-    # Helper function for rank color
     def get_rank_color_age(rank):
         if rank <= 4:
             return "#006400", "white"
@@ -6225,465 +6146,3 @@ elif page == "Team List Summary":
     
     st.markdown(summary_html, unsafe_allow_html=True)
 
-# ================= BEST 23 =================
-elif page == "Best 23":
-    st.title("🏉 Best 23 – Auto Selected from Depth Chart")
-
-    import base64, textwrap
-    from typing import List, Optional
-
-    # ================= CONFIG =================
-    FIELD_IMAGE_PATH = str(BASE_DIR / "assets" / "field_blank.png")
-    FIELD_WIDTH_PX = 1100
-    FIELD_HEIGHT_PX = 1000
-
-    # Mid block tightened so it "butts into" ruck
-    ONFIELD_SLOTS = [
-        # Back 6
-        ("Key Defender", 32, 15),
-        ("Key Defender", 63, 15),
-        ("Gen. Defender", 32, 25),
-        ("Gen. Defender", 63, 25),
-        ("Gen. Defender", 32, 35),
-        ("Gen. Defender", 63, 35),
-
-        # Midfield
-        ("Wing", 20, 54),
-        ("Ruck", 48, 43),
-        ("Wing", 76, 54),
-        ("Midfielder", 48, 50),
-        ("Midfielder", 48, 57),
-        ("Midfielder", 48, 64),
-
-        # Forward 6
-        ("Gen. Forward", 32, 72),
-        ("Gen. Forward", 63, 72),
-        ("Gen. Forward", 48, 82),
-        ("Key Forward", 20, 82),
-        ("Mid-Forward", 48, 93),
-        ("Key Forward", 76, 82),
-    ]
-
-    BENCH_X = 116
-    BENCH_YS = [24, 36, 48, 60, 72]
-
-    # ================= HELPERS =================
-    def pick_best_of_positions(pos_list: List[str]):
-        """
-        Returns best available player across multiple Summary positions,
-        based on Rating, excluding already-used players.
-        """
-        sub = merged[merged["Position"].isin(pos_list)].copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-        return None
-
-    
-    
-    def _img_to_b64(path: str) -> Optional[str]:
-        try:
-            with open(path, "rb") as f:
-                return base64.b64encode(f.read()).decode()
-        except Exception:
-            return None
-
-    def _norm(s: str) -> str:
-        return "".join(c for c in str(s).lower().strip() if c.isalnum())
-
-    def find_col(df, keywords: List[str]) -> Optional[str]:
-        kws = [_norm(k) for k in keywords]
-        for c in df.columns:
-            nc = _norm(c)
-            if all(k in nc for k in kws):
-                return c
-        return None
-
-    def safe_float(x):
-        try:
-            return float(x)
-        except Exception:
-            return None
-
-    def split_name(full_name: str):
-        parts = str(full_name).strip().split()
-        first = parts[0] if len(parts) >= 1 else ""
-        last = parts[-1] if len(parts) >= 2 else ""
-        return first, last
-
-    def position_group(pos: str) -> str:
-        p = (pos or "").strip().lower()
-        if "defend" in p:
-            return "def"
-        if "mid" in p:
-            return "mid"
-        if "wing" in p or "gen. forward" in p or "general forward" in p:
-            return "wingfwd"
-        if "ruck" in p or "key forward" in p:
-            return "ruckkf"
-        return "other"
-
-    def _unpack_colour(col):
-        if isinstance(col, (tuple, list)) and len(col) >= 2:
-            return str(col[0]), str(col[1])
-        return str(col), "#0b0b0b"
-
-    def is_defender(pos: str) -> bool:
-        return "defend" in str(pos).lower()
-
-    # ================= LOAD: SUMMARY FOR POSITIONS =================
-    summary_df = load_player_summary()
-    if summary_df is None or summary_df.empty:
-        st.error("Summary sheet failed to load (positions are required).")
-        st.stop()
-
-    summary_df = summary_df.copy()
-    summary_df["Team"] = summary_df["Team"].replace({"GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"})
-
-    s_name = find_col(summary_df, ["player"]) or find_col(summary_df, ["name"])
-    s_pos  = "Position" if "Position" in summary_df.columns else find_col(summary_df, ["position"])
-    s_num  = find_col(summary_df, ["jumper"]) or find_col(summary_df, ["guernsey"]) or find_col(summary_df, ["number"])
-
-    if not s_name or not s_pos or "Team" not in summary_df.columns:
-        with st.expander("Debug – Summary columns"):
-            st.write(list(summary_df.columns))
-            st.dataframe(summary_df.head(), use_container_width=True)
-        st.error("Summary sheet missing required columns (Team/Player/Position).")
-        st.stop()
-
-    # ================= LOAD: SEASON SHEET FOR RATINGS =================
-    seasons = get_player_seasons()
-    season = 2025 if 2025 in seasons else (seasons[0] if seasons else None)
-    if season is None:
-        st.error("No season sheets found (ratings are required).")
-        st.stop()
-
-    season_df = load_players(season)
-    if season_df is None or season_df.empty:
-        st.error(f"No player ratings found for season {season}.")
-        st.stop()
-
-    season_df = season_df.copy()
-    season_df["Team"] = season_df["Team"].replace({"GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"})
-
-    p_name = find_col(season_df, ["player"]) or find_col(season_df, ["name"])
-    p_rating = (
-        find_col(season_df, ["ratingpoints", "avg"])
-        or find_col(season_df, ["ratingpoints"])
-        or find_col(season_df, ["rating", "avg"])
-        or find_col(season_df, ["rating"])
-    )
-
-    if not p_name or not p_rating or "Team" not in season_df.columns:
-        with st.expander("Debug – Season columns"):
-            st.write(list(season_df.columns))
-            st.dataframe(season_df.head(), use_container_width=True)
-        st.error("Season sheet missing required columns (Team/Player/Rating).")
-        st.stop()
-
-    # ================= TEAM SELECT =================
-    teams = sorted(set(summary_df["Team"].dropna().unique()) & set(season_df["Team"].dropna().unique()))
-    team = st.selectbox("Select Team", teams)
-
-    s_team = summary_df[summary_df["Team"] == team].copy()
-    p_team = season_df[season_df["Team"] == team].copy()
-
-    # ================= MERGE: POSITIONS + RATINGS =================
-    def _key(df, team_col="Team", player_col="Player"):
-        return df[team_col].astype(str).str.strip().str.lower() + "||" + df[player_col].astype(str).str.strip().str.lower()
-
-    s_team = s_team.rename(columns={s_name: "Player"}).copy()
-    p_team = p_team.rename(columns={p_name: "Player"}).copy()
-
-    s_team["__k"] = _key(s_team, "Team", "Player")
-    p_team["__k"] = _key(p_team, "Team", "Player")
-
-    merged = s_team[["Team", "Player", s_pos] + ([s_num] if s_num else []) + ["__k"]].merge(
-        p_team[["__k", p_rating]],
-        on="__k",
-        how="left",
-        validate="one_to_one"
-    )
-
-    merged = merged.rename(columns={s_pos: "Position", p_rating: "Rating"})
-    if s_num:
-        merged = merged.rename(columns={s_num: "Jumper"})
-    else:
-        merged["Jumper"] = ""
-
-    # Drop players with no rating (can still show as blanks if you want)
-    merged["Rating"] = pd.to_numeric(merged["Rating"], errors="coerce")
-
-    if merged["Rating"].dropna().empty:
-        st.error("No ratings matched after merge (Player/Team mismatch between Summary and Season sheets).")
-        with st.expander("Debug – merge sample"):
-            st.dataframe(merged.head(30), use_container_width=True)
-        st.stop()
-
-    ratings_all = merged["Rating"]
-
-    # ================= SELECT BEST 23 =================
-    used = set()
-    magnets = []  # (x,y,grp,num,first,last,rating_txt,bg,fg)
-
-    def pick_best_by_position(pos_label: str):
-        sub = merged.copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-
-        # exact position match from Summary (this is what you need for Wings)
-        sub_pos = sub[sub["Position"] == pos_label]
-        for _, r in sub_pos.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-
-        # fallback: next best player overall
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-        return None
-
-    def pick_best_any(exclude_defenders: bool):
-        sub = merged.copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-        if exclude_defenders:
-            sub = sub[~sub["Position"].astype(str).str.lower().str.contains("defend")]
-
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-        return None
-
-    def add_slot(x, y, slot_label: str, row):
-        if row is None:
-            first, last = split_name(slot_label)
-            magnets.append((x, y, "other", "", first, last, "", "#777777", "#111111"))
-            return
-
-        first, last = split_name(row["Player"])
-        rating = safe_float(row["Rating"])
-        rating_txt = "" if rating is None else f"{rating:.1f}"
-
-        bgc, fgc = _unpack_colour(rating_colour_for_value(rating, ratings_all))
-
-        grp = position_group(row["Position"])
-        num_txt = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
-
-        magnets.append((x, y, grp, num_txt, first, last, rating_txt, bgc, fgc))
-
-# On-field 18 (with 2 hybrid slots)
-
-    for pos_label, x, y in ONFIELD_SLOTS:
-
-        # Hybrid 1: last midfield spot -> best of Midfielder OR Mid-Forward
-        if pos_label == "Midfielder" and (x, y) == (48, 64):
-            r = pick_best_of_positions(["Midfielder", "Mid-Forward"])
-            # label it based on what we actually picked (optional)
-            add_slot(x, y, "Midfielder", r)
-            continue
-
-        # Hybrid 2: Mid-Forward spot -> best of Mid-Forward OR Midfielder
-        if pos_label == "Mid-Forward":
-            r = pick_best_of_positions(["Mid-Forward", "Midfielder"])
-            add_slot(x, y, "Mid-Forward", r)
-            continue
-
-        # Normal slots
-        r = pick_best_by_position(pos_label)
-        add_slot(x, y, pos_label, r)
-
-
-    # Bench rule:
-    # 1 defender (KD/GD) then next best 4 non-defenders regardless of position
-    bench_def = pick_best_any(exclude_defenders=False)
-    # ensure bench_def is actually a defender; if not, find best defender
-    if bench_def is None or not is_defender(bench_def["Position"]):
-        # find best defender specifically
-        sub = merged.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-        bench_def = None
-        for _, r in sub.iterrows():
-            if r["Player"] in used:
-                continue
-            if is_defender(r["Position"]):
-                used.add(r["Player"])
-                bench_def = r
-                break
-
-    add_slot(BENCH_X, BENCH_YS[0], "Bench Defender", bench_def)
-
-    for y in BENCH_YS[1:]:
-        r = pick_best_any(exclude_defenders=True)
-        add_slot(BENCH_X, y, "Bench", r)
-
-    # ================= RENDER =================
-    bg = _img_to_b64(FIELD_IMAGE_PATH)
-
-    magnets_html = "".join(
-        f"""<div class="wrap" style="left:{x}%; top:{y}%;">
-  <div class="magnet {grp}">
-    <div class="num">{num}</div>
-    <div class="name">
-      <div class="first">{first}</div>
-      <div class="last">{last}</div>
-    </div>
-    <div class="rating" style="background:{rb}; color:{rf};">{rt}</div>
-  </div>
-</div>"""
-        for (x, y, grp, num, first, last, rt, rb, rf) in magnets
-    )
-
-    field_bg_css = (
-        f'background-image: url("data:image/png;base64,{bg}");'
-        if bg else "background: #ffffff; border: 1px solid rgba(0,0,0,0.08);"
-    )
-
-
-
-    html = f"""
-<style>
-.stage {{ display:flex; justify-content:center; padding: 8px 0 18px; }}
-.field {{
-  position: relative;
-  width: {FIELD_WIDTH_PX}px;
-  height: {FIELD_HEIGHT_PX}px;
-  margin: 0 auto;
-  {field_bg_css}
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 18px;
-}}
-.wrap {{ position:absolute; transform: translate(-50%, -50%); }}
-
-.magnet {{
-  width: 270px;
-  height: 54px;
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  border-radius: 18px;
-  padding: 8px 12px;
-  color: #fff;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  box-shadow: 0 10px 20px rgba(0,0,0,.35);
-}}
-.num {{
-  font-size: 16px;
-  font-weight: 950;
-  min-width: 34px;
-  text-align: center;
-  white-space: nowrap;
-  flex-shrink: 0;
-}}
-.name {{ flex: 1; line-height: 1.05; min-width: 0; }}
-.first {{ font-size: 10px; font-weight: 750; text-transform: uppercase; opacity: 0.95; white-space: nowrap; }}
-.last {{ font-size: 14px; font-weight: 950; text-transform: uppercase; white-space: nowrap; }}
-.rating {{
-  width: 46px;
-  height: 34px;
-  border-radius: 10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size: 12px;
-  font-weight: 950;
-  white-space: nowrap;
-  flex-shrink: 0;
-}}
-
-.def     {{ background: linear-gradient(135deg,#ff2b2b,#8b0000); }}
-.mid     {{ background: linear-gradient(135deg,#00d26a,#005522); }}
-.wingfwd {{ background: linear-gradient(135deg,#ffa500,#7a3f00); }}
-.ruckkf  {{ background: linear-gradient(135deg,#0096ff,#003a78); }}
-.other   {{ background: linear-gradient(135deg,#333,#111); }}
-
-@media (max-width: 1200px) {{
-  .field {{ width: 94vw; height: 86vh; }}
-  .magnet {{ width: 245px; height: 52px; }}
-}}
-</style>
-
-<div class="stage">
-  <div class="field">{magnets_html}</div>
-</div>
-"""
-
-    st.markdown(textwrap.dedent(html).strip(), unsafe_allow_html=True)
-
-    st.caption(f"Positions source: Summary sheet | Ratings source: season {season} ({p_rating}).")
-
-    with st.expander("Show selected 23 (table)"):
-        st.dataframe(
-            merged[["Player", "Team", "Position", "Jumper", "Rating"]].sort_values("Rating", ascending=False).head(35),
-            use_container_width=True
-        )
-
-# ================= REMAINING SQUAD =================
-
-if page == "Best 23":
-
-    if "merged" not in locals() or "used" not in locals():
-        st.stop()
-
-
-    st.subheader("Remaining Squad (Not Selected in Best 23)")
-
-    remaining = merged[~merged["Player"].isin(used)].copy()
-    remaining = remaining.dropna(subset=["Rating"])
-    remaining = remaining.sort_values("Rating", ascending=False)
-
-
-    if remaining.empty:
-        st.info("No remaining players.")
-    else:
-        # Position buckets (based on Summary positions)
-        POSITION_COLUMNS = {
-            "Key Defender": ["Key Defender"],
-            "Gen. Defender": ["Gen. Defender"],
-            "Wing": ["Wing"],
-            "Midfielder": ["Midfielder"],
-            "Ruck": ["Ruck"],
-            # Forwards split into 3 columns (as requested)
-            "Key Forward": ["Key Forward"],
-            "Gen. Forward": ["Gen. Forward"],
-            "Mid-Forward": ["Mid-Forward"],
-        }
-
-    cols = st.columns(len(POSITION_COLUMNS))
-
-    for col, (title, pos_list) in zip(cols, POSITION_COLUMNS.items()):
-        with col:
-            st.markdown(f"**{title}**")
-
-            sub = remaining[remaining["Position"].isin(pos_list)]
-
-            if sub.empty:
-                st.caption("—")
-                continue
-
-            for _, r in sub.iterrows():
-                rating = r["Rating"]
-                rating_txt = f"{rating:.1f}" if pd.notna(rating) else ""
-
-                st.markdown(
-                    f"""
-                    <div style="
-                        margin-bottom:8px;
-                        padding:6px 8px;
-                        border-radius:8px;
-                        background:rgba(255,255,255,0.04);
-                        font-size:13px;
-                        ">
-                        <div style="font-weight:700;">{r['Player']}</div>
-                        <div style="opacity:0.7; font-size:11px;">
-                            {rating_txt}
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
