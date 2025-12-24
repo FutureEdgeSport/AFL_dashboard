@@ -6225,465 +6225,1187 @@ elif page == "Team List Summary":
     
     st.markdown(summary_html, unsafe_allow_html=True)
 
-# ================= BEST 23 =================
+# ================= BEST 23 (ALL-IN) =================
 elif page == "Best 23":
-    st.title("🏉 Best 23 – Auto Selected from Depth Chart")
 
-    import base64, textwrap
-    from typing import List, Optional
+    import base64
+    import pandas as pd
+    
 
-    # ================= CONFIG =================
+
+    # ------------------------------
+    # Safe defaults (prevent NameError on first render)
+    # ------------------------------
+    selected_a = pd.DataFrame()
+    selected_b = pd.DataFrame()
+
+    MANUAL_SLOTS = [
+        ("Back 6", 6),
+        ("Midfield", 6),
+        ("Forward 6", 6),
+        ("Bench", 5),
+    ]
+
+
+    st.title("🏉 Best 23 – Model, Compare & Select")
+
+    # =====================================================
+    # CONFIG
+    # =====================================================
     FIELD_IMAGE_PATH = str(BASE_DIR / "assets" / "field_blank.png")
     FIELD_WIDTH_PX = 1100
     FIELD_HEIGHT_PX = 1000
 
-    # Mid block tightened so it "butts into" ruck
     ONFIELD_SLOTS = [
-        # Back 6
+        # Back 6 (2 Key, 4 Gen)
         ("Key Defender", 32, 15),
         ("Key Defender", 63, 15),
-        ("Gen. Defender", 32, 25),
-        ("Gen. Defender", 63, 25),
-        ("Gen. Defender", 32, 35),
-        ("Gen. Defender", 63, 35),
+        ("Gen. Defender", 32, 33),
+        ("Gen. Defender", 63, 33),
+        ("Gen. Defender", 32, 24),
+        ("Gen. Defender", 63, 24),
 
-        # Midfield
-        ("Wing", 20, 54),
-        ("Ruck", 48, 43),
-        ("Wing", 76, 54),
-        ("Midfielder", 48, 50),
-        ("Midfielder", 48, 57),
+        # Midfield (butted into ruck)
+        ("Wing", 20, 55),
+        ("Ruck", 48, 46),
+        ("Wing", 76, 55),
+        ("Midfielder", 48, 52),
+        ("Midfielder", 48, 58),
         ("Midfielder", 48, 64),
 
         # Forward 6
-        ("Gen. Forward", 32, 72),
-        ("Gen. Forward", 63, 72),
-        ("Gen. Forward", 48, 82),
-        ("Key Forward", 20, 82),
-        ("Mid-Forward", 48, 93),
-        ("Key Forward", 76, 82),
+        ("Key Forward", 32, 93),
+        ("Gen. Forward", 32, 75),
+        ("Gen. Forward", 63, 75),
+        ("Mid-Forward", 32, 84),
+        ("Gen. Forward", 63, 84),
+        ("Key Forward", 63, 93),
     ]
 
     BENCH_X = 116
     BENCH_YS = [24, 36, 48, 60, 72]
 
-    # ================= HELPERS =================
-    def pick_best_of_positions(pos_list: List[str]):
-        """
-        Returns best available player across multiple Summary positions,
-        based on Rating, excluding already-used players.
-        """
-        sub = merged[merged["Position"].isin(pos_list)].copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
+    # =====================================================
+    # HELPERS
+    # =====================================================
+    def norm(s):
+        return "".join(c for c in str(s).lower().strip() if c.isalnum())
 
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
+    def find_col(df, keys):
+        for c in df.columns:
+            if all(k in norm(c) for k in [norm(x) for x in keys]):
+                return c
         return None
 
-    
-    
-    def _img_to_b64(path: str) -> Optional[str]:
+    def split_name(n):
+        p = str(n).split()
+        return p[0], p[-1] if len(p) > 1 else ""
+
+    def pos_group(p):
+        p = str(p).lower()
+        if "defend" in p: return "def"
+        if "mid" in p: return "mid"
+        if "wing" in p or "gen. forward" in p: return "wingfwd"
+        if "ruck" in p or "key forward" in p: return "ruckkf"
+        return "other"
+
+    def img_b64(path):
         try:
             with open(path, "rb") as f:
                 return base64.b64encode(f.read()).decode()
         except Exception:
-            return None
+            return ""
 
-    def _norm(s: str) -> str:
-        return "".join(c for c in str(s).lower().strip() if c.isalnum())
-
-    def find_col(df, keywords: List[str]) -> Optional[str]:
-        kws = [_norm(k) for k in keywords]
-        for c in df.columns:
-            nc = _norm(c)
-            if all(k in nc for k in kws):
-                return c
-        return None
-
-    def safe_float(x):
+    def rating_percentile(val, series) -> float:
         try:
-            return float(x)
+            if val is None:
+                return 0.0
+            s = pd.to_numeric(series, errors="coerce")
+            s = s[~pd.isna(s)]
+            if s.empty:
+                return 0.0
+            return float((s <= float(val)).mean())
         except Exception:
-            return None
+            return 0.0
 
-    def split_name(full_name: str):
-        parts = str(full_name).strip().split()
-        first = parts[0] if len(parts) >= 1 else ""
-        last = parts[-1] if len(parts) >= 2 else ""
-        return first, last
+    def rating_style(val, series):
+        """
+        Returns (bg, fg, brightness) for the rating pill.
+        Uses your existing rating_colour_for_value if present.
+        """
+        # Base colour from your existing function (if it returns tuple/list)
+        bg, fg = "#ffffff", "#000000"
+        try:
+            c = rating_colour_for_value(val, series)
+            if isinstance(c, (tuple, list)) and len(c) >= 2:
+                bg, fg = str(c[0]), str(c[1])
+            else:
+                bg, fg = str(c), "#000000"
+        except Exception:
+            pass
 
-    def position_group(pos: str) -> str:
-        p = (pos or "").strip().lower()
-        if "defend" in p:
-            return "def"
-        if "mid" in p:
-            return "mid"
-        if "wing" in p or "gen. forward" in p or "general forward" in p:
-            return "wingfwd"
-        if "ruck" in p or "key forward" in p:
-            return "ruckkf"
-        return "other"
+        # Intensity (stronger rating = brighter)
+        pct = rating_percentile(val, series)
+        brightness = 0.85 + (0.35 * pct)   # 0.85 → 1.20
+        return bg, fg, brightness
 
-    def _unpack_colour(col):
-        if isinstance(col, (tuple, list)) and len(col) >= 2:
-            return str(col[0]), str(col[1])
-        return str(col), "#0b0b0b"
 
-    def is_defender(pos: str) -> bool:
-        return "defend" in str(pos).lower()
-
-    # ================= LOAD: SUMMARY FOR POSITIONS =================
-    summary_df = load_player_summary()
-    if summary_df is None or summary_df.empty:
-        st.error("Summary sheet failed to load (positions are required).")
-        st.stop()
-
-    summary_df = summary_df.copy()
-    summary_df["Team"] = summary_df["Team"].replace({"GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"})
-
-    s_name = find_col(summary_df, ["player"]) or find_col(summary_df, ["name"])
-    s_pos  = "Position" if "Position" in summary_df.columns else find_col(summary_df, ["position"])
-    s_num  = find_col(summary_df, ["jumper"]) or find_col(summary_df, ["guernsey"]) or find_col(summary_df, ["number"])
-
-    if not s_name or not s_pos or "Team" not in summary_df.columns:
-        with st.expander("Debug – Summary columns"):
-            st.write(list(summary_df.columns))
-            st.dataframe(summary_df.head(), use_container_width=True)
-        st.error("Summary sheet missing required columns (Team/Player/Position).")
-        st.stop()
-
-    # ================= LOAD: SEASON SHEET FOR RATINGS =================
+    # =====================================================
+    # LOAD & MERGE DATA (ONCE)
+    # =====================================================
+    summary = load_player_summary()
     seasons = get_player_seasons()
     season = 2025 if 2025 in seasons else (seasons[0] if seasons else None)
+
     if season is None:
-        st.error("No season sheets found (ratings are required).")
+        st.error("No season data available.")
         st.stop()
 
-    season_df = load_players(season)
-    if season_df is None or season_df.empty:
-        st.error(f"No player ratings found for season {season}.")
+    ratings = load_players(season)
+
+    s_name = find_col(summary, ["player"]) or find_col(summary, ["name"])
+    s_pos  = find_col(summary, ["position"])
+    s_num  = find_col(summary, ["jumper"]) or find_col(summary, ["guernsey"])
+
+    r_name = find_col(ratings, ["player"]) or find_col(ratings, ["name"])
+    r_val  = find_col(ratings, ["rating"])
+
+    if not all([s_name, s_pos, r_name, r_val]):
+        st.error("Required columns missing in Summary or Ratings sheets.")
         st.stop()
 
-    season_df = season_df.copy()
-    season_df["Team"] = season_df["Team"].replace({"GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"})
+    summary = summary.rename(columns={s_name:"Player", s_pos:"Position"})
+    ratings = ratings.rename(columns={r_name:"Player", r_val:"Rating"})
+    summary["Jumper"] = summary[s_num] if s_num else ""
 
-    p_name = find_col(season_df, ["player"]) or find_col(season_df, ["name"])
-    p_rating = (
-        find_col(season_df, ["ratingpoints", "avg"])
-        or find_col(season_df, ["ratingpoints"])
-        or find_col(season_df, ["rating", "avg"])
-        or find_col(season_df, ["rating"])
-    )
+    def make_key(df):
+        return df["Team"].astype(str).str.lower().str.strip() + "||" + df["Player"].astype(str).str.lower().str.strip()
 
-    if not p_name or not p_rating or "Team" not in season_df.columns:
-        with st.expander("Debug – Season columns"):
-            st.write(list(season_df.columns))
-            st.dataframe(season_df.head(), use_container_width=True)
-        st.error("Season sheet missing required columns (Team/Player/Rating).")
-        st.stop()
+    summary["__k"] = make_key(summary)
+    ratings["__k"] = make_key(ratings)
 
-    # ================= TEAM SELECT =================
-    teams = sorted(set(summary_df["Team"].dropna().unique()) & set(season_df["Team"].dropna().unique()))
-    team = st.selectbox("Select Team", teams)
-
-    s_team = summary_df[summary_df["Team"] == team].copy()
-    p_team = season_df[season_df["Team"] == team].copy()
-
-    # ================= MERGE: POSITIONS + RATINGS =================
-    def _key(df, team_col="Team", player_col="Player"):
-        return df[team_col].astype(str).str.strip().str.lower() + "||" + df[player_col].astype(str).str.strip().str.lower()
-
-    s_team = s_team.rename(columns={s_name: "Player"}).copy()
-    p_team = p_team.rename(columns={p_name: "Player"}).copy()
-
-    s_team["__k"] = _key(s_team, "Team", "Player")
-    p_team["__k"] = _key(p_team, "Team", "Player")
-
-    merged = s_team[["Team", "Player", s_pos] + ([s_num] if s_num else []) + ["__k"]].merge(
-        p_team[["__k", p_rating]],
+    merged_all = summary.merge(
+        ratings[["__k", "Rating"]],
         on="__k",
-        how="left",
-        validate="one_to_one"
+        how="left"
     )
 
-    merged = merged.rename(columns={s_pos: "Position", p_rating: "Rating"})
-    if s_num:
-        merged = merged.rename(columns={s_num: "Jumper"})
-    else:
-        merged["Jumper"] = ""
+    merged_all["Rating"] = pd.to_numeric(merged_all["Rating"], errors="coerce")
+    merged_all = merged_all.dropna(subset=["Rating"])
 
-    # Drop players with no rating (can still show as blanks if you want)
-    merged["Rating"] = pd.to_numeric(merged["Rating"], errors="coerce")
+    teams = sorted(merged_all["Team"].dropna().unique())
 
-    if merged["Rating"].dropna().empty:
-        st.error("No ratings matched after merge (Player/Team mismatch between Summary and Season sheets).")
-        with st.expander("Debug – merge sample"):
-            st.dataframe(merged.head(30), use_container_width=True)
-        st.stop()
+    # =====================================================
+    # BEST 23 ENGINE
+    # =====================================================
+    def build_best23(team):
+        df = merged_all[merged_all["Team"] == team].sort_values("Rating", ascending=False)
+        used = set()
+        slots = []
 
-    ratings_all = merged["Rating"]
+        def pick(position):
+            # exact position first
+            for _, r in df[df["Position"] == position].iterrows():
+                if r["Player"] not in used:
+                    used.add(r["Player"])
+                    return r
+            # fallback: next best overall
+            for _, r in df.iterrows():
+                if r["Player"] not in used:
+                    used.add(r["Player"])
+                    return r
+            return None
 
-    # ================= SELECT BEST 23 =================
-    used = set()
-    magnets = []  # (x,y,grp,num,first,last,rating_txt,bg,fg)
+        def pick_best_of_positions(pos_list):
+            """
+            Pick best available across multiple positions (highest Rating).
+            """
+            sub = df[df["Position"].isin(pos_list)].copy().sort_values("Rating", ascending=False)
 
-    def pick_best_by_position(pos_label: str):
-        sub = merged.copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
+            for _, r in sub.iterrows():
+                if r["Player"] not in used:
+                    used.add(r["Player"])
+                    return r
 
-        # exact position match from Summary (this is what you need for Wings)
-        sub_pos = sub[sub["Position"] == pos_label]
-        for _, r in sub_pos.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
+            # fallback: next best overall
+            for _, r in df.iterrows():
+                if r["Player"] not in used:
+                    used.add(r["Player"])
+                    return r
+            return None
 
-        # fallback: next best player overall
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-        return None
+        # ------------------------------
+        # On-field 18 (with 2 hybrid slots)
+        # ------------------------------
+        for pos, x, y in ONFIELD_SLOTS:
 
-    def pick_best_any(exclude_defenders: bool):
-        sub = merged.copy()
-        sub = sub.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-        if exclude_defenders:
-            sub = sub[~sub["Position"].astype(str).str.lower().str.contains("defend")]
-
-        for _, r in sub.iterrows():
-            if r["Player"] not in used:
-                used.add(r["Player"])
-                return r
-        return None
-
-    def add_slot(x, y, slot_label: str, row):
-        if row is None:
-            first, last = split_name(slot_label)
-            magnets.append((x, y, "other", "", first, last, "", "#777777", "#111111"))
-            return
-
-        first, last = split_name(row["Player"])
-        rating = safe_float(row["Rating"])
-        rating_txt = "" if rating is None else f"{rating:.1f}"
-
-        bgc, fgc = _unpack_colour(rating_colour_for_value(rating, ratings_all))
-
-        grp = position_group(row["Position"])
-        num_txt = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
-
-        magnets.append((x, y, grp, num_txt, first, last, rating_txt, bgc, fgc))
-
-# On-field 18 (with 2 hybrid slots)
-
-    for pos_label, x, y in ONFIELD_SLOTS:
-
-        # Hybrid 1: last midfield spot -> best of Midfielder OR Mid-Forward
-        if pos_label == "Midfielder" and (x, y) == (48, 64):
-            r = pick_best_of_positions(["Midfielder", "Mid-Forward"])
-            # label it based on what we actually picked (optional)
-            add_slot(x, y, "Midfielder", r)
-            continue
-
-        # Hybrid 2: Mid-Forward spot -> best of Mid-Forward OR Midfielder
-        if pos_label == "Mid-Forward":
-            r = pick_best_of_positions(["Mid-Forward", "Midfielder"])
-            add_slot(x, y, "Mid-Forward", r)
-            continue
-
-        # Normal slots
-        r = pick_best_by_position(pos_label)
-        add_slot(x, y, pos_label, r)
-
-
-    # Bench rule:
-    # 1 defender (KD/GD) then next best 4 non-defenders regardless of position
-    bench_def = pick_best_any(exclude_defenders=False)
-    # ensure bench_def is actually a defender; if not, find best defender
-    if bench_def is None or not is_defender(bench_def["Position"]):
-        # find best defender specifically
-        sub = merged.dropna(subset=["Rating"]).sort_values("Rating", ascending=False)
-        bench_def = None
-        for _, r in sub.iterrows():
-            if r["Player"] in used:
+            # HYBRID 1: last midfield slot at (48,64)
+            if pos == "Midfielder" and (x, y) == (48, 64):
+                r = pick_best_of_positions(["Midfielder", "Mid-Forward"])
+                slots.append((x, y, pos, r, False))
                 continue
-            if is_defender(r["Position"]):
-                used.add(r["Player"])
-                bench_def = r
+
+            # HYBRID 2: Mid-Forward slot at (32,84)
+            if pos == "Mid-Forward" and (x, y) == (32, 84):
+                r = pick_best_of_positions(["Mid-Forward", "Midfielder"])
+                slots.append((x, y, pos, r, False))
+                continue
+
+            # Normal slots
+            slots.append((x, y, pos, pick(pos), False))
+
+        # ------------------------------
+        # Bench: 1 defender, then best remaining 4 non-defenders
+        # ------------------------------
+        bench = df[~df["Player"].isin(used)]
+        def_pick = bench[bench["Position"].str.contains("Defend", case=False, na=False)].head(1)
+
+        if not def_pick.empty:
+            r = def_pick.iloc[0]
+            used.add(r["Player"])
+            slots.append((BENCH_X, BENCH_YS[0], "Bench", r, True))
+
+        # now next best 4 non-defenders
+        for y in BENCH_YS[1:]:
+            bench = df[~df["Player"].isin(used)]
+            bench = bench[~bench["Position"].str.contains("Defend", case=False, na=False)]
+            if bench.empty:
                 break
+            r = bench.iloc[0]
+            used.add(r["Player"])
+            slots.append((BENCH_X, y, "Bench", r, True))
 
-    add_slot(BENCH_X, BENCH_YS[0], "Bench Defender", bench_def)
+        return slots, used
 
-    for y in BENCH_YS[1:]:
-        r = pick_best_any(exclude_defenders=True)
-        add_slot(BENCH_X, y, "Bench", r)
 
-    # ================= RENDER =================
-    bg = _img_to_b64(FIELD_IMAGE_PATH)
+    # =====================================================
+# AUTO BEST 23 DISPLAY
+# =====================================================
+    team = st.selectbox("Select Team", teams)
+    slots, used = build_best23(team)
 
-    magnets_html = "".join(
-        f"""<div class="wrap" style="left:{x}%; top:{y}%;">
-  <div class="magnet {grp}">
-    <div class="num">{num}</div>
-    <div class="name">
-      <div class="first">{first}</div>
-      <div class="last">{last}</div>
-    </div>
-    <div class="rating" style="background:{rb}; color:{rf};">{rt}</div>
-  </div>
-</div>"""
-        for (x, y, grp, num, first, last, rt, rb, rf) in magnets
-    )
+    bg = img_b64(FIELD_IMAGE_PATH)
 
-    field_bg_css = (
-        f'background-image: url("data:image/png;base64,{bg}");'
-        if bg else "background: #ffffff; border: 1px solid rgba(0,0,0,0.08);"
-    )
+    # ✅ INITIALISE HERE
+    magnets_html = ""
 
+    team_ratings_series = merged_all.loc[
+        merged_all["Team"] == team, "Rating"
+    ]
+
+    for x, y, _, r, is_bench in slots:
+        if r is None:
+            continue
+
+        first, last = split_name(r["Player"])
+        grp = pos_group(r["Position"])
+        num = "" if pd.isna(r["Jumper"]) else str(r["Jumper"])
+        rat = f"{r['Rating']:.1f}"
+        fade = "opacity:0.55;" if is_bench else ""
+
+        bgc, fgc, bri = rating_style(r["Rating"], team_ratings_series)
+
+        magnets_html += f"""
+        <div class="wrap" style="left:{x}%; top:{y}%; {fade}">
+        <div class="magnet {grp}">
+            <div class="num">{num}</div>
+            <div class="name">
+            <div class="first">{first}</div>
+            <div class="last">{last}</div>
+            </div>
+            <div class="rating"
+                style="background:{bgc};
+                        color:{fgc};
+                        filter:brightness({bri:.3f});">
+            {rat}
+            </div>
+        </div>
+        </div>
+        """
 
 
     html = f"""
-<style>
-.stage {{ display:flex; justify-content:center; padding: 8px 0 18px; }}
-.field {{
-  position: relative;
-  width: {FIELD_WIDTH_PX}px;
-  height: {FIELD_HEIGHT_PX}px;
-  margin: 0 auto;
-  {field_bg_css}
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 18px;
-}}
-.wrap {{ position:absolute; transform: translate(-50%, -50%); }}
+    <style>
+    .field {{
+    position: relative;
+    width: {FIELD_WIDTH_PX}px;
+    height: {FIELD_HEIGHT_PX}px;
+    background: url("data:image/png;base64,{bg}") center/contain no-repeat;
+    margin: auto;
+    }}
 
-.magnet {{
-  width: 270px;
-  height: 54px;
+    .wrap {{
+    position: absolute;
+    transform: translate(-50%, -50%);
+    }}
+
+    .magnet {{
+    width: 235px;                 /* ⬅ narrower */
+    height: 44px;                 /* ⬅ shorter */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    color: #fff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font-weight: 800;
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }}
+
+    .num {{
+    min-width: 30px;
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.95;
+    }}
+
+    .name {{
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    }}
+
+    .first {{
+    font-size: 9px;
+    opacity: 0.9;
+    }}
+
+    .last {{
+    font-size: 13px;
+    }}
+
+    .rating {{
+    margin-left: auto;            /* ⬅ right aligned */
+    width: 40px;
+    height: 28px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    background: #fff;
+    color: #000;
+    }}
+
+    .def     {{ background: #c62828; }}
+    .mid     {{ background: #2e7d32; }}
+    .wingfwd {{ background: #ef6c00; }}
+    .ruckkf  {{ background: #1565c0; }}
+    .other   {{ background: #333; }}
+    </style>
+
+    <div class="field">
+    {magnets_html}
+    </div>
+    """
+
+    import streamlit.components.v1 as components
+    components.html(
+        textwrap.dedent(html).strip(),
+        height=FIELD_HEIGHT_PX + 20,
+        scrolling=False
+    )
+
+
+    # =====================================================
+    # REMAINING SQUAD
+    # =====================================================
+    st.markdown("---")
+    st.subheader("Remaining Squad")
+
+    remaining = merged_all[
+        (merged_all["Team"] == team) &
+        (~merged_all["Player"].isin(used))
+    ].sort_values("Rating", ascending=False)
+
+    buckets = {
+        "Key Defender":["Key Defender"],
+        "Gen. Defender":["Gen. Defender"],
+        "Wing":["Wing"],
+        "Midfielder":["Midfielder"],
+        "Ruck":["Ruck"],
+        "Key Forward":["Key Forward"],
+        "Gen. Forward":["Gen. Forward"],
+        "Mid-Forward":["Mid-Forward"]
+    }
+
+    cols = st.columns(len(buckets))
+    for col, (label, plist) in zip(cols, buckets.items()):
+        with col:
+            st.markdown(f"**{label}**")
+            sub = remaining[remaining["Position"].isin(plist)]
+            if sub.empty:
+                st.caption("—")
+            else:
+                for _, r in sub.iterrows():
+                    st.caption(f"{r['Player']} ({r['Rating']:.1f})")
+
+    # =====================================================
+    # FOUNDATION COMPLETE
+    # =====================================================
+    st.markdown("---")
+    st.info("Best 23 foundation is stable. Comparison & Manual Selection ready.")
+
+# =====================================================
+# BEST 23 COMPARISON (TEAM A vs TEAM B)
+# =====================================================
+import os, base64, textwrap
+import pandas as pd
+
+st.markdown("---")
+st.header("Best 23 Comparison")
+
+# -----------------------------------------------------
+# Changes in this version (for your sanity)
+# -----------------------------------------------------
+# 1) Logos 4x bigger and centred
+# 2) Team average rating shown directly under each logo (centred)
+# 3) Header row height increased so logos never crop
+# 4) Removed green background from centre stat columns (clean pills only)
+# 5) Player rating pills conditionally formatted for ALL positions (incl. Mid/Mid-Fwd)
+# 6) Magnets never wrap (ellipsis)
+# 7) Forwards split: Key Forwards + Gen. Forwards (Mid-Forwards counted as Gen. Forwards)
+
+# ------------------------------
+# Settings
+# ------------------------------
+mode = st.radio(
+    "Comparison Mode",
+    ["Best 23 (All Players)", "Best 18 (On-field Only)"],
+    horizontal=True,
+    key="best23_compare_mode"
+)
+use_bench = (mode == "Best 23 (All Players)")
+
+c1, c2 = st.columns(2)
+with c1:
+    team_a = st.selectbox("Team A", teams, key="best23_team_a")
+with c2:
+    team_b = st.selectbox(
+        "Team B",
+        [t for t in teams if t != team_a],
+        key="best23_team_b"
+    )
+
+# ------------------------------
+# Helpers (logos + rating colour)
+# ------------------------------
+def _b64_file(path: str) -> str:
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    except Exception:
+        return ""
+
+def _team_logo_b64(team_name: str) -> str:
+    # uses your function name as per your note
+    try:
+        p = get_team_logo_path(team_name)
+        if isinstance(p, str) and os.path.exists(p):
+            return _b64_file(p)
+    except Exception:
+        pass
+    return ""
+
+def _rating_percentile(val, series) -> float:
+    try:
+        if val is None:
+            return 0.0
+        s = pd.to_numeric(series, errors="coerce")
+        s = s[~pd.isna(s)]
+        if s.empty:
+            return 0.0
+        return float((s <= float(val)).mean())
+    except Exception:
+        return 0.0
+
+def _rating_style(val, series):
+    """
+    Returns (bg, fg, brightness) for the rating pill.
+    Uses your existing rating_colour_for_value(val, series) if present.
+    """
+    bg, fg = "#ffffff", "#000000"
+    try:
+        c = rating_colour_for_value(val, series)
+        if isinstance(c, (tuple, list)) and len(c) >= 2:
+            bg, fg = str(c[0]), str(c[1])
+        else:
+            bg, fg = str(c), "#000000"
+    except Exception:
+        pass
+
+    pct = _rating_percentile(val, series)
+    bri = 0.85 + (0.35 * pct)  # 0.85 → 1.20
+    return bg, fg, bri
+
+def _safe_float(x):
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+# ------------------------------
+# Build Best 23 for both teams
+# ------------------------------
+slots_a, _used_a = build_best23(team_a)
+slots_b, _used_b = build_best23(team_b)
+
+# Use each team’s rating distribution for conditional pill styling
+team_a_series = merged_all.loc[merged_all["Team"] == team_a, "Rating"]
+team_b_series = merged_all.loc[merged_all["Team"] == team_b, "Rating"]
+
+def slots_to_df(slots, team_name: str):
+    rows = []
+    for _, _, _, r, is_bench in slots:
+        if r is None:
+            continue
+        rows.append({
+            "Team": team_name,
+            "Player": r.get("Player"),
+            "Jumper": r.get("Jumper", ""),
+            "Position": r.get("Position"),
+            "Rating": _safe_float(r.get("Rating")),
+            "IsBench": bool(is_bench),
+        })
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    if not use_bench:
+        df = df[df["IsBench"] == False].copy()
+    return df
+
+best_a = slots_to_df(slots_a, team_a)
+best_b = slots_to_df(slots_b, team_b)
+
+# ------------------------------
+# Category mapping (includes requested Forward split)
+# ------------------------------
+CATEGORY_MAP = {
+    "Key Defender": ["Key Defender"],
+    "Gen. Defender": ["Gen. Defender"],
+    "Wing": ["Wing"],
+    "Midfielder": ["Midfielder"],       # Mid-Forward NOT counted as midfielder here
+    "Ruck": ["Ruck"],
+    "Key Forward": ["Key Forward"],
+    "Gen. Forward": ["Gen. Forward", "Mid-Forward"],  # includes Mid-Forwards
+}
+
+def cat_df(df, cat_name):
+    pos_list = CATEGORY_MAP[cat_name]
+    if df.empty:
+        return df
+    return df[df["Position"].isin(pos_list)].copy()
+
+def avg_rating(df):
+    if df is None or df.empty:
+        return None
+    return float(pd.to_numeric(df["Rating"], errors="coerce").mean())
+
+overall_a = avg_rating(best_a)
+overall_b = avg_rating(best_b)
+
+import base64
+import streamlit.components.v1 as components
+
+def _img_to_b64(path: str) -> str:
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    except Exception:
+        return ""
+
+def _pill(val: str, bg="rgba(255,255,255,0.08)", fg="#FFFFFF", big=False):
+    fs = "34px" if big else "16px"
+    pad = "16px 22px" if big else "10px 14px"
+    br = "18px"
+    minw = "220px" if big else "120px"
+    return (
+        f"<div style=\""
+        f"display:inline-flex;"
+        f"align-items:center;"
+        f"justify-content:center;"
+        f"padding:{pad};"
+        f"border-radius:{br};"
+        f"background:{bg};"
+        f"color:{fg};"
+        f"font-weight:950;"
+        f"font-size:{fs};"
+        f"min-width:{minw};"
+        f"box-shadow:0 12px 30px rgba(0,0,0,.35);"
+        f"letter-spacing:0.4px;"
+        f"\">{val}</div>"
+    )
+
+def _diff_pill(d):
+    if d is None:
+        return _pill("—", bg="rgba(255,255,255,0.06)", big=True)
+    if d > 0:
+        return _pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
+    if d < 0:
+        return _pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
+    return _pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
+
+# ------------------------------
+# Build logo b64 (uses your working helper)
+# ------------------------------
+logo_a_path = get_team_logo_path(team_a) if "get_team_logo_path" in globals() else None
+logo_b_path = get_team_logo_path(team_b) if "get_team_logo_path" in globals() else None
+
+logo_a_b64 = _img_to_b64(logo_a_path) if logo_a_path else ""
+logo_b_b64 = _img_to_b64(logo_b_path) if logo_b_path else ""
+
+# ------------------------------
+# Values
+# ------------------------------
+overall_a_val = None if overall_a is None else float(overall_a)
+overall_b_val = None if overall_b is None else float(overall_b)
+net_val = None
+if overall_a_val is not None and overall_b_val is not None:
+    net_val = overall_a_val - overall_b_val
+
+overall_a_str = "" if overall_a_val is None else f"{overall_a_val:.2f}"
+overall_b_str = "" if overall_b_val is None else f"{overall_b_val:.2f}"
+
+# ------------------------------
+# Header HTML (taller + centered)
+# ------------------------------
+header_html = f"""
+<div class="b23Header">
+  <div class="teamCol">
+    {"<img class='logo' src='data:image/png;base64," + logo_a_b64 + "' />" if logo_a_b64 else "<div class='logoFallback'></div>"}
+    <div class="teamName">{team_a}</div>
+    <div class="label">OVERALL BEST 23 RATING</div>
+    {_pill(overall_a_str if overall_a_str else "—", big=True)}
+  </div>
+
+  <div class="midCol">
+    <div class="vsPill">VS</div>
+    <div class="netLabel">NET (A − B)</div>
+    {_diff_pill(net_val)}
+    <div class="subNote">Positive = Team A higher</div>
+  </div>
+
+  <div class="teamCol">
+    {"<img class='logo' src='data:image/png;base64," + logo_b_b64 + "' />" if logo_b_b64 else "<div class='logoFallback'></div>"}
+    <div class="teamName">{team_b}</div>
+    <div class="label">OVERALL BEST 23 RATING</div>
+    {_pill(overall_b_str if overall_b_str else "—", big=True)}
+  </div>
+</div>
+
+<style>
+.b23Header {{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 0.55fr 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 10px 8px 18px 8px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.02);
+}}
+
+.teamCol {{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 340px; /* ✅ prevents cropping */
+}}
+
+.logo {{
+  width: 420px;          /* ✅ big */
+  max-width: 90%;
+  height: 220px;         /* ✅ fixed box */
+  object-fit: contain;   /* ✅ never crop */
+  margin-top: 8px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
+}}
+
+.logoFallback {{
+  width: 420px;
+  max-width: 90%;
+  height: 220px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  margin-top: 8px;
+  margin-bottom: 10px;
+}}
+
+.teamName {{
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 6px;
+}}
+
+.label {{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 8px;
+  text-align:center;
+}}
+
+.midCol {{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height: 340px; /* ✅ match sides */
+}}
+
+.vsPill {{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.90);
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  box-shadow: 0 10px 26px rgba(0,0,0,.28);
+  margin-bottom: 18px;
+}}
+
+.netLabel {{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 10px;
+}}
+
+.subNote {{
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}}
+</style>
+"""
+
+# ✅ Render as HTML (not markdown) — and make container tall enough
+components.html(header_html.strip(), height=400, scrolling=False)
+
+
+
+st.caption("Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets. Bench players are dimmed but included in position averages (when Best 23 selected).")
+
+# ------------------------------
+# Magnet renderer (no wrapping; conditional rating pill for everyone)
+# ------------------------------
+def _magnet_html(row, series_for_colour, dim=False):
+    first, last = split_name(row["Player"])
+    num = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
+    rating_val = _safe_float(row.get("Rating", None))
+    rat = "" if rating_val is None else f"{rating_val:.1f}"
+
+    # base group colour from your pos_group
+    grp = pos_group(row.get("Position", ""))
+
+    bgc, fgc, bri = _rating_style(rating_val, series_for_colour)
+
+    fade = "opacity:0.55;" if dim else ""
+    return f"""
+    <div class="magRow" style="{fade}">
+      <div class="mag {grp}">
+        <div class="magNum">{num}</div>
+        <div class="magName">
+          <div class="magFirst">{first}</div>
+          <div class="magLast">{last}</div>
+        </div>
+        <div class="magRating"
+          style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">
+          {rat}
+        </div>
+      </div>
+    </div>
+    """
+
+mag_css = """
+<style>
+.mag { 
+  width:100%;
+  min-height:54px;
   display:flex;
   align-items:center;
-  gap: 10px;
-  border-radius: 18px;
-  padding: 8px 12px;
-  color: #fff;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  box-shadow: 0 10px 20px rgba(0,0,0,.35);
-}}
-.num {{
-  font-size: 16px;
-  font-weight: 950;
-  min-width: 34px;
-  text-align: center;
-  white-space: nowrap;
-  flex-shrink: 0;
-}}
-.name {{ flex: 1; line-height: 1.05; min-width: 0; }}
-.first {{ font-size: 10px; font-weight: 750; text-transform: uppercase; opacity: 0.95; white-space: nowrap; }}
-.last {{ font-size: 14px; font-weight: 950; text-transform: uppercase; white-space: nowrap; }}
-.rating {{
-  width: 46px;
-  height: 34px;
-  border-radius: 10px;
+  gap:12px;
+  padding:10px 14px;
+  border-radius:18px;
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.magNum{
+  width:44px;
+  text-align:center;
+  font-size:15px;
+  opacity:0.95;
+  flex:0 0 auto;
+}
+.magName{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+  min-width:0;
+  flex:1 1 auto;
+}
+.magFirst{
+  font-size:10px;
+  opacity:0.85;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.magLast{
+  font-size:15px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.magRating{
+  margin-left:auto;
+  width:54px;
+  height:34px;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size: 12px;
-  font-weight: 950;
-  white-space: nowrap;
-  flex-shrink: 0;
-}}
-
-.def     {{ background: linear-gradient(135deg,#ff2b2b,#8b0000); }}
-.mid     {{ background: linear-gradient(135deg,#00d26a,#005522); }}
-.wingfwd {{ background: linear-gradient(135deg,#ffa500,#7a3f00); }}
-.ruckkf  {{ background: linear-gradient(135deg,#0096ff,#003a78); }}
-.other   {{ background: linear-gradient(135deg,#333,#111); }}
-
-@media (max-width: 1200px) {{
-  .field {{ width: 94vw; height: 86vh; }}
-  .magnet {{ width: 245px; height: 52px; }}
-}}
+  font-size:14px;
+  font-weight:1000;
+  flex:0 0 auto;
+}
+.def{background:#c62828;}
+.mid{background:#2e7d32;}
+.wingfwd{background:#ef6c00;}
+.ruckkf{background:#1565c0;}
+.other{background:#333;}
 </style>
-
-<div class="stage">
-  <div class="field">{magnets_html}</div>
-</div>
 """
+st.markdown(mag_css, unsafe_allow_html=True)
 
-    st.markdown(textwrap.dedent(html).strip(), unsafe_allow_html=True)
+# ------------------------------
+# Position rows
+# ------------------------------
+def _centre_stats(a_df, b_df, label):
+    a = avg_rating(a_df)
+    b = avg_rating(b_df)
+    d = None if (a is None or b is None) else (a - b)
 
-    st.caption(f"Positions source: Summary sheet | Ratings source: season {season} ({p_rating}).")
+    # Titles above each pill set (clearer what numbers mean)
+    hdr = f"""
+    <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
+      <div style="text-align:center;">
+        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM A AVG</div>
+        {_pill("—" if a is None else f"{a:.1f}")}
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">NET (A−B)</div>
+        {_diff_pill(None if d is None else round(d,1))}
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM B AVG</div>
+        {_pill("—" if b is None else f"{b:.1f}")}
+      </div>
+    </div>
+    """
+    st.markdown(textwrap.dedent(hdr).strip(), unsafe_allow_html=True)
 
-    with st.expander("Show selected 23 (table)"):
-        st.dataframe(
-            merged[["Player", "Team", "Position", "Jumper", "Rating"]].sort_values("Rating", ascending=False).head(35),
-            use_container_width=True
-        )
+def _render_position(cat_name, n_left=None, n_right=None):
+    left_df = cat_df(best_a, cat_name)
+    right_df = cat_df(best_b, cat_name)
 
-# ================= REMAINING SQUAD =================
+    # sort best first
+    left_df = left_df.sort_values("Rating", ascending=False)
+    right_df = right_df.sort_values("Rating", ascending=False)
 
-if page == "Best 23":
+    # choose counts (optional)
+    if n_left is not None:
+        left_df = left_df.head(n_left)
+    if n_right is not None:
+        right_df = right_df.head(n_right)
 
-    if "merged" not in locals() or "used" not in locals():
-        st.stop()
+    lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
 
+    with lcol:
+        st.markdown(f"**{cat_name}**")
+        if left_df.empty:
+            st.caption("—")
+        else:
+            for _, row in left_df.iterrows():
+                st.markdown(_magnet_html(row, team_a_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
 
-    st.subheader("Remaining Squad (Not Selected in Best 23)")
+    with ccol:
+        _centre_stats(left_df, right_df, cat_name)
 
-    remaining = merged[~merged["Player"].isin(used)].copy()
-    remaining = remaining.dropna(subset=["Rating"])
-    remaining = remaining.sort_values("Rating", ascending=False)
+    with rcol:
+        st.markdown(f"**{cat_name}**")
+        if right_df.empty:
+            st.caption("—")
+        else:
+            for _, row in right_df.iterrows():
+                st.markdown(_magnet_html(row, team_b_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
 
+st.markdown("---")
 
-    if remaining.empty:
-        st.info("No remaining players.")
+# Tuned “how many magnets per row” so it stays clean (adjust if you want more/less)
+_render_position("Key Defender", n_left=2, n_right=2)
+st.markdown("---")
+_render_position("Gen. Defender", n_left=4, n_right=4)
+st.markdown("---")
+_render_position("Midfielder", n_left=4, n_right=4)      # often where your “green magnet formatting” was failing
+st.markdown("---")
+_render_position("Wing", n_left=2, n_right=2)
+st.markdown("---")
+_render_position("Ruck", n_left=2, n_right=2)
+st.markdown("---")
+_render_position("Key Forward", n_left=2, n_right=2)
+st.markdown("---")
+_render_position("Gen. Forward", n_left=4, n_right=4)    # includes Mid-Forwards here
+
+# =====================================================
+# (OPTIONAL) BEST vs SELECTED – Impact (Δ)
+# - Keeps this section as a single header (no repeated “Best vs Selected” labels on every row)
+# - Only runs if selected_a / selected_b exist and are non-empty
+# =====================================================
+try:
+    has_selected = (isinstance(selected_a, pd.DataFrame) and not selected_a.empty) or (isinstance(selected_b, pd.DataFrame) and not selected_b.empty)
+except Exception:
+    has_selected = False
+
+if has_selected:
+    st.markdown("---")
+    st.header("Best vs Selected – Impact (Δ)")
+
+    def _impact(best_df, sel_df):
+        out = {}
+        out["Overall"] = (avg_rating(sel_df) - avg_rating(best_df)) if (avg_rating(sel_df) is not None and avg_rating(best_df) is not None) else None
+        for cat in CATEGORY_MAP.keys():
+            b = cat_df(best_df, cat)
+            s = cat_df(sel_df, cat)
+            out[cat] = (avg_rating(s) - avg_rating(b)) if (avg_rating(s) is not None and avg_rating(b) is not None) else None
+        return out
+
+    # Note: your manual selection builder uses same Position strings, so CATEGORY_MAP works
+    imp_a = _impact(best_a, selected_a if isinstance(selected_a, pd.DataFrame) else pd.DataFrame())
+    imp_b = _impact(best_b, selected_b if isinstance(selected_b, pd.DataFrame) else pd.DataFrame())
+
+    # Clean rows: position name only
+    def _delta_row(label, da, db):
+        c1, c2, c3 = st.columns([4, 3, 3])
+        with c1:
+            st.markdown(f"**{label}**")
+        with c2:
+            st.markdown(_diff_pill(None if da is None else round(da,2)) + "<div style='opacity:0.6;font-size:12px;text-align:center;'>Team A Δ (Selected − Best)</div>", unsafe_allow_html=True)
+        with c3:
+            st.markdown(_diff_pill(None if db is None else round(db,2)) + "<div style='opacity:0.6;font-size:12px;text-align:center;'>Team B Δ (Selected − Best)</div>", unsafe_allow_html=True)
+
+    _delta_row("Overall", imp_a.get("Overall"), imp_b.get("Overall"))
+    st.markdown("---")
+    for k in ["Key Defender","Gen. Defender","Midfielder","Wing","Ruck","Key Forward","Gen. Forward"]:
+        _delta_row(k, imp_a.get(k), imp_b.get(k))
+
+    # =====================================================
+    # BEST vs SELECTED DELTAS (Selected minus Model)
+    # =====================================================
+    st.markdown("---")
+    st.header("Best vs Selected – Impact (Δ)")
+
+if selected_a.empty or selected_b.empty:
+    st.info("Select full teams for both sides to view Best vs Selected deltas.")
+else:
+   
+
+    # ---- Guard rails (avoid breaking whole page if manual selection not present yet)
+    required_vars = ["team_a", "team_b", "best_a", "best_b", "selected_a", "selected_b", "use_bench"]
+    missing = [v for v in required_vars if v not in locals()]
+    if missing:
+        st.warning(f"Best vs Selected deltas not available yet (missing: {', '.join(missing)}).")
     else:
-        # Position buckets (based on Summary positions)
-        POSITION_COLUMNS = {
-            "Key Defender": ["Key Defender"],
-            "Gen. Defender": ["Gen. Defender"],
-            "Wing": ["Wing"],
-            "Midfielder": ["Midfielder"],
-            "Ruck": ["Ruck"],
-            # Forwards split into 3 columns (as requested)
-            "Key Forward": ["Key Forward"],
-            "Gen. Forward": ["Gen. Forward"],
-            "Mid-Forward": ["Mid-Forward"],
-        }
+        # Ensure numeric
+        for _df_name in ["best_a", "best_b", "selected_a", "selected_b"]:
+            _df = locals()[_df_name]
+            if _df is not None and not _df.empty and "Rating" in _df.columns:
+                _df["Rating"] = pd.to_numeric(_df["Rating"], errors="coerce")
 
-    cols = st.columns(len(POSITION_COLUMNS))
+        # ------------------------------
+        # Helper: stat cell (reuse if you already have one)
+        # ------------------------------
+        def _alpha_from_absdiff(x):
+            try:
+                ax = abs(float(x))
+            except Exception:
+                return 0.0
+            return min(0.25 + (ax / 2.0), 0.90)
 
-    for col, (title, pos_list) in zip(cols, POSITION_COLUMNS.items()):
-        with col:
-            st.markdown(f"**{title}**")
+        def _colour_for_diff(d):
+            if d is None:
+                return "rgba(200,200,200,0.20)"
+            try:
+                d = float(d)
+            except Exception:
+                return "rgba(200,200,200,0.20)"
+            if d > 0:
+                return f"rgba(0,180,90,{_alpha_from_absdiff(d)})"
+            if d < 0:
+                return f"rgba(220,60,60,{_alpha_from_absdiff(d)})"
+            return "rgba(200,200,200,0.20)"
 
-            sub = remaining[remaining["Position"].isin(pos_list)]
+        def _stat_cell(text, diff=None, big=False):
+            if text is None:
+                text = ""
+            size = "18px" if big else "13px"
+            pad = "10px 10px" if big else "6px 8px"
+            return f"""
+            <div style="
+                padding:{pad};
+                border-radius:10px;
+                text-align:center;
+                font-weight:900;
+                font-size:{size};
+                background:{_colour_for_diff(diff)};
+                border:1px solid rgba(255,255,255,0.06);
+            ">{text}</div>
+            """
 
-            if sub.empty:
-                st.caption("—")
+        def _try_team_logo(team_name: str):
+            fn = globals().get("_path", None)  # <- no unresolved symbol
+            if callable(fn):
+                try:
+                    return fn(team_name)
+                except Exception:
+                    return None
+            return None
+
+
+        def _diff(a, b, nd=1):
+            if a is None or b is None:
+                return None
+            try:
+                return round(float(a) - float(b), nd)
+            except Exception:
+                return None
+
+        # ------------------------------
+        # Define group buckets for apples-to-apples deltas
+        # (manual uses Back 6 / Midfield / Forward 6 / Bench)
+        # ------------------------------
+        # If your manual slots exist use them, else fall back:
+        if "MANUAL_SLOTS" in locals():
+            GROUP_ORDER = [g for g, _ in MANUAL_SLOTS]
+        else:
+            GROUP_ORDER = ["Back 6", "Midfield", "Forward 6", "Bench"]
+
+        # Best -> group mapping
+        def best_to_group_avgs(best_df):
+            """
+            Convert best model df (Position + IsBench) to group averages.
+            Bench average only exists if use_bench=True (Best 23 mode).
+            """
+            out = {}
+
+            backs = best_df[best_df["Position"].isin(["Key Defender", "Gen. Defender"])]
+            out["Back 6"] = round(backs["Rating"].mean(), 1) if not backs.empty else None
+
+            mids = best_df[best_df["Position"].isin(["Midfielder", "Wing", "Ruck"])]
+            out["Midfield"] = round(mids["Rating"].mean(), 1) if not mids.empty else None
+
+            fwds = best_df[best_df["Position"].isin(["Key Forward", "Gen. Forward", "Mid-Forward"])]
+            out["Forward 6"] = round(fwds["Rating"].mean(), 1) if not fwds.empty else None
+
+            if use_bench:
+                bench = best_df[best_df.get("IsBench", False) == True]
+                out["Bench"] = round(bench["Rating"].mean(), 1) if not bench.empty else None
+            else:
+                out["Bench"] = None
+
+            overall = round(best_df["Rating"].mean(), 2) if not best_df.empty else None
+            return overall, out
+
+        # Manual -> group averages
+        def selected_group_avgs(sel_df):
+            """
+            Averages by manual 'Group' column (Back 6 / Midfield / Forward 6 / Bench)
+            """
+            out = {}
+            if sel_df is None or sel_df.empty:
+                return None, out
+
+            for g in GROUP_ORDER:
+                sub = sel_df[sel_df["Group"] == g] if "Group" in sel_df.columns else pd.DataFrame()
+                out[g] = round(sub["Rating"].mean(), 1) if not sub.empty else None
+
+            overall = round(sel_df["Rating"].mean(), 2) if not sel_df.empty else None
+            return overall, out
+
+        # Compute avgs
+        overall_best_a2, grp_best_a = best_to_group_avgs(best_a)
+        overall_best_b2, grp_best_b = best_to_group_avgs(best_b)
+
+        overall_sel_a, grp_sel_a = selected_group_avgs(selected_a)
+        overall_sel_b, grp_sel_b = selected_group_avgs(selected_b)
+
+        # Overall deltas (Selected minus Best)
+        d_overall_a = _diff(overall_sel_a, overall_best_a2, 2)
+        d_overall_b = _diff(overall_sel_b, overall_best_b2, 2)
+
+        # ------------------------------
+        # Header row: overall deltas big
+        # ------------------------------
+        h1, h2, h3, h4, h5 = st.columns([2.2, 1.3, 1, 1.3, 2.2])
+        with h1:
+            logo = _try_team_logo(team_a)
+            if logo is not None:
+                st.image(logo, width=70)
+            st.markdown(f"### {team_a}")
+        with h2:
+            st.markdown(_stat_cell("" if d_overall_a is None else f"{d_overall_a:+.2f}", diff=d_overall_a, big=True), unsafe_allow_html=True)
+        with h3:
+            st.markdown("<div style='text-align:center;font-weight:950;font-size:16px;padding-top:12px;'>Δ</div>", unsafe_allow_html=True)
+        with h4:
+            st.markdown(_stat_cell("" if d_overall_b is None else f"{d_overall_b:+.2f}", diff=d_overall_b, big=True), unsafe_allow_html=True)
+        with h5:
+            logo = _try_team_logo(team_b)
+            if logo is not None:
+                st.image(logo, width=70)
+            st.markdown(f"### {team_b}")
+
+        st.caption("Δ = Selected minus Model. Positive = your selected team is stronger than the model; negative = weaker.")
+
+        # ------------------------------
+        # Group deltas table: Team A Δ | Net (AΔ−BΔ) | Team B Δ
+        # ------------------------------
+        st.subheader("Group Deltas (Selected − Model)")
+
+        for grp in GROUP_ORDER:
+            # Best 18 mode: ignore bench row
+            if (not use_bench) and grp == "Bench":
                 continue
 
-            for _, r in sub.iterrows():
-                rating = r["Rating"]
-                rating_txt = f"{rating:.1f}" if pd.notna(rating) else ""
+            bestA = grp_best_a.get(grp)
+            selA  = grp_sel_a.get(grp)
+            dA    = _diff(selA, bestA, 1)
 
-                st.markdown(
-                    f"""
-                    <div style="
-                        margin-bottom:8px;
-                        padding:6px 8px;
-                        border-radius:8px;
-                        background:rgba(255,255,255,0.04);
-                        font-size:13px;
-                        ">
-                        <div style="font-weight:700;">{r['Player']}</div>
-                        <div style="opacity:0.7; font-size:11px;">
-                            {rating_txt}
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+            bestB = grp_best_b.get(grp)
+            selB  = grp_sel_b.get(grp)
+            dB    = _diff(selB, bestB, 1)
+
+            net = _diff(dA, dB, 1)  # AΔ - BΔ
+
+            r1, r2, r3, r4 = st.columns([3.2, 1.2, 1.2, 1.2])
+            with r1:
+                st.markdown(f"**{grp}**")
+            with r2:
+                st.markdown(_stat_cell("" if dA is None else f"{dA:+.1f}", diff=dA), unsafe_allow_html=True)
+            with r3:
+                st.markdown(_stat_cell("" if net is None else f"{net:+.1f}", diff=net), unsafe_allow_html=True)
+            with r4:
+                st.markdown(_stat_cell("" if dB is None else f"{dB:+.1f}", diff=dB), unsafe_allow_html=True)
+
+        st.caption("Columns: Team A Δ | Net advantage (AΔ−BΔ) | Team B Δ")
