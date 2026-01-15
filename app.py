@@ -600,6 +600,7 @@ def display_player_photo(player_name: str, container, size: int = 160, use_conta
         return
 
 
+
 # ---------------- RATING COLOUR HELPERS ----------------
 def rating_colour_for_value(v: float, values: pd.Series) -> tuple[str, str]:
     vals = pd.to_numeric(values, errors="coerce").dropna()
@@ -1403,11 +1404,12 @@ def predict_player_trajectory(
             "Lower_Band": [current_rating * (1 - confidence_band)] * len(years),
         }
         return pd.DataFrame(data)
+    
 
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "Game Day Playground"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -1550,6 +1552,549 @@ if page == "Home":
                             st.rerun()
                     except Exception:
                         st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
+
+import hashlib
+import random
+import pandas as pd
+import streamlit as st
+
+def _stable_seed(*parts) -> int:
+    s = "||".join([str(p) for p in parts if p is not None])
+    h = hashlib.md5(s.encode("utf-8")).hexdigest()
+    return int(h[:8], 16)
+
+def _mock_matchup_model(team_a: str, team_b: str):
+    """
+    Returns consistent mock ratings + component stats based on (team_a, team_b).
+    """
+    rng = random.Random(_stable_seed(team_a, team_b))
+
+    # 4 game-type dimensions (0..100). >50 => right side, <=50 => left side
+    game_type = {
+        "Chaos vs Control": rng.randint(25, 75),
+        "Stoppage vs Transition": rng.randint(25, 75),
+        "Front Half vs Back Half": rng.randint(25, 75),
+        "Shoot Out vs Slog": rng.randint(25, 75),
+    }
+
+    # 5 phases (0..100)
+    phases = {
+        "Ball Winning": rng.randint(45, 85),
+        "Ball Use": rng.randint(40, 85),
+        "Scoring": rng.randint(35, 85),
+        "Defence": rng.randint(40, 85),
+        "Pressure": rng.randint(45, 90),
+    }
+
+    # Component stats per phase (mock but shaped like football stats)
+    stats = {
+        "Ball Winning": [
+            ("Contested Possessions", rng.randint(110, 170), "higher better"),
+            ("Ground Ball Gets", rng.randint(45, 75), "higher better"),
+            ("Clearances", rng.randint(30, 52), "higher better"),
+            ("First Possession (stoppage) %", rng.randint(42, 62), "higher better"),
+        ],
+        "Ball Use": [
+            ("Disposal Efficiency %", rng.randint(66, 79), "higher better"),
+            ("Turnovers", rng.randint(45, 78), "lower better"),
+            ("Metres Gained", rng.randint(4200, 6200), "higher better"),
+            ("Inside 50 Efficiency %", rng.randint(41, 56), "higher better"),
+        ],
+        "Scoring": [
+            ("Shots", rng.randint(22, 33), "higher better"),
+            ("Shots per I50", round(rng.uniform(0.35, 0.55), 2), "higher better"),
+            ("Goal Accuracy %", rng.randint(45, 62), "higher better"),
+            ("Scores per 10 Entries", rng.randint(8, 13), "higher better"),
+        ],
+        "Defence": [
+            ("Opposition I50s", rng.randint(45, 62), "lower better"),
+            ("Intercept Marks", rng.randint(12, 20), "higher better"),
+            ("Defensive One-on-one Win %", rng.randint(46, 63), "higher better"),
+            ("Scores Conceded", rng.randint(70, 98), "lower better"),
+        ],
+        "Pressure": [
+            ("Tackles", rng.randint(55, 82), "higher better"),
+            ("Pressure Acts", rng.randint(170, 240), "higher better"),
+            ("Forced Turnovers", rng.randint(18, 30), "higher better"),
+            ("Time in Forward Half %", rng.randint(45, 58), "higher better"),
+        ],
+    }
+
+    return game_type, phases, stats
+
+# ---------------------------------------
+# GLOBAL: TEAMS LIST (available to all pages)
+# ---------------------------------------
+try:
+    _summary = load_player_summary()
+    _seasons = get_player_seasons()
+    _season = 2025 if 2025 in _seasons else (_seasons[0] if _seasons else None)
+
+    if _season is not None:
+        _ratings = load_players(_season)
+
+        # Reuse your find_col helper if you have it; otherwise assume columns exist
+        s_name = find_col(_summary, ["player"]) or find_col(_summary, ["name"])
+        s_pos  = find_col(_summary, ["position"])
+        s_num  = find_col(_summary, ["jumper"]) or find_col(_summary, ["guernsey"])
+
+        r_name = find_col(_ratings, ["player"]) or find_col(_ratings, ["name"])
+        r_val  = find_col(_ratings, ["rating"])
+
+        if all([s_name, s_pos, r_name, r_val]) and "Team" in _summary.columns and "Team" in _ratings.columns:
+            _summary = _summary.rename(columns={s_name: "Player", s_pos: "Position"})
+            _ratings = _ratings.rename(columns={r_name: "Player", r_val: "Rating"})
+            _summary["Jumper"] = _summary[s_num] if s_num else ""
+
+            def _make_key(df):
+                return (
+                    df["Team"].astype(str).str.lower().str.strip()
+                    + "||"
+                    + df["Player"].astype(str).str.lower().str.strip()
+                )
+
+            _summary["__k"] = _make_key(_summary)
+            _ratings["__k"] = _make_key(_ratings)
+
+            _merged_all = _summary.merge(_ratings[["__k", "Rating"]], on="__k", how="left")
+            _merged_all["Rating"] = pd.to_numeric(_merged_all["Rating"], errors="coerce")
+            _merged_all = _merged_all.dropna(subset=["Rating"])
+
+            teams = sorted(_merged_all["Team"].dropna().unique())
+        else:
+            teams = []
+    else:
+        teams = []
+except Exception:
+    teams = []
+
+
+
+def _logo_img(team_name: str, width=220):
+    """
+    Uses your existing get_team_logo_path(team) if present.
+    Falls back to a text badge if missing.
+    """
+    try:
+        fn = globals().get("get_team_logo_path", None)
+        if callable(fn):
+            p = fn(team_name)
+            if isinstance(p, str) and p:
+                st.image(p, width=width)
+                return
+    except Exception:
+        pass
+
+    st.markdown(
+        f"""
+        <div style="width:{width}px;height:{int(width*0.55)}px;
+             border-radius:18px;background:rgba(255,255,255,0.06);
+             display:flex;align-items:center;justify-content:center;
+             font-weight:900;">
+          {team_name}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _pill(label: str, active: bool):
+    bg = "rgba(0,180,90,0.55)" if active else "rgba(255,255,255,0.08)"
+    bd = "1px solid rgba(255,255,255,0.08)" if active else "1px solid rgba(255,255,255,0.06)"
+    return f"""
+    <div style="
+        padding:10px 14px;
+        border-radius:999px;
+        background:{bg};
+        border:{bd};
+        font-weight:900;
+        text-align:center;
+        min-width:180px;
+        display:inline-flex;
+        justify-content:center;
+        align-items:center;
+        ">
+      {label}
+    </div>
+    """
+
+def _phase_card(title: str, rating: int, stats_rows):
+    # rating bar
+    bar = f"""
+    <div style="background:rgba(255,255,255,0.06);border-radius:999px;height:14px;overflow:hidden;">
+      <div style="height:14px;width:{max(0,min(100,int(rating)))}%;
+           background:rgba(0,180,90,0.60);"></div>
+    </div>
+    """
+
+    st.markdown(
+        f"""
+        <div style="padding:16px 16px 14px 16px;border-radius:18px;
+             background:rgba(255,255,255,0.03);
+             border:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="font-size:18px;font-weight:950;">{title}</div>
+            <div style="font-size:18px;font-weight:950;">{rating}/100</div>
+          </div>
+          <div style="margin-top:10px;">{bar}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.expander(f"Show inputs for {title}", expanded=False):
+        df = pd.DataFrame(stats_rows, columns=["Stat", "Value", "Direction"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+
+def render_game_day_playground(teams: list[str]):
+    st.title("🎮 Game Day Playground")
+
+    # -------------------------------------------------
+    # SAFETY: build teams if global list is empty
+    # -------------------------------------------------
+    if not teams:
+        try:
+            df = load_player_summary()
+            if "Team" in df.columns:
+                teams = sorted(df["Team"].dropna().unique())
+        except Exception as e:
+            st.error("Unable to load teams for Game Day Playground")
+            st.exception(e)
+            st.stop()
+
+    if not teams:
+        st.error("Teams list is empty — check load_player_summary() and Team column.")
+        st.stop()
+
+    # ===== Broadcast Styling Pack (drop-in) =====
+    st.markdown("""
+    <style>
+    /* Page spacing + subtle broadcast background */
+    section.main > div { padding-top: 0.5rem; }
+    .gdp-card{
+    padding:18px;
+    border-radius:22px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.12);
+    box-shadow:0 18px 46px rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    }
+
+    .gdp-title{ font-size:20px; font-weight:950; }
+    .gdp-sub{ opacity:0.7; font-size:12px; }
+    .gdp-pill{
+    padding:12px 18px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:15px;
+    letter-spacing:0.04em;
+    text-align:center;
+    min-width:190px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.06);
+    }
+    .gdp-pill-active{
+    box-shadow:0 10px 28px rgba(0,0,0,0.45);
+    border:1px solid rgba(255,255,255,0.14);
+    }
+    .gdp-bar-bg{
+    height:14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.08);
+    overflow:hidden;
+    }
+    .gdp-bar-fill{
+    height:14px;
+    border-radius:999px;
+    }
+    .gdp-dot{ font-weight:900; font-size:16px; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    def _gdp_colour(score: float) -> str:
+        # Dark green, light green, orange, red
+        if score >= 85: return "#0B6E4F"
+        if score >= 70: return "#3FB984"
+        if score >= 55: return "#F4A261"
+        return "#C44536"
+
+    def _gdp_zone_tile(label: str, rating: int, subtitle: str = "") -> str:
+        col = _gdp_colour(rating)
+        sub = f"<div class='gdp-sub' style='margin-top:2px;'>{subtitle}</div>" if subtitle else ""
+        return (
+            "<div class='gdp-card' style='padding:14px 16px; position:relative; overflow:hidden;'>"
+            f"<div style='position:absolute;left:0;top:0;bottom:0;width:8px;background:{col};"
+            f"box-shadow:0 0 20px {col};'></div>"
+            "<div style='display:flex;justify-content:space-between;align-items:baseline;gap:10px;'>"
+                "<div style='padding-left:8px;'>"
+                f"<div class='gdp-title' style='font-size:16px;color:rgba(255,255,255,0.94);'>{label}</div>"
+                f"{sub}"
+                "</div>"
+                f"<div class='gdp-title' style='font-size:18px;color:{col};'>{rating}</div>"
+            "</div>"
+            "<div style='margin-top:10px;' class='gdp-bar-bg'>"
+                f"<div class='gdp-bar-fill' style='width:{rating}%;background:{col};box-shadow:0 0 16px {col};'></div>"
+            "</div>"
+            "</div>"
+        )
+
+
+
+    def _game_mode_pill(label: str, opacity: float, on: bool):
+        # same green, but "off" is basically dark/grey
+        if not on:
+            return f"""
+            <div style="
+                padding:14px 18px;border-radius:999px;
+                font-weight:900;font-size:15px;text-align:center;
+                background:rgba(255,255,255,0.05);
+                border:1px solid rgba(255,255,255,0.06);
+                color:rgba(255,255,255,0.75);
+            ">{label}</div>
+            """
+        return f"""
+        <div style="
+            padding:14px 18px;border-radius:999px;
+            font-weight:900;font-size:15px;text-align:center;
+            background:rgba(63,185,132,{opacity});
+            border:1px solid rgba(63,185,132,{opacity});
+            color:#ffffff;
+            box-shadow:0 0 18px rgba(63,185,132,{min(0.6, opacity)});
+        ">{label}</div>
+        """
+
+
+
+    def _gdp_phase_card(title: str, rating: int, stats_rows):
+        col = _gdp_colour(rating)
+        st.markdown(
+            f"""
+            <div class="gdp-card" style="padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="gdp-title">{title}</div>
+                <div class="gdp-title" style="color:{col};">{rating}/100</div>
+            </div>
+            <div style="margin-top:12px;" class="gdp-bar-bg">
+                <div class="gdp-bar-fill" style="width:{rating}%;background:{col};box-shadow:0 0 18px {col};"></div>
+            </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        with st.expander("Show contributing stats", expanded=False):
+            # quick “good/bad” dot flag (mock-friendly)
+            rows = []
+            for stat, val, direction in stats_rows:
+                try:
+                    v = float(val)
+                except Exception:
+                    v = 60.0
+                dot = _gdp_colour(v if direction == "higher better" else (100 - min(v, 100)))
+                rows.append({
+                    "Stat": stat,
+                    "Value": val,
+                    "Flag": f"<span class='gdp-dot' style='color:{dot};'>●</span>"
+                })
+            st.markdown(pd.DataFrame(rows).to_html(escape=False, index=False), unsafe_allow_html=True)
+    # ===== End pack =====
+
+
+    # Keep fonts consistent with Streamlit theme
+    st.markdown(
+            """
+            <style>
+            .gdp-muted{opacity:0.7;font-size:12px;}
+            .gdp-h2{font-size:18px;font-weight:950;margin:0;}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # --- Team selection
+    c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
+    with c1:
+        team_a = st.selectbox("Team A", teams, key="gdp_team_a")
+    with c2:
+        st.markdown("<div style='text-align:center;font-weight:950;font-size:18px;'>VS</div>", unsafe_allow_html=True)
+    with c3:
+        team_b = st.selectbox("Team B", [t for t in teams if t != team_a], key="gdp_team_b")
+
+    # --- Logo row: logo vs logo
+    # --- Centered logo lock-up
+    c = st.columns([3, 2, 1, 2, 3], vertical_alignment="center")
+
+    with c[1]:
+        st.markdown("<div style='display:flex;justify-content:flex-end;'>", unsafe_allow_html=True)
+        _logo_img(team_a, width=260)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with c[2]:
+        st.markdown(
+            "<div style='text-align:center;font-weight:950;font-size:22px;opacity:0.85;'>VS</div>",
+            unsafe_allow_html=True
+        )
+
+    with c[3]:
+        st.markdown("<div style='display:flex;justify-content:flex-start;'>", unsafe_allow_html=True)
+        _logo_img(team_b, width=260)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+
+
+    st.markdown("---")
+
+    # --- Time-slice filter (under logos)
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+    time_options = ["Q1", "Q2", "Q3", "Q4", "Last 10 min"]
+    
+
+    # --- Time filter (single widget, single key)
+    time_filter = st.radio(
+        "Time Filter",
+        ["Q1", "Q2", "Q3", "Q4", "Last 10 min"],
+        horizontal=True,
+        key="gdp_time_filter",
+        label_visibility="collapsed",
+)
+
+
+
+# use time_filter directly below
+
+
+
+
+    game_type, phases, stats = _mock_matchup_model(team_a, team_b)
+
+        # =====================================================
+        # What type of game are we in?
+        # =====================================================
+    st.markdown("### What type of game are we in?")
+    st.caption(
+        "Green fill indicates how strongly the game is trending toward each mode. "
+        "Full opacity = strong, light opacity = slight."
+    )
+
+    dims = [
+        ("Chaos", "Control", "Chaos vs Control"),
+        ("Stoppage", "Transition", "Stoppage vs Transition"),
+        ("Front Half", "Back Half", "Front Half vs Back Half"),
+        ("Shoot Out", "Slog", "Shoot Out vs Slog"),
+    ]
+
+    for left, right, key in dims:
+        v = int(game_type[key])  # 0–100
+
+        # winner side (ONLY one)
+        left_wins = v < 50
+        right_wins = not left_wins
+
+        # strength based on distance from 50
+        dist = abs(v - 50)  # 0..50
+        if dist >= 20:
+            strength_opacity = 1.0     # strong
+        elif dist >= 8:
+            strength_opacity = 0.30    # slight
+        else:
+            strength_opacity = 0.18    # very slight / near neutral
+
+        row = st.columns([2.4, 0.4, 2.4, 0.8], vertical_alignment="center")
+
+        with row[0]:
+            st.markdown(
+                _game_mode_pill(left, strength_opacity, on=left_wins),
+                unsafe_allow_html=True
+            )
+        with row[1]:
+            st.markdown("<div style='text-align:center;opacity:0.35;font-weight:900;'>↔</div>", unsafe_allow_html=True)
+        with row[2]:
+            st.markdown(
+                _game_mode_pill(right, strength_opacity, on=right_wins),
+                unsafe_allow_html=True
+            )
+        with row[3]:
+            st.markdown(
+                f"<div class='gdp-muted' style='text-align:right;'>Index: <b>{v}</b></div>",
+                unsafe_allow_html=True,
+            )
+
+
+    st.markdown("---")
+
+    st.markdown("### Ground health check")
+    st.caption("Each zone shows an overall health score (0–100). Expand a zone to see which phases are driving it (mock).")
+
+    # Stable mock zone + phase ratings tied to matchup
+    rng = random.Random(_stable_seed(team_a, team_b, "zones_v2"))
+
+    zone_names = ["Defensive 50", "Defensive Mid", "Centre Bounce", "Attacking Mid", "Forward 50"]
+    phase_names = ["Ball Winning", "Ball Use", "Scoring", "Defence", "Pressure"]
+
+    # Build mock phase ratings per zone (these are what you’ll later compute from real data)
+    zone_phase = {}
+    for z in zone_names:
+        zone_phase[z] = {p: rng.randint(40, 92) for p in phase_names}
+
+    # Give each zone a single overall rating = average of its phase ratings
+    zone_overall = {z: int(round(sum(zone_phase[z].values()) / len(phase_names), 0)) for z in zone_names}
+
+    # Render zone tiles in a row
+    zcols = st.columns(5, gap="large")
+
+    for i, z in enumerate(zone_names):
+        with zcols[i]:
+            # headline tile
+            st.markdown(_gdp_zone_tile(z, zone_overall[z], subtitle="Overall zone health"), unsafe_allow_html=True)
+
+            # expand -> show phase breakdown
+            with st.expander(f"Explain {z}", expanded=False):
+                # phase mini-cards (clean + readable)
+                for p in phase_names:
+                    r = int(zone_phase[z][p])
+                    col = _gdp_colour(r)
+                    st.markdown(
+                        f"""
+                        <div class="gdp-card" style="padding:12px 14px;margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-weight:900;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.9;">
+                            {p}
+                            </div>
+                            <div style="font-weight:950;font-size:16px;color:{col};">{r}/100</div>
+                        </div>
+                        <div class="gdp-bar-bg" style="margin-top:8px;">
+                            <div class="gdp-bar-fill" style="width:{r}%;background:{col};box-shadow:0 0 14px {col};"></div>
+                        </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                st.caption("Mock: in v1 this is arbitrary. In v2, each phase score is computed from your real KPI bundle for that zone.")
+
+
+        # =====================================================
+        # 5 phases of the game
+        # =====================================================
+    st.markdown("### 5 phases of the game")
+    st.caption("Each phase has a rating (0–100). Expand each card to see the stats feeding the score (mock inputs).")
+
+
+
+    st.markdown("---")
+    st.caption("Mock page only. Next step is wiring this to your existing match + player/team metric tables.")
+
+# 5 cards in a single row (5 columns)
+    pkeys = list(phases.keys())
+    cols = st.columns(5, gap="large")
+
+    for i, k in enumerate(pkeys):
+        with cols[i]:
+            _gdp_phase_card(k, int(phases[k]), stats[k])
+
 
 
 # ================= OVERVIEW =================
@@ -6479,8 +7024,8 @@ elif page == "Best 23":
 
 
     # =====================================================
-# AUTO BEST 23 DISPLAY
-# =====================================================
+    # AUTO BEST 23 DISPLAY
+    # =====================================================
     team = st.selectbox("Select Team", teams)
     slots, used = build_best23(team)
 
@@ -6648,764 +7193,722 @@ elif page == "Best 23":
     st.markdown("---")
     st.info("Best 23 foundation is stable. Comparison & Manual Selection ready.")
 
-# =====================================================
-# BEST 23 COMPARISON (TEAM A vs TEAM B)
-# =====================================================
-import os, base64, textwrap
-import pandas as pd
+    # =====================================================
+    # BEST 23 COMPARISON (TEAM A vs TEAM B)
+    # =====================================================
+    import os, base64, textwrap
+    import pandas as pd
 
-st.markdown("---")
-st.header("Best 23 Comparison")
-
-# -----------------------------------------------------
-# Changes in this version (for your sanity)
-# -----------------------------------------------------
-# 1) Logos 4x bigger and centred
-# 2) Team average rating shown directly under each logo (centred)
-# 3) Header row height increased so logos never crop
-# 4) Removed green background from centre stat columns (clean pills only)
-# 5) Player rating pills conditionally formatted for ALL positions (incl. Mid/Mid-Fwd)
-# 6) Magnets never wrap (ellipsis)
-# 7) Forwards split: Key Forwards + Gen. Forwards (Mid-Forwards counted as Gen. Forwards)
-
-# ------------------------------
-# Settings
-# ------------------------------
-mode = st.radio(
-    "Comparison Mode",
-    ["Best 23 (All Players)", "Best 18 (On-field Only)"],
-    horizontal=True,
-    key="best23_compare_mode"
-)
-use_bench = (mode == "Best 23 (All Players)")
-
-c1, c2 = st.columns(2)
-with c1:
-    team_a = st.selectbox("Team A", teams, key="best23_team_a")
-with c2:
-    team_b = st.selectbox(
-        "Team B",
-        [t for t in teams if t != team_a],
-        key="best23_team_b"
-    )
-
-# ------------------------------
-# Helpers (logos + rating colour)
-# ------------------------------
-def _b64_file(path: str) -> str:
-    try:
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-    except Exception:
-        return ""
-
-def _team_logo_b64(team_name: str) -> str:
-    # uses your function name as per your note
-    try:
-        p = get_team_logo_path(team_name)
-        if isinstance(p, str) and os.path.exists(p):
-            return _b64_file(p)
-    except Exception:
-        pass
-    return ""
-
-def _rating_percentile(val, series) -> float:
-    try:
-        if val is None:
-            return 0.0
-        s = pd.to_numeric(series, errors="coerce")
-        s = s[~pd.isna(s)]
-        if s.empty:
-            return 0.0
-        return float((s <= float(val)).mean())
-    except Exception:
-        return 0.0
-
-def _rating_style(val, series):
-    """
-    Returns (bg, fg, brightness) for the rating pill.
-    Uses your existing rating_colour_for_value(val, series) if present.
-    """
-    bg, fg = "#ffffff", "#000000"
-    try:
-        c = rating_colour_for_value(val, series)
-        if isinstance(c, (tuple, list)) and len(c) >= 2:
-            bg, fg = str(c[0]), str(c[1])
-        else:
-            bg, fg = str(c), "#000000"
-    except Exception:
-        pass
-
-    pct = _rating_percentile(val, series)
-    bri = 0.85 + (0.35 * pct)  # 0.85 → 1.20
-    return bg, fg, bri
-
-def _safe_float(x):
-    try:
-        return float(x)
-    except Exception:
-        return None
-
-# ------------------------------
-# Build Best 23 for both teams
-# ------------------------------
-slots_a, _used_a = build_best23(team_a)
-slots_b, _used_b = build_best23(team_b)
-
-# Use each team’s rating distribution for conditional pill styling
-team_a_series = merged_all.loc[merged_all["Team"] == team_a, "Rating"]
-team_b_series = merged_all.loc[merged_all["Team"] == team_b, "Rating"]
-
-def slots_to_df(slots, team_name: str):
-    rows = []
-    for _, _, _, r, is_bench in slots:
-        if r is None:
-            continue
-        rows.append({
-            "Team": team_name,
-            "Player": r.get("Player"),
-            "Jumper": r.get("Jumper", ""),
-            "Position": r.get("Position"),
-            "Rating": _safe_float(r.get("Rating")),
-            "IsBench": bool(is_bench),
-        })
-    df = pd.DataFrame(rows)
-    if df.empty:
-        return df
-    if not use_bench:
-        df = df[df["IsBench"] == False].copy()
-    return df
-
-best_a = slots_to_df(slots_a, team_a)
-best_b = slots_to_df(slots_b, team_b)
-
-# ------------------------------
-# Category mapping (includes requested Forward split)
-# ------------------------------
-CATEGORY_MAP = {
-    "Key Defender": ["Key Defender"],
-    "Gen. Defender": ["Gen. Defender"],
-    "Wing": ["Wing"],
-    "Midfielder": ["Midfielder"],       # Mid-Forward NOT counted as midfielder here
-    "Ruck": ["Ruck"],
-    "Key Forward": ["Key Forward"],
-    "Gen. Forward": ["Gen. Forward", "Mid-Forward"],  # includes Mid-Forwards
-}
-
-def cat_df(df, cat_name):
-    pos_list = CATEGORY_MAP[cat_name]
-    if df.empty:
-        return df
-    return df[df["Position"].isin(pos_list)].copy()
-
-def avg_rating(df):
-    if df is None or df.empty:
-        return None
-    return float(pd.to_numeric(df["Rating"], errors="coerce").mean())
-
-overall_a = avg_rating(best_a)
-overall_b = avg_rating(best_b)
-
-import base64
-import streamlit.components.v1 as components
-
-def _img_to_b64(path: str) -> str:
-    try:
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-    except Exception:
-        return ""
-
-def _pill(val: str, bg="rgba(255,255,255,0.08)", fg="#FFFFFF", big=False):
-    fs = "34px" if big else "16px"
-    pad = "16px 22px" if big else "10px 14px"
-    br = "18px"
-    minw = "220px" if big else "120px"
-    return (
-        f"<div style=\""
-        f"display:inline-flex;"
-        f"align-items:center;"
-        f"justify-content:center;"
-        f"padding:{pad};"
-        f"border-radius:{br};"
-        f"background:{bg};"
-        f"color:{fg};"
-        f"font-weight:950;"
-        f"font-size:{fs};"
-        f"min-width:{minw};"
-        f"box-shadow:0 12px 30px rgba(0,0,0,.35);"
-        f"letter-spacing:0.4px;"
-        f"\">{val}</div>"
-    )
-
-def _diff_pill(d):
-    if d is None:
-        return _pill("—", bg="rgba(255,255,255,0.06)", big=True)
-    if d > 0:
-        return _pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
-    if d < 0:
-        return _pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
-    return _pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
-
-# ------------------------------
-# Build logo b64 (uses your working helper)
-# ------------------------------
-logo_a_path = get_team_logo_path(team_a) if "get_team_logo_path" in globals() else None
-logo_b_path = get_team_logo_path(team_b) if "get_team_logo_path" in globals() else None
-
-logo_a_b64 = _img_to_b64(logo_a_path) if logo_a_path else ""
-logo_b_b64 = _img_to_b64(logo_b_path) if logo_b_path else ""
-
-# ------------------------------
-# Values
-# ------------------------------
-overall_a_val = None if overall_a is None else float(overall_a)
-overall_b_val = None if overall_b is None else float(overall_b)
-net_val = None
-if overall_a_val is not None and overall_b_val is not None:
-    net_val = overall_a_val - overall_b_val
-
-overall_a_str = "" if overall_a_val is None else f"{overall_a_val:.2f}"
-overall_b_str = "" if overall_b_val is None else f"{overall_b_val:.2f}"
-
-# ------------------------------
-# Header HTML (taller + centered)
-# ------------------------------
-header_html = f"""
-<div class="b23Header">
-  <div class="teamCol">
-    {"<img class='logo' src='data:image/png;base64," + logo_a_b64 + "' />" if logo_a_b64 else "<div class='logoFallback'></div>"}
-    <div class="teamName">{team_a}</div>
-    <div class="label">OVERALL BEST 23 RATING</div>
-    {_pill(overall_a_str if overall_a_str else "—", big=True)}
-  </div>
-
-  <div class="midCol">
-    <div class="vsPill">VS</div>
-    <div class="netLabel">NET (A − B)</div>
-    {_diff_pill(net_val)}
-    <div class="subNote">Positive = Team A higher</div>
-  </div>
-
-  <div class="teamCol">
-    {"<img class='logo' src='data:image/png;base64," + logo_b_b64 + "' />" if logo_b_b64 else "<div class='logoFallback'></div>"}
-    <div class="teamName">{team_b}</div>
-    <div class="label">OVERALL BEST 23 RATING</div>
-    {_pill(overall_b_str if overall_b_str else "—", big=True)}
-  </div>
-</div>
-
-<style>
-.b23Header {{
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 0.55fr 1fr;
-  gap: 18px;
-  align-items: center;
-  padding: 10px 8px 18px 8px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.02);
-}}
-
-.teamCol {{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 340px; /* ✅ prevents cropping */
-}}
-
-.logo {{
-  width: 420px;          /* ✅ big */
-  max-width: 90%;
-  height: 220px;         /* ✅ fixed box */
-  object-fit: contain;   /* ✅ never crop */
-  margin-top: 8px;
-  margin-bottom: 10px;
-  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
-}}
-
-.logoFallback {{
-  width: 420px;
-  max-width: 90%;
-  height: 220px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.04);
-  margin-top: 8px;
-  margin-bottom: 10px;
-}}
-
-.teamName {{
-  font-size: 22px;
-  font-weight: 900;
-  color: #fff;
-  margin-bottom: 6px;
-}}
-
-.label {{
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 8px;
-  text-align:center;
-}}
-
-.midCol {{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-height: 340px; /* ✅ match sides */
-}}
-
-.vsPill {{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 22px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.90);
-  font-weight: 950;
-  letter-spacing: 0.18em;
-  box-shadow: 0 10px 26px rgba(0,0,0,.28);
-  margin-bottom: 18px;
-}}
-
-.netLabel {{
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 10px;
-}}
-
-.subNote {{
-  margin-top: 10px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.55);
-}}
-</style>
-"""
-
-# ✅ Render as HTML (not markdown) — and make container tall enough
-components.html(header_html.strip(), height=400, scrolling=False)
-
-
-
-st.caption("Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets. Bench players are dimmed but included in position averages (when Best 23 selected).")
-
-# ------------------------------
-# Magnet renderer (no wrapping; conditional rating pill for everyone)
-# ------------------------------
-def _magnet_html(row, series_for_colour, dim=False):
-    first, last = split_name(row["Player"])
-    num = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
-    rating_val = _safe_float(row.get("Rating", None))
-    rat = "" if rating_val is None else f"{rating_val:.1f}"
-
-    # base group colour from your pos_group
-    grp = pos_group(row.get("Position", ""))
-
-    bgc, fgc, bri = _rating_style(rating_val, series_for_colour)
-
-    fade = "opacity:0.55;" if dim else ""
-    return f"""
-    <div class="magRow" style="{fade}">
-      <div class="mag {grp}">
-        <div class="magNum">{num}</div>
-        <div class="magName">
-          <div class="magFirst">{first}</div>
-          <div class="magLast">{last}</div>
-        </div>
-        <div class="magRating"
-          style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">
-          {rat}
-        </div>
-      </div>
-    </div>
-    """
-
-mag_css = """
-<style>
-.mag { 
-  width:100%;
-  min-height:54px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:10px 14px;
-  border-radius:18px;
-  color:#fff;
-  font-weight:900;
-  box-shadow:0 10px 26px rgba(0,0,0,.28);
-  overflow:hidden;
-}
-.magNum{
-  width:44px;
-  text-align:center;
-  font-size:15px;
-  opacity:0.95;
-  flex:0 0 auto;
-}
-.magName{
-  display:flex;
-  flex-direction:column;
-  line-height:1.05;
-  min-width:0;
-  flex:1 1 auto;
-}
-.magFirst{
-  font-size:10px;
-  opacity:0.85;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.magLast{
-  font-size:15px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.magRating{
-  margin-left:auto;
-  width:54px;
-  height:34px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  font-weight:1000;
-  flex:0 0 auto;
-}
-.def{background:#c62828;}
-.mid{background:#2e7d32;}
-.wingfwd{background:#ef6c00;}
-.ruckkf{background:#1565c0;}
-.other{background:#333;}
-</style>
-"""
-st.markdown(mag_css, unsafe_allow_html=True)
-
-# ------------------------------
-# Position rows
-# ------------------------------
-def _centre_stats(a_df, b_df, label):
-    a = avg_rating(a_df)
-    b = avg_rating(b_df)
-    d = None if (a is None or b is None) else (a - b)
-
-    # Titles above each pill set (clearer what numbers mean)
-    hdr = f"""
-    <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
-      <div style="text-align:center;">
-        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM A AVG</div>
-        {_pill("—" if a is None else f"{a:.1f}")}
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">NET (A−B)</div>
-        {_diff_pill(None if d is None else round(d,1))}
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM B AVG</div>
-        {_pill("—" if b is None else f"{b:.1f}")}
-      </div>
-    </div>
-    """
-    st.markdown(textwrap.dedent(hdr).strip(), unsafe_allow_html=True)
-
-def _render_position(cat_name, n_left=None, n_right=None):
-    left_df = cat_df(best_a, cat_name)
-    right_df = cat_df(best_b, cat_name)
-
-    # sort best first
-    left_df = left_df.sort_values("Rating", ascending=False)
-    right_df = right_df.sort_values("Rating", ascending=False)
-
-    # choose counts (optional)
-    if n_left is not None:
-        left_df = left_df.head(n_left)
-    if n_right is not None:
-        right_df = right_df.head(n_right)
-
-    lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
-
-    with lcol:
-        st.markdown(f"**{cat_name}**")
-        if left_df.empty:
-            st.caption("—")
-        else:
-            for _, row in left_df.iterrows():
-                st.markdown(_magnet_html(row, team_a_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
-
-    with ccol:
-        _centre_stats(left_df, right_df, cat_name)
-
-    with rcol:
-        st.markdown(f"**{cat_name}**")
-        if right_df.empty:
-            st.caption("—")
-        else:
-            for _, row in right_df.iterrows():
-                st.markdown(_magnet_html(row, team_b_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Tuned “how many magnets per row” so it stays clean (adjust if you want more/less)
-_render_position("Key Defender", n_left=2, n_right=2)
-st.markdown("---")
-_render_position("Gen. Defender", n_left=4, n_right=4)
-st.markdown("---")
-_render_position("Midfielder", n_left=4, n_right=4)      # often where your “green magnet formatting” was failing
-st.markdown("---")
-_render_position("Wing", n_left=2, n_right=2)
-st.markdown("---")
-_render_position("Ruck", n_left=2, n_right=2)
-st.markdown("---")
-_render_position("Key Forward", n_left=2, n_right=2)
-st.markdown("---")
-_render_position("Gen. Forward", n_left=4, n_right=4)    # includes Mid-Forwards here
-
-# =====================================================
-# (OPTIONAL) BEST vs SELECTED – Impact (Δ)
-# - Keeps this section as a single header (no repeated “Best vs Selected” labels on every row)
-# - Only runs if selected_a / selected_b exist and are non-empty
-# =====================================================
-try:
-    has_selected = (isinstance(selected_a, pd.DataFrame) and not selected_a.empty) or (isinstance(selected_b, pd.DataFrame) and not selected_b.empty)
-except Exception:
-    has_selected = False
-
-if has_selected:
     st.markdown("---")
-    st.header("Best vs Selected – Impact (Δ)")
+    st.header("Best 23 Comparison")
 
-    def _impact(best_df, sel_df):
-        out = {}
-        out["Overall"] = (avg_rating(sel_df) - avg_rating(best_df)) if (avg_rating(sel_df) is not None and avg_rating(best_df) is not None) else None
-        for cat in CATEGORY_MAP.keys():
-            b = cat_df(best_df, cat)
-            s = cat_df(sel_df, cat)
-            out[cat] = (avg_rating(s) - avg_rating(b)) if (avg_rating(s) is not None and avg_rating(b) is not None) else None
+    # -----------------------------------------------------
+    # Changes in this version (for your sanity)
+    # -----------------------------------------------------
+    # 1) Logos 4x bigger and centred
+    # 2) Team average rating shown directly under each logo (centred)
+    # 3) Header row height increased so logos never crop
+    # 4) Removed green background from centre stat columns (clean pills only)
+    # 5) Player rating pills conditionally formatted for ALL positions (incl. Mid/Mid-Fwd)
+    # 6) Magnets never wrap (ellipsis)
+    # 7) Forwards split: Key Forwards + Gen. Forwards (Mid-Forwards counted as Gen. Forwards)
+
+    # ------------------------------
+    # Settings
+    # ------------------------------
+    mode = st.radio(
+        "Comparison Mode",
+        ["Best 23 (All Players)", "Best 18 (On-field Only)"],
+        horizontal=True,
+        key="best23_compare_mode"
+    )
+    use_bench = (mode == "Best 23 (All Players)")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        team_a = st.selectbox("Team A", teams, key="best23_team_a")
+    with c2:
+        team_b = st.selectbox(
+            "Team B",
+            [t for t in teams if t != team_a],
+            key="best23_team_b"
+        )
+
+    # ------------------------------
+    # Helpers (logos + rating colour)
+    # ------------------------------
+    def _b64_file(path: str) -> str:
+        try:
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        except Exception:
+            return ""
+
+    def _team_logo_b64(team_name: str) -> str:
+        # uses your function name as per your note
+        try:
+            p = get_team_logo_path(team_name)
+            if isinstance(p, str) and os.path.exists(p):
+                return _b64_file(p)
+        except Exception:
+            pass
+        return ""
+
+    def _rating_percentile(val, series) -> float:
+        try:
+            if val is None:
+                return 0.0
+            s = pd.to_numeric(series, errors="coerce")
+            s = s[~pd.isna(s)]
+            if s.empty:
+                return 0.0
+            return float((s <= float(val)).mean())
+        except Exception:
+            return 0.0
+
+    def _rating_style(val, series):
+        """
+        Returns (bg, fg, brightness) for the rating pill.
+        Uses your existing rating_colour_for_value(val, series) if present.
+        """
+        bg, fg = "#ffffff", "#000000"
+        try:
+            c = rating_colour_for_value(val, series)
+            if isinstance(c, (tuple, list)) and len(c) >= 2:
+                bg, fg = str(c[0]), str(c[1])
+            else:
+                bg, fg = str(c), "#000000"
+        except Exception:
+            pass
+
+        pct = _rating_percentile(val, series)
+        bri = 0.85 + (0.35 * pct)  # 0.85 → 1.20
+        return bg, fg, bri
+
+    def _safe_float(x):
+        try:
+            return float(x)
+        except Exception:
+            return None
+
+    # ------------------------------
+    # Build Best 23 for both teams
+    # ------------------------------
+    slots_a, _used_a = build_best23(team_a)
+    slots_b, _used_b = build_best23(team_b)
+
+    # Use each team’s rating distribution for conditional pill styling
+    team_a_series = merged_all.loc[merged_all["Team"] == team_a, "Rating"]
+    team_b_series = merged_all.loc[merged_all["Team"] == team_b, "Rating"]
+
+    def slots_to_df(slots, team_name: str):
+        rows = []
+        for _, _, _, r, is_bench in slots:
+            if r is None:
+                continue
+            rows.append({
+                "Team": team_name,
+                "Player": r.get("Player"),
+                "Jumper": r.get("Jumper", ""),
+                "Position": r.get("Position"),
+                "Rating": _safe_float(r.get("Rating")),
+                "IsBench": bool(is_bench),
+            })
+        df = pd.DataFrame(rows)
+        if df.empty:
+            return df
+        if not use_bench:
+            df = df[df["IsBench"] == False].copy()
+        return df
+
+    best_a = slots_to_df(slots_a, team_a)
+    best_b = slots_to_df(slots_b, team_b)
+
+    # ------------------------------
+    # Category mapping (includes requested Forward split)
+    # ------------------------------
+    CATEGORY_MAP = {
+        "Key Defender": ["Key Defender"],
+        "Gen. Defender": ["Gen. Defender"],
+        "Wing": ["Wing"],
+        "Midfielder": ["Midfielder"],       # Mid-Forward NOT counted as midfielder here
+        "Ruck": ["Ruck"],
+        "Key Forward": ["Key Forward"],
+        "Gen. Forward": ["Gen. Forward", "Mid-Forward"],  # includes Mid-Forwards
+    }
+
+    def cat_df(df, cat_name):
+        pos_list = CATEGORY_MAP[cat_name]
+        if df.empty:
+            return df
+        return df[df["Position"].isin(pos_list)].copy()
+
+    def avg_rating(df):
+        if df is None or df.empty:
+            return None
+        return float(pd.to_numeric(df["Rating"], errors="coerce").mean())
+
+    overall_a = avg_rating(best_a)
+    overall_b = avg_rating(best_b)
+
+    import base64
+    import streamlit.components.v1 as components
+
+    def _img_to_b64(path: str) -> str:
+        try:
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        except Exception:
+            return ""
+
+    def _pill(val: str, bg="rgba(255,255,255,0.08)", fg="#FFFFFF", big=False):
+        fs = "34px" if big else "16px"
+        pad = "16px 22px" if big else "10px 14px"
+        br = "18px"
+        minw = "220px" if big else "120px"
+        return (
+            f"<div style=\""
+            f"display:inline-flex;"
+            f"align-items:center;"
+            f"justify-content:center;"
+            f"padding:{pad};"
+            f"border-radius:{br};"
+            f"background:{bg};"
+            f"color:{fg};"
+            f"font-weight:950;"
+            f"font-size:{fs};"
+            f"min-width:{minw};"
+            f"box-shadow:0 12px 30px rgba(0,0,0,.35);"
+            f"letter-spacing:0.4px;"
+            f"\">{val}</div>"
+        )
+
+    def _diff_pill(d):
+        if d is None:
+            return _pill("—", bg="rgba(255,255,255,0.06)", big=True)
+        if d > 0:
+            return _pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
+        if d < 0:
+            return _pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
+        return _pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
+
+    # ------------------------------
+    # Build logo b64 (uses your working helper)
+    # ------------------------------
+    logo_a_path = get_team_logo_path(team_a) if "get_team_logo_path" in globals() else None
+    logo_b_path = get_team_logo_path(team_b) if "get_team_logo_path" in globals() else None
+
+    logo_a_b64 = _img_to_b64(logo_a_path) if logo_a_path else ""
+    logo_b_b64 = _img_to_b64(logo_b_path) if logo_b_path else ""
+
+    # ------------------------------
+    # Values
+    # ------------------------------
+    overall_a_val = None if overall_a is None else float(overall_a)
+    overall_b_val = None if overall_b is None else float(overall_b)
+    net_val = None
+    if overall_a_val is not None and overall_b_val is not None:
+        net_val = overall_a_val - overall_b_val
+
+    overall_a_str = "" if overall_a_val is None else f"{overall_a_val:.2f}"
+    overall_b_str = "" if overall_b_val is None else f"{overall_b_val:.2f}"
+
+    # ------------------------------
+    # Header HTML (taller + centered)
+    # ------------------------------
+    header_html = f"""
+    <div class="b23Header">
+    <div class="teamCol">
+        {"<img class='logo' src='data:image/png;base64," + logo_a_b64 + "' />" if logo_a_b64 else "<div class='logoFallback'></div>"}
+        <div class="teamName">{team_a}</div>
+        <div class="label">OVERALL BEST 23 RATING</div>
+        {_pill(overall_a_str if overall_a_str else "—", big=True)}
+    </div>
+
+    <div class="midCol">
+        <div class="vsPill">VS</div>
+        <div class="netLabel">NET (A − B)</div>
+        {_diff_pill(net_val)}
+        <div class="subNote">Positive = Team A higher</div>
+    </div>
+
+    <div class="teamCol">
+        {"<img class='logo' src='data:image/png;base64," + logo_b_b64 + "' />" if logo_b_b64 else "<div class='logoFallback'></div>"}
+        <div class="teamName">{team_b}</div>
+        <div class="label">OVERALL BEST 23 RATING</div>
+        {_pill(overall_b_str if overall_b_str else "—", big=True)}
+    </div>
+    </div>
+
+    <style>
+    .b23Header {{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 0.55fr 1fr;
+    gap: 18px;
+    align-items: center;
+    padding: 10px 8px 18px 8px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    }}
+
+    .teamCol {{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 340px; /* ✅ prevents cropping */
+    }}
+
+    .logo {{
+    width: 420px;          /* ✅ big */
+    max-width: 90%;
+    height: 220px;         /* ✅ fixed box */
+    object-fit: contain;   /* ✅ never crop */
+    margin-top: 8px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
+    }}
+
+    .logoFallback {{
+    width: 420px;
+    max-width: 90%;
+    height: 220px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    margin-top: 8px;
+    margin-bottom: 10px;
+    }}
+
+    .teamName {{
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 6px;
+    }}
+
+    .label {{
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 8px;
+    text-align:center;
+    }}
+
+    .midCol {{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height: 340px; /* ✅ match sides */
+    }}
+
+    .vsPill {{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.90);
+    font-weight: 950;
+    letter-spacing: 0.18em;
+    box-shadow: 0 10px 26px rgba(0,0,0,.28);
+    margin-bottom: 18px;
+    }}
+
+    .netLabel {{
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 10px;
+    }}
+
+    .subNote {{
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    }}
+    </style>
+    """
+
+    # ✅ Render as HTML (not markdown) — and make container tall enough
+    components.html(header_html.strip(), height=400, scrolling=False)
+
+
+
+    st.caption("Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets. Bench players are dimmed but included in position averages (when Best 23 selected).")
+
+    # ------------------------------
+    # Magnet renderer (no wrapping; conditional rating pill for everyone)
+    # ------------------------------
+    def _magnet_html(row, series_for_colour, dim=False):
+        first, last = split_name(row["Player"])
+        num = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
+        rating_val = _safe_float(row.get("Rating", None))
+        rat = "" if rating_val is None else f"{rating_val:.1f}"
+
+        # base group colour from your pos_group
+        grp = pos_group(row.get("Position", ""))
+
+        bgc, fgc, bri = _rating_style(rating_val, series_for_colour)
+
+        fade = "opacity:0.55;" if dim else ""
+        return f"""
+        <div class="magRow" style="{fade}">
+        <div class="mag {grp}">
+            <div class="magNum">{num}</div>
+            <div class="magName">
+            <div class="magFirst">{first}</div>
+            <div class="magLast">{last}</div>
+            </div>
+            <div class="magRating"
+            style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">
+            {rat}
+            </div>
+        </div>
+        </div>
+        """
+
+    mag_css = """
+    <style>
+    .mag { 
+    width:100%;
+    min-height:54px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 14px;
+    border-radius:18px;
+    color:#fff;
+    font-weight:900;
+    box-shadow:0 10px 26px rgba(0,0,0,.28);
+    overflow:hidden;
+    }
+    .magNum{
+    width:44px;
+    text-align:center;
+    font-size:15px;
+    opacity:0.95;
+    flex:0 0 auto;
+    }
+    .magName{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+    flex:1 1 auto;
+    }
+    .magFirst{
+    font-size:10px;
+    opacity:0.85;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    }
+    .magLast{
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    }
+    .magRating{
+    margin-left:auto;
+    width:54px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    font-weight:1000;
+    flex:0 0 auto;
+    }
+    .def{background:#c62828;}
+    .mid{background:#2e7d32;}
+    .wingfwd{background:#ef6c00;}
+    .ruckkf{background:#1565c0;}
+    .other{background:#333;}
+    </style>
+    """
+    st.markdown(mag_css, unsafe_allow_html=True)
+
+    # ------------------------------
+    # Position rows
+    # ------------------------------
+    def _centre_stats(a_df, b_df, label):
+        a = avg_rating(a_df)
+        b = avg_rating(b_df)
+        d = None if (a is None or b is None) else (a - b)
+
+        # Titles above each pill set (clearer what numbers mean)
+        hdr = f"""
+        <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM A AVG</div>
+            {_pill("—" if a is None else f"{a:.1f}")}
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">NET (A−B)</div>
+            {_diff_pill(None if d is None else round(d,1))}
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM B AVG</div>
+            {_pill("—" if b is None else f"{b:.1f}")}
+        </div>
+        </div>
+        """
+        st.markdown(textwrap.dedent(hdr).strip(), unsafe_allow_html=True)
+
+    def _render_position(cat_name, n_left=None, n_right=None):
+        left_df = cat_df(best_a, cat_name)
+        right_df = cat_df(best_b, cat_name)
+
+        # sort best first
+        left_df = left_df.sort_values("Rating", ascending=False)
+        right_df = right_df.sort_values("Rating", ascending=False)
+
+        # choose counts (optional)
+        if n_left is not None:
+            left_df = left_df.head(n_left)
+        if n_right is not None:
+            right_df = right_df.head(n_right)
+
+        lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
+
+        with lcol:
+            st.markdown(f"**{cat_name}**")
+            if left_df.empty:
+                st.caption("—")
+            else:
+                for _, row in left_df.iterrows():
+                    st.markdown(_magnet_html(row, team_a_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
+
+        with ccol:
+            _centre_stats(left_df, right_df, cat_name)
+
+        with rcol:
+            st.markdown(f"**{cat_name}**")
+            if right_df.empty:
+                st.caption("—")
+            else:
+                for _, row in right_df.iterrows():
+                    st.markdown(_magnet_html(row, team_b_series, dim=bool(row.get("IsBench", False))), unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # Tuned “how many magnets per row” so it stays clean (adjust if you want more/less)
+    _render_position("Key Defender", n_left=2, n_right=2)
+    st.markdown("---")
+    _render_position("Gen. Defender", n_left=4, n_right=4)
+    st.markdown("---")
+    _render_position("Midfielder", n_left=4, n_right=4)      # often where your “green magnet formatting” was failing
+    st.markdown("---")
+    _render_position("Wing", n_left=2, n_right=2)
+    st.markdown("---")
+    _render_position("Ruck", n_left=2, n_right=2)
+    st.markdown("---")
+    _render_position("Key Forward", n_left=2, n_right=2)
+    st.markdown("---")
+    _render_position("Gen. Forward", n_left=4, n_right=4)    # includes Mid-Forwards here
+
+    # =====================================================
+    # MANUAL SELECTION (Pick your own Best 23)
+    # =====================================================
+    st.markdown("---")
+    st.header("Manual Selection (Pick Your Own Best 23)")
+
+    def _manual_picker(team_name, merged_all, use_bench=True):
+        import pandas as pd
+
+        df = merged_all[merged_all["Team"] == team_name].copy()
+        df = df.sort_values("Rating", ascending=False)
+
+        # Group pools (FREE PICK: any player can go anywhere)
+        pools = {
+            "Back 6": df,
+            "Midfield": df,
+            "Forward 6": df,
+            "Bench": df,
+        }
+
+
+        counts = {"Back 6": 6, "Midfield": 6, "Forward 6": 6, "Bench": 5}
+
+        picked_rows = []
+        used = set()
+
+        for grp in ["Back 6", "Midfield", "Forward 6"] + (["Bench"] if use_bench else []):
+            sub = pools[grp].copy()
+            sub = sub[~sub["Player"].isin(used)]
+
+            options = [
+                f"{r.Player} ({r.Position}) – {float(r.Rating):.1f}"
+                for r in sub.itertuples()
+            ]
+            idx_map = {options[i]: i for i in range(len(options))}
+
+            chosen = st.multiselect(
+                f"{grp} (pick {counts[grp]})",
+                options,
+                default=[],
+                key=f"manual_{team_name}_{grp}",
+                max_selections=counts[grp],
+            )
+
+            for label in chosen:
+                r = sub.iloc[idx_map[label]]
+                used.add(r["Player"])
+                rr = r[["Player", "Position", "Rating", "Jumper", "Team"]].to_dict()
+                rr["Group"] = grp
+                picked_rows.append(rr)
+
+        if not picked_rows:
+            return pd.DataFrame()
+
+        out = pd.DataFrame(picked_rows)
+        out["Rating"] = pd.to_numeric(out["Rating"], errors="coerce")
         return out
 
-    # Note: your manual selection builder uses same Position strings, so CATEGORY_MAP works
-    imp_a = _impact(best_a, selected_a if isinstance(selected_a, pd.DataFrame) else pd.DataFrame())
-    imp_b = _impact(best_b, selected_b if isinstance(selected_b, pd.DataFrame) else pd.DataFrame())
 
-    # Clean rows: position name only
-    def _delta_row(label, da, db):
-        c1, c2, c3 = st.columns([4, 3, 3])
-        with c1:
-            st.markdown(f"**{label}**")
-        with c2:
-            st.markdown(_diff_pill(None if da is None else round(da,2)) + "<div style='opacity:0.6;font-size:12px;text-align:center;'>Team A Δ (Selected − Best)</div>", unsafe_allow_html=True)
-        with c3:
-            st.markdown(_diff_pill(None if db is None else round(db,2)) + "<div style='opacity:0.6;font-size:12px;text-align:center;'>Team B Δ (Selected − Best)</div>", unsafe_allow_html=True)
+    m1, m2 = st.columns(2)
+    with m1:
+        st.subheader(f"{team_a} – Manual")
+        selected_a = _manual_picker(team_a, merged_all, use_bench=use_bench)
+    with m2:
+        st.subheader(f"{team_b} – Manual")
+        selected_b = _manual_picker(team_b, merged_all, use_bench=use_bench)
 
-    _delta_row("Overall", imp_a.get("Overall"), imp_b.get("Overall"))
-    st.markdown("---")
-    for k in ["Key Defender","Gen. Defender","Midfielder","Wing","Ruck","Key Forward","Gen. Forward"]:
-        _delta_row(k, imp_a.get(k), imp_b.get(k))
 
     # =====================================================
-    # BEST vs SELECTED DELTAS (Selected minus Model)
+    # Selected vs Model – Summary (Δ)  (single clean section)
     # =====================================================
-    st.markdown("---")
-    st.header("Best vs Selected – Impact (Δ)")
+    def render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench):
+        import pandas as pd
+        import streamlit as st
 
-if selected_a.empty or selected_b.empty:
-    st.info("Select full teams for both sides to view Best vs Selected deltas.")
-else:
-   
+        st.markdown("---")
+        st.header("Selected vs Model – Summary (Δ)")
 
-    # ---- Guard rails (avoid breaking whole page if manual selection not present yet)
-    required_vars = ["team_a", "team_b", "best_a", "best_b", "selected_a", "selected_b", "use_bench"]
-    missing = [v for v in required_vars if v not in locals()]
-    if missing:
-        st.warning(f"Best vs Selected deltas not available yet (missing: {', '.join(missing)}).")
-    else:
+        st.caption(
+            "**Definitions**\n"
+            "- **Δ (Delta)** = *Your Selected team average rating* − *Model Best team average rating*\n"
+            "- **Positive Δ**: your selection is stronger than the model | **Negative Δ**: weaker\n"
+            "- **Net advantage** = Team A Δ − Team B Δ (who gained more vs the model)"
+        )
+
+        expected = 23 if use_bench else 18
+
+        def _is_full(df):
+            return isinstance(df, pd.DataFrame) and (not df.empty) and (len(df) == expected)
+
+        if not _is_full(selected_a) or not _is_full(selected_b):
+            st.info(f"Select **{expected} players** for both teams to see results.")
+            return
+
         # Ensure numeric
-        for _df_name in ["best_a", "best_b", "selected_a", "selected_b"]:
-            _df = locals()[_df_name]
+        for _df in [best_a, best_b, selected_a, selected_b]:
             if _df is not None and not _df.empty and "Rating" in _df.columns:
                 _df["Rating"] = pd.to_numeric(_df["Rating"], errors="coerce")
 
-        # ------------------------------
-        # Helper: stat cell (reuse if you already have one)
-        # ------------------------------
-        def _alpha_from_absdiff(x):
-            try:
-                ax = abs(float(x))
-            except Exception:
-                return 0.0
-            return min(0.25 + (ax / 2.0), 0.90)
+        def _avg(df):
+            if df is None or df.empty:
+                return None
+            v = pd.to_numeric(df["Rating"], errors="coerce").dropna()
+            return float(v.mean()) if not v.empty else None
 
-        def _colour_for_diff(d):
-            if d is None:
-                return "rgba(200,200,200,0.20)"
-            try:
-                d = float(d)
-            except Exception:
-                return "rgba(200,200,200,0.20)"
-            if d > 0:
-                return f"rgba(0,180,90,{_alpha_from_absdiff(d)})"
-            if d < 0:
-                return f"rgba(220,60,60,{_alpha_from_absdiff(d)})"
-            return "rgba(200,200,200,0.20)"
-
-        def _stat_cell(text, diff=None, big=False):
-            if text is None:
-                text = ""
-            size = "18px" if big else "13px"
-            pad = "10px 10px" if big else "6px 8px"
-            return f"""
-            <div style="
-                padding:{pad};
-                border-radius:10px;
-                text-align:center;
-                font-weight:900;
-                font-size:{size};
-                background:{_colour_for_diff(diff)};
-                border:1px solid rgba(255,255,255,0.06);
-            ">{text}</div>
-            """
-
-        def _try_team_logo(team_name: str):
-            fn = globals().get("_path", None)  # <- no unresolved symbol
-            if callable(fn):
-                try:
-                    return fn(team_name)
-                except Exception:
-                    return None
-            return None
-
-
-        def _diff(a, b, nd=1):
+        def _delta(sel, best):
+            a = _avg(sel)
+            b = _avg(best)
             if a is None or b is None:
                 return None
-            try:
-                return round(float(a) - float(b), nd)
-            except Exception:
+            return a - b
+
+        # Overall deltas
+        dA = _delta(selected_a, best_a)
+        dB = _delta(selected_b, best_b)
+        net = None if (dA is None or dB is None) else (dA - dB)
+
+        # Simple top row
+        c1, c2, c3 = st.columns([1.2, 1, 1.2])
+        with c1:
+            st.metric(f"{team_a} Δ (Overall)", "—" if dA is None else f"{dA:+.2f}")
+        with c2:
+            st.metric("Net advantage (AΔ − BΔ)", "—" if net is None else f"{net:+.2f}")
+        with c3:
+            st.metric(f"{team_b} Δ (Overall)", "—" if dB is None else f"{dB:+.2f}")
+
+        # Group definitions (manual groups)
+        group_order = ["Back 6", "Midfield", "Forward 6"] + (["Bench"] if use_bench else [])
+
+        # Map model best df to comparable groups
+        def best_group_avg(best_df, grp):
+            if best_df is None or best_df.empty:
                 return None
-
-        # ------------------------------
-        # Define group buckets for apples-to-apples deltas
-        # (manual uses Back 6 / Midfield / Forward 6 / Bench)
-        # ------------------------------
-        # If your manual slots exist use them, else fall back:
-        if "MANUAL_SLOTS" in locals():
-            GROUP_ORDER = [g for g, _ in MANUAL_SLOTS]
-        else:
-            GROUP_ORDER = ["Back 6", "Midfield", "Forward 6", "Bench"]
-
-        # Best -> group mapping
-        def best_to_group_avgs(best_df):
-            """
-            Convert best model df (Position + IsBench) to group averages.
-            Bench average only exists if use_bench=True (Best 23 mode).
-            """
-            out = {}
-
-            backs = best_df[best_df["Position"].isin(["Key Defender", "Gen. Defender"])]
-            out["Back 6"] = round(backs["Rating"].mean(), 1) if not backs.empty else None
-
-            mids = best_df[best_df["Position"].isin(["Midfielder", "Wing", "Ruck"])]
-            out["Midfield"] = round(mids["Rating"].mean(), 1) if not mids.empty else None
-
-            fwds = best_df[best_df["Position"].isin(["Key Forward", "Gen. Forward", "Mid-Forward"])]
-            out["Forward 6"] = round(fwds["Rating"].mean(), 1) if not fwds.empty else None
-
-            if use_bench:
-                bench = best_df[best_df.get("IsBench", False) == True]
-                out["Bench"] = round(bench["Rating"].mean(), 1) if not bench.empty else None
+            if grp == "Back 6":
+                sub = best_df[best_df["Position"].isin(["Key Defender", "Gen. Defender"])]
+            elif grp == "Midfield":
+                sub = best_df[best_df["Position"].isin(["Midfielder", "Wing", "Ruck"])]
+            elif grp == "Forward 6":
+                sub = best_df[best_df["Position"].isin(["Key Forward", "Gen. Forward", "Mid-Forward"])]
+            elif grp == "Bench":
+                if "IsBench" not in best_df.columns:
+                    return None
+                sub = best_df[best_df["IsBench"] == True]
             else:
-                out["Bench"] = None
+                return None
+            return _avg(sub)
 
-            overall = round(best_df["Rating"].mean(), 2) if not best_df.empty else None
-            return overall, out
+        def selected_group_avg(sel_df, grp):
+            if sel_df is None or sel_df.empty or "Group" not in sel_df.columns:
+                return None
+            return _avg(sel_df[sel_df["Group"] == grp])
 
-        # Manual -> group averages
-        def selected_group_avgs(sel_df):
-            """
-            Averages by manual 'Group' column (Back 6 / Midfield / Forward 6 / Bench)
-            """
-            out = {}
-            if sel_df is None or sel_df.empty:
-                return None, out
+        rows = []
+        for grp in group_order:
+            bestA = best_group_avg(best_a, grp)
+            bestB = best_group_avg(best_b, grp)
+            selA  = selected_group_avg(selected_a, grp)
+            selB  = selected_group_avg(selected_b, grp)
 
-            for g in GROUP_ORDER:
-                sub = sel_df[sel_df["Group"] == g] if "Group" in sel_df.columns else pd.DataFrame()
-                out[g] = round(sub["Rating"].mean(), 1) if not sub.empty else None
+            gdA = None if (selA is None or bestA is None) else (selA - bestA)
+            gdB = None if (selB is None or bestB is None) else (selB - bestB)
+            gnet = None if (gdA is None or gdB is None) else (gdA - gdB)
 
-            overall = round(sel_df["Rating"].mean(), 2) if not sel_df.empty else None
-            return overall, out
+            rows.append({
+                "Group": grp,
+                f"{team_a} Δ": "—" if gdA is None else f"{gdA:+.1f}",
+                "Net (AΔ−BΔ)": "—" if gnet is None else f"{gnet:+.1f}",
+                f"{team_b} Δ": "—" if gdB is None else f"{gdB:+.1f}",
+                "Meaning": "Positive = you improved vs model"
+            })
 
-        # Compute avgs
-        overall_best_a2, grp_best_a = best_to_group_avgs(best_a)
-        overall_best_b2, grp_best_b = best_to_group_avgs(best_b)
+        st.subheader("Where the differences came from")
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-        overall_sel_a, grp_sel_a = selected_group_avgs(selected_a)
-        overall_sel_b, grp_sel_b = selected_group_avgs(selected_b)
+        st.caption(
+            "How to use this: If Overall Δ is negative, your selection is weaker than the model on average. "
+            "Use the group rows to see which line (Back/Mid/Fwd/Bench) drove the difference."
+        )
 
-        # Overall deltas (Selected minus Best)
-        d_overall_a = _diff(overall_sel_a, overall_best_a2, 2)
-        d_overall_b = _diff(overall_sel_b, overall_best_b2, 2)
 
-        # ------------------------------
-        # Header row: overall deltas big
-        # ------------------------------
-        h1, h2, h3, h4, h5 = st.columns([2.2, 1.3, 1, 1.3, 2.2])
-        with h1:
-            logo = _try_team_logo(team_a)
-            if logo is not None:
-                st.image(logo, width=70)
-            st.markdown(f"### {team_a}")
-        with h2:
-            st.markdown(_stat_cell("" if d_overall_a is None else f"{d_overall_a:+.2f}", diff=d_overall_a, big=True), unsafe_allow_html=True)
-        with h3:
-            st.markdown("<div style='text-align:center;font-weight:950;font-size:16px;padding-top:12px;'>Δ</div>", unsafe_allow_html=True)
-        with h4:
-            st.markdown(_stat_cell("" if d_overall_b is None else f"{d_overall_b:+.2f}", diff=d_overall_b, big=True), unsafe_allow_html=True)
-        with h5:
-            logo = _try_team_logo(team_b)
-            if logo is not None:
-                st.image(logo, width=70)
-            st.markdown(f"### {team_b}")
+    # Call once (and only once)
+    render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench)
 
-        st.caption("Δ = Selected minus Model. Positive = your selected team is stronger than the model; negative = weaker.")
 
-        # ------------------------------
-        # Group deltas table: Team A Δ | Net (AΔ−BΔ) | Team B Δ
-        # ------------------------------
-        st.subheader("Group Deltas (Selected − Model)")
+                
+#### GAME DAY PLAYEGROUND
 
-        for grp in GROUP_ORDER:
-            # Best 18 mode: ignore bench row
-            if (not use_bench) and grp == "Bench":
-                continue
+elif page == "Game Day Playground":
+   
 
-            bestA = grp_best_a.get(grp)
-            selA  = grp_sel_a.get(grp)
-            dA    = _diff(selA, bestA, 1)
+   
 
-            bestB = grp_best_b.get(grp)
-            selB  = grp_sel_b.get(grp)
-            dB    = _diff(selB, bestB, 1)
+    render_game_day_playground(teams)
 
-            net = _diff(dA, dB, 1)  # AΔ - BΔ
+       
 
-            r1, r2, r3, r4 = st.columns([3.2, 1.2, 1.2, 1.2])
-            with r1:
-                st.markdown(f"**{grp}**")
-            with r2:
-                st.markdown(_stat_cell("" if dA is None else f"{dA:+.1f}", diff=dA), unsafe_allow_html=True)
-            with r3:
-                st.markdown(_stat_cell("" if net is None else f"{net:+.1f}", diff=net), unsafe_allow_html=True)
-            with r4:
-                st.markdown(_stat_cell("" if dB is None else f"{dB:+.1f}", diff=dB), unsafe_allow_html=True)
+   
 
-        st.caption("Columns: Team A Δ | Net advantage (AΔ−BΔ) | Team B Δ")
