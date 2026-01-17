@@ -552,10 +552,82 @@ def get_team_logo_path(team_name: str):
     return None
 
 
-def get_player_photo_path(player_name: str):
+@st.cache_data
+def load_player_name_mapping():
+    """Load player photo guide and create mapping from various name formats to full names."""
+    try:
+        guide_df = pd.read_csv("player_photo_guide.csv")
+        name_map = {}
+        team_player_map = {}  # Map of (team, initial.surname) -> full_name
+        
+        # Team name normalization
+        def normalize_team(team):
+            team = str(team).strip().lower()
+            if 'sydney' in team or team in ['syfc', 'sfc']:
+                return 'sydney'
+            if 'gws' in team or 'giants' in team or 'greater western sydney' in team:
+                return 'gws'
+            if 'bulldogs' in team or team in ['wbfc']:
+                return 'western bulldogs'
+            return team.replace(' ', '').replace('fc', '')
+        
+        for _, row in guide_df.iterrows():
+            full_name = str(row["Player"]).strip()
+            team = normalize_team(row.get("Team", ""))
+            
+            # Map full name to itself
+            name_map[full_name] = full_name
+            name_map[full_name.lower()] = full_name
+            
+            # Create initial + surname mapping (e.g., "J. Dawson" -> "Jordan Dawson")
+            parts = full_name.split()
+            if len(parts) >= 2:
+                initial_surname = f"{parts[0][0]}. {parts[-1]}"
+                name_map[initial_surname] = full_name
+                name_map[initial_surname.lower()] = full_name
+                
+                # Create team-specific mapping for more accurate matching
+                team_key = f"{team}_{initial_surname.lower()}"
+                team_player_map[team_key] = full_name
+        
+        # Store team map as attribute for use in get_player_photo_path
+        name_map['__team_player_map__'] = team_player_map
+        return name_map
+    except Exception:
+        return {}
+
+
+def get_player_photo_path(player_name: str, team_name: str = None):
     if not isinstance(player_name, str):
         return None
-    base = player_name.strip().lower().replace(" ", "_")
+    
+    # Try to normalize the name using the mapping
+    name_map = load_player_name_mapping()
+    team_player_map = name_map.get('__team_player_map__', {})
+    
+    # Try team-aware lookup first if team provided
+    normalized_name = player_name.strip()
+    if team_name and team_player_map:
+        def normalize_team(team):
+            team = str(team).strip().lower()
+            if 'sydney' in team or team in ['syfc', 'sfc']:
+                return 'sydney'
+            if 'gws' in team or 'giants' in team:
+                return 'gws'
+            if 'bulldogs' in team or team in ['wbfc']:
+                return 'western bulldogs'
+            return team.replace(' ', '').replace('fc', '')
+        
+        norm_team = normalize_team(team_name)
+        team_key = f"{norm_team}_{player_name.strip().lower()}"
+        if team_key in team_player_map:
+            normalized_name = team_player_map[team_key]
+    
+    # Fall back to regular name mapping
+    if normalized_name == player_name.strip():
+        normalized_name = name_map.get(player_name.strip(), name_map.get(player_name.strip().lower(), player_name.strip()))
+    
+    base = normalized_name.lower().replace(" ", "_")
     for ext in (".png", ".jpg", ".jpeg"):
         path = os.path.join(PLAYER_PHOTO_FOLDER, base + ext)
         if os.path.exists(path):
@@ -586,8 +658,8 @@ def display_logo(team_name: str, container, size: int = 80):
             return
 
 
-def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False):
-    path = get_player_photo_path(player_name)
+def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False, team_name: str = None):
+    path = get_player_photo_path(player_name, team_name)
     if not path:
         return
     try:
@@ -910,6 +982,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
     Player, Jumper, Age, Height, Position, RatingPoints_Avg.
     all_teams_df is the full Summary DataFrame for all teams (for ranking calculations).
     """
+    # Remove duplicate columns if they exist
+    if len(df_team.columns) != len(set(df_team.columns)):
+        df_team = df_team.loc[:, ~df_team.columns.duplicated()]
+    
     num_col = find_first_column(df_team, ["Jumper", "Jersey", "Number", "Guernsey", "No"])
     age_col = "Age"
     height_col = "Height"
@@ -950,11 +1026,11 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         line1_parts = []
         if pd.notna(num) and str(num).strip() != "":
             try:
-                line1_parts.append(str(int(num)))
+                line1_parts.append(f"<span style='display:inline-block;background:linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%);color:#fff;padding:3px 8px;border-radius:6px;margin-right:6px;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,0.3);'>{int(num)}</span>")
             except Exception:
-                line1_parts.append(str(num))
-        line1_parts.append(player_name)
-        left_parts.append(f"<span style='font-size:1.1em;font-weight:bold;'>{' '.join(line1_parts)}</span>")
+                line1_parts.append(f"<span style='display:inline-block;background:linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%);color:#fff;padding:3px 8px;border-radius:6px;margin-right:6px;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,0.3);'>{num}</span>")
+        line1_parts.append(f"<span style='font-weight:900;color:#1a1a1a;'>{player_name}</span>")
+        left_parts.append(f"<div style='font-size:1.05em;margin-bottom:4px;'>{' '.join(line1_parts)}</div>")
         
         # Line 2: age, height
         line2_parts = []
@@ -971,9 +1047,9 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 line2_parts.append(f"{height}cm")
         
         if line2_parts:
-            left_parts.append(", ".join(line2_parts))
+            left_parts.append(f"<div style='font-size:0.9em;color:#666;font-weight:600;'>{', '.join(line2_parts)}</div>")
         
-        left_html = "<br>".join(left_parts)
+        left_html = "".join(left_parts)
         
         # Right side: rating box (if exists)
         rating_box_html = ""
@@ -984,26 +1060,15 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                     rating_float, df_team, rating_col
                 )
 
-                rating_box_html = (
-                    f"<span style='display:inline-block;"
-                    f"padding:4px 12px;border-radius:6px;"
-                    f"background-color:{bg_color};color:{text_color};"
-                    f"border:2px solid #000;font-weight:bold;font-size:1.4em;'>"
-                    f"{rating_float:.1f}</span>"
-                )
+                rating_box_html = f"<span style='display:inline-block;padding:8px 16px;border-radius:10px;background:{bg_color};color:{text_color};font-weight:900;font-size:1.5em;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);min-width:50px;text-align:center;'>{rating_float:.2f}</span>"
             except Exception:
                 rating_box_html = f"<span>{rating}</span>"
         
-        # Combine left and right with flexbox, top-aligned
+        # Combine left and right with flexbox, top-aligned - ENHANCED PLAYER CARD
         if rating_box_html:
-            player_html = (
-                f"<div style='display:flex;justify-content:space-between;align-items:flex-start;gap:8px;'>"
-                f"<div>{left_html}</div>"
-                f"<div>{rating_box_html}</div>"
-                f"</div>"
-            )
+            player_html = f"<div style='display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;background:linear-gradient(135deg,#f8f9fa 0%,#ffffff 100%);border-radius:8px;border-left:4px solid #2d2d2d;box-shadow:0 2px 6px rgba(0,0,0,0.08);transition:all 0.2s;margin:2px 0;'><div style='flex:1;'>{left_html}</div><div>{rating_box_html}</div></div>"
         else:
-            player_html = left_html
+            player_html = f"<div style='padding:8px 10px;background:linear-gradient(135deg,#f8f9fa 0%,#ffffff 100%);border-radius:8px;border-left:4px solid #2d2d2d;box-shadow:0 2px 6px rgba(0,0,0,0.08);margin:2px 0;'>{left_html}</div>"
 
         if depth_pos in grid and age_band in grid[depth_pos]:
             grid[depth_pos][age_band].append(player_html)
@@ -1019,6 +1084,11 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
     position_rankings = {}
     
     if all_teams_df is not None and rating_col in all_teams_df.columns:
+        # Debug: Check for duplicate columns
+        if len(all_teams_df.columns) != len(set(all_teams_df.columns)):
+            # Remove duplicate columns
+            all_teams_df = all_teams_df.loc[:, ~all_teams_df.columns.duplicated()]
+        
         # Get all ratings for percentile calculation (same as List Ladder)
         all_ratings = pd.to_numeric(all_teams_df[rating_col], errors="coerce").dropna()
         
@@ -1122,17 +1192,14 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         else:
             return "#FF0000"  # red
 
-    # build HTML table with rankings
+    # build HTML table with rankings - PROFESSIONAL BROADCAST STYLE
     html = []
-    html.append(
-        "<table style='width:100%;border-collapse:collapse;font-size:0.8em;'>"
-    )
+    html.append("<table style='width:100%;border-collapse:separate;border-spacing:0;font-size:0.85em;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-radius:12px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;'>")
+    
     # Header row with column names and rankings
     html.append("<tr>")
-    html.append(
-        "<th style='background-color:black;color:white;padding:6px;"
-        "border:2px solid #000;width:12%;'>Position</th>"
-    )
+    html.append("<th style='background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);color:#FFFFFF;padding:16px 12px;border-right:2px solid #444;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-shadow:2px 2px 4px rgba(0,0,0,0.5);'>Position</th>")
+    
     for band in AGE_BANDS:
         # Get ranking info for this age band
         ranking_html = ""
@@ -1140,23 +1207,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             rank, total, avg = age_band_rankings[band]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
-            # Determine text color based on background
-            text_color = "black" if color == "lightgreen" else "white"
-            ranking_html = (
-                f"<div style='margin-top:8px;'>"
-                f"<span style='display:inline-block;background-color:{color};color:{text_color};"
-                f"padding:8px 16px;border-radius:8px;font-weight:bold;"
-                f"font-size:1.4em;border:3px solid #000;'>{ordinal}</span>"
-                f"</div>"
-            )
+            text_color = "black" if color == "#90EE90" else "white"
+            ranking_html = f"<div style='margin-top:10px;'><span style='display:inline-block;background-color:{color};color:{text_color};padding:10px 20px;border-radius:10px;font-weight:900;font-size:1.3em;box-shadow:0 4px 12px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);'>{ordinal}</span></div>"
         
-        html.append(
-            f"<th style='background-color:#8BC34A;color:black;padding:6px;"
-            f"border:2px solid #000;text-align:center;vertical-align:top;'>"
-            f"<div style='font-weight:bold;'>{band}</div>"
-            f"{ranking_html}"
-            f"</th>"
-        )
+        html.append(f"<th style='background:linear-gradient(135deg,#7CB342 0%,#9CCC65 100%);color:#1a1a1a;padding:16px 12px;border-right:2px solid #5a8f2f;text-align:center;vertical-align:top;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-shadow:1px 1px 2px rgba(255,255,255,0.3);'><div>{band}</div>{ranking_html}</th>")
     html.append("</tr>")
 
     for pos in DEPTH_POSITIONS:
@@ -1164,39 +1218,24 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         html.append("<tr>")
         
         # Position cell with ranking
-        pos_cell_html = f"<div>{pos}</div>"
+        pos_cell_html = f"<div style='font-size:1.1em;font-weight:900;letter-spacing:0.03em;'>{pos}</div>"
         if pos in position_rankings:
             rank, total, avg = position_rankings[pos]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
-            # Determine text color based on background
-            text_color = "black" if color == "lightgreen" else "white"
-            pos_cell_html += (
-                f"<div style='margin-top:8px;'>"
-                f"<span style='display:inline-block;background-color:{color};color:{text_color};"
-                f"padding:8px 16px;border-radius:8px;font-weight:bold;"
-                f"font-size:1.4em;border:3px solid #000;'>{ordinal}</span>"
-                f"</div>"
-            )
+            text_color = "black" if color == "#90EE90" else "white"
+            pos_cell_html += f"<div style='margin-top:10px;'><span style='display:inline-block;background-color:{color};color:{text_color};padding:10px 20px;border-radius:10px;font-weight:900;font-size:1.3em;box-shadow:0 4px 12px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);'>{ordinal}</span></div>"
         
-        html.append(
-            f"<td style='background-color:{bg};color:{fg};padding:6px;"
-            f"border:2px solid #000;font-weight:bold;width:10%;"
-            f"white-space:nowrap;vertical-align:top;text-align:center;'>{pos_cell_html}</td>"
-        )
+        html.append(f"<td style='background:{bg};color:{fg};padding:16px 12px;border-right:2px solid #444;border-top:2px solid #444;font-weight:900;vertical-align:top;text-align:center;'>{pos_cell_html}</td>")
         
         for band in AGE_BANDS:
             players = grid[pos][band]
             if players:
-                sep = "<hr style='margin:4px 0;border:0;border-top:1px solid #cccccc;' />"
+                sep = "<div style='margin:8px 0;height:1px;background:linear-gradient(90deg,transparent 0%,#ddd 50%,transparent 100%);'></div>"
                 cell_html = sep.join(players)
             else:
                 cell_html = ""
-            html.append(
-                "<td style='background-color:white;color:black;padding:6px;"
-                "border:2px solid #000;vertical-align:top;text-align:left;'>"
-                f"{cell_html}</td>"
-            )
+            html.append(f"<td style='background:#FFFFFF;color:#1a1a1a;padding:12px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;vertical-align:top;'>{cell_html}</td>")
         html.append("</tr>")
 
     html.append("</table>")
@@ -1409,7 +1448,7 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "Game Day Playground"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits", "Game Day Playground", "IDP"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -1462,7 +1501,9 @@ if page == "Home":
         logo_path = "team_logos/Logo Transparent.png"
         
         if os.path.exists(logo_path):
+            st.markdown("<style>.home-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='home-logo'>", unsafe_allow_html=True)
             st.image(logo_path)
+            st.markdown("</div>", unsafe_allow_html=True)
         else:
             # Fallback if logo not found - show placeholder
             st.markdown(
@@ -1680,7 +1721,9 @@ def _logo_img(team_name: str, width=220):
         if callable(fn):
             p = fn(team_name)
             if isinstance(p, str) and p:
+                st.markdown(f"<style>.logo-glow img {{ filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }}</style><div class='logo-glow'>", unsafe_allow_html=True)
                 st.image(p, width=width)
+                st.markdown("</div>", unsafe_allow_html=True)
                 return
     except Exception:
         pass
@@ -1733,8 +1776,8 @@ def _phase_card(title: str, rating: int, stats_rows):
              background:rgba(255,255,255,0.03);
              border:1px solid rgba(255,255,255,0.06);">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <div style="font-size:18px;font-weight:950;">{title}</div>
-            <div style="font-size:18px;font-weight:950;">{rating}/100</div>
+            <div style="font-size:18px;font-weight:900;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">{title}</div>
+            <div style="font-size:18px;font-weight:900;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">{rating}/100</div>
           </div>
           <div style="margin-top:10px;">{bar}</div>
         </div>
@@ -1748,7 +1791,7 @@ def _phase_card(title: str, rating: int, stats_rows):
 
 
 def render_game_day_playground(teams: list[str]):
-    st.title("🎮 Game Day Playground")
+    st.markdown("""<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);padding: 40px 20px;border-radius: 16px;box-shadow: 0 8px 24px rgba(0,0,0,0.4);margin-bottom: 32px;text-align: center;"><h1 style="color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight: 900;font-size: 48px;margin: 0 0 12px 0;letter-spacing: 0.02em;text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">🎮 Game Day Playground</h1><p style="color: rgba(255,255,255,0.8);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size: 16px;margin: 0;font-weight: 600;letter-spacing: 0.03em;">Select two teams + time window, explore game modes + zone health (all mock for now). Next: wire in real data.</p></div>""", unsafe_allow_html=True)
 
     # -------------------------------------------------
     # SAFETY: build teams if global list is empty
@@ -1770,45 +1813,60 @@ def render_game_day_playground(teams: list[str]):
     # ===== Broadcast Styling Pack (drop-in) =====
     st.markdown("""
     <style>
-    /* Page spacing + subtle broadcast background */
+    /* Page spacing + broadcast background */
     section.main > div { padding-top: 0.5rem; }
     .gdp-card{
-    padding:18px;
-    border-radius:22px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border:1px solid rgba(255,255,255,0.12);
-    box-shadow:0 18px 46px rgba(0,0,0,0.55);
-    backdrop-filter: blur(6px);
+    padding:20px;
+    border-radius:16px;
+    background: linear-gradient(145deg, rgba(20,20,30,0.95), rgba(30,30,45,0.95));
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    }
+    .gdp-card:hover{
+    box-shadow:0 12px 32px rgba(0,0,0,0.6);
+    transform: translateY(-2px);
     }
 
-    .gdp-title{ font-size:20px; font-weight:950; }
-    .gdp-sub{ opacity:0.7; font-size:12px; }
+    .gdp-title{ font-size:22px; font-weight:900; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; letter-spacing:0.03em; }
+    .gdp-sub{ opacity:0.8; font-size:13px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight:600; }
     .gdp-pill{
-    padding:12px 18px;
-    border-radius:999px;
+    padding:12px 20px;
+    border-radius:20px;
     font-weight:900;
-    font-size:15px;
-    letter-spacing:0.04em;
+    font-size:14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing:0.05em;
     text-align:center;
     min-width:190px;
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.06);
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+    }
+    .gdp-pill:hover{
+    transform: translateY(-2px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.5);
     }
     .gdp-pill-active{
-    box-shadow:0 10px 28px rgba(0,0,0,0.45);
-    border:1px solid rgba(255,255,255,0.14);
+    box-shadow:0 8px 20px rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.2);
     }
     .gdp-bar-bg{
-    height:14px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.08);
+    height:10px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.15);
     overflow:hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
     .gdp-bar-fill{
-    height:14px;
-    border-radius:999px;
+    height:10px;
+    border-radius:8px;
+    transition: width 0.4s ease;
+    box-shadow:0 0 16px currentColor;
     }
-    .gdp-dot{ font-weight:900; font-size:16px; }
+    .gdp-dot{ font-weight:900; font-size:18px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -1821,20 +1879,20 @@ def render_game_day_playground(teams: list[str]):
 
     def _gdp_zone_tile(label: str, rating: int, subtitle: str = "") -> str:
         col = _gdp_colour(rating)
-        sub = f"<div class='gdp-sub' style='margin-top:2px;'>{subtitle}</div>" if subtitle else ""
+        sub = f"<div class='gdp-sub' style='margin-top:4px;'>{subtitle}</div>" if subtitle else ""
         return (
-            "<div class='gdp-card' style='padding:14px 16px; position:relative; overflow:hidden;'>"
-            f"<div style='position:absolute;left:0;top:0;bottom:0;width:8px;background:{col};"
-            f"box-shadow:0 0 20px {col};'></div>"
-            "<div style='display:flex;justify-content:space-between;align-items:baseline;gap:10px;'>"
-                "<div style='padding-left:8px;'>"
-                f"<div class='gdp-title' style='font-size:16px;color:rgba(255,255,255,0.94);'>{label}</div>"
+            "<div class='gdp-card' style='padding:20px 24px; position:relative; overflow:hidden;'>"
+            f"<div style='position:absolute;left:0;top:0;bottom:0;width:6px;background:{col};"
+            f"box-shadow:0 0 24px {col};'></div>"
+            "<div style='display:flex;justify-content:space-between;align-items:baseline;gap:12px;'>"
+                "<div style='padding-left:12px;'>"
+                f"<div class='gdp-title' style='font-size:17px;color:rgba(255,255,255,0.95);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;'>{label}</div>"
                 f"{sub}"
                 "</div>"
-                f"<div class='gdp-title' style='font-size:18px;color:{col};'>{rating}</div>"
+                f"<div class='gdp-title' style='font-size:20px;color:{col};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;'>{rating}</div>"
             "</div>"
-            "<div style='margin-top:10px;' class='gdp-bar-bg'>"
-                f"<div class='gdp-bar-fill' style='width:{rating}%;background:{col};box-shadow:0 0 16px {col};'></div>"
+            "<div style='margin-top:14px;' class='gdp-bar-bg'>"
+                f"<div class='gdp-bar-fill' style='width:{rating}%;background:{col};box-shadow:0 0 20px {col};'></div>"
             "</div>"
             "</div>"
         )
@@ -1846,21 +1904,26 @@ def render_game_day_playground(teams: list[str]):
         if not on:
             return f"""
             <div style="
-                padding:14px 18px;border-radius:999px;
-                font-weight:900;font-size:15px;text-align:center;
-                background:rgba(255,255,255,0.05);
-                border:1px solid rgba(255,255,255,0.06);
-                color:rgba(255,255,255,0.75);
+                padding:16px 24px;border-radius:20px;
+                font-weight:900;font-size:14px;text-align:center;
+                background:rgba(255,255,255,0.06);
+                border:1px solid rgba(255,255,255,0.08);
+                color:rgba(255,255,255,0.6);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                letter-spacing:0.05em;
+                box-shadow:0 4px 12px rgba(0,0,0,0.3);
             ">{label}</div>
             """
         return f"""
         <div style="
-            padding:14px 18px;border-radius:999px;
-            font-weight:900;font-size:15px;text-align:center;
+            padding:16px 24px;border-radius:20px;
+            font-weight:900;font-size:14px;text-align:center;
             background:rgba(63,185,132,{opacity});
-            border:1px solid rgba(63,185,132,{opacity});
+            border:1px solid rgba(63,185,132,{min(1.0, opacity + 0.2)});
             color:#ffffff;
-            box-shadow:0 0 18px rgba(63,185,132,{min(0.6, opacity)});
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing:0.05em;
+            box-shadow:0 0 20px rgba(63,185,132,{min(0.7, opacity)}), 0 4px 12px rgba(0,0,0,0.4);
         ">{label}</div>
         """
 
@@ -1870,13 +1933,13 @@ def render_game_day_playground(teams: list[str]):
         col = _gdp_colour(rating)
         st.markdown(
             f"""
-            <div class="gdp-card" style="padding:14px 16px;">
+            <div class="gdp-card" style="padding:20px 24px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div class="gdp-title">{title}</div>
-                <div class="gdp-title" style="color:{col};">{rating}/100</div>
+                <div class="gdp-title" style="font-size:18px;">{title}</div>
+                <div class="gdp-title" style="color:{col};font-size:20px;">{rating}/100</div>
             </div>
-            <div style="margin-top:12px;" class="gdp-bar-bg">
-                <div class="gdp-bar-fill" style="width:{rating}%;background:{col};box-shadow:0 0 18px {col};"></div>
+            <div style="margin-top:16px;" class="gdp-bar-bg">
+                <div class="gdp-bar-fill" style="width:{rating}%;background:{col};box-shadow:0 0 20px {col};"></div>
             </div>
             </div>
             """,
@@ -1905,49 +1968,52 @@ def render_game_day_playground(teams: list[str]):
     st.markdown(
             """
             <style>
-            .gdp-muted{opacity:0.7;font-size:12px;}
-            .gdp-h2{font-size:18px;font-weight:950;margin:0;}
+            .gdp-muted{opacity:0.7;font-size:12px;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
+            .gdp-h2{font-size:18px;font-weight:900;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
             </style>
             """,
             unsafe_allow_html=True,
         )
 
     # --- Team selection
+    st.markdown("<div style='margin-top:24px;margin-bottom:24px;'></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
     with c1:
         team_a = st.selectbox("Team A", teams, key="gdp_team_a")
     with c2:
-        st.markdown("<div style='text-align:center;font-weight:950;font-size:18px;'>VS</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center;font-weight:900;font-size:32px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;text-shadow:2px 2px 6px rgba(0,0,0,0.4);'>VS</div>", unsafe_allow_html=True)
     with c3:
         team_b = st.selectbox("Team B", [t for t in teams if t != team_a], key="gdp_team_b")
 
     # --- Logo row: logo vs logo
     # --- Centered logo lock-up
+    st.markdown("<div style='margin-top:16px;margin-bottom:32px;'></div>", unsafe_allow_html=True)
     c = st.columns([3, 2, 1, 2, 3], vertical_alignment="center")
 
     with c[1]:
-        st.markdown("<div style='display:flex;justify-content:flex-end;'>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:flex-end;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));'>", unsafe_allow_html=True)
         _logo_img(team_a, width=260)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with c[2]:
         st.markdown(
-            "<div style='text-align:center;font-weight:950;font-size:22px;opacity:0.85;'>VS</div>",
+            "<div style='text-align:center;font-weight:900;font-size:28px;opacity:0.9;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;text-shadow:2px 2px 6px rgba(0,0,0,0.4);'>VS</div>",
             unsafe_allow_html=True
         )
 
     with c[3]:
-        st.markdown("<div style='display:flex;justify-content:flex-start;'>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:flex-start;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));'>", unsafe_allow_html=True)
         _logo_img(team_b, width=260)
         st.markdown("</div>", unsafe_allow_html=True)
 
 
 
 
-    st.markdown("---")
+    st.markdown("<div style='margin:32px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
 
     # --- Time-slice filter (under logos)
-    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:18px;margin-bottom:16px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;'>⏱️ Time Filter</div>", unsafe_allow_html=True)
 
     time_options = ["Q1", "Q2", "Q3", "Q4", "Last 10 min"]
     
@@ -1973,11 +2039,9 @@ def render_game_day_playground(teams: list[str]):
         # =====================================================
         # What type of game are we in?
         # =====================================================
-    st.markdown("### What type of game are we in?")
-    st.caption(
-        "Green fill indicates how strongly the game is trending toward each mode. "
-        "Full opacity = strong, light opacity = slight."
-    )
+    st.markdown("<div style='margin:40px 0 24px 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>🎯 What type of game are we in?</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Green fill indicates how strongly the game is trending toward each mode. Full opacity = strong, light opacity = slight.</div>", unsafe_allow_html=True)
 
     dims = [
         ("Chaos", "Control", "Chaos vs Control"),
@@ -2010,7 +2074,7 @@ def render_game_day_playground(teams: list[str]):
                 unsafe_allow_html=True
             )
         with row[1]:
-            st.markdown("<div style='text-align:center;opacity:0.35;font-weight:900;'>↔</div>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center;opacity:0.5;font-weight:900;font-size:20px;'>↔</div>", unsafe_allow_html=True)
         with row[2]:
             st.markdown(
                 _game_mode_pill(right, strength_opacity, on=right_wins),
@@ -2018,15 +2082,15 @@ def render_game_day_playground(teams: list[str]):
             )
         with row[3]:
             st.markdown(
-                f"<div class='gdp-muted' style='text-align:right;'>Index: <b>{v}</b></div>",
+                f"<div class='gdp-muted' style='text-align:right;font-weight:700;'>Index: <b>{v}</b></div>",
                 unsafe_allow_html=True,
             )
 
 
-    st.markdown("---")
+    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
 
-    st.markdown("### Ground health check")
-    st.caption("Each zone shows an overall health score (0–100). Expand a zone to see which phases are driving it (mock).")
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>🏟️ Ground health check</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Each zone shows an overall health score (0–100). Expand a zone to see which phases are driving it (mock).</div>", unsafe_allow_html=True)
 
     # Stable mock zone + phase ratings tied to matchup
     rng = random.Random(_stable_seed(team_a, team_b, "zones_v2"))
@@ -2058,15 +2122,15 @@ def render_game_day_playground(teams: list[str]):
                     col = _gdp_colour(r)
                     st.markdown(
                         f"""
-                        <div class="gdp-card" style="padding:12px 14px;margin-bottom:10px;">
+                        <div class="gdp-card" style="padding:16px 20px;margin-bottom:12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div style="font-weight:900;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.9;">
+                            <div style="font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;opacity:0.9;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
                             {p}
                             </div>
-                            <div style="font-weight:950;font-size:16px;color:{col};">{r}/100</div>
+                            <div style="font-weight:900;font-size:18px;color:{col};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">{r}/100</div>
                         </div>
                         <div class="gdp-bar-bg" style="margin-top:8px;">
-                            <div class="gdp-bar-fill" style="width:{r}%;background:{col};box-shadow:0 0 14px {col};"></div>
+                            <div class="gdp-bar-fill" style="width:{r}%;background:{col};box-shadow:0 0 16px {col};"></div>
                         </div>
                         </div>
                         """,
@@ -2079,13 +2143,14 @@ def render_game_day_playground(teams: list[str]):
         # =====================================================
         # 5 phases of the game
         # =====================================================
-    st.markdown("### 5 phases of the game")
-    st.caption("Each phase has a rating (0–100). Expand each card to see the stats feeding the score (mock inputs).")
+    st.markdown("<div style='margin:40px 0 24px 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>📊 5 phases of the game</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Each phase has a rating (0–100). Expand each card to see the stats feeding the score (mock inputs).</div>", unsafe_allow_html=True)
 
 
 
-    st.markdown("---")
-    st.caption("Mock page only. Next step is wiring this to your existing match + player/team metric tables.")
+    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Mock page only. Next step is wiring this to your existing match + player/team metric tables.</div>", unsafe_allow_html=True)
 
 # 5 cards in a single row (5 columns)
     pkeys = list(phases.keys())
@@ -2094,6 +2159,187 @@ def render_game_day_playground(teams: list[str]):
     for i, k in enumerate(pkeys):
         with cols[i]:
             _gdp_phase_card(k, int(phases[k]), stats[k])
+
+    # =====================================================
+    # 5 KEY IMPACT AREAS
+    # =====================================================
+    st.markdown("<div style='margin:48px 0 32px 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>🎯 5 Key Impact Areas</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:32px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Focus on these zone-phase combinations to maximize performance (hypothetical analysis)</div>", unsafe_allow_html=True)
+
+    # Generate 5 key impact areas (zone + phase combinations)
+    # Use stable seed for consistent mock data
+    impact_rng = random.Random(_stable_seed(team_a, team_b, "impact_areas"))
+    
+    # Define all possible zone-phase combinations
+    all_zones = ["Defensive 50", "Defensive Mid", "Centre Bounce", "Attacking Mid", "Forward 50"]
+    all_phases = ["Ball Winning", "Ball Use", "Scoring", "Defence", "Pressure"]
+    
+    # Create weighted impact combinations (some are more logical than others)
+    impact_combinations = [
+        ("Defensive 50", "Defence", "High impact: Protecting the defensive zone"),
+        ("Defensive 50", "Ball Use", "Critical: Launching counter-attacks from defense"),
+        ("Defensive Mid", "Ball Winning", "Essential: Winning clearances in defensive midfield"),
+        ("Defensive Mid", "Pressure", "Key: Applying pressure to stop opposition transition"),
+        ("Centre Bounce", "Ball Winning", "Crucial: Dominating center clearances"),
+        ("Centre Bounce", "Pressure", "Important: First pressure at stoppages"),
+        ("Attacking Mid", "Ball Use", "Vital: Quality delivery into forward 50"),
+        ("Attacking Mid", "Ball Winning", "Critical: Winning ball in attacking territory"),
+        ("Forward 50", "Scoring", "Essential: Converting opportunities"),
+        ("Forward 50", "Pressure", "Important: Locking ball in forward zone"),
+        ("Forward 50", "Ball Use", "Key: Smart ball movement inside 50"),
+        ("Defensive 50", "Pressure", "Critical: Preventing opposition scores"),
+    ]
+    
+    # Randomly select 5 impact areas with scores
+    selected_impacts = impact_rng.sample(impact_combinations, 5)
+    
+    # Generate impact scores and recommendations
+    impact_areas = []
+    for zone, phase, reasoning in selected_impacts:
+        # Get the score from our existing zone_phase data
+        impact_score = zone_phase.get(zone, {}).get(phase, impact_rng.randint(45, 90))
+        
+        # Determine if this is strength or weakness
+        if impact_score >= 75:
+            status = "STRENGTH"
+            status_color = "#00CC00"
+            icon = "✅"
+            action = "Maintain"
+        elif impact_score >= 60:
+            status = "MODERATE"
+            status_color = "#F4A261"
+            icon = "⚠️"
+            action = "Improve"
+        else:
+            status = "WEAKNESS"
+            status_color = "#FF4444"
+            icon = "🔴"
+            action = "Prioritize"
+        
+        impact_areas.append({
+            "zone": zone,
+            "phase": phase,
+            "score": impact_score,
+            "reasoning": reasoning,
+            "status": status,
+            "status_color": status_color,
+            "icon": icon,
+            "action": action
+        })
+    
+    # Sort by score (weaknesses first for priority focus)
+    impact_areas.sort(key=lambda x: x["score"])
+    
+    # Display impact areas in cards
+    for idx, area in enumerate(impact_areas, 1):
+        zone = area["zone"]
+        phase = area["phase"]
+        score = area["score"]
+        reasoning = area["reasoning"]
+        status = area["status"]
+        status_color = area["status_color"]
+        icon = area["icon"]
+        action = area["action"]
+        
+        # Determine gradient color based on score
+        card_color = _gdp_colour(score)
+        
+        st.markdown(
+            f"""
+            <div class="gdp-card" style="padding:24px 28px;margin-bottom:20px;border-left:6px solid {status_color};position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;right:0;bottom:0;width:180px;background:linear-gradient(90deg, transparent 0%, {card_color}15 100%);"></div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;">
+                    <div style="flex:1;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                            <span style="font-size:28px;">{icon}</span>
+                            <div>
+                                <div style="font-weight:900;font-size:20px;color:#FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.02em;">
+                                    #{idx} · {zone} – {phase}
+                                </div>
+                                <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight:600;">
+                                    {reasoning}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:16px;align-items:center;margin-top:16px;">
+                            <div style="background:{status_color}25;border:1px solid {status_color};padding:8px 16px;border-radius:8px;">
+                                <span style="font-size:11px;font-weight:900;color:{status_color};letter-spacing:0.1em;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                    {status}
+                                </span>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:8px;">
+                                <span style="font-size:11px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:0.1em;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                    ACTION: {action.upper()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-left:24px;">
+                        <div style="font-weight:900;font-size:48px;color:{card_color};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;line-height:1;text-shadow:0 2px 8px {card_color}50;">
+                            {score}
+                        </div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            IMPACT SCORE
+                        </div>
+                        <div class="gdp-bar-bg" style="width:120px;margin-top:8px;">
+                            <div class="gdp-bar-fill" style="width:{score}%;background:{card_color};box-shadow:0 0 16px {card_color};"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    
+    # Summary card
+    avg_impact_score = sum(area["score"] for area in impact_areas) / len(impact_areas)
+    weaknesses_count = sum(1 for area in impact_areas if area["status"] == "WEAKNESS")
+    strengths_count = sum(1 for area in impact_areas if area["status"] == "STRENGTH")
+    
+    summary_color = _gdp_colour(avg_impact_score)
+    
+    st.markdown(
+        f"""
+        <div class="gdp-card" style="padding:24px 28px;margin-top:32px;background:linear-gradient(135deg, rgba(20,20,30,0.98) 0%, rgba(30,30,45,0.98) 100%);border:2px solid {summary_color}40;">
+            <div style="text-align:center;">
+                <div style="font-weight:900;font-size:18px;color:rgba(255,255,255,0.9);margin-bottom:16px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.05em;">
+                    📊 IMPACT AREAS SUMMARY
+                </div>
+                <div style="display:flex;justify-content:center;gap:32px;margin-top:20px;">
+                    <div>
+                        <div style="font-size:32px;font-weight:900;color:{summary_color};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            {avg_impact_score:.0f}
+                        </div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            AVG SCORE
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:32px;font-weight:900;color:#00CC00;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            {strengths_count}
+                        </div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            STRENGTHS
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:32px;font-weight:900;color:#FF4444;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            {weaknesses_count}
+                        </div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            PRIORITIES
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>Note: All impact areas and scores are hypothetical for demonstration purposes</div>", unsafe_allow_html=True)
 
 
 
@@ -6207,7 +6453,9 @@ elif page == "Team List Summary":
     if os.path.exists(team_logo_path):
         col_logo, col_title = st.columns([1, 4])
         with col_logo:
+            st.markdown("<style>.team-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='team-logo'>", unsafe_allow_html=True)
             st.image(team_logo_path, width=120)
+            st.markdown("</div>", unsafe_allow_html=True)
         with col_title:
             st.markdown(f"<h2 style='color: #FFFFFF; margin-top: 20px;'>{selected_team}</h2>", unsafe_allow_html=True)
             st.markdown(f"<p style='color: #CCCCCC; font-size: 1.1em;'>2025 Season List Analysis</p>", unsafe_allow_html=True)
@@ -7375,11 +7623,12 @@ elif page == "Best 23":
             f"border-radius:{br};"
             f"background:{bg};"
             f"color:{fg};"
-            f"font-weight:950;"
+            f"font-weight:900;"
+            f"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;"
             f"font-size:{fs};"
             f"min-width:{minw};"
             f"box-shadow:0 12px 30px rgba(0,0,0,.35);"
-            f"letter-spacing:0.4px;"
+            f"letter-spacing:0.05em;"
             f"\">{val}</div>"
         )
 
@@ -7483,6 +7732,7 @@ elif page == "Best 23":
     .teamName {{
     font-size: 22px;
     font-weight: 900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #fff;
     margin-bottom: 6px;
     }}
@@ -7490,6 +7740,7 @@ elif page == "Best 23":
     .label {{
     font-size: 11px;
     font-weight: 900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     letter-spacing: 0.18em;
     color: rgba(255,255,255,0.55);
     margin-bottom: 8px;
@@ -7512,7 +7763,8 @@ elif page == "Best 23":
     border-radius: 999px;
     background: rgba(255,255,255,0.06);
     color: rgba(255,255,255,0.90);
-    font-weight: 950;
+    font-weight: 900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     letter-spacing: 0.18em;
     box-shadow: 0 10px 26px rgba(0,0,0,.28);
     margin-bottom: 18px;
@@ -7521,6 +7773,7 @@ elif page == "Best 23":
     .netLabel {{
     font-size: 11px;
     font-weight: 900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     letter-spacing: 0.18em;
     color: rgba(255,255,255,0.55);
     margin-bottom: 10px;
@@ -7529,6 +7782,7 @@ elif page == "Best 23":
     .subNote {{
     margin-top: 10px;
     font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: rgba(255,255,255,0.55);
     }}
     </style>
@@ -7584,6 +7838,7 @@ elif page == "Best 23":
     border-radius:18px;
     color:#fff;
     font-weight:900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     box-shadow:0 10px 26px rgba(0,0,0,.28);
     overflow:hidden;
     }
@@ -7591,6 +7846,7 @@ elif page == "Best 23":
     width:44px;
     text-align:center;
     font-size:15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     opacity:0.95;
     flex:0 0 auto;
     }
@@ -7603,6 +7859,7 @@ elif page == "Best 23":
     }
     .magFirst{
     font-size:10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     opacity:0.85;
     white-space:nowrap;
     overflow:hidden;
@@ -7610,6 +7867,7 @@ elif page == "Best 23":
     }
     .magLast{
     font-size:15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -7623,7 +7881,8 @@ elif page == "Best 23":
     align-items:center;
     justify-content:center;
     font-size:14px;
-    font-weight:1000;
+    font-weight:900;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     flex:0 0 auto;
     }
     .def{background:#c62828;}
@@ -7647,15 +7906,15 @@ elif page == "Best 23":
         hdr = f"""
         <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
         <div style="text-align:center;">
-            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM A AVG</div>
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">TEAM A AVG</div>
             {_pill("—" if a is None else f"{a:.1f}")}
         </div>
         <div style="text-align:center;">
-            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">NET (A−B)</div>
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">NET (A−B)</div>
             {_diff_pill(None if d is None else round(d,1))}
         </div>
         <div style="text-align:center;">
-            <div style="font-size:10px;opacity:0.65;letter-spacing:1px;margin-bottom:6px;">TEAM B AVG</div>
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">TEAM B AVG</div>
             {_pill("—" if b is None else f"{b:.1f}")}
         </div>
         </div>
@@ -7898,7 +8157,1153 @@ elif page == "Best 23":
     render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench)
 
 
+# ================= LIST BREAKDOWN - TRAITS =================
+
+elif page == "List Breakdown - Traits":
+    
+    import base64
+    
+    # Helper functions for player name and team normalization
+    def get_image_base64(path):
+        """Convert image file to base64 string."""
+        try:
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
+        except Exception:
+            return ""
+    
+    def normalize_team_display(team_name):
+        """Normalize team name for display (e.g., SYFC -> Sydney)."""
+        # Handle None or empty strings
+        if not team_name:
+            return team_name
+            
+        team_map = {
+            'SYFC': 'Sydney',
+            'SFC': 'Sydney',
+            'Sydney Swans': 'Sydney',
+            'WBFC': 'Western Bulldogs',
+            'GWS': 'GWS Giants',
+            'GCFC': 'Gold Coast',
+            'AFC': 'Adelaide',
+            'BFC': 'Brisbane',
+            'CFC': 'Carlton',
+            'COFC': 'Collingwood',
+            'EFC': 'Essendon',
+            'FRFC': 'Fremantle',
+            'GFC': 'Geelong',
+            'HFC': 'Hawthorn',
+            'MFC': 'Melbourne',
+            'NMFC': 'North Melbourne',
+            'PAFC': 'Port Adelaide',
+            'RFC': 'Richmond',
+            'SKFC': 'St Kilda',
+            'WCFC': 'West Coast'
+        }
+        result = team_map.get(team_name, team_name)
+        # Double check - if result still looks like a code, try again
+        if result in team_map:
+            result = team_map[result]
+        return result
+    
+    def team_name_for_photo_guide(team_name):
+        """Convert team name to format used in player_photo_guide.csv."""
+        # First normalize the team name
+        normalized = normalize_team_display(team_name)
+        
+        # Map to photo guide format (which uses specific naming)
+        photo_guide_map = {
+            'Sydney': 'Sydney',
+            'SYFC': 'Sydney',
+            'SFC': 'Sydney',
+            'Western Bulldogs': 'Western Bulldogs',
+            'WBFC': 'Western Bulldogs',
+            'GWS Giants': 'Greater Western Sydney',
+            'GWS': 'Greater Western Sydney',
+            'Gold Coast': 'Gold Coast',
+            'GCFC': 'Gold Coast',
+            'Adelaide': 'Adelaide',
+            'AFC': 'Adelaide',
+            'Brisbane': 'Brisbane',
+            'BFC': 'Brisbane',
+            'Carlton': 'Carlton',
+            'CFC': 'Carlton',
+            'Collingwood': 'Collingwood',
+            'COFC': 'Collingwood',
+            'Essendon': 'Essendon',
+            'EFC': 'Essendon',
+            'Fremantle': 'Fremantle',
+            'FRFC': 'Fremantle',
+            'Geelong': 'Geelong',
+            'GFC': 'Geelong',
+            'Hawthorn': 'Hawthorn',
+            'HFC': 'Hawthorn',
+            'Melbourne': 'Melbourne',
+            'MFC': 'Melbourne',
+            'North Melbourne': 'North Melbourne',
+            'NMFC': 'North Melbourne',
+            'Port Adelaide': 'Port Adelaide',
+            'PAFC': 'Port Adelaide',
+            'Richmond': 'Richmond',
+            'RFC': 'Richmond',
+            'St Kilda': 'St Kilda',
+            'SKFC': 'St Kilda',
+            'West Coast': 'West Coast',
+            'WCFC': 'West Coast'
+        }
+        return photo_guide_map.get(normalized, normalized)
+    
+    def get_full_player_name(player_name, team_name=None):
+        """Get full player name by looking up in player photo guide."""
+        name_map = load_player_name_mapping()
+        team_player_map = name_map.get('__team_player_map__', {})
+        
+        # Try team-aware lookup first
+        if team_name and team_player_map:
+            def normalize_team(team):
+                team = str(team).strip().lower()
+                if 'sydney' in team or team in ['syfc', 'sfc']:
+                    return 'sydney'
+                if 'gws' in team or 'giants' in team:
+                    return 'gws'
+                if 'bulldogs' in team or team in ['wbfc']:
+                    return 'western bulldogs'
+                return team.replace(' ', '').replace('fc', '')
+            
+            norm_team = normalize_team(team_name)
+            team_key = f"{norm_team}_{player_name.strip().lower()}"
+            if team_key in team_player_map:
+                return team_player_map[team_key]
+        
+        # Fall back to regular name mapping
+        return name_map.get(player_name.strip(), name_map.get(player_name.strip().lower(), player_name))
+    
+    # Season selection
+    available_seasons = get_player_seasons()
+    if not available_seasons:
+        st.error("No season sheets found in traits data.")
+        st.stop()
+    
+    default_season_idx = available_seasons.index(2025) if 2025 in available_seasons else 0
+    selected_season = st.selectbox(
+        "Season",
+        available_seasons,
+        index=default_season_idx,
+        key="traits_breakdown_season"
+    )
+
+    # Load traits data
+    traits_df = load_traits(int(selected_season))
+    if traits_df.empty:
+        st.error(f"Could not load traits data for {selected_season}.")
+        st.stop()
+
+    # Load summary data to get Age and Jumper  
+    summary_df = load_player_summary()
+    if summary_df.empty:
+        st.error("Could not load Summary sheet from AFL Player Ratings.")
+        st.stop()
+
+    # Merge traits with summary to get the correct Age, Height, Jumper, and Position from Summary
+    traits_df = traits_df.merge(
+        summary_df[["Player", "Age", "Height", "Jumper", "Position"]],
+        left_on="Player_Full",
+        right_on="Player",
+        how="left",
+        suffixes=("_traits", "_summary")
+    )
+    
+    # Drop the duplicate Player column from merge and traits columns
+    cols_to_drop = ["Player"]
+    if "Age_traits" in traits_df.columns:
+        cols_to_drop.append("Age_traits")
+    if "Position_traits" in traits_df.columns:
+        cols_to_drop.append("Position_traits")
+    
+    traits_df = traits_df.drop(columns=[c for c in cols_to_drop if c in traits_df.columns])
+    
+    # Rename summary columns to standard names
+    rename_map = {}
+    if "Age_summary" in traits_df.columns:
+        rename_map["Age_summary"] = "Age"
+    if "Position_summary" in traits_df.columns:
+        rename_map["Position_summary"] = "Position"
+    
+    if rename_map:
+        traits_df = traits_df.rename(columns=rename_map)
+    
+    # Ensure Age is numeric
+    if "Age" in traits_df.columns:
+        traits_df["Age"] = pd.to_numeric(traits_df["Age"], errors="coerce")
+    else:
+        st.error("Age column not found after merge")
+        st.stop()
+
+    # Validate required columns
+    required_cols = ["Player_Full", "Team_Full", "Position_Full", "Rating", 
+                     "Ball Winning", "Ball Use", "Aerial", "Defence"]
+    missing = [c for c in required_cols if c not in traits_df.columns]
+    if missing:
+        st.error(f"Missing required columns in traits data: {missing}")
+        st.stop()
+
+    # Get teams from traits data
+    teams = sorted(traits_df["Team_Full"].dropna().unique())
+    
+    # Set default index based on session state
+    default_idx = 0
+    if "default_team" in st.session_state and st.session_state.default_team in teams:
+        default_idx = teams.index(st.session_state.default_team)
+    selected_team = st.selectbox("Team", teams, index=default_idx, key="traits_breakdown_team")
+
+    # Trait phase selection
+    trait_options = {
+        "Overall Trait Rating": "Rating",
+        "Ball Winning": "Ball Winning",
+        "Ball Use": "Ball Use",
+        "Aerial": "Aerial",
+        "Defence": "Defence",
+    }
+    trait_label = st.selectbox(
+        "Which trait to rank by?",
+        list(trait_options.keys()),
+        index=0,
+        key="traits_breakdown_metric"
+    )
+    trait_col_name = trait_options[trait_label]
+    
+    # Squad size filter
+    squad_size_options = {
+        "Whole Squad": None,
+        "Top 23": 23,
+        "Top 10": 10
+    }
+    squad_size_label = st.selectbox(
+        "Squad Size",
+        list(squad_size_options.keys()),
+        index=0,
+        key="traits_breakdown_squad_size"
+    )
+    squad_size_limit = squad_size_options[squad_size_label]
+
+    # Filter to selected team
+    df_team = traits_df[traits_df["Team_Full"] == selected_team].copy()
+    if df_team.empty:
+        st.warning(f"No traits data for {selected_team} in {selected_season}.")
+        st.stop()
+    
+    # Apply squad size filter - get top N players by selected trait
+    if squad_size_limit is not None:
+        df_team["_temp_rating"] = pd.to_numeric(df_team[trait_col_name], errors="coerce")
+        df_team = df_team.nlargest(squad_size_limit, "_temp_rating").drop(columns=["_temp_rating"])
+
+    # Calculate team averages and rankings for all traits (using filtered squad)
+    team_stats = {}
+    for trait_name, trait_col in [("Overall Rating", "Rating"), ("Ball Winning", "Ball Winning"), 
+                                   ("Ball Use", "Ball Use"), ("Aerial", "Aerial"), ("Defence", "Defence")]:
+        # Calculate averages per team using the same squad size filter
+        team_averages_list = []
+        for team_name in traits_df["Team_Full"].dropna().unique():
+            team_data = traits_df[traits_df["Team_Full"] == team_name].copy()
+            
+            # Apply same squad size filter to all teams for fair comparison
+            if squad_size_limit is not None:
+                team_data["_temp_rating"] = pd.to_numeric(team_data[trait_col], errors="coerce")
+                team_data = team_data.nlargest(squad_size_limit, "_temp_rating").drop(columns=["_temp_rating"])
+            
+            avg_val = pd.to_numeric(team_data[trait_col], errors="coerce").mean()
+            if pd.notna(avg_val):
+                team_averages_list.append({"Team_Full": team_name, "Avg": avg_val})
+        
+        team_averages = pd.DataFrame(team_averages_list)
+        
+        # Rank teams
+        team_averages = team_averages.sort_values("Avg", ascending=False).reset_index(drop=True)
+        team_averages["Rank"] = range(1, len(team_averages) + 1)
+        
+        # Get this team's stats
+        team_row = team_averages[team_averages["Team_Full"] == selected_team]
+        if not team_row.empty:
+            avg_val = team_row.iloc[0]["Avg"]
+            rank_val = team_row.iloc[0]["Rank"]
+            total_teams = len(team_averages)
+            
+            # Determine color based on rank percentile
+            percentile = 1 - (rank_val / total_teams)
+            if percentile >= 0.75:  # Top 25%
+                color = "#008000"  # Green
+                text_color = "white"
+            elif percentile >= 0.50:  # Top 50%
+                color = "#90EE90"  # Light green
+                text_color = "black"
+            elif percentile >= 0.25:  # Top 75%
+                color = "#FFA500"  # Orange
+                text_color = "white"
+            else:  # Bottom 25%
+                color = "#FF0000"  # Red
+                text_color = "white"
+            
+            team_stats[trait_name] = {
+                "avg": avg_val,
+                "rank": rank_val,
+                "total": total_teams,
+                "color": color,
+                "text_color": text_color
+            }
+    
+    # Team logo mapping
+    team_logo_map = {
+        "Adelaide": "afc.png",
+        "Brisbane": "lions.png",
+        "Carlton": "cfc.png",
+        "Collingwood": "cofc.png",
+        "Essendon": "efc.png",
+        "Fremantle": "ffc.png",
+        "Geelong": "gfc.png",
+        "Gold Coast": "gcfc.png",
+        "GWS Giants": "gws.png",
+        "Hawthorn": "hfc.png",
+        "Melbourne": "mfc.png",
+        "North Melbourne": "nmfc.png",
+        "Port Adelaide": "pafc.png",
+        "Richmond": "rfc.png",
+        "St Kilda": "skfc.png",
+        "Sydney": "sfc.png",
+        "West Coast": "wcfc.png",
+        "Western Bulldogs": "wbfc.png",
+    }
+    
+    logo_file = team_logo_map.get(selected_team, "Logo Transparent.png")
+    logo_path = f"team_logos/{logo_file}"
+    
+    # Encode logo as base64 for HTML embedding
+    import base64
+    logo_base64 = ""
+    if os.path.exists(logo_path):
+        with open(logo_path, "rb") as f:
+            logo_base64 = base64.b64encode(f.read()).decode()
+    
+    # Build Professional broadcast-style header
+    # Logo section
+    logo_html = ""
+    if logo_base64:
+        logo_html = f"<img src='data:image/png;base64,{logo_base64}' style='max-width: 180px; max-height: 180px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5));'/>"
+    
+    # Build trait cards
+    trait_cards = []
+    for trait_name in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
+        stats = team_stats[trait_name]
+        card_html = f"""<div style='background-color: {stats["color"]}; color: {stats["text_color"]}; padding: 25px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.15);'>
+<div style='font-size: 0.85em; font-weight: 600; letter-spacing: 0.12em; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{trait_name}</div>
+<div style='font-size: 2.5em; font-weight: 900; line-height: 1; margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{stats["avg"]:.2f}</div>
+<div style='font-size: 0.95em; font-weight: 700; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>#{stats["rank"]} of {stats["total"]}</div>
+</div>"""
+        trait_cards.append(card_html)
+    
+    trait_grid = "".join(trait_cards)
+    
+    overall_stats = team_stats["Overall Rating"]
+    
+    header_html = f"""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 20px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 2px solid #e94560;'>
+<div style='text-align: center; margin-bottom: 20px;'>{logo_html}</div>
+<h1 style='text-align: center; color: #FFFFFF; margin: 10px 0 30px 0; font-size: 3em; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; text-shadow: 3px 3px 6px rgba(0,0,0,0.7); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{selected_team}</h1>
+<div style='text-align: center; margin-bottom: 30px;'>
+<div style='display: inline-block; background-color: {overall_stats["color"]}; color: {overall_stats["text_color"]}; padding: 20px 40px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);'>
+<div style='font-size: 0.9em; font-weight: 600; letter-spacing: 0.15em; opacity: 0.9; margin-bottom: 5px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>OVERALL TRAIT RATING</div>
+<div style='font-size: 3.5em; font-weight: 900; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{overall_stats["avg"]:.2f}</div>
+<div style='font-size: 1.1em; font-weight: 700; margin-top: 8px; letter-spacing: 0.1em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>RANKED #{overall_stats["rank"]} OF {overall_stats["total"]}</div>
+</div>
+</div>
+<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;'>{trait_grid}</div>
+</div>"""
+    
+    st.markdown(header_html, unsafe_allow_html=True)
+
+    # Rename columns to match what build_depth_chart_html expects
+    df_team = df_team.rename(columns={
+        "Player_Full": "Player",
+        "Team_Full": "Team"
+    })
+
+    # Use the trait column for ranking
+    df_team["RatingPoints_Avg"] = pd.to_numeric(
+        df_team[trait_col_name], errors="coerce"
+    )
+    
+    # Also prepare full traits_df for ranking calculations
+    # Apply squad size filter to ALL teams for fair comparison in rankings
+    if squad_size_limit is not None:
+        traits_df_for_rankings = []
+        for team_name in traits_df["Team_Full"].dropna().unique():
+            team_data = traits_df[traits_df["Team_Full"] == team_name].copy()
+            team_data["_temp_rating"] = pd.to_numeric(team_data[trait_col_name], errors="coerce")
+            team_data_filtered = team_data.nlargest(squad_size_limit, "_temp_rating").drop(columns=["_temp_rating"])
+            traits_df_for_rankings.append(team_data_filtered)
+        traits_df_renamed = pd.concat(traits_df_for_rankings, ignore_index=True)
+    else:
+        traits_df_renamed = traits_df.copy()
+    
+    traits_df_renamed = traits_df_renamed.rename(columns={
+        "Player_Full": "Player",
+        "Team_Full": "Team"
+    })
+    traits_df_renamed["RatingPoints_Avg"] = pd.to_numeric(
+        traits_df_renamed[trait_col_name], errors="coerce"
+    )
+    
+    # Remove duplicate columns if they exist
+    if len(traits_df_renamed.columns) != len(set(traits_df_renamed.columns)):
+        traits_df_renamed = traits_df_renamed.loc[:, ~traits_df_renamed.columns.duplicated()]
+
+    # Depth chart section header with squad size indicator
+    squad_size_text = f"{squad_size_label}" if squad_size_limit else "Full Squad"
+    section_header = f"""<div style='background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 12px; margin: 30px 0 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-left: 5px solid #e94560;'><h3 style='color: #FFFFFF; margin: 0; font-weight: 900; letter-spacing: 0.05em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>📋 SQUAD DEPTH GRID — {trait_label.upper()}</h3><p style='color: #CCCCCC; margin: 8px 0 0 0; font-size: 0.95em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{selected_season} Season | {squad_size_text} | Coloured by team percentile</p></div>"""
+    
+    st.markdown(section_header, unsafe_allow_html=True)
+
+    html = build_depth_chart_html(df_team, traits_df_renamed)
+    st.markdown(html, unsafe_allow_html=True)
+    
+    # ============= TRAITS-BASED LIST LADDER =============
+    st.markdown(f"""<div style='background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 12px; margin: 50px 0 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-left: 5px solid #e94560;'><h3 style='color: #FFFFFF; margin: 0; font-weight: 900; letter-spacing: 0.05em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>🏆 TRAITS LIST LADDER — AFL RANKINGS</h3><p style='color: #CCCCCC; margin: 8px 0 0 0; font-size: 0.95em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{selected_season} Season | {squad_size_text} | Sorted by Overall Trait Rating</p></div>""", unsafe_allow_html=True)
+    
+    # Calculate league-wide rankings for all teams
+    ladder_data = []
+    for team_name in sorted(traits_df["Team_Full"].dropna().unique()):
+        team_data = traits_df[traits_df["Team_Full"] == team_name].copy()
+        
+        # Apply squad size filter
+        if squad_size_limit is not None:
+            team_data["_temp_rating"] = pd.to_numeric(team_data["Rating"], errors="coerce")
+            team_data = team_data.nlargest(squad_size_limit, "_temp_rating").drop(columns=["_temp_rating"])
+        
+        # Calculate averages for each trait
+        overall_avg = pd.to_numeric(team_data["Rating"], errors="coerce").mean()
+        ball_winning_avg = pd.to_numeric(team_data["Ball Winning"], errors="coerce").mean()
+        ball_use_avg = pd.to_numeric(team_data["Ball Use"], errors="coerce").mean()
+        aerial_avg = pd.to_numeric(team_data["Aerial"], errors="coerce").mean()
+        defence_avg = pd.to_numeric(team_data["Defence"], errors="coerce").mean()
+        
+        if pd.notna(overall_avg):
+            ladder_data.append({
+                "Team": team_name,
+                "Overall": overall_avg,
+                "Ball Winning": ball_winning_avg,
+                "Ball Use": ball_use_avg,
+                "Aerial": aerial_avg,
+                "Defence": defence_avg
+            })
+    
+    # Create DataFrame and sort by Overall rating
+    ladder_df = pd.DataFrame(ladder_data)
+    ladder_df = ladder_df.sort_values("Overall", ascending=False).reset_index(drop=True)
+    ladder_df["Rank"] = range(1, len(ladder_df) + 1)
+    
+    # Add ranking for each trait column
+    for col in ["Overall", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
+        ladder_df[f"{col}_Rank"] = ladder_df[col].rank(ascending=False, method="min").astype(int)
+    
+    # Helper function to get color based on rank
+    def get_ladder_rank_color(rank, total=18):
+        if rank <= 4:
+            return "#006400", "white"  # Dark green
+        elif rank <= 9:
+            return "#90EE90", "black"  # Light green
+        elif rank <= 14:
+            return "#FFA500", "white"  # Orange
+        else:
+            return "#FF0000", "white"  # Red
+    
+    # Build HTML table
+    ladder_html = ["<table style='width:100%;border-collapse:separate;border-spacing:0;font-size:0.9em;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-radius:12px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;'>"]
+    
+    # Header row
+    ladder_html.append("<tr>")
+    ladder_html.append("<th style='background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);color:#FFFFFF;padding:16px 12px;border-right:2px solid #444;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-align:center;'>Rank</th>")
+    ladder_html.append("<th style='background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);color:#FFFFFF;padding:16px 12px;border-right:2px solid #444;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-align:left;'>Team</th>")
+    
+    for col_name, col_key in [("Overall Rating", "Overall"), ("Ball Winning", "Ball Winning"), ("Ball Use", "Ball Use"), ("Aerial", "Aerial"), ("Defence", "Defence")]:
+        ladder_html.append(f"<th style='background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);color:#FFFFFF;padding:16px 12px;border-right:2px solid #444;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-align:center;'>{col_name}</th>")
+    
+    ladder_html.append("</tr>")
+    
+    # Data rows
+    for idx, row in ladder_df.iterrows():
+        is_selected = row["Team"] == selected_team
+        row_bg = "background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 100%);" if is_selected else "background:#FFFFFF;"
+        
+        ladder_html.append("<tr>")
+        
+        # Rank column
+        rank = row["Rank"]
+        rank_bg, rank_fg = get_ladder_rank_color(rank, len(ladder_df))
+        ladder_html.append(f"<td style='{row_bg}padding:14px 12px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;text-align:center;'><span style='display:inline-block;background:{rank_bg};color:{rank_fg};padding:8px 16px;border-radius:8px;font-weight:900;font-size:1.2em;box-shadow:0 2px 8px rgba(0,0,0,0.2);min-width:45px;'>{rank}</span></td>")
+        
+        # Team name column
+        team_style = "font-weight:900;font-size:1.1em;color:#1a1a1a;" if is_selected else "font-weight:700;color:#2d2d2d;"
+        ladder_html.append(f"<td style='{row_bg}padding:14px 16px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;{team_style}min-width:180px;'>{row['Team']}</td>")
+        
+        # Trait columns with rankings
+        for col in ["Overall", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
+            val = row[col]
+            trait_rank = row[f"{col}_Rank"]
+            bg, fg = get_ladder_rank_color(trait_rank, len(ladder_df))
+            
+            ladder_html.append(f"<td style='{row_bg}padding:14px 12px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;text-align:center;'><div style='display:inline-block;background:{bg};color:{fg};padding:10px 16px;border-radius:10px;font-weight:900;font-size:1.15em;box-shadow:0 3px 10px rgba(0,0,0,0.2);min-width:70px;'>{val:.2f}<div style='font-size:0.7em;opacity:0.8;margin-top:2px;'>#{trait_rank}</div></div></td>")
+        
+        ladder_html.append("</tr>")
+    
+    ladder_html.append("</table>")
+    
+    st.markdown("".join(ladder_html), unsafe_allow_html=True)
+    
+    # ========== TEAM TRAIT COMPARISON SECTION ==========
+    st.markdown("---")
+    st.markdown("<h2 style='color:#FFFFFF;margin-top:40px;'>⚖️ Team Trait Comparison</h2>", unsafe_allow_html=True)
+    
+    # Team selection for comparison
+    st.markdown("<p style='color:rgba(255,255,255,0.8);'>Compare two teams across the five trait pillars</p>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        team1_trait = st.selectbox("Team 1 (Base)", teams, index=teams.index(selected_team) if selected_team in teams else 0, key="trait_compare_team1")
+    with col2:
+        default_idx = 1 if len(teams) > 1 else 0
+        team2_trait = st.selectbox("Team 2 (Comparison)", teams, index=default_idx, key="trait_compare_team2")
+    
+    if team1_trait == team2_trait:
+        st.warning("Please select two different teams to compare.")
+    else:
+        # Display team logos
+        st.markdown("---")
+        logo_col1, logo_col2 = st.columns(2)
+        
+        with logo_col1:
+            st.markdown(f"<h3 style='text-align: center;'>{team1_trait}</h3>", unsafe_allow_html=True)
+            _, center_col, _ = st.columns([1, 2, 1])
+            with center_col:
+                display_logo(team1_trait, st, size=180)
+        
+        with logo_col2:
+            st.markdown(f"<h3 style='text-align: center;'>{team2_trait}</h3>", unsafe_allow_html=True)
+            _, center_col, _ = st.columns([1, 2, 1])
+            with center_col:
+                display_logo(team2_trait, st, size=180)
+        
+        # Get team data from ladder
+        team1_data = ladder_df[ladder_df["Team"] == team1_trait].iloc[0]
+        team2_data = ladder_df[ladder_df["Team"] == team2_trait].iloc[0]
+        
+        # ========== RADAR CHARTS AND COLUMN CHART SECTION ==========
+        st.markdown("---")
+        st.subheader("Visual Comparison")
+        
+        # Prepare data for charts
+        trait_metrics = ["Overall", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+        trait_display = ["Overall Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+        team1_values = []
+        team2_values = []
+        top4_averages = []
+        
+        for metric in trait_metrics:
+            team1_val = float(team1_data[metric])
+            team2_val = float(team2_data[metric])
+            
+            # Calculate Top 4 average
+            top4_avg = ladder_df.nlargest(4, metric)[metric].mean()
+            
+            team1_values.append(team1_val)
+            team2_values.append(team2_val)
+            top4_averages.append(top4_avg)
+        
+        try:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+            
+            # Close the polygon
+            team1_values_closed = team1_values + [team1_values[0]]
+            team2_values_closed = team2_values + [team2_values[0]]
+            top4_averages_closed = top4_averages + [top4_averages[0]]
+            trait_display_closed = trait_display + [trait_display[0]]
+            
+            # Create subplots: 2 radars + 1 column chart
+            fig = make_subplots(
+                rows=1, cols=3,
+                specs=[[{'type': 'polar'}, {'type': 'polar'}, {'type': 'xy'}]],
+                horizontal_spacing=0.15
+            )
+            
+            # === RADAR 1: TEAM 1 ===
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=top4_averages_closed,
+                    theta=trait_display_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 215, 0, 0.1)',
+                    line=dict(color='#FFD700', width=3),
+                    name='Top 4 Avg',
+                    legendgroup='averages',
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+            
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=team1_values_closed,
+                    theta=trait_display_closed,
+                    fill='toself',
+                    fillcolor='rgba(100, 150, 255, 0.2)',
+                    line=dict(color='#6496FF', width=3),
+                    name=team1_trait,
+                    legendgroup='teams',
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+            
+            # === RADAR 2: TEAM 2 ===
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=top4_averages_closed,
+                    theta=trait_display_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 215, 0, 0.1)',
+                    line=dict(color='#FFD700', width=3),
+                    name='Top 4 Avg',
+                    legendgroup='averages',
+                    showlegend=False
+                ),
+                row=1, col=2
+            )
+            
+            fig.add_trace(
+                go.Scatterpolar(
+                    r=team2_values_closed,
+                    theta=trait_display_closed,
+                    fill='toself',
+                    fillcolor='rgba(255, 100, 100, 0.2)',
+                    line=dict(color='#FF6464', width=3),
+                    name=team2_trait,
+                    legendgroup='teams',
+                    showlegend=True
+                ),
+                row=1, col=2
+            )
+            
+            # === COLUMN CHART: SIDE BY SIDE COMPARISON ===
+            fig.add_trace(
+                go.Bar(
+                    x=trait_display,
+                    y=team1_values,
+                    name=team1_trait,
+                    marker=dict(color='#6496FF'),
+                    legendgroup='teams',
+                    showlegend=False
+                ),
+                row=1, col=3
+            )
+            
+            fig.add_trace(
+                go.Bar(
+                    x=trait_display,
+                    y=team2_values,
+                    name=team2_trait,
+                    marker=dict(color='#FF6464'),
+                    legendgroup='teams',
+                    showlegend=False
+                ),
+                row=1, col=3
+            )
+            
+            # Update polar axes
+            max_val = max(max(team1_values), max(team2_values), max(top4_averages)) * 1.1
+            
+            for col_idx in [1, 2]:
+                fig.update_polars(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, max_val],
+                        showticklabels=True,
+                        tickfont=dict(color='white', size=9),
+                        gridcolor='gray'
+                    ),
+                    angularaxis=dict(
+                        tickfont=dict(color='white', size=11, family='Arial Black'),
+                        gridcolor='gray'
+                    ),
+                    bgcolor='rgba(0,0,0,0)',
+                    row=1, col=col_idx
+                )
+            
+            # Update column chart axes
+            fig.update_xaxes(title_text="", tickfont=dict(color='white', size=10), row=1, col=3)
+            fig.update_yaxes(title_text="Rating", tickfont=dict(color='white', size=10), row=1, col=3)
+            
+            # Update layout
+            fig.update_layout(
+                title_text=f"<b>{team1_trait} vs {team2_trait}</b> – Trait Comparison ({selected_season})",
+                title_font_size=18,
+                showlegend=True,
+                legend=dict(
+                    font=dict(color='white', size=11),
+                    bgcolor='rgba(0,0,0,0.5)',
+                    bordercolor='white',
+                    borderwidth=1,
+                    x=1.02,
+                    y=1
+                ),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=550,
+                font=dict(color='white')
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+        except ImportError:
+            st.warning("Plotly not installed.")
+        
+        # ========== STRENGTH/WEAKNESS ANALYSIS ==========
+        st.markdown("---")
+        st.subheader(f"Strengths & Weaknesses Analysis: {team1_trait} vs {team2_trait}")
+        
+        # Helper function for ordinal rank format
+        def format_rank_trait(rank_val):
+            if pd.isna(rank_val):
+                return "N/A"
+            try:
+                r = int(rank_val)
+                if 10 <= (r % 100) <= 20:
+                    suffix = "th"
+                else:
+                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(r % 10, "th")
+                return f"({r}{suffix})"
+            except:
+                return str(rank_val)
+        
+        # Analyze each trait
+        trait_analysis = []
+        for i, metric in enumerate(trait_metrics):
+            team1_val = team1_values[i]
+            team2_val = team2_values[i]
+            team1_rank = int(team1_data[f"{metric}_Rank"])
+            team2_rank = int(team2_data[f"{metric}_Rank"])
+            
+            trait_analysis.append({
+                "metric": trait_display[i],
+                "team1_val": team1_val,
+                "team2_val": team2_val,
+                "team1_rank": team1_rank,
+                "team2_rank": team2_rank,
+            })
+        
+        # Create DataFrame
+        trait_df = pd.DataFrame(trait_analysis)
+        
+        # Strengths: Team 1 has BETTER ranking (lower number) than Team 2
+        team1_strengths = trait_df[trait_df["team1_rank"] < trait_df["team2_rank"]].sort_values("team1_rank", ascending=True)
+        
+        # Weaknesses: Team 2 has BETTER ranking (lower number) than Team 1
+        team1_weaknesses = trait_df[trait_df["team1_rank"] > trait_df["team2_rank"]].sort_values("team2_rank", ascending=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f"<h3 style='color: #00CC00;'>🟢 {team1_trait} – Strengths</h3>", unsafe_allow_html=True)
+            if len(team1_strengths) > 0:
+                for idx, row in team1_strengths.iterrows():
+                    metric = row["metric"]
+                    t1_val = row["team1_val"]
+                    t2_val = row["team2_val"]
+                    t1_rank = row["team1_rank"]
+                    t2_rank = row["team2_rank"]
+                    t1_rank_str = format_rank_trait(t1_rank)
+                    t2_rank_str = format_rank_trait(t2_rank)
+                    
+                    rank_diff = int(t2_rank - t1_rank)
+                    
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                    border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #00CC00;'>{metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {team1_trait}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.2f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {team2_trait}: <span style='font-weight: bold;'>{t2_val:.2f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
+                                +{rank_diff} positions ahead
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.info(f"No traits where {team1_trait} ranks higher")
+        
+        with col2:
+            st.markdown(f"<h3 style='color: #FF4444;'>🔴 {team1_trait} – Weaknesses</h3>", unsafe_allow_html=True)
+            if len(team1_weaknesses) > 0:
+                for idx, row in team1_weaknesses.iterrows():
+                    metric = row["metric"]
+                    t1_val = row["team1_val"]
+                    t2_val = row["team2_val"]
+                    t1_rank = row["team1_rank"]
+                    t2_rank = row["team2_rank"]
+                    t1_rank_str = format_rank_trait(t1_rank)
+                    t2_rank_str = format_rank_trait(t2_rank)
+                    
+                    rank_diff = int(t1_rank - t2_rank)
+                    
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                    border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #FF4444;'>{metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {team1_trait}: <span style='font-weight: bold;'>{t1_val:.2f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {team2_trait}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.2f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>
+                                -{rank_diff} positions behind
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.info(f"No traits where {team1_trait} ranks lower")
+
+    # =====================================================
+    # SEASON LEADERS
+    # =====================================================
+    st.markdown("<div style='margin:64px 0 48px 0;'></div>", unsafe_allow_html=True)
+    
+    # Season filter for leaders section
+    leader_filter_col1, leader_filter_col2, leader_filter_col3 = st.columns(3)
+    
+    with leader_filter_col1:
+        selected_leaders_season = st.selectbox(
+            "Select Season for Leaders",
+            available_seasons,
+            index=available_seasons.index(selected_season) if selected_season in available_seasons else 0,
+            key="leaders_season_filter"
+        )
+    
+    # Load traits data for selected leaders season (may be different from main page)
+    leaders_traits_df = load_traits(int(selected_leaders_season))
+    if leaders_traits_df.empty:
+        st.warning(f"Could not load traits data for {selected_leaders_season} season leaders.")
+    else:
+        # Merge with summary for full data
+        leaders_traits_df = leaders_traits_df.merge(
+            summary_df[["Player", "Age", "Height", "Jumper", "Position"]],
+            left_on="Player_Full",
+            right_on="Player",
+            how="left",
+            suffixes=("_traits", "_summary")
+        )
+        
+        # Clean up columns
+        cols_to_drop = ["Player"]
+        if "Age_traits" in leaders_traits_df.columns:
+            cols_to_drop.append("Age_traits")
+        if "Position_traits" in leaders_traits_df.columns:
+            cols_to_drop.append("Position_traits")
+        
+        leaders_traits_df = leaders_traits_df.drop(columns=[c for c in cols_to_drop if c in leaders_traits_df.columns])
+        
+        # Rename summary columns
+        rename_map = {}
+        if "Age_summary" in leaders_traits_df.columns:
+            rename_map["Age_summary"] = "Age"
+        if "Position_summary" in leaders_traits_df.columns:
+            rename_map["Position_summary"] = "Position"
+        
+        if rename_map:
+            leaders_traits_df = leaders_traits_df.rename(columns=rename_map)
+        
+        st.markdown(f"""
+        <div style="text-align:center;margin-bottom:48px;">
+            <h1 style="font-size:42px;font-weight:900;color:#FFFFFF;margin:0 0 8px 0;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.02em;">
+                {selected_leaders_season} Season Leaders
+            </h1>
+            <p style="font-size:16px;color:rgba(255,255,255,0.7);margin:0;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight:600;">
+                Top 5 performers across all trait categories
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filters
+    filter_col1, filter_col2 = st.columns(2)
+    
+    with filter_col1:
+        # Position filter
+        all_positions = sorted(leaders_traits_df["Position_Full"].dropna().unique())
+        position_options = ["All Positions"] + all_positions
+        selected_position_leaders = st.selectbox(
+            "Filter by Position",
+            position_options,
+            key="leaders_position_filter"
+        )
+    
+    with filter_col2:
+        # Team filter
+        leaders_teams = sorted(leaders_traits_df["Team_Full"].dropna().unique())
+        team_options = ["All Teams"] + leaders_teams
+        selected_team_leaders = st.selectbox(
+            "Filter by Team",
+            team_options,
+            key="leaders_team_filter"
+        )
+    
+    # Filter the dataframe based on selections
+    filtered_leaders_df = leaders_traits_df.copy()
+    
+    if selected_position_leaders != "All Positions":
+        filtered_leaders_df = filtered_leaders_df[filtered_leaders_df["Position_Full"] == selected_position_leaders]
+    
+    if selected_team_leaders != "All Teams":
+        filtered_leaders_df = filtered_leaders_df[filtered_leaders_df["Team_Full"] == selected_team_leaders]
+    
+    # Define the 5 pillars
+    pillars = {
+        "OVERALL RATING": "Rating",
+        "BALL USE": "Ball Use",
+        "BALL WINNING": "Ball Winning",
+        "AERIAL": "Aerial",
+        "DEFENCE": "Defence"
+    }
+    
+    # Define gradient colors for each pillar (matching the image)
+    pillar_colors = {
+        "OVERALL RATING": ("#6B46C1", "#4A148C"),  # Purple
+        "BALL USE": ("#1E88E5", "#0D47A1"),  # Blue
+        "BALL WINNING": ("#00ACC1", "#006064"),  # Cyan
+        "AERIAL": ("#43A047", "#1B5E20"),  # Green
+        "DEFENCE": ("#8E24AA", "#4A148C")   # Purple/Magenta
+    }
+    
+    # Create 5 columns for the 5 pillars
+    pillar_cols = st.columns(5, gap="medium")
+    
+    for idx, (pillar_name, metric_col) in enumerate(pillars.items()):
+        with pillar_cols[idx]:
+            # Get top 5 for this pillar
+            top5 = filtered_leaders_df.nlargest(5, metric_col)[["Player_Full", "Team_Full", metric_col, "Position_Full"]].reset_index(drop=True)
+            
+            if len(top5) == 0:
+                st.warning(f"No data for {pillar_name}")
+                continue
+            
+            # Get gradient colors
+            color_start, color_end = pillar_colors[pillar_name]
+            
+            # Display pillar header with gradient background
+            st.markdown(
+                f"""
+                <div style="background: linear-gradient(135deg, {color_start} 0%, {color_end} 100%);
+                            padding: 16px;
+                            border-radius: 12px 12px 0 0;
+                            text-align: center;
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-bottom: none;">
+                    <div style="font-size: 13px;
+                                font-weight: 900;
+                                color: #FFFFFF;
+                                letter-spacing: 0.1em;
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                        {pillar_name}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            
+            # Display top player (rank 1) with photo
+            if len(top5) > 0:
+                top_player = top5.iloc[0]
+                player_name = top_player["Player_Full"]
+                team_name = top_player["Team_Full"]
+                value = top_player[metric_col]
                 
+                # Normalize team name for photo lookup
+                normalized_team = normalize_team_display(team_name)
+                photo_team = team_name_for_photo_guide(normalized_team)
+                
+                # Get full name
+                full_name = get_full_player_name(player_name, normalized_team)
+                
+                # Split name for display
+                name_parts = full_name.split()
+                if len(name_parts) >= 2:
+                    first_name = " ".join(name_parts[:-1])
+                    last_name = name_parts[-1]
+                else:
+                    first_name = ""
+                    last_name = full_name
+                
+                # Look up photo
+                photo_path = None
+                if os.path.exists("player_photo_guide.csv"):
+                    photo_guide = pd.read_csv("player_photo_guide.csv")
+                    # Try exact match with photo_team first
+                    photo_match = photo_guide[
+                        (photo_guide["Player"] == full_name) & 
+                        (photo_guide["Team"] == photo_team)
+                    ]
+                    # If no match, try just by player name
+                    if photo_match.empty:
+                        photo_match = photo_guide[photo_guide["Player"] == full_name]
+                    
+                    if not photo_match.empty:
+                        photo_filename = photo_match.iloc[0]["Filename"]
+                        potential_path = f"player_photos/{photo_filename}"
+                        if os.path.exists(potential_path):
+                            photo_path = potential_path
+                
+                # Display top player card with photo
+                if photo_path:
+                    photo_base64 = get_image_base64(photo_path)
+                    photo_html = f'<img src="data:image/jpeg;base64,{photo_base64}" style="width:100%;height:280px;object-fit:cover;display:block;">'
+                else:
+                    photo_html = f'<div style="width:100%;height:280px;background:linear-gradient(135deg, {color_start}40 0%, {color_end}40 100%);display:flex;align-items:center;justify-content:center;"><span style="font-size:72px;opacity:0.3;">👤</span></div>'
+                
+                # Get conditional color for value
+                rating_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])[0]
+                
+                st.markdown(
+                    f"""
+                    <div style="background: linear-gradient(145deg, rgba(20,20,30,0.98), rgba(30,30,45,0.98));
+                                border-radius: 0 0 12px 12px;
+                                border: 1px solid rgba(255,255,255,0.15);
+                                border-top: none;
+                                overflow: hidden;
+                                box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                                transition: transform 0.3s ease;">
+                        {photo_html}
+                        <div style="padding: 20px 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 48px;
+                                            font-weight: 900;
+                                            color: {rating_color};
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                            line-height: 1;
+                                            margin-bottom: 4px;">
+                                    {value:.2f}
+                                </div>
+                                <div style="font-size: 10px;
+                                            color: rgba(255,255,255,0.5);
+                                            font-weight: 700;
+                                            letter-spacing: 0.1em;
+                                            margin-bottom: 16px;">
+                                    {"PER GAME" if pillar_name in ["DISPOSALS", "MARKS", "GOALS"] else "RATING"}
+                                </div>
+                            </div>
+                            <div style="text-align: center;
+                                        border-top: 1px solid rgba(255,255,255,0.1);
+                                        padding-top: 16px;">
+                                <div style="font-size: 18px;
+                                            font-weight: 700;
+                                            color: #FFFFFF;
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                            margin-bottom: 4px;">
+                                    {first_name}
+                                </div>
+                                <div style="font-size: 24px;
+                                            font-weight: 900;
+                                            color: #FFFFFF;
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                                            letter-spacing: 0.02em;
+                                            text-transform: uppercase;">
+                                    {last_name}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
+            # Display ranks 2-5
+            for rank_idx in range(1, min(5, len(top5))):
+                player_row = top5.iloc[rank_idx]
+                player_name = player_row["Player_Full"]
+                team_name = player_row["Team_Full"]
+                value = player_row[metric_col]
+                
+                # Normalize team
+                normalized_team = normalize_team_display(team_name)
+                photo_team = team_name_for_photo_guide(normalized_team)
+                
+                # Get full name
+                full_name = get_full_player_name(player_name, normalized_team)
+                
+                # Look up team logo
+                logo_path = f"team_logos/{normalized_team}.png"
+                if os.path.exists(logo_path):
+                    logo_base64 = get_image_base64(logo_path)
+                    logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="width:24px;height:24px;object-fit:contain;margin-right:8px;vertical-align:middle;">'
+                else:
+                    logo_html = ""
+                
+                # Get conditional color
+                rating_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])[0]
+                
+                # Format value based on pillar type
+                if pillar_name in ["DISPOSALS", "MARKS", "GOALS"]:
+                    formatted_value = f"{value:.2f}"
+                else:
+                    formatted_value = f"{value:.2f}"
+                
+                # Render rank card
+                st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;margin-left: 12px;white-space: nowrap;">{formatted_value}</div></div>', unsafe_allow_html=True)
+            
+            # Add spacing before expander
+            st.markdown("<div style='margin-top: 16px;'></div>", unsafe_allow_html=True)
+            
+            # "View Full Table" expandable section showing all remaining players in card format
+            with st.expander(f"📊 View Full {pillar_name} Table", expanded=False):
+                # Get all players sorted by this metric (skip the top 5 already shown)
+                remaining_players = filtered_leaders_df.nlargest(len(filtered_leaders_df), metric_col)[["Player_Full", "Team_Full", metric_col]].reset_index(drop=True)
+                
+                # Display players from rank 6 onwards
+                for rank_idx in range(5, len(remaining_players)):
+                    player_row = remaining_players.iloc[rank_idx]
+                    player_name = player_row["Player_Full"]
+                    team_name = player_row["Team_Full"]
+                    value = player_row[metric_col]
+                    rank = rank_idx + 1  # Rank starts from 1
+                    
+                    # Normalize team
+                    normalized_team = normalize_team_display(team_name)
+                    
+                    # Get full name
+                    full_name = get_full_player_name(player_name, normalized_team)
+                    
+                    # Look up team logo
+                    logo_path = f"team_logos/{normalized_team}.png"
+                    if os.path.exists(logo_path):
+                        logo_base64 = get_image_base64(logo_path)
+                        logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="width:24px;height:24px;object-fit:contain;margin-right:8px;vertical-align:middle;">'
+                    else:
+                        logo_html = ""
+                    
+                    # Get conditional color (returns tuple of color, text_color)
+                    rating_color, rating_text_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])
+                    
+                    # Format value
+                    formatted_value = f"{value:.2f}"
+                    
+                    # Create rank badge using the same color as the rating with contrasting text
+                    rank_badge = f'<div style="background: {rating_color};border-radius: 6px;padding: 4px 10px;margin-right: 10px;min-width: 32px;text-align: center;box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><span style="font-size: 12px;font-weight: 900;color: {rating_text_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">#{rank}</span></div>'
+                    
+                    # Render card with rank badge
+                    st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{rank_badge}{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;margin-left: 12px;white-space: nowrap;">{formatted_value}</div></div>', unsafe_allow_html=True)
+
 #### GAME DAY PLAYEGROUND
 
 elif page == "Game Day Playground":
@@ -7907,6 +9312,628 @@ elif page == "Game Day Playground":
    
 
     render_game_day_playground(teams)
+
+
+# ================= IDP (INDIVIDUAL DEVELOPMENT PLAN) =================
+elif page == "IDP":
+    st.markdown("""<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);padding: 40px 20px;border-radius: 16px;box-shadow: 0 8px 24px rgba(0,0,0,0.4);margin-bottom: 32px;text-align: center;"><h1 style="color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight: 900;font-size: 48px;margin: 0 0 12px 0;letter-spacing: 0.02em;text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">📋 Individual Development Plan</h1><p style="color: rgba(255,255,255,0.8);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size: 16px;margin: 0;font-weight: 600;letter-spacing: 0.03em;">Comprehensive player analysis with position benchmarking and comparison tools</p></div>""", unsafe_allow_html=True)
+    
+    # Enhanced styling
+    st.markdown("""
+    <style>
+    .idp-card {
+        background: linear-gradient(145deg, rgba(20,20,30,0.95), rgba(30,30,45,0.95));
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.15);
+        padding: 24px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    .idp-card:hover {
+        box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+        transform: translateY(-2px);
+    }
+    .idp-stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        margin: 10px 0;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        border-left: 5px solid;
+        transition: all 0.2s ease;
+    }
+    .idp-stat-row:hover {
+        background: rgba(255,255,255,0.08);
+        transform: translateX(4px);
+    }
+    .idp-section-header {
+        font-size: 28px;
+        font-weight: 900;
+        margin: 40px 0 20px 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        letter-spacing: 0.03em;
+        color: #FFFFFF;
+        text-align: center;
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+    }
+    .idp-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    .strength { border-color: #00FF00; }
+    .focus { border-color: #FF6B6B; }
+    .neutral { border-color: #FFA500; }
+    .idp-comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .idp-comparison-table th {
+        background: rgba(255,255,255,0.12);
+        color: #FFFFFF;
+        font-weight: 900;
+        padding: 14px 12px;
+        text-align: center;
+        border-bottom: 2px solid rgba(255,255,255,0.2);
+    }
+    .idp-comparison-table td {
+        padding: 12px;
+        text-align: center;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        color: #FFFFFF;
+    }
+    .idp-comparison-table tbody tr:hover {
+        background: rgba(255,255,255,0.08);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Helper functions
+    def safe_float(x):
+        if x is None or (isinstance(x, float) and pd.isna(x)):
+            return None
+        try:
+            return float(str(x).replace("%", "").strip())
+        except:
+            return None
+    
+    def get_full_player_name(player_name, team_name=None):
+        """Get full player name by looking up in player photo guide."""
+        name_map = load_player_name_mapping()
+        team_player_map = name_map.get('__team_player_map__', {})
+        
+        # Try team-aware lookup first
+        if team_name and team_player_map:
+            def normalize_team(team):
+                team = str(team).strip().lower()
+                if 'sydney' in team or team in ['syfc', 'sfc']:
+                    return 'sydney'
+                if 'gws' in team or 'giants' in team:
+                    return 'gws'
+                if 'bulldogs' in team or team in ['wbfc']:
+                    return 'western bulldogs'
+                return team.replace(' ', '').replace('fc', '')
+            
+            norm_team = normalize_team(team_name)
+            team_key = f"{norm_team}_{player_name.strip().lower()}"
+            if team_key in team_player_map:
+                return team_player_map[team_key]
+        
+        # Fall back to regular name mapping
+        return name_map.get(player_name.strip(), name_map.get(player_name.strip().lower(), player_name))
+    
+    def normalize_team_display(team_name):
+        """Normalize team name for display (e.g., SYFC -> Sydney)."""
+        team_map = {
+            'SYFC': 'Sydney',
+            'SFC': 'Sydney',
+            'Sydney Swans': 'Sydney',
+            'WBFC': 'Western Bulldogs',
+            'GWS': 'GWS Giants',
+            'GCFC': 'Gold Coast',
+            'AFC': 'Adelaide',
+            'BFC': 'Brisbane',
+            'CFC': 'Carlton',
+            'COFC': 'Collingwood',
+            'EFC': 'Essendon',
+            'FRFC': 'Fremantle',
+            'GFC': 'Geelong',
+            'HFC': 'Hawthorn',
+            'MFC': 'Melbourne',
+            'NMFC': 'North Melbourne',
+            'PAFC': 'Port Adelaide',
+            'RFC': 'Richmond',
+            'SKFC': 'St Kilda',
+            'WCFC': 'West Coast'
+        }
+        return team_map.get(team_name, team_name)
+    
+    # Season selection
+    seasons_available = sorted(get_player_seasons(), reverse=True)
+    if not seasons_available:
+        seasons_available = [2025, 2024, 2023]
+    
+    selected_season = st.selectbox("Select Season", seasons_available, index=0, key="idp_season")
+    
+    # Load traits data
+    traits_df = load_traits(int(selected_season))
+    if traits_df is None or traits_df.empty:
+        st.error("Could not load traits data for this season.")
+        st.stop()
+    
+    # Team and Player selection
+    teams = sorted([t for t in traits_df["Team_Full"].dropna().unique().tolist() if str(t).strip() != ""])
+    if not teams:
+        st.warning("No teams found in traits data.")
+        st.stop()
+    
+    selected_team = st.selectbox("Select Team", teams, key="idp_team")
+    
+    team_traits = traits_df[traits_df["Team_Full"] == selected_team].copy()
+    player_names = sorted(team_traits["Player_Full"].dropna().unique().tolist())
+    if not player_names:
+        st.warning("No players found for this team.")
+        st.stop()
+    
+    selected_player = st.selectbox("Select Player", player_names, key="idp_player")
+    
+    # Get player data
+    player_data = team_traits[team_traits["Player_Full"] == selected_player].iloc[0]
+    player_position = str(player_data.get("Position_Full", ""))
+    player_age = player_data.get("Age", "N/A")
+    
+    # Normalize names for display
+    selected_player_display = get_full_player_name(selected_player, selected_team)
+    selected_team_display = normalize_team_display(selected_team)
+    
+    # ========== CALCULATE TOP 10 POSITION DATA FIRST ==========
+    # Get top 10 in position (needed for spider graph)
+    position_players = traits_df[traits_df["Position_Full"] == player_position].copy()
+    position_players["Rating"] = pd.to_numeric(position_players["Rating"], errors="coerce")
+    top_10_position = position_players.nlargest(10, "Rating")
+    
+    # ========== PLAYER HEADER WITH PHOTO ==========
+    st.markdown("<div style='margin-top:24px;'></div>", unsafe_allow_html=True)
+    
+    col_photo, col_info = st.columns([1, 3])
+    
+    # Display player photo and team logo
+    with col_photo:
+        _, logo_col, _ = st.columns([1, 2, 1])
+        display_logo(selected_team_display, logo_col, size=160)
+        display_player_photo(selected_player_display, col_photo, use_container_width=True, team_name=selected_team_display)
+    
+    # Display player info
+    with col_info:
+        st.markdown(f"""
+        <div class="idp-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);border-left:6px solid #FFFFFF;">
+            <h2 style="color:#FFFFFF;margin:0 0 16px 0;font-size:42px;font-weight:900;letter-spacing:0.02em;">{selected_player_display}</h2>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+                <span class="idp-badge" style="background:#1a1a2e;color:#FFFFFF;">{selected_team_display}</span>
+                <span class="idp-badge" style="background:#0f3460;color:#FFFFFF;">{player_position}</span>
+                <span class="idp-badge" style="background:#16213e;color:#FFFFFF;">Age: {player_age}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # ========== SECTION 1: TOP 10 POSITION BENCHMARKING ==========
+    st.markdown("<div class='idp-section-header'>🎯 Position Benchmarking (Top 10)</div>", unsafe_allow_html=True)
+    
+    # Trait selection
+    trait_options = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+    selected_trait = st.selectbox("Select Trait to Analyze", trait_options, key="idp_trait_select")
+    
+    # Define sub-stats for each trait
+    trait_substats = {
+        "Rating": ["Ball Winning", "Ball Use", "Aerial", "Defence"],
+        "Ball Winning": ["Stoppage", "Contest", "Power", "Receives"],
+        "Ball Use": ["Handballing", "Kicking", "Goal Kicking", "Connecting"],
+        "Aerial": ["Marking", "Contested", "Moks", "Ruck"],
+        "Defence": ["Pressure", "Tackling", "Intercepting", "1v1"]
+    }
+    
+    substats = trait_substats.get(selected_trait, [])
+    
+    # Main trait comparison
+    player_trait_val = safe_float(player_data.get(selected_trait))
+    top10_trait_avg = pd.to_numeric(top_10_position[selected_trait], errors="coerce").mean()
+    
+    st.markdown(f"<div class='idp-card'><h3 style='color:#FFFFFF;margin:0 0 24px 0;font-weight:900;font-size:22px;'>📊 {selected_trait} Analysis vs Top 10 {player_position}s</h3>", unsafe_allow_html=True)
+    
+    if player_trait_val is not None and not pd.isna(top10_trait_avg):
+        delta = player_trait_val - top10_trait_avg
+        delta_pct = (delta / top10_trait_avg * 100) if top10_trait_avg != 0 else 0
+        
+        # Determine colors based on competition-wide percentile
+        trait_values = pd.to_numeric(traits_df[selected_trait], errors="coerce")
+        player_bg, player_text = rating_colour_for_value(player_trait_val, trait_values)
+        
+        # Delta color based on sign
+        if delta >= 0:
+            delta_bg = player_bg
+            delta_text = player_text
+        else:
+            delta_bg = "#FF0000" if delta < -0.5 else "#FF6B6B"
+            delta_text = "#FFFFFF"
+        
+        # Create visually appealing metric cards
+        st.markdown(f"""
+        <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px;'>
+            <div style='background:linear-gradient(135deg,{player_bg}25 0%,{player_bg}15 100%);border:2px solid {player_bg};border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
+                <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Your Rating</div>
+                <div style='color:{player_text};background:{player_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{player_trait_val:.2f}</div>
+            </div>
+            <div style='background:linear-gradient(135deg,rgba(100,149,237,0.25) 0%,rgba(100,149,237,0.15) 100%);border:2px solid #6495ED;border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
+                <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Top 10 Average</div>
+                <div style='color:#FFFFFF;background:#6495ED;font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{top10_trait_avg:.2f}</div>
+            </div>
+            <div style='background:linear-gradient(135deg,{delta_bg}25 0%,{delta_bg}15 100%);border:2px solid {delta_bg};border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
+                <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Difference</div>
+                <div style='color:{delta_text};background:{delta_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{delta:+.2f}</div>
+                <div style='color:{delta_text};background:rgba(0,0,0,0.3);font-size:14px;font-weight:700;margin-top:10px;padding:6px 12px;border-radius:8px;'>{delta_pct:+.1f}%</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Spider graph comparing player to Top 10 average
+    st.markdown("<h4 style='color:#FFFFFF;margin:28px 0 16px 0;font-weight:900;font-size:18px;'>Visual Comparison</h4>", unsafe_allow_html=True)
+    
+    import plotly.graph_objects as go
+    
+    # Get player values for the 5 main traits
+    trait_categories = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+    player_values = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
+    
+    # Calculate Top 10 averages for each trait
+    top10_values = []
+    for trait in trait_categories:
+        trait_avg = pd.to_numeric(top_10_position[trait], errors="coerce").mean()
+        top10_values.append(trait_avg if pd.notna(trait_avg) else 0)
+    
+    # Create spider chart
+    fig = go.Figure()
+    
+    # Add Top 10 average trace
+    fig.add_trace(go.Scatterpolar(
+        r=top10_values + [top10_values[0]],
+        theta=trait_categories + [trait_categories[0]],
+        fill='toself',
+        name='Top 10 Avg',
+        line=dict(color='#6495ED', width=3),
+        fillcolor='rgba(100, 149, 237, 0.25)'
+    ))
+    
+    # Add player trace
+    fig.add_trace(go.Scatterpolar(
+        r=player_values + [player_values[0]],
+        theta=trait_categories + [trait_categories[0]],
+        fill='toself',
+        name=selected_player_display.split()[0] if ' ' in selected_player_display else selected_player_display,
+        line=dict(color='#00FF00', width=3),
+        fillcolor='rgba(0, 255, 0, 0.25)'
+    ))
+    
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, max(max(player_values), max(top10_values)) * 1.1],
+                gridcolor='rgba(255,255,255,0.2)',
+                tickfont=dict(color='white', size=12)
+            ),
+            angularaxis=dict(
+                gridcolor='rgba(255,255,255,0.2)',
+                tickfont=dict(color='white', size=13, family='Arial Black')
+            ),
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        showlegend=True,
+        legend=dict(
+            font=dict(color='white', size=13),
+            bgcolor='rgba(0,0,0,0.5)',
+            bordercolor='rgba(255,255,255,0.3)',
+            borderwidth=1,
+            orientation='h',
+            yanchor='bottom',
+            y=1.02,
+            xanchor='center',
+            x=0.5
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=60, r=60, t=100, b=60),
+        height=550
+    )
+    
+    st.plotly_chart(fig, use_container_width=True, key="player_spider")
+    
+    # Sub-stats breakdown
+    st.markdown("<h4 style='color:#FFFFFF;margin:24px 0 16px 0;font-weight:900;font-size:18px;'>Contributing Statistics</h4>", unsafe_allow_html=True)
+    
+    strengths = []
+    focus_areas = []
+    
+    for substat in substats:
+        if substat not in top_10_position.columns:
+            continue
+        
+        player_val = safe_float(player_data.get(substat))
+        top10_avg = pd.to_numeric(top_10_position[substat], errors="coerce").mean()
+        
+        if player_val is None or pd.isna(top10_avg):
+            continue
+        
+        delta = player_val - top10_avg
+        delta_pct = (delta / top10_avg * 100) if top10_avg != 0 else 0
+        
+        # Determine if strength or focus area
+        if delta_pct >= 10:
+            category = "strength"
+            strengths.append((substat, delta_pct))
+        elif delta_pct <= -10:
+            category = "focus"
+            focus_areas.append((substat, delta_pct))
+        else:
+            category = "neutral"
+        
+        # Color coding
+        border_color = "#00FF00" if delta >= 0 else "#FF6B6B"
+        
+        st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};"><div style="flex:1;"><span style="font-weight:900;font-size:15px;color:#FFFFFF;">{substat}</span></div><div style="display:flex;gap:24px;align-items:center;"><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val:.2f}</div></div><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg:.2f}</div></div><div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta:+.2f}</div></div><div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div></div></div>""", unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # ========== STRENGTHS AND FOCUS AREAS ==========
+    st.markdown("<div class='idp-section-header'>💪 Strengths & Focus Areas</div>", unsafe_allow_html=True)
+    
+    col_strength, col_focus = st.columns(2)
+    
+    with col_strength:
+        st.markdown("<div class='idp-card' style='border-left:6px solid #00FF00;'><h3 style='color:#00FF00;margin:0 0 16px 0;font-weight:900;font-size:20px;'>✅ Key Strengths</h3>", unsafe_allow_html=True)
+        
+        if strengths:
+            strengths.sort(key=lambda x: x[1], reverse=True)
+            for stat, pct in strengths[:5]:
+                st.markdown(f"<div style='padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1);'><span style='color:#FFFFFF;font-weight:700;font-size:14px;'>{stat}</span><span style='color:#00FF00;font-weight:900;float:right;font-size:14px;'>+{pct:.1f}% above avg</span></div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<p style='color:rgba(255,255,255,0.6);font-style:italic;'>Performing at or near Top 10 average across all metrics</p>", unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    with col_focus:
+        st.markdown("<div class='idp-card' style='border-left:6px solid #FF6B6B;'><h3 style='color:#FF6B6B;margin:0 0 16px 0;font-weight:900;font-size:20px;'>🎯 Focus Areas</h3>", unsafe_allow_html=True)
+        
+        if focus_areas:
+            focus_areas.sort(key=lambda x: x[1])
+            for stat, pct in focus_areas[:5]:
+                st.markdown(f"<div style='padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1);'><span style='color:#FFFFFF;font-weight:700;font-size:14px;'>{stat}</span><span style='color:#FF6B6B;font-weight:900;float:right;font-size:14px;'>{pct:.1f}% below avg</span></div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<p style='color:rgba(255,255,255,0.6);font-style:italic;'>No significant areas below Top 10 average</p>", unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # ========== SECTION 2: PLAYER COMPARISON TOOL ==========
+    st.markdown("<div class='idp-section-header'>⚖️ Player Comparison Tool</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='idp-card'><h3 style='color:#FFFFFF;margin:0 0 20px 0;font-weight:900;font-size:22px;'>Compare Against Specific Player</h3>", unsafe_allow_html=True)
+    
+    # Team filter for comparison
+    comparison_teams = sorted(traits_df["Team_Full"].dropna().unique().tolist())
+    comparison_team = st.selectbox(
+        "Select Team",
+        comparison_teams,
+        key="idp_comparison_team"
+    )
+    
+    # Filter players by selected team
+    team_players_df = traits_df[traits_df["Team_Full"] == comparison_team]
+    team_players = sorted(team_players_df["Player_Full"].dropna().unique().tolist())
+    
+    # Select comparison player from filtered team
+    comparison_player = st.selectbox(
+        "Select Player to Compare",
+        team_players,
+        key="idp_comparison_player"
+    )
+    
+    if comparison_player:
+        comp_data = traits_df[traits_df["Player_Full"] == comparison_player].iloc[0]
+        comp_position = str(comp_data.get("Position_Full", ""))
+        comp_team = str(comp_data.get("Team_Full", ""))
+        comp_age = comp_data.get("Age", "N/A")
+        
+        # Normalize names for display
+        comparison_player_display = get_full_player_name(comparison_player, comp_team)
+        comp_team_display = normalize_team_display(comp_team)
+        
+        # Comparison header with photos
+        col_p1, col_vs, col_p2 = st.columns([2, 1, 2])
+        
+        with col_p1:
+            # Center the photo
+            _, photo_col, _ = st.columns([0.5, 1, 0.5])
+            with photo_col:
+                display_player_photo(selected_player_display, st, size=200, team_name=selected_team_display)
+            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{selected_player_display}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{selected_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{player_position} • Age {player_age}</p></div>", unsafe_allow_html=True)
+        
+        with col_vs:
+            st.markdown("<div style='display:flex;align-items:center;justify-content:center;height:100%;'><div style='font-size:48px;font-weight:900;color:rgba(255,255,255,0.5);text-shadow:2px 2px 6px rgba(0,0,0,0.5);'>VS</div></div>", unsafe_allow_html=True)
+        
+        with col_p2:
+            # Center the photo
+            _, photo_col, _ = st.columns([0.5, 1, 0.5])
+            with photo_col:
+                display_player_photo(comparison_player_display, st, size=200, team_name=comp_team_display)
+            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{comparison_player_display}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{comp_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{comp_position} • Age {comp_age}</p></div>", unsafe_allow_html=True)
+        
+        st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
+        
+        # Spider graph comparing the two players
+        import plotly.graph_objects as go
+        
+        # Get values for both players
+        trait_categories = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+        player1_values = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
+        player2_values = [safe_float(comp_data.get(trait, 0)) or 0 for trait in trait_categories]
+        
+        # Create spider chart
+        fig_comp = go.Figure()
+        
+        # Add player 1 trace
+        fig_comp.add_trace(go.Scatterpolar(
+            r=player1_values + [player1_values[0]],
+            theta=trait_categories + [trait_categories[0]],
+            fill='toself',
+            name=selected_player_display.split()[0],
+            line=dict(color='#00FF00', width=3),
+            fillcolor='rgba(0, 255, 0, 0.2)'
+        ))
+        
+        # Add player 2 trace
+        fig_comp.add_trace(go.Scatterpolar(
+            r=player2_values + [player2_values[0]],
+            theta=trait_categories + [trait_categories[0]],
+            fill='toself',
+            name=comparison_player_display.split()[0],
+            line=dict(color='#FF6B6B', width=3),
+            fillcolor='rgba(255, 107, 107, 0.2)'
+        ))
+        
+        fig_comp.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, max(max(player1_values), max(player2_values)) * 1.1],
+                    gridcolor='rgba(255,255,255,0.2)',
+                    tickfont=dict(color='white', size=11)
+                ),
+                angularaxis=dict(
+                    gridcolor='rgba(255,255,255,0.2)',
+                    tickfont=dict(color='white', size=12, family='Arial Black')
+                ),
+                bgcolor='rgba(0,0,0,0)'
+            ),
+            showlegend=True,
+            legend=dict(
+                font=dict(color='white', size=12),
+                bgcolor='rgba(0,0,0,0.5)',
+                bordercolor='rgba(255,255,255,0.3)',
+                borderwidth=1,
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='center',
+                x=0.5
+            ),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=60, r=60, t=80, b=60),
+            height=450
+        )
+        
+        st.plotly_chart(fig_comp, use_container_width=True, key="comparison_spider")
+        
+        st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
+        
+        # Trait comparison
+        comp_trait = st.selectbox("Select Trait for Comparison", trait_options, key="idp_comp_trait")
+        comp_substats = trait_substats.get(comp_trait, [])
+        
+        # Main trait comparison
+        player_comp_val = safe_float(player_data.get(comp_trait))
+        comp_player_val = safe_float(comp_data.get(comp_trait))
+        
+        if player_comp_val is not None and comp_player_val is not None:
+            delta = player_comp_val - comp_player_val
+            delta_pct = (delta / comp_player_val * 100) if comp_player_val != 0 else 0
+            
+            # Determine colors based on competition-wide percentiles
+            trait_values = pd.to_numeric(traits_df[comp_trait], errors="coerce")
+            p1_color, _ = rating_colour_for_value(player_comp_val, trait_values)
+            p2_color, _ = rating_colour_for_value(comp_player_val, trait_values)
+            
+            # Determine advantage text and color
+            if abs(delta) < 0.05:
+                advantage_text = "Even"
+                advantage_color = "#FFA500"
+            elif delta > 0:
+                advantage_text = selected_player_display.split()[-1] if ' ' in selected_player_display else selected_player_display
+                advantage_color = p1_color
+            else:
+                advantage_text = comparison_player_display.split()[-1] if ' ' in comparison_player_display else comparison_player_display
+                advantage_color = p2_color
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                p1_display = selected_player_display.split()[-1] if ' ' in selected_player_display else selected_player_display
+                st.markdown(f"<div style='background:linear-gradient(135deg, {p1_color}25 0%, {p1_color}15 100%);border:2px solid {p1_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p1_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p1_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{player_comp_val:.2f}</div></div></div>", unsafe_allow_html=True)
+            with col2:
+                p2_display = comparison_player_display.split()[-1] if ' ' in comparison_player_display else comparison_player_display
+                st.markdown(f"<div style='background:linear-gradient(135deg, {p2_color}25 0%, {p2_color}15 100%);border:2px solid {p2_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p2_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p2_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{comp_player_val:.2f}</div></div></div>", unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta:+.2f} ({delta_pct:+.1f}%)</div></div></div>", unsafe_allow_html=True)
+        
+        # Sub-stats comparison table
+        st.markdown("<h4 style='color:#FFFFFF;margin:28px 0 16px 0;font-weight:900;font-size:18px;'>Detailed Comparison</h4>", unsafe_allow_html=True)
+        
+        # Build table rows
+        comparison_rows = []
+        for substat in comp_substats:
+            if substat not in traits_df.columns:
+                continue
+            
+            p1_val = safe_float(player_data.get(substat))
+            p2_val = safe_float(comp_data.get(substat))
+            
+            if p1_val is None or p2_val is None:
+                continue
+            
+            delta = p1_val - p2_val
+            delta_color = "#00FF00" if delta > 0 else "#FF6B6B" if delta < 0 else "#FFA500"
+            
+            # Highlight winner
+            p1_bg = "rgba(0,255,0,0.2)" if delta > 0 else "transparent"
+            p2_bg = "rgba(0,255,0,0.2)" if delta < 0 else "transparent"
+            
+            comparison_rows.append(f"<tr><td style='text-align:left;'>{substat}</td><td style='background:{p1_bg};'>{p1_val:.2f}</td><td style='background:{p2_bg};'>{p2_val:.2f}</td><td style='color:{delta_color};'>{delta:+.2f}</td></tr>")
+        
+        if comparison_rows:
+            st.markdown(f"<table class='idp-comparison-table'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Development recommendations
+    st.markdown("<div class='idp-section-header'>📈 Development Recommendations</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='idp-card'><h3 style='color:#FFFFFF;margin:0 0 20px 0;font-weight:900;font-size:22px;'>Personalized Development Path</h3>", unsafe_allow_html=True)
+    
+    if focus_areas:
+        st.markdown("<h4 style='color:#FF6B6B;font-weight:900;font-size:18px;margin-top:16px;'>Priority Focus Areas:</h4>", unsafe_allow_html=True)
+        for i, (stat, pct) in enumerate(focus_areas[:3], 1):
+            st.markdown(f"<div style='margin:12px 0;padding:18px;background:rgba(255,107,107,0.1);border-left:5px solid #FF6B6B;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:20px;font-weight:900;color:#FF6B6B;margin-bottom:10px;'>{i}. {stat}</div><div style='color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;'>Currently <strong style='color:#FF6B6B;'>{abs(pct):.1f}%</strong> below top 10 average. Focus training on improving this metric to reach elite {player_position} standards.</div></div>", unsafe_allow_html=True)
+    
+    if strengths:
+        st.markdown("<h4 style='color:#00FF00;font-weight:900;margin-top:28px;font-size:18px;'>Continue Developing Strengths:</h4>", unsafe_allow_html=True)
+        for stat, pct in strengths[:3]:
+            st.markdown(f"<div style='margin:12px 0;padding:18px;background:rgba(0,255,0,0.1);border-left:5px solid #00FF00;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:18px;font-weight:900;color:#00FF00;margin-bottom:10px;'>✓ {stat}</div><div style='color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;'>Performing <strong style='color:#00FF00;'>{pct:.1f}%</strong> above average. Maintain this advantage through consistent application.</div></div>", unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+       
+
+   
 
        
 
