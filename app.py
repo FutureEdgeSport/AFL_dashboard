@@ -1448,7 +1448,7 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits", "Game Day Playground", "IDP"]
+PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits", "Game Day Playground", "IDP", "Game Model Scorecard"]
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -3415,6 +3415,62 @@ elif page == "Team Compare":
     # Get team rows
     team1_row = ladders[ladders["Team"] == team1].iloc[0]
     team2_row = ladders[ladders["Team"] == team2].iloc[0]
+    
+    # ========== SIMILARITY SCORE CALCULATION ==========
+    # Calculate similarity score between the two teams based on all available metrics
+    similarity_metrics = []
+    for col in ladders.columns:
+        if col == "Team" or col not in team1_row.index or col not in team2_row.index:
+            continue
+        try:
+            val1 = float(team1_row[col])
+            val2 = float(team2_row[col])
+            # Skip if either value is NaN
+            if pd.isna(val1) or pd.isna(val2):
+                continue
+            # Get column range for normalization
+            col_min = ladders[col].min()
+            col_max = ladders[col].max()
+            if col_max == col_min:
+                continue
+            # Normalize both values to 0-100 scale
+            norm1 = ((val1 - col_min) / (col_max - col_min)) * 100
+            norm2 = ((val2 - col_min) / (col_max - col_min)) * 100
+            # Calculate absolute difference
+            diff = abs(norm1 - norm2)
+            # Convert to similarity (100 - difference)
+            similarity = 100 - diff
+            similarity_metrics.append(similarity)
+        except:
+            continue
+    
+    # Calculate overall similarity score
+    if similarity_metrics:
+        overall_similarity = sum(similarity_metrics) / len(similarity_metrics)
+    else:
+        overall_similarity = 0
+    
+    # Display similarity score between logos
+    st.markdown(f"""
+    <div style='text-align: center; margin: 30px 0;'>
+        <div style='background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%); 
+                    border-radius: 16px; padding: 24px; display: inline-block; min-width: 300px;
+                    border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 8px 24px rgba(0,0,0,0.3);'>
+            <div style='font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6); 
+                        text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;'>
+                Team Similarity Score
+            </div>
+            <div style='font-size: 56px; font-weight: 900; color: #ffffff; 
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        margin-bottom: 8px;'>
+                {overall_similarity:.1f}%
+            </div>
+            <div style='font-size: 13px; color: rgba(255,255,255,0.5); font-style: italic;'>
+                Based on {len(similarity_metrics)} comparable metrics
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # ========== RADAR CHARTS AND COLUMN CHART SECTION ==========
     st.markdown("---")
@@ -9931,11 +9987,647 @@ elif page == "IDP":
             st.markdown(f"<div style='margin:12px 0;padding:18px;background:rgba(0,255,0,0.1);border-left:5px solid #00FF00;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:18px;font-weight:900;color:#00FF00;margin-bottom:10px;'>✓ {stat}</div><div style='color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;'>Performing <strong style='color:#00FF00;'>{pct:.1f}%</strong> above average. Maintain this advantage through consistent application.</div></div>", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
-       
 
-   
-
-       
-
-   
-
+# ================= GAME MODEL SCORECARD =================
+elif page == "Game Model Scorecard":
+    st.title("📊 Game Model Scorecard")
+    
+    # Available KPIs from team data
+    ALL_KPIS = [
+        "Post Clear CP Diff",
+        "Ground Ball Diff",
+        "1st Poss to Clear %",
+        "Clearance Diff",
+        "Ball Winning Ranking",
+        "Def Half to Score %",
+        "Chain to Score %",
+        "D50 to F50 %",
+        "Kick Rating",
+        "Ball Movement Ranking",
+        "Scores per I50 %",
+        "Goals Per I 50 %",
+        "Accuracy %",
+        "+/- Exp Score",
+        "Scoring Ranking",
+        "Def Half to Score Ag %",
+        "Chain to Score Ag %",
+        "D50 to F50 Ag %",
+        "Goals Per I50 Ag %",
+        "Defence Ranking",
+        "Tackle Diff",
+        "F50 Tackles",
+        "Pressure Acts",
+        "1%'ers",
+        "Pressure Ranking",
+        "Score from Turnover For",
+        "Scores from Turnover Ag",
+        "Scores from Stoppages For",
+        "Scores from Stoppage Ag",
+        "Territory %",
+        "Post-Clearance CP Diff",
+        "Health Check Ranking",
+        "Attack Rating",
+        "Defence Rating",
+        "Overall Rating"
+    ]
+    
+    # Define complementary stat pairs (For stat pairs with Against stat)
+    STAT_PAIRS = {
+        # For stats → Ag stats (for opposition)
+        "Def Half to Score %": "Def Half to Score Ag %",
+        "Chain to Score %": "Chain to Score Ag %",
+        "D50 to F50 %": "D50 to F50 Ag %",
+        "Goals Per I 50 %": "Goals Per I50 Ag %",
+        "Scores per I50 %": "Scores per I50 Ag %",
+        "Score from Turnover For": "Scores from Turnover Ag",
+        "Scores from Stoppages For": "Scores from Stoppage Ag",
+        # Ag stats → For stats (reverse mapping)
+        "Def Half to Score Ag %": "Def Half to Score %",
+        "Chain to Score Ag %": "Chain to Score %",
+        "D50 to F50 Ag %": "D50 to F50 %",
+        "Goals Per I50 Ag %": "Goals Per I 50 %",
+        "Scores per I50 Ag %": "Scores per I50 %",
+        "Scores from Turnover Ag": "Score from Turnover For",
+        "Scores from Stoppage Ag": "Scores from Stoppages For"
+    }
+    
+    # Categorize KPIs into groups - all KPIs available in each category
+    KPI_CATEGORIES = {
+        "Team": ALL_KPIS,
+        "Offence": ALL_KPIS,
+        "Defence": ALL_KPIS,
+        "Contest": ALL_KPIS
+    }
+    
+    # Filter controls
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Team selection - default to Home page selection
+        all_teams = [
+            "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", 
+            "Fremantle", "Geelong", "Gold Coast", "GWS Giants",
+            "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", 
+            "Richmond", "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
+        ]
+        default_idx = 0
+        if "default_team" in st.session_state and st.session_state.default_team in all_teams:
+            default_idx = all_teams.index(st.session_state.default_team)
+        
+        selected_team = st.selectbox("Select Team", all_teams, index=default_idx, key="scorecard_team")
+    
+    with col2:
+        available_years = [2025, 2024, 2023]
+        selected_year = st.selectbox("Select Year", available_years, key="scorecard_year")
+    
+    # Display team logo
+    st.markdown("---")
+    team_code = TEAM_CODE_MAP.get(selected_team, selected_team.lower().replace(" ", ""))
+    team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
+    
+    if os.path.exists(team_logo_path):
+        try:
+            img = Image.open(team_logo_path)
+            # Center the logo
+            logo_col1, logo_col2, logo_col3 = st.columns([1, 1, 1])
+            with logo_col2:
+                st.image(img, width=200)
+        except Exception as e:
+            pass
+    
+    # KPI Selection by Category
+    st.markdown("---")
+    st.subheader("Select KPIs by Category (up to 5 per category)")
+    
+    # Initialize session state for each category
+    category_selections = {}
+    for category in ["Team", "Offence", "Defence", "Contest"]:
+        session_key = f'scorecard_kpis_{category.lower()}'
+        if session_key not in st.session_state:
+            st.session_state[session_key] = []
+    
+    # Create columns for each category
+    cat_cols = st.columns(4)
+    
+    for idx, (category, kpis) in enumerate(KPI_CATEGORIES.items()):
+        with cat_cols[idx]:
+            st.markdown(f"**{category}**")
+            session_key = f'scorecard_kpis_{category.lower()}'
+            selector_key = f'scorecard_kpis_{category.lower()}_selector'
+            
+            selected = st.multiselect(
+                f"{category} metrics",
+                options=kpis,
+                default=st.session_state[session_key],
+                max_selections=5,
+                key=selector_key,
+                label_visibility="collapsed"
+            )
+            
+            # Update session state
+            if selected != st.session_state[session_key]:
+                st.session_state[session_key] = selected
+            
+            category_selections[category] = selected
+    
+    # Combine all selections
+    selected_kpis = []
+    for category in ["Team", "Offence", "Defence", "Contest"]:
+        selected_kpis.extend(category_selections[category])
+    
+    if len(selected_kpis) == 0:
+        st.info("Please select at least one KPI to display.")
+        st.stop()
+    
+    # Load data
+    try:
+        # Load season data
+        xl = pd.ExcelFile(TEAM_FILE)
+        sheet_name = f"{selected_year} Summary"
+        raw_df = xl.parse(sheet_name, header=None)
+        
+        # Structure: Row 3 has metric names, Row 4 onwards has teams
+        metric_row_idx = 3
+        first_team_row_idx = 4
+        
+        # Get metric names from row 3 and create column index mapping
+        metric_to_col = {}
+        for col_idx in range(len(raw_df.columns)):
+            metric = raw_df.iloc[metric_row_idx, col_idx]
+            if pd.notna(metric) and str(metric).strip() != 'Rank':
+                metric_to_col[str(metric).strip()] = col_idx
+        
+        # Build data dictionary by reading team rows
+        team_data = {}
+        for row_idx in range(first_team_row_idx, len(raw_df)):
+            team_name = raw_df.iloc[row_idx, 0]
+            if pd.notna(team_name):
+                team_name = str(team_name).strip()
+                if team_name == "GWS":
+                    team_name = "GWS Giants"
+                
+                if team_name in all_teams:
+                    team_data[team_name] = {}
+                    for metric_name, col_idx in metric_to_col.items():
+                        value = raw_df.iloc[row_idx, col_idx]
+                        if pd.notna(value):
+                            try:
+                                team_data[team_name][metric_name] = float(value)
+                            except:
+                                pass
+        
+        # Load Last 10 if needed
+        last10_data = {}
+        if selected_year == 2025:
+            try:
+                sheet_name_l10 = f"{selected_year} Last 10 Summary"
+                raw_df_l10 = xl.parse(sheet_name_l10, header=None)
+                
+                metric_to_col_l10 = {}
+                for col_idx in range(len(raw_df_l10.columns)):
+                    metric = raw_df_l10.iloc[metric_row_idx, col_idx]
+                    if pd.notna(metric) and str(metric).strip() != 'Rank':
+                        metric_to_col_l10[str(metric).strip()] = col_idx
+                
+                for row_idx in range(first_team_row_idx, len(raw_df_l10)):
+                    team_name = raw_df_l10.iloc[row_idx, 0]
+                    if pd.notna(team_name):
+                        team_name = str(team_name).strip()
+                        if team_name == "GWS":
+                            team_name = "GWS Giants"
+                        
+                        if team_name in all_teams:
+                            last10_data[team_name] = {}
+                            for metric_name, col_idx in metric_to_col_l10.items():
+                                value = raw_df_l10.iloc[row_idx, col_idx]
+                                if pd.notna(value):
+                                    try:
+                                        last10_data[team_name][metric_name] = float(value)
+                                    except:
+                                        pass
+            except Exception as e:
+                st.warning(f"Last 10 Games data not available: {e}")
+                last10_data = {}
+        
+        # Helper functions
+        def calculate_ranking(kpi_name, team_name, dataset):
+            """Calculate league-wide ranking for a KPI"""
+            values = []
+            for team, metrics in dataset.items():
+                if kpi_name in metrics:
+                    val = metrics[kpi_name]
+                    try:
+                        val_num = float(val)
+                        if not pd.isna(val_num):
+                            values.append((team, val_num))
+                    except:
+                        pass
+            
+            if not values:
+                return None, None
+            
+            # Sort - higher is better for most metrics, lower for "Against" metrics
+            is_against = "Ag %" in kpi_name or "Ag" in kpi_name.split()[-1]
+            values.sort(key=lambda x: x[1], reverse=not is_against)
+            
+            for rank, (team, val) in enumerate(values, 1):
+                if team == team_name:
+                    return rank, len(values)
+            
+            return None, len(values)
+        
+        def get_conditional_color(rank, total):
+            """Get color based on ranking percentile"""
+            if rank is None or total is None or total == 0:
+                return "#666666", "white"
+            
+            percentile = (total - rank + 1) / total * 100
+            
+            if percentile >= 85:
+                return "#008000", "white"  # Dark Green
+            elif percentile >= 60:
+                return "#90EE90", "black"  # Light Green
+            elif percentile >= 35:
+                return "#FFA500", "white"  # Orange
+            else:
+                return "#FF0000", "white"  # Red
+        
+        def format_ordinal(rank):
+            """Format rank as ordinal"""
+            if rank is None:
+                return "N/A"
+            if 10 <= rank % 100 <= 20:
+                suffix = "th"
+            else:
+                suffix = {1: "st", 2: "nd", 3: "rd"}.get(rank % 10, "th")
+            return f"{rank}{suffix}"
+        
+        # Display scorecard
+        st.markdown("---")
+        st.markdown(f"<h2 style='text-align: center; margin-bottom: 30px; font-weight: 900; font-size: 36px;'>{selected_team} - {selected_year}</h2>", unsafe_allow_html=True)
+        
+        # Build data tables
+        if not selected_kpis:
+            st.info("Please select at least one KPI to display.")
+        else:
+            # Display cards by category
+            for category in ["Team", "Offence", "Defence", "Contest"]:
+                category_kpis = category_selections.get(category, [])
+                if not category_kpis:
+                    continue
+                
+                st.markdown(f"<h3 style='margin-top: 30px; margin-bottom: 20px; font-weight: 800; font-size: 24px; color: rgba(255,255,255,0.9);'>📊 {category}</h3>", unsafe_allow_html=True)
+                
+                # Prepare data for cards in this category
+                card_data = []
+                for kpi in category_kpis:
+                    # Get season value
+                    season_val = team_data.get(selected_team, {}).get(kpi, None)
+                    season_rank, total_teams = calculate_ranking(kpi, selected_team, team_data)
+                    season_color, season_text_color = get_conditional_color(season_rank, total_teams)
+                    
+                    # Get Last 10 value if applicable
+                    l10_val = None
+                    l10_rank = None
+                    l10_color = "#666666"
+                    l10_text_color = "white"
+                    
+                    if last10_data:
+                        l10_val = last10_data.get(selected_team, {}).get(kpi, None)
+                        l10_rank, _ = calculate_ranking(kpi, selected_team, last10_data)
+                        l10_color, l10_text_color = get_conditional_color(l10_rank, total_teams)
+                    
+                    # Calculate difference
+                    diff_val = None
+                    if l10_val is not None and season_val is not None:
+                        try:
+                            diff_val = float(l10_val) - float(season_val)
+                        except:
+                            pass
+                    
+                    card_data.append({
+                        'kpi': kpi,
+                        'season_val': season_val,
+                        'season_rank': season_rank,
+                        'season_color': season_color,
+                        'season_text_color': season_text_color,
+                        'l10_val': l10_val,
+                        'l10_rank': l10_rank,
+                        'l10_color': l10_color,
+                        'l10_text_color': l10_text_color,
+                        'diff_val': diff_val,
+                        'total_teams': total_teams
+                    })
+                
+                # Display cards in grid layout
+                num_cards = len(card_data)
+                cols_per_row = 5
+                
+                for i in range(0, num_cards, cols_per_row):
+                    cols = st.columns(cols_per_row)
+                    
+                    for j in range(cols_per_row):
+                        idx = i + j
+                        if idx >= num_cards:
+                            break
+                        
+                        data = card_data[idx]
+                        
+                        with cols[j]:
+                            # Format values
+                            season_val_display = f"{float(data['season_val']):.2f}" if data['season_val'] is not None else "N/A"
+                            season_rank_display = format_ordinal(data['season_rank'])
+                            l10_val_display = f"{float(data['l10_val']):.2f}" if data['l10_val'] is not None else "—"
+                            l10_rank_display = format_ordinal(data['l10_rank']) if data['l10_rank'] is not None else "—"
+                        
+                            # Calculate trend
+                            if data['diff_val'] is not None:
+                                diff_display = f"{data['diff_val']:+.2f}"
+                                if data['diff_val'] > 0.05:
+                                    trend_color = "#00ff00"
+                                    trend_icon = "↑"
+                                    trend_bg = "rgba(0, 255, 0, 0.1)"
+                                elif data['diff_val'] < -0.05:
+                                    trend_color = "#ff0000"
+                                    trend_icon = "↓"
+                                    trend_bg = "rgba(255, 0, 0, 0.1)"
+                                else:
+                                    trend_color = "rgba(255,255,255,0.5)"
+                                    trend_icon = "→"
+                                    trend_bg = "rgba(255,255,255,0.05)"
+                            else:
+                                diff_display = "—"
+                                trend_color = "rgba(255,255,255,0.3)"
+                                trend_icon = ""
+                                trend_bg = "rgba(255,255,255,0.05)"
+                            
+                            # Build card HTML with smaller sizes
+                            card_html = f"<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 10px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden;'><div style='position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); border-radius: 50%; transform: translate(30%, -30%);'></div><div style='font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{data['kpi']}</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;'><div style='background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; border-left: 3px solid {data['season_color']};'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;'>SEASON</div><div style='font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 4px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{season_val_display}</div><div style='display: inline-block; background-color: {data['season_color']}; color: {data['season_text_color']}; padding: 4px 12px; border-radius: 4px; font-weight: 700; font-size: 14px;'>{season_rank_display}</div></div><div style='background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; border-left: 3px solid {data['l10_color']};'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;'>LAST 10</div><div style='font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 4px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{l10_val_display}</div><div style='display: inline-block; background-color: {data['l10_color']}; color: {data['l10_text_color']}; padding: 4px 12px; border-radius: 4px; font-weight: 700; font-size: 14px;'>{l10_rank_display}</div></div></div><div style='background: {trend_bg}; border-radius: 6px; padding: 8px; text-align: center; border: 1px solid {trend_color}33;'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;'>TREND</div><div style='font-size: 24px; font-weight: 900; color: {trend_color}; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{diff_display} {trend_icon}</div></div></div>"
+                            st.markdown(card_html, unsafe_allow_html=True)
+            
+            # Opposition Snapshot Section
+            st.markdown("---")
+            st.markdown(f"<h2 style='text-align: center; margin: 40px 0 30px 0; font-weight: 900; font-size: 36px;'>⚔️ Opposition Snapshot</h2>", unsafe_allow_html=True)
+            
+            # Opposition team and data window selection
+            opp_col1, opp_col2 = st.columns(2)
+            
+            with opp_col1:
+                opposition_team = st.selectbox(
+                    "Opposition Team",
+                    options=sorted(team_data.keys()),
+                    index=0,
+                    key="opposition_team_select"
+                )
+            
+            with opp_col2:
+                comparison_window = st.selectbox(
+                    "Compare Using",
+                    options=["Season", "Last 10"],
+                    index=0,
+                    key="comparison_window_select"
+                )
+            
+            # Display team logos side by side
+            st.markdown("---")
+            logo_col1, logo_col2 = st.columns(2)
+            
+            with logo_col1:
+                st.markdown(f"<h3 style='text-align: center;'>{selected_team}</h3>", unsafe_allow_html=True)
+                selected_team_code = TEAM_CODE_MAP.get(selected_team, selected_team.lower().replace(" ", ""))
+                selected_team_logo_path = f"{LOGO_FOLDER}/{selected_team_code}.png"
+                if os.path.exists(selected_team_logo_path):
+                    try:
+                        img1 = Image.open(selected_team_logo_path)
+                        inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
+                        with inner_col2:
+                            st.image(img1, width=200)
+                    except Exception as e:
+                        pass
+            
+            with logo_col2:
+                st.markdown(f"<h3 style='text-align: center;'>{opposition_team}</h3>", unsafe_allow_html=True)
+                opposition_team_code = TEAM_CODE_MAP.get(opposition_team, opposition_team.lower().replace(" ", ""))
+                opposition_team_logo_path = f"{LOGO_FOLDER}/{opposition_team_code}.png"
+                if os.path.exists(opposition_team_logo_path):
+                    try:
+                        img2 = Image.open(opposition_team_logo_path)
+                        inner_col1, inner_col2, inner_col3 = st.columns([1, 2, 1])
+                        with inner_col2:
+                            st.image(img2, width=200)
+                    except Exception as e:
+                        pass
+            
+            # Get opposition data based on selected window
+            if comparison_window == "Last 10" and last10_data:
+                opp_data_source = last10_data
+                own_data_source = last10_data
+            else:
+                opp_data_source = team_data
+                own_data_source = team_data
+            
+            # Build comparison cards by category
+            st.markdown(f"<h3 style='margin-top: 30px; margin-bottom: 20px; text-align: center; color: rgba(255,255,255,0.7);'>{selected_team} vs {opposition_team} ({comparison_window})</h3>", unsafe_allow_html=True)
+            
+            # Store opportunities and threats by category
+            category_opportunities = {"Team": [], "Offence": [], "Defence": [], "Contest": []}
+            category_threats = {"Team": [], "Offence": [], "Defence": [], "Contest": []}
+            
+            # Display comparison cards by category
+            for category in ["Team", "Offence", "Defence", "Contest"]:
+                category_kpis = category_selections.get(category, [])
+                if not category_kpis:
+                    continue
+                
+                st.markdown(f"<h3 style='margin-top: 30px; margin-bottom: 20px; font-weight: 800; font-size: 24px; color: rgba(255,255,255,0.9);'>📊 {category}</h3>", unsafe_allow_html=True)
+                
+                comparison_data = []
+                
+                for kpi in category_kpis:
+                    # Get own team data
+                    own_val = own_data_source.get(selected_team, {}).get(kpi, None)
+                    own_rank, _ = calculate_ranking(kpi, selected_team, own_data_source)
+                    own_color, own_text_color = get_conditional_color(own_rank, total_teams)
+                    
+                    # Determine which stat to use for opposition (complementary stat if exists)
+                    opp_kpi = STAT_PAIRS.get(kpi, kpi)
+                    
+                    # Get opposition data (using complementary stat if available)
+                    opp_val = opp_data_source.get(opposition_team, {}).get(opp_kpi, None)
+                    opp_rank, _ = calculate_ranking(opp_kpi, opposition_team, opp_data_source)
+                    opp_color, opp_text_color = get_conditional_color(opp_rank, total_teams)
+                    
+                    # Calculate difference (own - opposition)
+                    diff_val = None
+                    advantage = None
+                    if own_val is not None and opp_val is not None:
+                        try:
+                            diff_val = float(own_val) - float(opp_val)
+                            
+                            is_complementary = (opp_kpi != kpi)
+                            is_ag_stat = "Ag" in kpi or kpi in ["Scores from Turnover Ag", "Scores from Stoppage Ag"]
+                            
+                            if is_complementary:
+                                if is_ag_stat:
+                                    if diff_val > 0.5:
+                                        category_opportunities[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                        advantage = "advantage"
+                                    elif diff_val < -0.5:
+                                        category_threats[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                        advantage = "disadvantage"
+                                    else:
+                                        advantage = "neutral"
+                                else:
+                                    if diff_val > 0.5:
+                                        category_threats[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                        advantage = "disadvantage"
+                                    elif diff_val < -0.5:
+                                        category_opportunities[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                        advantage = "advantage"
+                                    else:
+                                        advantage = "neutral"
+                            else:
+                                if diff_val > 0.5:
+                                    category_opportunities[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                    advantage = "advantage"
+                                elif diff_val < -0.5:
+                                    category_threats[category].append({'kpi': kpi, 'opp_kpi': opp_kpi, 'diff': diff_val, 'own_rank': own_rank, 'opp_rank': opp_rank})
+                                    advantage = "disadvantage"
+                                else:
+                                    advantage = "neutral"
+                        except:
+                            pass
+                    
+                    comparison_data.append({
+                        'kpi': kpi,
+                        'opp_kpi': opp_kpi,
+                        'own_val': own_val,
+                        'own_rank': own_rank,
+                        'own_color': own_color,
+                        'own_text_color': own_text_color,
+                        'opp_val': opp_val,
+                        'opp_rank': opp_rank,
+                        'opp_color': opp_color,
+                        'opp_text_color': opp_text_color,
+                        'diff_val': diff_val,
+                        'advantage': advantage
+                    })
+                
+                # Display comparison cards
+                num_comp_cards = len(comparison_data)
+                cols_per_row = 5
+                
+                for i in range(0, num_comp_cards, cols_per_row):
+                    cols = st.columns(cols_per_row)
+                    
+                    for j in range(cols_per_row):
+                        idx = i + j
+                        if idx >= num_comp_cards:
+                            break
+                        
+                        data = comparison_data[idx]
+                        
+                        with cols[j]:
+                            # Format values
+                            own_val_display = f"{float(data['own_val']):.2f}" if data['own_val'] is not None else "N/A"
+                            own_rank_display = format_ordinal(data['own_rank'])
+                            opp_val_display = f"{float(data['opp_val']):.2f}" if data['opp_val'] is not None else "N/A"
+                            opp_rank_display = format_ordinal(data['opp_rank'])
+                            
+                            # Show stat names (may be different for complementary pairs)
+                            own_stat_label = data['kpi']
+                            opp_stat_label = data['opp_kpi'] if data['opp_kpi'] != data['kpi'] else data['kpi']
+                            
+                            # Calculate advantage display
+                            if data['diff_val'] is not None:
+                                diff_display = f"{data['diff_val']:+.2f}"
+                                if data['advantage'] == "advantage":
+                                    adv_color = "#00ff00"
+                                    adv_icon = "✓"
+                                    adv_bg = "rgba(0, 255, 0, 0.1)"
+                                    adv_text = "ADVANTAGE"
+                                elif data['advantage'] == "disadvantage":
+                                    adv_color = "#ff0000"
+                                    adv_icon = "✗"
+                                    adv_bg = "rgba(255, 0, 0, 0.1)"
+                                    adv_text = "THREAT"
+                                else:
+                                    adv_color = "rgba(255,255,255,0.5)"
+                                    adv_icon = "="
+                                    adv_bg = "rgba(255,255,255,0.05)"
+                                    adv_text = "NEUTRAL"
+                            else:
+                                diff_display = "—"
+                                adv_color = "rgba(255,255,255,0.3)"
+                                adv_icon = ""
+                                adv_bg = "rgba(255,255,255,0.05)"
+                                adv_text = "N/A"
+                            
+                            # Build comparison card HTML with smaller sizes
+                            comp_card_html = f"<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 10px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden;'><div style='position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); border-radius: 50%; transform: translate(30%, -30%);'></div><div style='font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{data['kpi']}</div><div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;'><div style='background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; border-left: 3px solid {data['own_color']};'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;'>{selected_team}</div><div style='font-size: 7px; font-weight: 600; color: rgba(255,255,255,0.4); margin-bottom: 3px;'>{own_stat_label}</div><div style='font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 4px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{own_val_display}</div><div style='display: inline-block; background-color: {data['own_color']}; color: {data['own_text_color']}; padding: 4px 12px; border-radius: 4px; font-weight: 700; font-size: 14px;'>{own_rank_display}</div></div><div style='background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; border-left: 3px solid {data['opp_color']};'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;'>{opposition_team}</div><div style='font-size: 7px; font-weight: 600; color: rgba(255,255,255,0.4); margin-bottom: 3px;'>{opp_stat_label}</div><div style='font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 4px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{opp_val_display}</div><div style='display: inline-block; background-color: {data['opp_color']}; color: {data['opp_text_color']}; padding: 4px 12px; border-radius: 4px; font-weight: 700; font-size: 14px;'>{opp_rank_display}</div></div></div><div style='background: {adv_bg}; border-radius: 6px; padding: 8px; text-align: center; border: 1px solid {adv_color}33;'><div style='font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;'>{adv_text}</div><div style='font-size: 24px; font-weight: 900; color: {adv_color}; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;'>{diff_display} {adv_icon}</div></div></div>"
+                            st.markdown(comp_card_html, unsafe_allow_html=True)
+            
+            # Opportunities and Threats Analysis by Category
+            st.markdown("---")
+            st.markdown(f"<h3 style='text-align: center; margin: 30px 0 20px 0; font-weight: 900; font-size: 28px;'>📊 Match Analysis</h3>", unsafe_allow_html=True)
+            
+            # Display by category
+            for category in ["Team", "Offence", "Defence", "Contest"]:
+                category_opps = category_opportunities.get(category, [])
+                category_thrs = category_threats.get(category, [])
+                
+                if not category_opps and not category_thrs:
+                    continue
+                
+                st.markdown(f"<h4 style='margin-top: 25px; margin-bottom: 15px; font-weight: 800; font-size: 20px; color: rgba(255,255,255,0.9);'>{category}</h4>", unsafe_allow_html=True)
+                
+                analysis_col1, analysis_col2 = st.columns(2)
+                
+                with analysis_col1:
+                    st.markdown(f"<div style='background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 0, 0.05) 100%); border-radius: 12px; padding: 20px; border-left: 4px solid #00ff00;'><h4 style='color: #00ff00; margin-bottom: 15px; font-size: 18px;'>✓ OPPORTUNITIES</h4>", unsafe_allow_html=True)
+                    
+                    if category_opps:
+                        category_opps.sort(key=lambda x: abs(x['diff']), reverse=True)
+                        for opp in category_opps:
+                            if opp['kpi'] != opp['opp_kpi']:
+                                stat_display = f"{opp['kpi']} vs {opp['opp_kpi']}"
+                            else:
+                                stat_display = opp['kpi']
+                            st.markdown(f"<div style='background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-bottom: 10px;'><div style='font-weight: 700; color: #ffffff; margin-bottom: 5px;'>{stat_display}</div><div style='font-size: 14px; color: rgba(255,255,255,0.7);'>Advantage: <span style='color: #00ff00; font-weight: 700;'>+{opp['diff']:.2f}</span> | You: {format_ordinal(opp['own_rank'])} vs Them: {format_ordinal(opp['opp_rank'])}</div></div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<p style='color: rgba(255,255,255,0.5); font-style: italic; font-size: 13px;'>None identified</p>", unsafe_allow_html=True)
+                    
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                with analysis_col2:
+                    st.markdown(f"<div style='background: linear-gradient(135deg, rgba(255, 0, 0, 0.1) 0%, rgba(255, 0, 0, 0.05) 100%); border-radius: 12px; padding: 20px; border-left: 4px solid #ff0000;'><h4 style='color: #ff0000; margin-bottom: 15px; font-size: 18px;'>✗ THREATS</h4>", unsafe_allow_html=True)
+                    
+                    if category_thrs:
+                        category_thrs.sort(key=lambda x: abs(x['diff']), reverse=True)
+                        for threat in category_thrs:
+                            if threat['kpi'] != threat['opp_kpi']:
+                                stat_display = f"{threat['kpi']} vs {threat['opp_kpi']}"
+                            else:
+                                stat_display = threat['kpi']
+                            st.markdown(f"<div style='background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-bottom: 10px;'><div style='font-weight: 700; color: #ffffff; margin-bottom: 5px;'>{stat_display}</div><div style='font-size: 14px; color: rgba(255,255,255,0.7);'>Deficit: <span style='color: #ff0000; font-weight: 700;'>{threat['diff']:.2f}</span> | You: {format_ordinal(threat['own_rank'])} vs Them: {format_ordinal(threat['opp_rank'])}</div></div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<p style='color: rgba(255,255,255,0.5); font-style: italic; font-size: 13px;'>None identified</p>", unsafe_allow_html=True)
+                    
+                    st.markdown("</div>", unsafe_allow_html=True)
+        
+        # League context footer
+        st.markdown("---")
+        st.markdown(f"""
+        <div style='text-align: center; color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 30px;'>
+            Rankings out of {total_teams if 'total_teams' in locals() else 18} teams | 
+            Colour coding: <span style='color: #008000;'>■</span> Top 15% | 
+            <span style='color: #90EE90;'>■</span> 60-85% | 
+            <span style='color: #FFA500;'>■</span> 35-60% | 
+            <span style='color: #FF0000;'>■</span> Bottom 35%
+        </div>
+        """, unsafe_allow_html=True)
+        
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        import traceback
+        st.code(traceback.format_exc())
