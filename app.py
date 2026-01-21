@@ -4,7 +4,6 @@ import warnings
 import math
 import string
 from collections import defaultdict
-from typing import Optional, Union, Tuple, Dict, List
 
 import altair as alt
 import numpy as np
@@ -441,7 +440,7 @@ def _extract_attribute_structure(summary_df: pd.DataFrame, attribute_name: str):
     """
     Reads group header row and stat row to find columns for one attribute group.
     Returns list of dicts:
-      { "stat_name": ..., "value_col": int, "rank_col": Optional[int] }
+      { "stat_name": ..., "value_col": int, "rank_col": int | None }
     """
     if summary_df is None or summary_df.empty:
         return []
@@ -598,7 +597,7 @@ def load_player_name_mapping():
         return {}
 
 
-def get_player_photo_path(player_name: str, team_name: str = None):
+def get_player_photo_path(player_name: str, team_name: str | None = None) -> str | None:
     if not isinstance(player_name, str):
         return None
     
@@ -659,18 +658,16 @@ def display_logo(team_name: str, container, size: int = 80):
             return
 
 
-def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False, team_name: str = None):
+def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False, team_name: str | None = None):
     path = get_player_photo_path(player_name, team_name)
     if not path:
         # Show placeholder when photo not found
         container.markdown(f"<div style='width:{size}px;height:{size}px;background:#333;display:flex;align-items:center;justify-content:center;border-radius:8px;'><span style='font-size:48px;opacity:0.3;'>👤</span></div>", unsafe_allow_html=True)
         return
     try:
-        # Note: use_container_width not supported in Streamlit 1.23.0, so we ignore it
-        # and just display the image at full width or with specified size
+        # Streamlit 1.53.0 uses the modern 'width' parameter
         if use_container_width:
-            # Display image without width constraint for container-width behavior
-            container.image(path)
+            container.image(path, width="stretch")
         else:
             img = _resize_image(path, size)
             if img is not None:
@@ -678,7 +675,6 @@ def display_player_photo(player_name: str, container, size: int = 160, use_conta
             else:
                 container.image(path, width=size)
     except Exception as e:
-        # Show error info for debugging
         container.error(f"Error loading photo: {str(e)}")
         return
 
@@ -716,8 +712,8 @@ def _opacity_from_pct(pct: float) -> float:
 
 def build_player_traits_history_table(
     traits_df: pd.DataFrame,
-    team_full_map: Optional[dict] = None,
-    position_full_map: Optional[dict] = None,
+    team_full_map: dict | None = None,
+    position_full_map: dict | None = None,
 ):
     """
     Builds a history table for ONE player (traits_df is already filtered to that player).
@@ -833,7 +829,7 @@ def get_available_summary_years() -> list[int]:
 
 # ---------------- AFL LADDER HELPERS ----------------
 @st.cache_data(show_spinner=False)
-def get_ladder_position(team_name: str, season: int) -> Tuple[str, Optional[int], str]:
+def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (position_str, position_int, color) for team/season from ladder file.
     """
@@ -862,7 +858,7 @@ def get_ladder_position(team_name: str, season: int) -> Tuple[str, Optional[int]
 
 
 @st.cache_data(show_spinner=False)
-def get_ladder_percentage(team_name: str, season: int) -> Tuple[str, Optional[int], str]:
+def get_ladder_percentage(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (percentage_str, pct_rank, color) for team/season.
     Rank is computed within the season by numeric Percentage.
@@ -1563,12 +1559,12 @@ if page == "Home":
                         img = Image.open(team_logo_path)
                         # Resize image to fixed dimensions for consistency
                         img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized, use_container_width=False)
+                        st.image(img_resized, width="content")
                         
                         # Add small spacer before button
                         st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                         # Create clickable button
-                        if st.button("Select", key=f"home_team_{team}_{idx}", use_container_width=True, help=f"Select {team}"):
+                        if st.button("Select", key=f"home_team_{team}_{idx}", width="stretch", help=f"Select {team}"):
                             # Set default team in session state
                             st.session_state.default_team = team
                             st.session_state.selected_page = "Team Breakdown"
@@ -1591,12 +1587,12 @@ if page == "Home":
                         img = Image.open(team_logo_path)
                         # Resize image to fixed dimensions for consistency
                         img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized, use_container_width=False)
+                        st.image(img_resized, width="content")
                         
                         # Add small spacer before button
                         st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                         # Create clickable button
-                        if st.button("Select", key=f"home_team_{team}_{idx+9}", use_container_width=True, help=f"Select {team}"):
+                        if st.button("Select", key=f"home_team_{team}_{idx+9}", width="stretch", help=f"Select {team}"):
                             # Set default team in session state
                             st.session_state.default_team = team
                             st.session_state.selected_page = "Team Breakdown"
@@ -1988,7 +1984,7 @@ def render_game_day_playground(teams: list[str]):
 
     # --- Team selection
     st.markdown("<div style='margin-top:24px;margin-bottom:24px;'></div>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([2.2, 0.6, 2.2])
+    c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
     with c1:
         team_a = st.selectbox("Team A", teams, key="gdp_team_a")
     with c2:
@@ -2097,6 +2093,96 @@ def render_game_day_playground(teams: list[str]):
                 unsafe_allow_html=True,
             )
 
+
+    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
+
+    # =====================================================
+    # Momentum Meter
+    # =====================================================
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:26px;margin-bottom:8px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;text-shadow:2px 2px 6px rgba(0,0,0,0.4);'>⚡ Momentum Meter</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.75);font-size:14px;margin-bottom:28px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Rolling last 10 minutes — aggregated across all 5 phases</div>", unsafe_allow_html=True)
+
+    # Calculate momentum based on all 5 phases
+    rng = random.Random(_stable_seed(team_a, team_b))
+    
+    team_a_scores = []
+    team_b_scores = []
+    
+    for phase_name, phase_score in phases.items():
+        if rng.random() > 0.5:
+            team_a_scores.append(phase_score)
+            team_b_scores.append(100 - phase_score + rng.randint(-10, 10))
+        else:
+            team_b_scores.append(phase_score)
+            team_a_scores.append(100 - phase_score + rng.randint(-10, 10))
+    
+    team_a_momentum_raw = sum(team_a_scores) / len(team_a_scores)
+    team_b_momentum_raw = sum(team_b_scores) / len(team_b_scores)
+    
+    total_momentum = team_a_momentum_raw + team_b_momentum_raw
+    if total_momentum > 0:
+        team_a_pct = (team_a_momentum_raw / total_momentum) * 100
+    else:
+        team_a_pct = 50
+    
+    team_b_pct = 100 - team_a_pct
+    momentum_diff = abs(team_a_pct - 50)
+    
+    if momentum_diff >= 25:
+        momentum_status = "DOMINANT"
+        status_color = "#00FF41"
+    elif momentum_diff >= 15:
+        momentum_status = "STRONG"
+        status_color = "#FFD700"
+    elif momentum_diff >= 8:
+        momentum_status = "BUILDING"
+        status_color = "#FF6B35"
+    else:
+        momentum_status = "NEUTRAL"
+        status_color = "#888888"
+    
+    # Build complete momentum meter as pure HTML
+    phase_labels = ["Ball Win", "Ball Use", "Scoring", "Defence", "Pressure"]
+    phase_indicators_html = ""
+    
+    for i, label in enumerate(phase_labels):
+        if i < len(team_a_scores):
+            p_a = team_a_scores[i]
+            p_b = team_b_scores[i]
+            phase_leader = "A" if p_a > p_b else "B"
+            phase_color = "#FF6B35" if phase_leader == "A" else "#4A90E2"
+            phase_strength = abs(p_a - p_b) / max(p_a + p_b, 1) * 100
+            dot_opacity = 0.3 + (phase_strength / 100 * 0.7)
+            
+            phase_indicators_html += "<div style='display:flex;flex-direction:column;align-items:center;gap:6px;'>"
+            phase_indicators_html += "<div style='width:12px;height:12px;border-radius:50%;background:" + phase_color + ";opacity:" + str(dot_opacity) + ";box-shadow:0 0 12px " + phase_color + ";'></div>"
+            phase_indicators_html += "<div style='font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;text-align:center;'>" + label + "</div>"
+            phase_indicators_html += "</div>"
+    
+    # Build the complete HTML string using concatenation
+    momentum_html = "<div style='background:linear-gradient(145deg, rgba(15,15,25,0.98), rgba(25,25,40,0.98));padding:32px 28px;border-radius:20px;border:2px solid rgba(255,255,255,0.12);box-shadow:0 12px 32px rgba(0,0,0,0.6);'>"
+    
+    momentum_html += "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;'>"
+    momentum_html += "<div style='font-weight:900;font-size:20px;'>" + team_a + "</div>"
+    momentum_html += "<div style='background:rgba(255,255,255,0.08);padding:8px 20px;border-radius:20px;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;color:" + status_color + ";text-align:center;'>" + momentum_status + "</div>"
+    momentum_html += "<div style='font-weight:900;font-size:20px;'>" + team_b + "</div>"
+    momentum_html += "</div>"
+    
+    momentum_html += "<div style='position:relative;height:48px;background:rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;border:2px solid rgba(255,255,255,0.1);margin-bottom:20px;'>"
+    momentum_html += "<div style='position:absolute;left:0;top:0;bottom:0;width:" + str(team_a_pct) + "%;background:linear-gradient(90deg, #FF6B35 0%, #F7931E 100%);'></div>"
+    momentum_html += "<div style='position:absolute;right:0;top:0;bottom:0;width:" + str(team_b_pct) + "%;background:linear-gradient(270deg, #4A90E2 0%, #357ABD 100%);'></div>"
+    momentum_html += "<div style='position:absolute;left:50%;top:0;bottom:0;width:3px;background:rgba(255,255,255,0.5);transform:translateX(-50%);'></div>"
+    momentum_html += "<div style='position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:900;font-size:18px;color:#FFFFFF;text-shadow:2px 2px 6px rgba(0,0,0,0.8);'>" + str(int(team_a_pct)) + "%</div>"
+    momentum_html += "<div style='position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:900;font-size:18px;color:#FFFFFF;text-shadow:2px 2px 6px rgba(0,0,0,0.8);'>" + str(int(team_b_pct)) + "%</div>"
+    momentum_html += "</div>"
+    
+    momentum_html += "<div style='display:flex;justify-content:center;gap:16px;'>"
+    momentum_html += phase_indicators_html
+    momentum_html += "</div>"
+    
+    momentum_html += "</div>"
+    
+    st.markdown(momentum_html, unsafe_allow_html=True)
 
     st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
 
