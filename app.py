@@ -4,6 +4,7 @@ import warnings
 import math
 import string
 from collections import defaultdict
+from typing import Optional, Union, Tuple, Dict, List
 
 import altair as alt
 import numpy as np
@@ -440,7 +441,7 @@ def _extract_attribute_structure(summary_df: pd.DataFrame, attribute_name: str):
     """
     Reads group header row and stat row to find columns for one attribute group.
     Returns list of dicts:
-      { "stat_name": ..., "value_col": int, "rank_col": int | None }
+      { "stat_name": ..., "value_col": int, "rank_col": Optional[int] }
     """
     if summary_df is None or summary_df.empty:
         return []
@@ -546,7 +547,7 @@ def get_team_logo_path(team_name: str):
     if not code:
         return None
     for ext in (".png", ".jpg", ".jpeg"):
-        path = os.path.join(LOGO_FOLDER, code + ext)
+        path = str(BASE_DIR / LOGO_FOLDER / (code + ext))
         if os.path.exists(path):
             return path
     return None
@@ -556,7 +557,7 @@ def get_team_logo_path(team_name: str):
 def load_player_name_mapping():
     """Load player photo guide and create mapping from various name formats to full names."""
     try:
-        guide_df = pd.read_csv("player_photo_guide.csv")
+        guide_df = pd.read_csv(str(BASE_DIR / "player_photo_guide.csv"))
         name_map = {}
         team_player_map = {}  # Map of (team, initial.surname) -> full_name
         
@@ -629,7 +630,7 @@ def get_player_photo_path(player_name: str, team_name: str = None):
     
     base = normalized_name.lower().replace(" ", "_")
     for ext in (".png", ".jpg", ".jpeg"):
-        path = os.path.join(PLAYER_PHOTO_FOLDER, base + ext)
+        path = str(BASE_DIR / PLAYER_PHOTO_FOLDER / (base + ext))
         if os.path.exists(path):
             return path
     return None
@@ -661,14 +662,24 @@ def display_logo(team_name: str, container, size: int = 80):
 def display_player_photo(player_name: str, container, size: int = 160, use_container_width: bool = False, team_name: str = None):
     path = get_player_photo_path(player_name, team_name)
     if not path:
+        # Show placeholder when photo not found
+        container.markdown(f"<div style='width:{size}px;height:{size}px;background:#333;display:flex;align-items:center;justify-content:center;border-radius:8px;'><span style='font-size:48px;opacity:0.3;'>👤</span></div>", unsafe_allow_html=True)
         return
     try:
+        # Note: use_container_width not supported in Streamlit 1.23.0, so we ignore it
+        # and just display the image at full width or with specified size
         if use_container_width:
-            container.image(path, use_container_width=True)
+            # Display image without width constraint for container-width behavior
+            container.image(path)
         else:
             img = _resize_image(path, size)
-            container.image(img if img is not None else path, width=size)
-    except Exception:
+            if img is not None:
+                container.image(img, width=size)
+            else:
+                container.image(path, width=size)
+    except Exception as e:
+        # Show error info for debugging
+        container.error(f"Error loading photo: {str(e)}")
         return
 
 
@@ -705,8 +716,8 @@ def _opacity_from_pct(pct: float) -> float:
 
 def build_player_traits_history_table(
     traits_df: pd.DataFrame,
-    team_full_map: dict | None = None,
-    position_full_map: dict | None = None,
+    team_full_map: Optional[dict] = None,
+    position_full_map: Optional[dict] = None,
 ):
     """
     Builds a history table for ONE player (traits_df is already filtered to that player).
@@ -822,7 +833,7 @@ def get_available_summary_years() -> list[int]:
 
 # ---------------- AFL LADDER HELPERS ----------------
 @st.cache_data(show_spinner=False)
-def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, str]:
+def get_ladder_position(team_name: str, season: int) -> Tuple[str, Optional[int], str]:
     """
     Returns (position_str, position_int, color) for team/season from ladder file.
     """
@@ -851,7 +862,7 @@ def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, s
 
 
 @st.cache_data(show_spinner=False)
-def get_ladder_percentage(team_name: str, season: int) -> tuple[str, int | None, str]:
+def get_ladder_percentage(team_name: str, season: int) -> Tuple[str, Optional[int], str]:
     """
     Returns (percentage_str, pct_rank, color) for team/season.
     Rank is computed within the season by numeric Percentage.
@@ -1977,7 +1988,7 @@ def render_game_day_playground(teams: list[str]):
 
     # --- Team selection
     st.markdown("<div style='margin-top:24px;margin-bottom:24px;'></div>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
+    c1, c2, c3 = st.columns([2.2, 0.6, 2.2])
     with c1:
         team_a = st.selectbox("Team A", teams, key="gdp_team_a")
     with c2:
@@ -1988,7 +1999,7 @@ def render_game_day_playground(teams: list[str]):
     # --- Logo row: logo vs logo
     # --- Centered logo lock-up
     st.markdown("<div style='margin-top:16px;margin-bottom:32px;'></div>", unsafe_allow_html=True)
-    c = st.columns([3, 2, 1, 2, 3], vertical_alignment="center")
+    c = st.columns([3, 2, 1, 2, 3])
 
     with c[1]:
         st.markdown("<div style='display:flex;justify-content:flex-end;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));'>", unsafe_allow_html=True)
@@ -2066,7 +2077,7 @@ def render_game_day_playground(teams: list[str]):
         else:
             strength_opacity = 0.18    # very slight / near neutral
 
-        row = st.columns([2.4, 0.4, 2.4, 0.8], vertical_alignment="center")
+        row = st.columns([2.4, 0.4, 2.4, 0.8])
 
         with row[0]:
             st.markdown(
@@ -9204,8 +9215,9 @@ elif page == "List Breakdown - Traits":
                 
                 # Look up photo
                 photo_path = None
-                if os.path.exists("player_photo_guide.csv"):
-                    photo_guide = pd.read_csv("player_photo_guide.csv")
+                photo_guide_path = str(BASE_DIR / "player_photo_guide.csv")
+                if os.path.exists(photo_guide_path):
+                    photo_guide = pd.read_csv(photo_guide_path)
                     # Try exact match with photo_team first
                     photo_match = photo_guide[
                         (photo_guide["Player"] == full_name) & 
@@ -9217,7 +9229,7 @@ elif page == "List Breakdown - Traits":
                     
                     if not photo_match.empty:
                         photo_filename = photo_match.iloc[0]["Filename"]
-                        potential_path = f"player_photos/{photo_filename}"
+                        potential_path = str(BASE_DIR / "player_photos" / photo_filename)
                         if os.path.exists(potential_path):
                             photo_path = potential_path
                 
