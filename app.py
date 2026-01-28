@@ -12,6 +12,7 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image
 
 # Import centralized configuration
@@ -59,6 +60,188 @@ BASE_DIR = Path(__file__).resolve().parent
 def render_html(container, html_str: str):
     """Render HTML safely without code block artifacts."""
     container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
+
+
+def render_sortable_table(html_table: str, height: int = None):
+    """Render an HTML table with working JavaScript sorting.
+    
+    Uses st.components.v1.html() which properly executes JavaScript.
+    The table HTML should use class='fe-table fe-sortable' for styling.
+    """
+    # Calculate height based on content if not provided
+    row_count = html_table.count('<tr>') - 1  # Subtract header row
+    if height is None:
+        height = min(max(200, row_count * 45 + 80), 800)  # Min 200, max 800
+    
+    # Full HTML document with embedded CSS and JS
+    full_html = f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+    body {{
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }}
+    .fe-table {{
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        font-size: 14px;
+    }}
+    .fe-table thead th {{
+        background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
+        color: #FFFFFF;
+        padding: 14px 10px;
+        text-align: center;
+        font-weight: 800;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        position: relative;
+        user-select: none;
+        transition: background 0.2s ease;
+    }}
+    .fe-table thead th:hover {{
+        background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+        color: #FFD700;
+    }}
+    .fe-table thead th::after {{
+        content: ' ⇅';
+        opacity: 0.4;
+        font-size: 0.8em;
+    }}
+    .fe-table thead th.sort-asc::after {{
+        content: ' ▲';
+        opacity: 1;
+        color: #FFD700;
+    }}
+    .fe-table thead th.sort-desc::after {{
+        content: ' ▼';
+        opacity: 1;
+        color: #FFD700;
+    }}
+    .fe-table tbody td {{
+        padding: 12px 10px;
+        text-align: center;
+        font-weight: 600;
+        color: #E0E0E0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }}
+    .fe-table tbody td:first-child {{
+        text-align: left;
+        padding-left: 16px;
+        font-weight: 700;
+        color: #FFFFFF;
+    }}
+    .fe-table tbody tr {{
+        transition: all 0.2s ease;
+    }}
+    .fe-table tbody tr:hover {{
+        background: rgba(255,215,0,0.1) !important;
+    }}
+    .fe-table tbody tr:nth-child(even) {{
+        background: rgba(0,0,0,0.15);
+    }}
+    .fe-table-light {{
+        background: #ffffff !important;
+    }}
+    .fe-table-light tbody td {{
+        color: #333333;
+    }}
+    .fe-table-light tbody td:first-child {{
+        color: #1a1a1a;
+        background: #fafafa;
+    }}
+    .fe-table-light tbody tr:nth-child(even) {{
+        background: #f5f5f5;
+    }}
+    .fe-table-light tbody tr:hover {{
+        background: #fffacd !important;
+    }}
+    .rank-badge {{
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 800;
+        font-size: 0.85em;
+    }}
+    </style>
+    </head>
+    <body>
+    {html_table}
+    <script>
+    (function() {{
+        const table = document.querySelector('.fe-table');
+        if (!table) return;
+        
+        const headers = table.querySelectorAll('thead th');
+        
+        headers.forEach((th, colIndex) => {{
+            th.addEventListener('click', function() {{
+                sortTable(colIndex, this);
+            }});
+        }});
+        
+        function sortTable(colIndex, header) {{
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return;
+            
+            const isAsc = header.classList.contains('sort-asc');
+            
+            // Remove sort classes from all headers
+            headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+            
+            // Toggle direction
+            const direction = isAsc ? 'desc' : 'asc';
+            header.classList.add('sort-' + direction);
+            
+            // Sort rows
+            rows.sort((a, b) => {{
+                const aCell = a.cells[colIndex];
+                const bCell = b.cells[colIndex];
+                if (!aCell || !bCell) return 0;
+                
+                let aVal = aCell.textContent.trim();
+                let bVal = bCell.textContent.trim();
+                
+                // Clean values
+                aVal = aVal.replace(/(st|nd|rd|th)$/i, '').replace(/[%+,]/g, '');
+                bVal = bVal.replace(/(st|nd|rd|th)$/i, '').replace(/[%+,]/g, '');
+                
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+                
+                let cmp;
+                if (!isNaN(aNum) && !isNaN(bNum)) {{
+                    cmp = aNum - bNum;
+                }} else {{
+                    cmp = aVal.localeCompare(bVal, undefined, {{numeric: true}});
+                }}
+                
+                return direction === 'asc' ? cmp : -cmp;
+            }});
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }}
+    }})();
+    </script>
+    </body>
+    </html>
+    '''
+    
+    components.html(full_html, height=height, scrolling=True)
 
 
 def render_page_header(title: str, subtitle: str = None, icon: str = "📊"):
@@ -2868,8 +3051,8 @@ if page == "Overview":
 
     html.append("</tbody></table>")
 
-    # CRITICAL: dedent/strip to avoid Streamlit showing HTML as a string
-    render_html(st, "\n".join(html))
+    # Use render_sortable_table for working JavaScript sorting
+    render_sortable_table("\n".join(html))
 
     st.caption(f"Teams shown: {ladder_view['Team'].nunique()} (should be 18)")
 
@@ -4282,8 +4465,8 @@ elif page == "Club List":
 
     html += "</tbody></table>"
 
-    # CRITICAL: render_html prevents HTML appearing as a code block
-    render_html(st, html)
+    # Use render_sortable_table for working JavaScript sorting
+    render_sortable_table(html)
     
     # Professional footer
     render_footer()
@@ -4813,7 +4996,7 @@ elif page == "Player Profile":
             html_season_table += "</tr>"
 
         html_season_table += "</tbody></table>"
-        st.markdown(textwrap.dedent(html_season_table).strip(), unsafe_allow_html=True)
+        render_sortable_table(html_season_table)
 
     # -----------------------------------
     # Traits Snapshot (ENRICHED, selected season)
@@ -5398,7 +5581,8 @@ elif page == "Player Traits":
     </table>
     """
 
-    render_html(st, traits_html)
+    # Use render_sortable_table for working JavaScript sorting
+    render_sortable_table(traits_html)
 
 
     st.markdown("---")
@@ -5920,7 +6104,7 @@ elif page == "Team Age Breakdown":
         html_table += "</tr>\n"
     
     html_table += "</tbody>\n</table>"
-    st.markdown(html_table, unsafe_allow_html=True)
+    render_sortable_table(html_table)
     
     # Professional footer
     render_footer()
@@ -6133,7 +6317,7 @@ elif page == "List Ladder":
         html_table += "</tr>\n"
     
     html_table += "</tbody>\n</table>"
-    st.markdown(html_table, unsafe_allow_html=True)
+    render_sortable_table(html_table)
     
     # ---- Team Selector for Positional Breakdown ----
     st.markdown("---")
@@ -6485,7 +6669,7 @@ elif page == "Team List Summary":
 """
     
     html_age_table += "</tbody>\n</table>"
-    st.markdown(html_age_table, unsafe_allow_html=True)
+    render_sortable_table(html_age_table)
     
     # Age breakdown analysis
     st.markdown("<h3 style='color: #FFFFFF; margin: 30px 0 15px 0;'>📈 Age Breakdown Analysis</h3>", unsafe_allow_html=True)
@@ -6632,7 +6816,7 @@ elif page == "Team List Summary":
 """
     
     html_pos_table += "</tbody>\n</table>"
-    st.markdown(html_pos_table, unsafe_allow_html=True)
+    render_sortable_table(html_pos_table)
     
     # Positional depth analysis
     st.markdown("<h3 style='color: #FFFFFF; margin: 30px 0 15px 0;'>📈 Positional Depth Analysis</h3>", unsafe_allow_html=True)
