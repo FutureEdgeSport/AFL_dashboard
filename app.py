@@ -1828,7 +1828,7 @@ if page == "Home":
         
         if os.path.exists(logo_path):
             st.markdown("<style>.home-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='home-logo'>", unsafe_allow_html=True)
-            st.image(logo_path)
+            st.image(logo_path, width=400)
             st.markdown("</div>", unsafe_allow_html=True)
         else:
             # Fallback if logo not found - show placeholder
@@ -2305,7 +2305,10 @@ def render_game_day_playground(teams: list[str]):
     st.markdown("<div style='margin-top:24px;margin-bottom:24px;'></div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
     with c1:
-        team_a = st.selectbox("Team A", teams, key="gdp_team_a")
+        gdp_default_idx = 0
+        if st.session_state.default_team in teams:
+            gdp_default_idx = teams.index(st.session_state.default_team)
+        team_a = st.selectbox("Team A", teams, index=gdp_default_idx, key="gdp_team_a")
     with c2:
         st.markdown("<div style='text-align:center;font-weight:900;font-size:32px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;text-shadow:2px 2px 6px rgba(0,0,0,0.4);'>VS</div>", unsafe_allow_html=True)
     with c3:
@@ -7520,7 +7523,10 @@ elif page == "Best 23":
     # =====================================================
     # AUTO BEST 23 DISPLAY
     # =====================================================
-    team = st.selectbox("Select Team", teams)
+    best23_default_idx = 0
+    if st.session_state.default_team in teams:
+        best23_default_idx = teams.index(st.session_state.default_team)
+    team = st.selectbox("Select Team", teams, index=best23_default_idx)
     slots, used = build_best23(team)
 
     bg = img_b64(FIELD_IMAGE_PATH)
@@ -7728,7 +7734,10 @@ elif page == "Best 23":
 
     c1, c2 = st.columns(2)
     with c1:
-        team_a = st.selectbox("Team A", teams, key="best23_team_a")
+        best23_cmp_idx = 0
+        if st.session_state.default_team in teams:
+            best23_cmp_idx = teams.index(st.session_state.default_team)
+        team_a = st.selectbox("Team A", teams, index=best23_cmp_idx, key="best23_team_a")
     with c2:
         team_b = st.selectbox(
             "Team B",
