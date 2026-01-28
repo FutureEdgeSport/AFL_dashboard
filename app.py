@@ -23,7 +23,7 @@ from config.constants import (
     DEPTH_POSITIONS, POSITION_ABBREV_TO_FULL, POSITION_COLOURS,
     AGE_BANDS, AGE_BANDS_ALT,
     METRIC_ORDER, RATING_COL_CANDIDATES, TRAIT_COLUMNS,
-    UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, normalize_team_name
+    UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, safe_int, normalize_team_name
 )
 
 # ---------------- STREAMLIT CONFIG ----------------
@@ -2480,24 +2480,11 @@ if page == "Overview":
     import pandas as pd
     import streamlit as st
 
-    st.title("🏉 FutureEdge AFL Dashboard – Overview")
+    render_page_header("FutureEdge AFL Dashboard", "Overview & Performance Analysis", "🏉")
 
     # ----------------------------
-    # Helpers (render_html is imported from top of file)
+    # Helpers (using global get_ordinal from config)
     # ----------------------------
-    def to_ordinal(n):
-        if pd.isna(n) or n == "":
-            return ""
-        try:
-            n = int(float(n))
-        except Exception:
-            return ""
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-
     def safe_int_str(x):
         try:
             return f"{int(round(float(x)))}"
@@ -2745,7 +2732,7 @@ if page == "Overview":
     # Convert rank columns to ordinal (only if they are rank columns)
     for c in ladder_view.columns:
         if c.endswith("\nRank") or c.endswith(" Rank") or c.endswith("\nRank"):
-            ladder_view[c] = pd.to_numeric(ladder_view[c], errors="coerce").apply(to_ordinal)
+            ladder_view[c] = pd.to_numeric(ladder_view[c], errors="coerce").apply(get_ordinal)
 
     # Color maps (matching your palette)
     metric_colors = {
@@ -2925,7 +2912,7 @@ if page == "Overview":
 # ================= TEAM BREAKDOWN =================
 
 elif page == "Team Breakdown":
-    st.title("📊 Team Breakdown")
+    render_page_header("Team Breakdown", "Detailed Team Performance Analysis", "📊")
 
     # Get available years for top-level selection
     available_years = get_available_summary_years()
@@ -3418,20 +3405,9 @@ elif page == "Team Breakdown":
 # ================= TEAM COMPARE =================
 
 elif page == "Team Compare":
-    st.title("⚖️ Team Compare")
+    render_page_header("Team Compare", "Head-to-Head Team Analysis", "⚖️")
     
-    # Helper function for ordinal formatting
-    def get_ordinal(n):
-        """Convert number to ordinal string (1st, 2nd, 3rd, etc.)"""
-        try:
-            n = int(n)
-            if 10 <= n % 100 <= 20:
-                suffix = "th"
-            else:
-                suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-            return f"{n}{suffix}"
-        except:
-            return str(n)
+    # Using global get_ordinal from config
 
     # Get available years for top-level selection (same as Team Breakdown)
     available_years = get_available_summary_years()
@@ -4140,7 +4116,7 @@ elif page == "Team Compare":
 
 # ================= CLUB LIST =================
 elif page == "Club List":
-    st.title("📋 Club List")
+    render_page_header("Club List", "Complete Team Roster", "📋")
 
     # ---------- Season selector ----------
     seasons = sorted(get_player_seasons(), reverse=True)
@@ -4382,33 +4358,9 @@ elif page == "Club List":
 elif page == "Player Profile":
     import textwrap
 
-    st.title("👤 Player Profile")
+    render_page_header("Player Profile", "Individual Player Analysis", "👤")
 
-    # (render_html is imported from top of file)
-
-    # Helper: ordinal
-    def get_ordinal(n):
-        try:
-            n = int(n)
-        except Exception:
-            return "N/A"
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
-
-    def safe_float(x):
-        try:
-            return float(x)
-        except Exception:
-            return None
-
-    def safe_int(x):
-        try:
-            return int(float(x))
-        except Exception:
-            return None
+    # Using global helpers from config: get_ordinal, safe_float
 
     # -----------------------------------
     # Load ALL player data for all seasons
@@ -5253,7 +5205,7 @@ elif page == "Player Profile":
 
 # ================= PLAYER TRAITS =================
 elif page == "Player Traits":
-    st.title("🎯 Player Traits")
+    render_page_header("Player Traits", "Skill Analysis & Trait Breakdown", "🎯")
 
     # -------------------------
     # Styling (table wrapper only)
@@ -5336,16 +5288,7 @@ elif page == "Player Traits":
         except Exception:
             return None
 
-    def get_ordinal(n):
-        try:
-            n = int(n)
-        except Exception:
-            return "N/A"
-        if 10 <= n % 100 <= 20:
-            suffix = "th"
-        else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-        return f"{n}{suffix}"
+    # Using global get_ordinal from config
 
     def get_trait_label(value):
         try:
@@ -5874,7 +5817,7 @@ elif page == "Player Traits":
 # ================= DEPTH CHART =================
 
 elif page == "Depth Chart":
-    st.title("📋 Depth Chart")
+    render_page_header("Depth Chart", "Positional Player Rankings", "📋")
 
     summary_df = load_player_summary()
     if summary_df.empty:
@@ -6587,7 +6530,7 @@ elif page == "List Ladder":
 # ================= TEAM LIST SUMMARY =================
 
 elif page == "Team List Summary":
-    st.title("📊 Team List Summary")
+    render_page_header("Team List Summary", "Complete Team Overview", "📊")
     
     # Team selection
     # Get teams from player data
@@ -7205,7 +7148,7 @@ elif page == "Best 23":
     ]
 
 
-    st.title("🏉 Best 23 – Model, Compare & Select")
+    render_page_header("Best 23", "Model, Compare & Select Your Team", "🏉")
 
     # =====================================================
     # CONFIG
@@ -10106,7 +10049,7 @@ elif page == "IDP":
 
 # ================= GAME MODEL SCORECARD =================
 elif page == "Game Model Scorecard":
-    st.title("📊 Game Model Scorecard")
+    render_page_header("Game Model Scorecard", "Match Analysis & KPI Tracking", "📊")
     
     # Available KPIs from team data
     ALL_KPIS = [

@@ -357,3 +357,11 @@ def normalize_team_name(team: str) -> str:
     }
     
     return mappings.get(team, team)
+
+
+def safe_int(x):
+    """Safely convert value to integer, returns None on failure."""
+    try:
+        return int(float(x))
+    except (TypeError, ValueError):
+        return None
