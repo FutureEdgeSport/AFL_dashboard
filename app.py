@@ -3626,14 +3626,29 @@ elif page == "Team Breakdown":
                             )
                             lines.append(line_html)
                         st.markdown("".join(lines), unsafe_allow_html=True)
-                        # Averages
-                        st.markdown("<hr style='border:0;border-top:2px solid rgba(255,215,0,0.3);margin:16px 0;'>", unsafe_allow_html=True)
-                        st.markdown("<h4 style='color: #FFFFFF; margin-bottom: 10px;'>📊 Averages</h4>", unsafe_allow_html=True)
-                        if not top4.empty and top4["Value"].notna().any():
-                            avg_top4 = top4["Value"].dropna().mean()
-                            st.metric("Top 4", f"{avg_top4:.1f}")
-                        else:
-                            st.metric("Top 4", "–")
+                        
+                        # Professional Averages Section
+                        st.markdown("<hr style='border:0;border-top:1px solid rgba(255,255,255,0.1);margin:20px 0 16px 0;'>", unsafe_allow_html=True)
+                        
+                        # Calculate both averages
+                        top4_avg = top4["Value"].dropna().mean() if not top4.empty and top4["Value"].notna().any() else None
+                        league_avg = dist_df["Value"].dropna().mean() if "Value" in dist_df.columns and dist_df["Value"].notna().any() else None
+                        
+                        avg_html = """
+                        <div style='display: flex; gap: 12px;'>
+                            <div style='flex: 1; background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.05) 100%); 
+                                        border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
+                                <div style='color: #FFD700; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>🏆 Top 4 Avg</div>
+                                <div style='font-size: 1.6em; font-weight: 900; color: #FFD700;'>""" + (f"{top4_avg:.1f}" if top4_avg is not None else "–") + """</div>
+                            </div>
+                            <div style='flex: 1; background: linear-gradient(135deg, rgba(100,149,237,0.15) 0%, rgba(100,149,237,0.05) 100%); 
+                                        border: 1px solid rgba(100,149,237,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
+                                <div style='color: #6495ED; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>📊 League Avg</div>
+                                <div style='font-size: 1.6em; font-weight: 900; color: #6495ED;'>""" + (f"{league_avg:.1f}" if league_avg is not None else "–") + """</div>
+                            </div>
+                        </div>
+                        """
+                        st.markdown(avg_html, unsafe_allow_html=True)
                     # close the bordered div
                     st.markdown("</div>", unsafe_allow_html=True)
 
