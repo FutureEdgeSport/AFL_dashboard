@@ -38,6 +38,199 @@ st.set_page_config(
 # Inject unified table CSS globally
 st.markdown(get_unified_table_css(), unsafe_allow_html=True)
 
+# ============================================================================
+# ENHANCED SESSION STATE FOR UX FEATURES
+# ============================================================================
+# Initialize session state for favorites
+if "favorite_teams" not in st.session_state:
+    st.session_state.favorite_teams = set()
+if "favorite_players" not in st.session_state:
+    st.session_state.favorite_players = set()  # Format: "Player Name|Team"
+
+# Initialize session state for recent activity
+if "recent_views" not in st.session_state:
+    st.session_state.recent_views = []  # List of {"type": "team/player", "name": ..., "team": ..., "page": ...}
+
+# Initialize session state for comparison history
+if "comparison_history" not in st.session_state:
+    st.session_state.comparison_history = []  # List of {"type": "team/best23", "team1": ..., "team2": ...}
+
+def add_to_recent_views(view_type: str, name: str, team: str = None, page: str = None):
+    """Add an item to recent views, keeping last 5 unique items."""
+    item = {"type": view_type, "name": name, "team": team, "page": page}
+    # Remove existing if same item
+    st.session_state.recent_views = [v for v in st.session_state.recent_views 
+                                      if not (v["type"] == view_type and v["name"] == name)]
+    # Add to front
+    st.session_state.recent_views.insert(0, item)
+    # Keep only last 5
+    st.session_state.recent_views = st.session_state.recent_views[:5]
+
+def add_to_comparison_history(comp_type: str, team1: str, team2: str):
+    """Add a comparison to history, keeping last 5."""
+    item = {"type": comp_type, "team1": team1, "team2": team2}
+    # Remove existing if same comparison
+    st.session_state.comparison_history = [c for c in st.session_state.comparison_history 
+                                            if not (c["team1"] == team1 and c["team2"] == team2)]
+    st.session_state.comparison_history.insert(0, item)
+    st.session_state.comparison_history = st.session_state.comparison_history[:5]
+
+def toggle_favorite_team(team: str):
+    """Toggle a team as favorite."""
+    if team in st.session_state.favorite_teams:
+        st.session_state.favorite_teams.discard(team)
+    else:
+        st.session_state.favorite_teams.add(team)
+
+def toggle_favorite_player(player: str, team: str):
+    """Toggle a player as favorite."""
+    key = f"{player}|{team}"
+    if key in st.session_state.favorite_players:
+        st.session_state.favorite_players.discard(key)
+    else:
+        st.session_state.favorite_players.add(key)
+
+def get_trend_indicator(current_val: float, prev_val: float = None) -> str:
+    """Get trend arrow indicator based on value change."""
+    if prev_val is None or current_val is None:
+        return ""
+    diff = current_val - prev_val
+    if diff > 0.5:
+        return '<span style="color: #00D26A; font-weight: bold;">↑</span>'
+    elif diff < -0.5:
+        return '<span style="color: #FF4B4B; font-weight: bold;">↓</span>'
+    else:
+        return '<span style="color: #888;">→</span>'
+
+# ============================================================================
+# UNIFIED CARD CSS
+# ============================================================================
+CARD_CSS = """
+<style>
+/* Unified Card Design */
+.fe-card {
+    background: linear-gradient(135deg, rgba(30, 30, 46, 0.95) 0%, rgba(42, 42, 62, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.fe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+.fe-card-header {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.fe-card-content {
+    color: rgba(255, 255, 255, 0.85);
+}
+.fe-card-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.6);
+}
+/* Favorite star button */
+.fe-star {
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: transform 0.15s ease;
+}
+.fe-star:hover {
+    transform: scale(1.2);
+}
+.fe-star-active {
+    color: #FFD700;
+}
+.fe-star-inactive {
+    color: rgba(255, 255, 255, 0.3);
+}
+/* Breadcrumb styling */
+.fe-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9em;
+}
+.fe-breadcrumb a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+.fe-breadcrumb a:hover {
+    color: #00D26A;
+}
+.fe-breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.3);
+}
+.fe-breadcrumb-current {
+    color: #fff;
+    font-weight: 600;
+}
+/* Sidebar enhancements */
+.fe-sidebar-section {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px 0;
+}
+.fe-sidebar-title {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+.fe-sidebar-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+.fe-sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+/* Export button styling */
+.fe-export-btn {
+    background: linear-gradient(135deg, #00D26A 0%, #00A854 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fe-export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 210, 106, 0.4);
+}
+</style>
+"""
+
+st.markdown(CARD_CSS, unsafe_allow_html=True)
+
 # Add theme toggle button and keyboard shortcuts hint
 # Note: onclick is stripped by Streamlit, so JS attaches the listener
 st.markdown('''
@@ -46,13 +239,78 @@ st.markdown('''
     <strong>Keyboard Shortcuts:</strong><br>
     <kbd>1</kbd>-<kbd>0</kbd> Navigate pages<br>
     <kbd>Ctrl</kbd>+<kbd>P</kbd> Print report<br>
-    <kbd>Ctrl</kbd>+<kbd>D</kbd> Toggle theme
+    <kbd>Ctrl</kbd>+<kbd>D</kbd> Toggle theme<br>
+    <kbd>?</kbd> Show all shortcuts
 </div>
 ''', unsafe_allow_html=True)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 BASE_DIR = Path(__file__).resolve().parent
+
+
+# ============================================================================
+# BREADCRUMB HELPER
+# ============================================================================
+def render_breadcrumb(items: list):
+    """
+    Render a breadcrumb navigation bar.
+    
+    Args:
+        items: List of tuples (label, page_name) where page_name is None for current page
+        Example: [("Home", "Home"), ("Team Breakdown", "Team Breakdown"), ("Adelaide", None)]
+    """
+    html_parts = []
+    for i, (label, page_name) in enumerate(items):
+        if page_name is None:
+            # Current page (no link)
+            html_parts.append(f'<span class="fe-breadcrumb-current">{label}</span>')
+        else:
+            # Clickable link (using JavaScript to trigger Streamlit)
+            html_parts.append(f'<span class="fe-breadcrumb-link">{label}</span>')
+        
+        # Add separator except for last item
+        if i < len(items) - 1:
+            html_parts.append('<span class="fe-breadcrumb-separator">›</span>')
+    
+    st.markdown(f'<div class="fe-breadcrumb">{"".join(html_parts)}</div>', unsafe_allow_html=True)
+
+
+# ============================================================================
+# EXPORT HELPER FUNCTION
+# ============================================================================
+def render_export_button(element_id: str, filename: str = "export"):
+    """
+    Render an export button that triggers print dialog for the current view.
+    The print dialog allows saving to PDF which can then be converted to image.
+    
+    For a true PNG export, we use html2canvas via JavaScript.
+    """
+    export_html = f"""
+    <div style="margin: 20px 0; text-align: center;">
+        <button onclick="window.print();" class="fe-export-btn" style="margin-right: 10px;">
+            🖨️ Print / Save as PDF
+        </button>
+        <button onclick="
+            const el = document.querySelector('section.main');
+            if (el) {{
+                html2canvas(el, {{
+                    backgroundColor: '#0e1117',
+                    scale: 2
+                }}).then(canvas => {{
+                    const link = document.createElement('a');
+                    link.download = '{filename}.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }});
+            }}
+        " class="fe-export-btn">
+            📸 Export as PNG
+        </button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    """
+    st.markdown(export_html, unsafe_allow_html=True)
 
 
 # ============================================================================
@@ -1795,6 +2053,136 @@ else:
     # Update session state with the current page selection
     st.session_state.selected_page = page
 
+# ================= SIDEBAR ENHANCEMENTS =================
+
+# --- Global Player Search ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("🔍 **Player Search**")
+
+@st.cache_data(show_spinner=False)
+def get_all_players_for_search(season: int):
+    """Get all players for search functionality."""
+    try:
+        players = load_players(season)
+        if players.empty:
+            return []
+        # Create list of "Player Name (Team)" for search
+        player_list = []
+        for _, row in players.iterrows():
+            player = row.get("Player", "")
+            team = row.get("Team", "")
+            if player and team:
+                player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
+        return player_list
+    except:
+        return []
+
+all_players_search = get_all_players_for_search(CURRENT_SEASON)
+player_names_display = [p["display"] for p in all_players_search]
+
+# Search box
+search_query = st.sidebar.text_input("Search for a player...", key="global_player_search", placeholder="Type player name...")
+
+# Filter and show results
+if search_query and len(search_query) >= 2:
+    matches = [p for p in all_players_search if search_query.lower() in p["player"].lower()][:5]
+    if matches:
+        for match in matches:
+            col1, col2 = st.sidebar.columns([4, 1])
+            with col1:
+                if st.button(f"🏃 {match['player']}", key=f"search_{match['player']}_{match['team']}", use_container_width=True):
+                    st.session_state.selected_player_search = match['player']
+                    st.session_state.selected_team_search = match['team']
+                    st.session_state.default_team = match['team']
+                    st.session_state.selected_page = "Player Profile"
+                    st.session_state.page_override = True
+                    add_to_recent_views("player", match['player'], match['team'], "Player Profile")
+                    st.rerun()
+            with col2:
+                # Star button for favorites
+                player_key = f"{match['player']}|{match['team']}"
+                is_fav = player_key in st.session_state.favorite_players
+                star_label = "⭐" if is_fav else "☆"
+                if st.button(star_label, key=f"fav_search_{match['player']}_{match['team']}"):
+                    toggle_favorite_player(match['player'], match['team'])
+                    st.rerun()
+    else:
+        st.sidebar.caption("No players found")
+
+# --- Favorites Section ---
+if st.session_state.favorite_teams or st.session_state.favorite_players:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("⭐ **Favorites**")
+    
+    # Favorite Teams
+    if st.session_state.favorite_teams:
+        for team in sorted(st.session_state.favorite_teams):
+            col1, col2 = st.sidebar.columns([4, 1])
+            with col1:
+                if st.button(f"🏟️ {team}", key=f"fav_team_{team}", use_container_width=True):
+                    st.session_state.default_team = team
+                    st.session_state.selected_page = "Team Breakdown"
+                    st.session_state.page_override = True
+                    add_to_recent_views("team", team, team, "Team Breakdown")
+                    st.rerun()
+            with col2:
+                if st.button("✕", key=f"unfav_team_{team}"):
+                    toggle_favorite_team(team)
+                    st.rerun()
+    
+    # Favorite Players
+    if st.session_state.favorite_players:
+        for player_key in sorted(st.session_state.favorite_players):
+            parts = player_key.split("|")
+            if len(parts) == 2:
+                player, team = parts
+                col1, col2 = st.sidebar.columns([4, 1])
+                with col1:
+                    if st.button(f"🏃 {player}", key=f"fav_player_{player_key}", use_container_width=True):
+                        st.session_state.selected_player_search = player
+                        st.session_state.selected_team_search = team
+                        st.session_state.default_team = team
+                        st.session_state.selected_page = "Player Profile"
+                        st.session_state.page_override = True
+                        add_to_recent_views("player", player, team, "Player Profile")
+                        st.rerun()
+                with col2:
+                    if st.button("✕", key=f"unfav_player_{player_key}"):
+                        toggle_favorite_player(player, team)
+                        st.rerun()
+
+# --- Recent Activity Section ---
+if st.session_state.recent_views:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("🕐 **Recent**")
+    for item in st.session_state.recent_views[:5]:
+        icon = "🏟️" if item["type"] == "team" else "🏃"
+        label = item["name"]
+        if st.sidebar.button(f"{icon} {label}", key=f"recent_{item['type']}_{item['name']}_{item.get('team', '')}", use_container_width=True):
+            if item["type"] == "team":
+                st.session_state.default_team = item["name"]
+                st.session_state.selected_page = item.get("page", "Team Breakdown")
+            else:
+                st.session_state.selected_player_search = item["name"]
+                st.session_state.selected_team_search = item.get("team", "")
+                st.session_state.default_team = item.get("team", "")
+                st.session_state.selected_page = item.get("page", "Player Profile")
+            st.session_state.page_override = True
+            st.rerun()
+
+# --- Comparison History ---
+if st.session_state.comparison_history:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("🔄 **Recent Comparisons**")
+    for comp in st.session_state.comparison_history[:3]:
+        label = f"{comp['team1']} vs {comp['team2']}"
+        page_target = "Team Compare" if comp["type"] == "team" else "Best 23"
+        if st.sidebar.button(f"⚔️ {label}", key=f"comp_{comp['team1']}_{comp['team2']}", use_container_width=True):
+            st.session_state.default_team = comp['team1']
+            st.session_state.selected_page = page_target
+            st.session_state.page_override = True
+            st.rerun()
+
 
 # ================= CUSTOM STYLING =================
 
@@ -3341,6 +3729,9 @@ if page == "Overview":
 
 elif page == "Team Breakdown":
     render_page_header("Team Breakdown", "Detailed Team Performance Analysis", "📊")
+    
+    # Breadcrumb navigation
+    render_breadcrumb([("Home", "Home"), ("Team Breakdown", None)])
 
     # Get available years for top-level selection
     available_years = get_available_summary_years()
@@ -3411,7 +3802,21 @@ elif page == "Team Breakdown":
     default_idx = 0
     if "default_team" in st.session_state and st.session_state.default_team in team_list:
         default_idx = team_list.index(st.session_state.default_team)
-    team_name = st.selectbox("Select a team", team_list, index=default_idx)
+    
+    # Team selection with favorite star
+    team_col1, team_col2 = st.columns([5, 1])
+    with team_col1:
+        team_name = st.selectbox("Select a team", team_list, index=default_idx)
+    with team_col2:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)  # Spacer to align
+        is_fav = team_name in st.session_state.favorite_teams
+        star_label = "⭐ Favorited" if is_fav else "☆ Favorite"
+        if st.button(star_label, key="fav_team_breakdown"):
+            toggle_favorite_team(team_name)
+            st.rerun()
+    
+    # Track in recent views
+    add_to_recent_views("team", team_name, team_name, "Team Breakdown")
 
     team_row = ladders[ladders["Team"] == team_name].iloc[0]
     
@@ -3872,6 +4277,9 @@ elif page == "Team Breakdown":
 elif page == "Team Compare":
     render_page_header("Team Compare", "Head-to-Head Team Analysis", "⚖️")
     
+    # Breadcrumb navigation
+    render_breadcrumb([("Home", "Home"), ("Team Compare", None)])
+    
     # Using global get_ordinal from config
 
     # Get available years for top-level selection (same as Team Breakdown)
@@ -3939,6 +4347,10 @@ elif page == "Team Compare":
         # Default to different team if available
         default_idx = 1 if len(team_list) > 1 else 0
         team2 = st.selectbox("Team 2 (Comparison)", team_list, index=default_idx, key="team_compare_team2")
+    
+    # Track comparison in history
+    if team1 != team2:
+        add_to_comparison_history("team", team1, team2)
     
     if team1 == team2:
         st.warning("Please select two different teams to compare.")
@@ -4579,6 +4991,10 @@ elif page == "Team Compare":
                             )
                     else:
                         st.info(f"No {attribute_group} stats where {team2} ranks higher")
+    
+    # Export section
+    st.markdown("---")
+    render_export_button("team-compare", f"TeamCompare_{team1}_vs_{team2}")
 
 # ================= CLUB LIST =================
 elif page == "Club List":
@@ -4861,6 +5277,9 @@ elif page == "Player Profile":
     import textwrap
 
     render_page_header("Player Profile", "Individual Player Analysis", "👤")
+    
+    # Breadcrumb navigation (will update with player name once selected)
+    render_breadcrumb([("Home", "Home"), ("Player Profile", None)])
 
     # Using global helpers from config: get_ordinal, safe_float
 
@@ -4914,14 +5333,27 @@ elif page == "Player Profile":
     selected_team = st.selectbox("Select Team", teams, index=default_idx, key="pp_team")
     st.session_state["default_team"] = selected_team
 
-    # Player selection
+    # Player selection with favorite star
     team_players = players_season[players_season["Team"] == selected_team].copy()
     player_names = sorted([p for p in team_players["Player"].dropna().unique().tolist() if str(p).strip() != ""])
     if not player_names:
         st.warning("No players found for this team.")
         st.stop()
 
-    selected_player = st.selectbox("Select Player", player_names, key="pp_player")
+    player_col1, player_col2 = st.columns([5, 1])
+    with player_col1:
+        selected_player = st.selectbox("Select Player", player_names, key="pp_player")
+    with player_col2:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        player_fav_key = f"{selected_player}|{selected_team}"
+        is_player_fav = player_fav_key in st.session_state.favorite_players
+        star_label = "⭐ Favorited" if is_player_fav else "☆ Favorite"
+        if st.button(star_label, key="fav_player_profile"):
+            toggle_favorite_player(selected_player, selected_team)
+            st.rerun()
+    
+    # Track in recent views
+    add_to_recent_views("player", selected_player, selected_team, "Player Profile")
 
     # Get all seasons for this player
     player_data_all = players_full[players_full["Player"] == selected_player].copy()
@@ -7294,6 +7726,9 @@ elif page == "Best 23":
 
 
     render_page_header("Best 23", "Model, Compare & Select Your Team", "🏉")
+    
+    # Breadcrumb navigation
+    render_breadcrumb([("Home", "Home"), ("Best 23", None)])
 
     # =====================================================
     # CONFIG
@@ -7748,6 +8183,9 @@ elif page == "Best 23":
             [t for t in teams if t != team_a],
             key="best23_team_b"
         )
+    
+    # Track comparison in history
+    add_to_comparison_history("best23", team_a, team_b)
 
     # ------------------------------
     # Helpers (logos + rating colour)
