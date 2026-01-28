@@ -2756,6 +2756,187 @@ def render_game_day_playground(teams: list[str]):
     st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
     st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>Note: All impact areas and scores are hypothetical for demonstration purposes</div>", unsafe_allow_html=True)
     
+    # =====================================================
+    # COACHES BOX DASHBOARD - Single Screen Consolidated View
+    # =====================================================
+    st.markdown("<div style='margin:60px 0 20px 0;border-top:3px solid rgba(255,215,0,0.4);'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;margin-bottom:24px;'>
+        <div style='font-weight:900;font-size:32px;color:#FFD700;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;letter-spacing:0.05em;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>
+            📺 COACHES BOX DASHBOARD
+        </div>
+        <div style='color:rgba(255,255,255,0.7);font-size:13px;margin-top:8px;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;font-weight:600;'>
+            Game Day Monitor View — All Key Data on One Screen
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Build the consolidated dashboard HTML
+    # Top row: Team logos with VS, Game Type indicators, Momentum
+    
+    # Get team logo paths
+    team_a_code = TEAM_CODE_MAP.get(team_a, team_a.lower().replace(" ", ""))
+    team_b_code = TEAM_CODE_MAP.get(team_b, team_b.lower().replace(" ", ""))
+    team_a_logo = f"{LOGO_FOLDER}/{team_a_code}.png"
+    team_b_logo = f"{LOGO_FOLDER}/{team_b_code}.png"
+    
+    # Encode logos to base64 for embedding
+    def get_logo_b64(path):
+        try:
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
+        except:
+            return ""
+    
+    logo_a_b64 = get_logo_b64(team_a_logo)
+    logo_b_b64 = get_logo_b64(team_b_logo)
+    
+    # Game mode values
+    game_modes_html = ""
+    for left, right, key in dims:
+        v = int(game_type[key])
+        winner = left if v < 50 else right
+        dist = abs(v - 50)
+        strength = "STRONG" if dist >= 20 else ("SLIGHT" if dist >= 8 else "EVEN")
+        mode_color = "#3FB984" if dist >= 8 else "#888888"
+        game_modes_html += f"""
+        <div style='display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);'>
+            <span style='font-size:10px;color:rgba(255,255,255,0.6);width:80px;'>{left}/{right[0:4]}</span>
+            <span style='font-size:11px;font-weight:800;color:{mode_color};'>{winner}</span>
+        </div>
+        """
+    
+    # Zone health mini-bars
+    zones_html = ""
+    for z in zone_names:
+        score = zone_overall[z]
+        col = _gdp_colour(score)
+        short_name = z.replace("Defensive ", "D").replace("Attacking ", "A").replace("Centre Bounce", "CB").replace("Forward ", "F").replace("Mid", "M")
+        zones_html += f"""
+        <div style='flex:1;text-align:center;padding:4px;'>
+            <div style='font-size:9px;color:rgba(255,255,255,0.5);margin-bottom:2px;font-weight:700;'>{short_name}</div>
+            <div style='font-size:14px;font-weight:900;color:{col};'>{score}</div>
+            <div style='height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:2px;'>
+                <div style='height:4px;width:{score}%;background:{col};border-radius:2px;'></div>
+            </div>
+        </div>
+        """
+    
+    # Phase ratings mini-cards
+    phases_html = ""
+    for k in pkeys:
+        score = int(phases[k])
+        col = _gdp_colour(score)
+        short_phase = k.replace("Ball Winning", "WIN").replace("Ball Use", "USE").replace("Scoring", "SCORE").replace("Defence", "DEF").replace("Pressure", "PRESS")
+        phases_html += f"""
+        <div style='flex:1;text-align:center;padding:6px 4px;background:rgba(255,255,255,0.03);border-radius:6px;margin:0 2px;'>
+            <div style='font-size:8px;color:rgba(255,255,255,0.5);margin-bottom:2px;font-weight:700;letter-spacing:0.05em;'>{short_phase}</div>
+            <div style='font-size:16px;font-weight:900;color:{col};'>{score}</div>
+        </div>
+        """
+    
+    # Top 3 impact areas (sorted by priority - lowest scores first)
+    top_impacts_html = ""
+    for i, area in enumerate(impact_areas[:3], 1):
+        score = area["score"]
+        col = _gdp_colour(score)
+        zone_short = area["zone"].replace("Defensive ", "D").replace("Attacking ", "A").replace("Centre Bounce", "CB").replace("Forward ", "F").replace("Mid", "M")
+        phase_short = area["phase"].replace("Ball Winning", "WIN").replace("Ball Use", "USE").replace("Scoring", "SCORE").replace("Defence", "DEF").replace("Pressure", "PRESS")
+        top_impacts_html += f"""
+        <div style='display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:4px;border-left:3px solid {area["status_color"]};'>
+            <span style='font-size:10px;color:rgba(255,255,255,0.8);font-weight:700;'>{zone_short} • {phase_short}</span>
+            <span style='font-size:12px;font-weight:900;color:{col};'>{score}</span>
+        </div>
+        """
+    
+    # Build the complete consolidated dashboard
+    dashboard_html = f"""
+    <div style='
+        background: linear-gradient(145deg, rgba(10,10,18,0.98), rgba(20,20,35,0.98));
+        border: 2px solid rgba(255,215,0,0.3);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    '>
+        <!-- ROW 1: Teams + Game Type + Momentum -->
+        <div style='display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:12px;margin-bottom:12px;'>
+            
+            <!-- Team Matchup -->
+            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:center;gap:12px;'>
+                <div style='text-align:center;'>
+                    <img src='data:image/png;base64,{logo_a_b64}' style='width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));'/>
+                    <div style='font-size:10px;font-weight:800;color:#FFFFFF;margin-top:4px;'>{team_a[:12]}</div>
+                </div>
+                <div style='font-size:18px;font-weight:900;color:rgba(255,255,255,0.4);'>VS</div>
+                <div style='text-align:center;'>
+                    <img src='data:image/png;base64,{logo_b_b64}' style='width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));'/>
+                    <div style='font-size:10px;font-weight:800;color:#FFFFFF;margin-top:4px;'>{team_b[:12]}</div>
+                </div>
+            </div>
+            
+            <!-- Game Type -->
+            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
+                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:6px;letter-spacing:0.1em;text-align:center;'>GAME TYPE</div>
+                {game_modes_html}
+            </div>
+            
+            <!-- Momentum -->
+            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
+                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>MOMENTUM</div>
+                <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'>
+                    <span style='font-size:11px;font-weight:800;color:#FF6B35;'>{team_a[:8]}</span>
+                    <span style='font-size:10px;font-weight:900;color:{status_color};padding:2px 8px;background:rgba(255,255,255,0.08);border-radius:8px;'>{momentum_status}</span>
+                    <span style='font-size:11px;font-weight:800;color:#4A90E2;'>{team_b[:8]}</span>
+                </div>
+                <div style='position:relative;height:20px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;'>
+                    <div style='position:absolute;left:0;top:0;bottom:0;width:{team_a_pct}%;background:linear-gradient(90deg, #FF6B35 0%, #F7931E 100%);'></div>
+                    <div style='position:absolute;right:0;top:0;bottom:0;width:{team_b_pct}%;background:linear-gradient(270deg, #4A90E2 0%, #357ABD 100%);'></div>
+                    <div style='position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.4);transform:translateX(-50%);'></div>
+                    <span style='position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:900;color:#FFF;'>{int(team_a_pct)}%</span>
+                    <span style='position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:900;color:#FFF;'>{int(team_b_pct)}%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ROW 2: Zone Health -->
+        <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:12px;'>
+            <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>ZONE HEALTH</div>
+            <div style='display:flex;justify-content:space-between;gap:4px;'>
+                {zones_html}
+            </div>
+        </div>
+        
+        <!-- ROW 3: 5 Phases + Impact Areas -->
+        <div style='display:grid;grid-template-columns:2fr 1fr;gap:12px;'>
+            
+            <!-- 5 Phases -->
+            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
+                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>5 PHASES</div>
+                <div style='display:flex;justify-content:space-between;'>
+                    {phases_html}
+                </div>
+            </div>
+            
+            <!-- Top 3 Impact Areas -->
+            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
+                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>TOP 3 PRIORITIES</div>
+                {top_impacts_html}
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style='text-align:center;margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);'>
+            <span style='font-size:9px;color:rgba(255,255,255,0.4);font-weight:600;'>FUTUREEDGE SPORT • GAME DAY MONITOR • {time_filter}</span>
+        </div>
+    </div>
+    """
+    
+    st.markdown(dashboard_html, unsafe_allow_html=True)
+    
+    st.markdown("<div style='margin:20px 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:11px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>💡 This consolidated view is designed to fit on a single monitor in the coaches box during game day</div>", unsafe_allow_html=True)
+    
     # Professional footer
     render_footer()
 
