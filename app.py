@@ -4405,8 +4405,9 @@ elif page == "Club List":
     team_ratings_sum = team_df.groupby("Team")["RatingsTotal"].transform("sum")
     team_df["PctOfTeamRatings"] = (team_df["RatingsTotal"] / team_ratings_sum * 100).round(1)
 
-    # Calculate TPP OUTPUT (% of Team * TPP value)
-    team_df["TPP_Output"] = (team_df["PctOfTeamRatings"] / 100 * tpp_value).round(0)
+    # Calculate TPP OUTPUT (% of Team * TPP value, minimum $92,000 per player)
+    MIN_PLAYER_PAYMENT = 92_000
+    team_df["TPP_Output"] = (team_df["PctOfTeamRatings"] / 100 * tpp_value).clip(lower=MIN_PLAYER_PAYMENT).round(0)
 
     # ---------- Rankings (season-wide) ----------
     season_df = df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
