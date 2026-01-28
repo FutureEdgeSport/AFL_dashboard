@@ -7380,67 +7380,73 @@ elif page == "Best 23":
 
     html = f"""
     <style>
+    .field-container {{
+        width: 100%;
+        max-width: {FIELD_WIDTH_PX}px;
+        margin: 0 auto;
+    }}
+    
     .field {{
-    position: relative;
-    width: {FIELD_WIDTH_PX}px;
-    height: {FIELD_HEIGHT_PX}px;
-    background: url("data:image/png;base64,{bg}") center/contain no-repeat;
-    margin: auto;
+        position: relative;
+        width: 100%;
+        padding-bottom: {(FIELD_HEIGHT_PX / FIELD_WIDTH_PX) * 100}%;  /* Maintain aspect ratio */
+        background: url("data:image/png;base64,{bg}") center/contain no-repeat;
+        margin: auto;
     }}
 
     .wrap {{
-    position: absolute;
-    transform: translate(-50%, -50%);
+        position: absolute;
+        transform: translate(-50%, -50%);
     }}
 
     .magnet {{
-    width: 235px;                 /* ⬅ narrower */
-    height: 44px;                 /* ⬅ shorter */
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-radius: 16px;
-    color: #fff;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    font-weight: 800;
-    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+        width: clamp(140px, 18vw, 235px);  /* Responsive width */
+        height: clamp(32px, 4vw, 44px);    /* Responsive height */
+        display: flex;
+        align-items: center;
+        gap: clamp(4px, 0.6vw, 8px);
+        padding: clamp(4px, 0.5vw, 6px) clamp(6px, 0.8vw, 10px);
+        border-radius: 16px;
+        color: #fff;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        font-weight: 800;
+        box-shadow: 0 8px 18px rgba(0,0,0,.35);
     }}
 
     .num {{
-    min-width: 30px;
-    text-align: center;
-    font-size: 13px;
-    opacity: 0.95;
+        min-width: clamp(20px, 2.5vw, 30px);
+        text-align: center;
+        font-size: clamp(10px, 1.2vw, 13px);
+        opacity: 0.95;
     }}
 
     .name {{
-    display: flex;
-    flex-direction: column;
-    line-height: 1.05;
+        display: flex;
+        flex-direction: column;
+        line-height: 1.05;
     }}
 
     .first {{
-    font-size: 9px;
-    opacity: 0.9;
+        font-size: clamp(7px, 0.8vw, 9px);
+        opacity: 0.9;
     }}
 
     .last {{
-    font-size: 13px;
+        font-size: clamp(10px, 1.2vw, 13px);
     }}
 
     .rating {{
-    margin-left: auto;            /* ⬅ right aligned */
-    width: 40px;
-    height: 28px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 900;
-    background: #fff;
-    color: #000;
+        margin-left: auto;
+        width: clamp(28px, 3.5vw, 40px);
+        height: clamp(20px, 2.5vw, 28px);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(9px, 1.1vw, 12px);
+        font-weight: 900;
+        background: #fff;
+        color: #000;
     }}
 
     .def     {{ background: #c62828; }}
@@ -7450,16 +7456,18 @@ elif page == "Best 23":
     .other   {{ background: #333; }}
     </style>
 
-    <div class="field">
-    {magnets_html}
+    <div class="field-container">
+        <div class="field">
+            {magnets_html}
+        </div>
     </div>
     """
 
     import streamlit.components.v1 as components
     components.html(
         textwrap.dedent(html).strip(),
-        height=FIELD_HEIGHT_PX + 20,
-        scrolling=False
+        height=int(min(FIELD_HEIGHT_PX + 20, 900)),  # Cap max height
+        scrolling=True  # Allow scrolling if needed
     )
 
 
