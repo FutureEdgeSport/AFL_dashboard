@@ -589,6 +589,92 @@ def load_players(season: int) -> pd.DataFrame:
         return pd.DataFrame()
 
 
+@st.cache_data(show_spinner=False)
+def load_full_squad(season: int) -> pd.DataFrame:
+    """
+    Load full squad list including players who didn't play.
+    Uses '2025 AFL Squads' sheet for 2025, falls back to regular season sheet for other years.
+    """
+    try:
+        xl = pd.ExcelFile(PLAYER_FILE)
+        
+        # Check if full squad sheet exists for this season
+        squad_sheet = f"{season} AFL Squads"
+        if squad_sheet in xl.sheet_names:
+            df = xl.parse(squad_sheet)
+            df.columns = df.columns.astype(str).str.strip()
+            
+            # Map columns from squad sheet to expected columns
+            # Squad sheet uses Matches_Current instead of Matches, etc.
+            col_map = {
+                "Matches_Current": "Matches",
+                "JumperNumber": "Jumper",
+            }
+            df = df.rename(columns=col_map)
+            
+            # The squad sheet doesn't have RatingPoints_Avg, so we need to merge with the season data
+            season_df = xl.parse(str(season))
+            season_df.columns = season_df.columns.astype(str).str.strip()
+            season_df = _normalise_rating_column(season_df)
+            
+            # Get ratings columns from season sheet
+            if "Player" in season_df.columns and "RatingPoints_Avg" in season_df.columns:
+                ratings_cols = ["Player", "RatingPoints_Avg"]
+                if "CoachesVotes_Avg" in season_df.columns:
+                    ratings_cols.append("CoachesVotes_Avg")
+                if "TimeOnGround" in season_df.columns:
+                    ratings_cols.append("TimeOnGround")
+                
+                ratings_df = season_df[ratings_cols].copy()
+                ratings_df["Player"] = ratings_df["Player"].astype(str).str.strip()
+                
+                # Merge ratings into squad
+                df["Player"] = df["Player"].astype(str).str.strip()
+                df = df.merge(ratings_df, on="Player", how="left")
+        else:
+            # Fall back to regular season sheet
+            df = xl.parse(str(season))
+            df.columns = df.columns.astype(str).str.strip()
+            df = _normalise_rating_column(df)
+        
+        cols = [
+            "Player",
+            "Team",
+            "Age",
+            "Age_Decimal",
+            "Position",
+            "Matches",
+            "RatingPoints_Avg",
+            "CoachesVotes_Avg",
+            "TimeOnGround",
+            "Height",
+            "Height_cm",
+            "Jumper",
+            "Jersey",
+            "Number",
+            "Guernsey",
+            "No",
+        ]
+        existing = [c for c in cols if c in df.columns]
+        df = df[existing].copy()
+
+        # clean key columns
+        if "Player" in df.columns:
+            df["Player"] = df["Player"].astype(str).str.strip()
+        if "Team" in df.columns:
+            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+        if "Position" in df.columns:
+            df["Position"] = df["Position"].astype(str).str.strip()
+
+        return df
+    except FileNotFoundError:
+        st.error(f"❌ Player ratings file not found: {PLAYER_FILE}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.warning(f"⚠️ Could not load full squad data for {season}: {e}")
+        return pd.DataFrame()
+
+
 # ---------------- DATA LOADERS – TRAITS (ENRICHED source of truth) ----------------
 @st.cache_data(show_spinner=False)
 def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
@@ -4285,7 +4371,8 @@ elif page == "Club List":
 
     # ---------- Load data ----------
     try:
-        df = load_players(int(season))
+        # Use full squad loader to include players who didn't play
+        df = load_full_squad(int(season))
     except Exception as e:
         st.error(f"Failed to load player data for {season}: {e}")
         st.stop()
