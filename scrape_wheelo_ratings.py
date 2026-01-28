@@ -21,16 +21,18 @@ Excel Files Updated:
     - AFL Player Ratings.xlsx
 
 Sheet Naming Conventions:
-    Team Ratings:
-        - "2025" for season data
-        - "2025 Ladders (L10)" for last 10 games
-        - "2025 Ladders (L5)" for last 5 games
+    Team Ratings (AFL Team Ratings.xlsx):
+        - "Wheelo 2025 Season" for full season data
+        - "Wheelo 2025 L10" for last 10 games
+        - "Wheelo 2025 L5" for last 5 games
         
-    Player Ratings:
-        - "2025" for season data
-        - "2025 (L10)" for last 10 games
-        - "2025 (L5)" for last 5 games
+    Player Ratings (AFL Player Ratings.xlsx):
+        - "Wheelo 2025 Season" for full season data
+        - "Wheelo 2025 L10" for last 10 games
+        - "Wheelo 2025 L5" for last 5 games
         - "2025 AFL Squads" for squad lists
+        
+    Note: "Wheelo" prefix prevents overwriting existing app data sheets.
 """
 
 import os
@@ -76,10 +78,13 @@ URLS = {
 }
 
 # Season button texts and corresponding sheet names
+# NOTE: Sheet names must NOT conflict with existing sheets in the Excel files!
+# The app uses: "2025 Summary", "2025 Team Summary", "2025 Ladders", etc.
+# We use "Wheelo" prefix to keep scraped data separate.
 SEASONS = {
-    "2025": {"team_sheet": "2025", "player_sheet": "2025"},
-    "Last 10 games": {"team_sheet": "2025 Ladders (L10)", "player_sheet": "2025 (L10)"},
-    "Last 5 games": {"team_sheet": "2025 Ladders (L5)", "player_sheet": "2025 (L5)"}
+    "2025": {"team_sheet": "Wheelo 2025 Season", "player_sheet": "Wheelo 2025 Season"},
+    "Last 10 games": {"team_sheet": "Wheelo 2025 L10", "player_sheet": "Wheelo 2025 L10"},
+    "Last 5 games": {"team_sheet": "Wheelo 2025 L5", "player_sheet": "Wheelo 2025 L5"}
 }
 
 
