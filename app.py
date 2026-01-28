@@ -2932,7 +2932,9 @@ def render_game_day_playground(teams: list[str]):
     </div>
     """
     
-    st.markdown(dashboard_html, unsafe_allow_html=True)
+    # Use components.html for complex HTML with embedded images
+    import streamlit.components.v1 as components
+    components.html(dashboard_html, height=320, scrolling=False)
     
     st.markdown("<div style='margin:20px 0;'></div>", unsafe_allow_html=True)
     st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:11px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>💡 This consolidated view is designed to fit on a single monitor in the coaches box during game day</div>", unsafe_allow_html=True)
