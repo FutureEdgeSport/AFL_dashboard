@@ -1819,106 +1819,110 @@ st.markdown(
 # ================= HOME =================
 
 if page == "Home":
-    # Center content with columns
-    col1, col2, col3 = st.columns([1, 3, 1])
+    # Reduce top padding on home page
+    st.markdown("<style>.block-container { padding-top: 1rem !important; }</style>", unsafe_allow_html=True)
     
-    with col2:
-        # Display main logo image - centered
-        logo_path = "team_logos/Logo Transparent.png"
-        
-        if os.path.exists(logo_path):
-            st.markdown("<style>.home-logo { display: flex; justify-content: center; } .home-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='home-logo'>", unsafe_allow_html=True)
-            st.image(logo_path, width=350)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            # Fallback if logo not found - show placeholder
-            st.markdown(
-                "<div style='text-align: center; font-size: 100px; color: #999;'>🏉</div>",
-                unsafe_allow_html=True
-            )
-        
-        # Heading - reduced margin to bring closer to logo
+    # Display centered logo using HTML/CSS (st.image doesn't center properly)
+    logo_path = "team_logos/Logo Transparent.png"
+    
+    if os.path.exists(logo_path):
+        import base64
+        with open(logo_path, "rb") as f:
+            logo_b64 = base64.b64encode(f.read()).decode()
+        st.markdown(f"""
+            <div style='display: flex; justify-content: center; margin-bottom: 0px;'>
+                <img src='data:image/png;base64,{logo_b64}' style='width: 320px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5));'>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        # Fallback if logo not found - show placeholder
         st.markdown(
-            """
-            <h1 style='text-align: center; font-size: 2.5em; margin-top: 10px; margin-bottom: 5px;'>
-                AFL Dashboards
-            </h1>
-            """,
+            "<div style='text-align: center; font-size: 100px; color: #999;'>🏉</div>",
             unsafe_allow_html=True
         )
-        
-        # Team selection instruction - reduced margins
-        st.markdown(
-            """
-            <h3 style='text-align: center; color: #FFFFFF; margin-top: 15px; margin-bottom: 20px;'>
-                Select Your Team
-            </h3>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # List of all 18 AFL teams in alphabetical order
-        all_teams = [
-            "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", 
-            "Fremantle", "Geelong", "Gold Coast", "GWS Giants",
-            "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", 
-            "Richmond", "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
-        ]
-        
-        # First row of 9 teams
-        row1_cols = st.columns(9)
-        for idx, team in enumerate(all_teams[:9]):
-            with row1_cols[idx]:
-                team_code = TEAM_CODE_MAP.get(team, team.lower().replace(" ", ""))
-                team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
-                
-                if os.path.exists(team_logo_path):
-                    try:
-                        # Display logo
-                        img = Image.open(team_logo_path)
-                        # Resize image to fixed dimensions for consistency
-                        img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized, width="content")
-                        
-                        # Add small spacer before button
-                        st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
-                        # Create clickable button
-                        if st.button("Select", key=f"home_team_{team}_{idx}", width="stretch", help=f"Select {team}"):
-                            # Set default team in session state
-                            st.session_state.default_team = team
-                            st.session_state.selected_page = "Team Breakdown"
-                            st.session_state.page_override = True
-                            st.rerun()
-                    except Exception:
-                        st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
-        
-        # Second row of 9 teams
-        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
-        row2_cols = st.columns(9)
-        for idx, team in enumerate(all_teams[9:]):
-            with row2_cols[idx]:
-                team_code = TEAM_CODE_MAP.get(team, team.lower().replace(" ", ""))
-                team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
-                
-                if os.path.exists(team_logo_path):
-                    try:
-                        # Display logo
-                        img = Image.open(team_logo_path)
-                        # Resize image to fixed dimensions for consistency
-                        img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                        st.image(img_resized, width="content")
-                        
-                        # Add small spacer before button
-                        st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
-                        # Create clickable button
-                        if st.button("Select", key=f"home_team_{team}_{idx+9}", width="stretch", help=f"Select {team}"):
-                            # Set default team in session state
-                            st.session_state.default_team = team
-                            st.session_state.selected_page = "Team Breakdown"
-                            st.session_state.page_override = True
-                            st.rerun()
-                    except Exception:
-                        st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
+    
+    # Heading - reduced margin to bring closer to logo
+    st.markdown(
+        """
+        <h1 style='text-align: center; font-size: 2.5em; margin-top: 5px; margin-bottom: 5px;'>
+            AFL Dashboards
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Team selection instruction - reduced margins
+    st.markdown(
+        """
+        <h3 style='text-align: center; color: #FFFFFF; margin-top: 10px; margin-bottom: 15px;'>
+            Select Your Team
+        </h3>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # List of all 18 AFL teams in alphabetical order
+    all_teams = [
+        "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", 
+        "Fremantle", "Geelong", "Gold Coast", "GWS Giants",
+        "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", 
+        "Richmond", "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
+    ]
+    
+    # First row of 9 teams
+    row1_cols = st.columns(9)
+    for idx, team in enumerate(all_teams[:9]):
+        with row1_cols[idx]:
+            team_code = TEAM_CODE_MAP.get(team, team.lower().replace(" ", ""))
+            team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
+            
+            if os.path.exists(team_logo_path):
+                try:
+                    # Display logo
+                    img = Image.open(team_logo_path)
+                    # Resize image to fixed dimensions for consistency
+                    img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
+                    st.image(img_resized, width="content")
+                    
+                    # Add small spacer before button
+                    st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
+                    # Create clickable button
+                    if st.button("Select", key=f"home_team_{team}_{idx}", width="stretch", help=f"Select {team}"):
+                        # Set default team in session state
+                        st.session_state.default_team = team
+                        st.session_state.selected_page = "Team Breakdown"
+                        st.session_state.page_override = True
+                        st.rerun()
+                except Exception:
+                    st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
+    
+    # Second row of 9 teams
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    row2_cols = st.columns(9)
+    for idx, team in enumerate(all_teams[9:]):
+        with row2_cols[idx]:
+            team_code = TEAM_CODE_MAP.get(team, team.lower().replace(" ", ""))
+            team_logo_path = f"{LOGO_FOLDER}/{team_code}.png"
+            
+            if os.path.exists(team_logo_path):
+                try:
+                    # Display logo
+                    img = Image.open(team_logo_path)
+                    # Resize image to fixed dimensions for consistency
+                    img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
+                    st.image(img_resized, width="content")
+                    
+                    # Add small spacer before button
+                    st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
+                    # Create clickable button
+                    if st.button("Select", key=f"home_team_{team}_{idx+9}", width="stretch", help=f"Select {team}"):
+                        # Set default team in session state
+                        st.session_state.default_team = team
+                        st.session_state.selected_page = "Team Breakdown"
+                        st.session_state.page_override = True
+                        st.rerun()
+                except Exception:
+                    st.markdown(f"<div style='text-align: center; font-size: 0.7em;'>{team}</div>", unsafe_allow_html=True)
 
 import hashlib
 import random
