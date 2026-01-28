@@ -39,8 +39,9 @@ st.set_page_config(
 st.markdown(get_unified_table_css(), unsafe_allow_html=True)
 
 # Add theme toggle button and keyboard shortcuts hint
+# Note: onclick is stripped by Streamlit, so JS attaches the listener
 st.markdown('''
-<button class="fe-theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+<button class="fe-theme-toggle">☀️ Light Mode</button>
 <div class="fe-shortcuts-hint">
     <strong>Keyboard Shortcuts:</strong><br>
     <kbd>1</kbd>-<kbd>0</kbd> Navigate pages<br>

@@ -710,10 +710,40 @@ UNIFIED_TABLE_CSS = """
    LIGHT MODE THEME
    ============================================ */
 
-.fe-light-mode .stApp {
+/* Apply light mode to body and Streamlit app container */
+.fe-light-mode,
+.fe-light-mode .stApp,
+body.fe-light-mode {
     background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
 }
 
+/* Light mode for main content area */
+.fe-light-mode .main .block-container,
+.fe-light-mode [data-testid="stAppViewContainer"] {
+    background: transparent !important;
+}
+
+/* Light mode text colors */
+.fe-light-mode .stMarkdown,
+.fe-light-mode .stText,
+.fe-light-mode p,
+.fe-light-mode span,
+.fe-light-mode label,
+.fe-light-mode h1, .fe-light-mode h2, .fe-light-mode h3 {
+    color: #333333 !important;
+}
+
+/* Light mode sidebar */
+.fe-light-mode [data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%) !important;
+}
+
+.fe-light-mode [data-testid="stSidebar"] .stRadio label,
+.fe-light-mode [data-testid="stSidebar"] .stSelectbox label {
+    color: #333333 !important;
+}
+
+/* Light mode tables */
 .fe-light-mode .fe-table {
     background: #ffffff !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -740,9 +770,32 @@ UNIFIED_TABLE_CSS = """
     background: rgba(255,215,0,0.1) !important;
 }
 
+/* Light mode buttons */
 .fe-light-mode .fe-export-btn,
 .fe-light-mode .fe-theme-toggle {
     background: linear-gradient(135deg, #333333 0%, #444444 100%);
+}
+
+/* Light mode shortcuts hint */
+.fe-light-mode .fe-shortcuts-hint {
+    background: rgba(0,0,0,0.05) !important;
+    color: #333333 !important;
+    border-color: rgba(0,0,0,0.15) !important;
+}
+
+.fe-light-mode .fe-shortcuts-hint kbd {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border-color: rgba(0,0,0,0.2) !important;
+}
+
+/* Light mode inputs and widgets */
+.fe-light-mode .stTextInput input,
+.fe-light-mode .stSelectbox select,
+.fe-light-mode .stMultiSelect > div {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border-color: rgba(0,0,0,0.2) !important;
 }
 
 /* ============================================
@@ -949,7 +1002,7 @@ UNIFIED_TABLE_CSS = """
 // ============================================
 document.addEventListener('keydown', function(e) {
     // Only trigger if not in an input field
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
     
     const shortcuts = {
         '1': 0,  // Home
@@ -964,12 +1017,23 @@ document.addEventListener('keydown', function(e) {
         '0': 9,  // Club Comparison
     };
     
+    // Number keys for navigation (no modifiers)
     if (e.key in shortcuts && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
         const sidebar = document.querySelector('[data-testid="stSidebar"]');
         if (sidebar) {
+            // Try radio buttons first (st.radio)
             const radioButtons = sidebar.querySelectorAll('input[type="radio"]');
-            if (radioButtons[shortcuts[e.key]]) {
-                radioButtons[shortcuts[e.key]].click();
+            const targetIndex = shortcuts[e.key];
+            if (radioButtons.length > targetIndex) {
+                radioButtons[targetIndex].click();
+                return;
+            }
+            
+            // Fallback: try navigation links
+            const navLinks = sidebar.querySelectorAll('a[data-testid="stSidebarNavLink"]');
+            if (navLinks.length > targetIndex) {
+                navLinks[targetIndex].click();
             }
         }
     }
@@ -995,20 +1059,58 @@ function toggleTheme() {
     const isLight = body.classList.toggle('fe-light-mode');
     localStorage.setItem('fe-theme', isLight ? 'light' : 'dark');
     
-    // Update theme button text if it exists
-    const themeBtn = document.querySelector('.fe-theme-toggle');
-    if (themeBtn) {
-        themeBtn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+    // Update ALL theme buttons
+    document.querySelectorAll('.fe-theme-toggle').forEach(btn => {
+        btn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+    });
+    
+    // Also update Streamlit's main app container
+    const stApp = document.querySelector('.stApp');
+    if (stApp) {
+        if (isLight) {
+            stApp.classList.add('fe-light-mode');
+        } else {
+            stApp.classList.remove('fe-light-mode');
+        }
     }
 }
 
-// Load saved theme preference
+// Attach theme toggle click handler (works even with Streamlit's sanitization)
+function initThemeToggle() {
+    document.querySelectorAll('.fe-theme-toggle').forEach(btn => {
+        // Remove any existing listeners
+        btn.replaceWith(btn.cloneNode(true));
+    });
+    document.querySelectorAll('.fe-theme-toggle').forEach(btn => {
+        btn.addEventListener('click', toggleTheme);
+        btn.style.cursor = 'pointer';
+    });
+}
+
+// Load saved theme preference and init toggle
 (function() {
     const saved = localStorage.getItem('fe-theme');
     if (saved === 'light') {
         document.body.classList.add('fe-light-mode');
+        const stApp = document.querySelector('.stApp');
+        if (stApp) stApp.classList.add('fe-light-mode');
     }
+    
+    // Update button text based on saved preference
+    setTimeout(() => {
+        const isLight = saved === 'light';
+        document.querySelectorAll('.fe-theme-toggle').forEach(btn => {
+            btn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+        });
+        initThemeToggle();
+    }, 500);
 })();
+
+// Re-attach when Streamlit re-renders
+const themeObserver = new MutationObserver(() => {
+    initThemeToggle();
+});
+themeObserver.observe(document.body, { childList: true, subtree: true });
 
 // ============================================
 // EXPORT TABLE TO CSV
