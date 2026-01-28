@@ -4421,14 +4421,14 @@ elif page == "Club List":
     # ---------- Build output ----------
     out = pd.DataFrame({
         "PLAYER": team_df["Player"].fillna("—"),
-        "COMP RANK": team_df["CompRank"].apply(ordinal),
-        "POS RANK": team_df["PosRank"].apply(ordinal),
         "SEASON": int(season),
         "TEAM": team_df["Team"].fillna("—"),
         "POSITION": team_df["DepthPos"].fillna("—"),
         "AGE": pd.to_numeric(team_df["Age"], errors="coerce").round(1),
         "MATCHES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
         "RATING": pd.to_numeric(team_df["RatingPoints_Avg"], errors="coerce").round(1),
+        "COMP RANK": team_df["CompRank"].apply(ordinal),
+        "POS RANK": team_df["PosRank"].apply(ordinal),
         "COACHES VOTES": pd.to_numeric(team_df["CoachesVotes_Avg"], errors="coerce").round(2),
         "TOG %": pd.to_numeric(team_df["TimeOnGround"], errors="coerce").round(1),
         "RATINGS TOTAL": pd.to_numeric(team_df["RatingsTotal"], errors="coerce").round(1),
@@ -4447,14 +4447,14 @@ elif page == "Club List":
 <thead>
 <tr>
 <th>PLAYER</th>
-<th>COMP RANK</th>
-<th>POS RANK</th>
 <th>SEASON</th>
 <th>TEAM</th>
 <th>POSITION</th>
 <th>AGE</th>
 <th>MATCHES</th>
 <th>RATING</th>
+<th>COMP RANK</th>
+<th>POS RANK</th>
 <th>COACHES VOTES</th>
 <th>TOG %</th>
 <th>RATINGS TOTAL</th>
@@ -4491,14 +4491,14 @@ elif page == "Club List":
         html += f"""
 <tr>
 <td>{r['PLAYER']}</td>
-<td>{r['COMP RANK']}</td>
-<td>{r['POS RANK']}</td>
 <td>{r['SEASON']}</td>
 <td>{r['TEAM']}</td>
 <td>{r['POSITION']}</td>
 <td>{age_str}</td>
 <td>{matches_str}</td>
 <td style="background-color:{bg}; color:{fg}; font-weight:900;">{rating_str}</td>
+<td>{r['COMP RANK']}</td>
+<td>{r['POS RANK']}</td>
 <td>{coaches_str}</td>
 <td>{tog_str}</td>
 <td>{ratings_total_str}</td>
