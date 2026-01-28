@@ -177,7 +177,7 @@ def get_team_player_data(team_name):
         
         content = response.text
         
-        # Look for JSON player data in the page
+        # Look for JSON player data in the page (works for most teams)
         match = re.search(r'JSON\.stringify\(\s*(\[.*?\])\s*\)', content, re.DOTALL)
         if match:
             json_str = match.group(1)
@@ -186,9 +186,89 @@ def get_team_player_data(team_name):
             except:
                 pass
         
+        # Fallback for St Kilda and other teams using HTML link format
+        # Pattern: href="/players/1573/jack-higgins" -> page ID 1573, name "jack higgins"
+        # We need to fetch individual player pages to get the real providerId
+        player_links = re.findall(r'href="/players/(\d+)/([^"]+)"', content)
+        if player_links:
+            logging.debug(f"  Using HTML link fallback for {team_name} ({len(set(l[0] for l in player_links))} unique players)")
+            
+            # Get base URL for team
+            base_url = url.rsplit('/players', 1)[0]
+            
+            players_data = []
+            seen_ids = set()
+            
+            for page_id, slug in player_links:
+                if page_id in seen_ids:
+                    continue
+                seen_ids.add(page_id)
+                
+                # Convert slug to name: "jack-higgins" -> "Jack Higgins"
+                name_parts = slug.replace('-', ' ').title().split()
+                if len(name_parts) >= 2:
+                    first_name = name_parts[0]
+                    surname = ' '.join(name_parts[1:])
+                else:
+                    first_name = name_parts[0] if name_parts else ''
+                    surname = ''
+                
+                # Store page URL for later lookup of providerId
+                players_data.append({
+                    'player': {
+                        'providerId': None,  # Will be fetched when needed
+                        'firstName': first_name,
+                        'surname': surname,
+                        '_pageUrl': f"{base_url}/players/{page_id}/{slug}",
+                        '_pageId': page_id,
+                    },
+                    'jumperNumber': 0
+                })
+            
+            return players_data if players_data else None
+        
         return None
     except Exception as e:
         logging.debug(f"Error getting team data for {team_name}: {e}")
+        return None
+
+
+def get_provider_id_from_player_page(page_url, player_name):
+    """Fetch providerId from individual player page (for St Kilda fallback)."""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+        response = requests.get(page_url, headers=headers, timeout=15)
+        
+        if response.status_code != 200:
+            return None
+        
+        content = response.text
+        
+        # Look for providerId near the player's name
+        # Pattern: "providerId":"CD_I1002264","firstName":"Hunter"
+        first_name = player_name.split()[0].lower() if player_name else ''
+        
+        # Find all providerIds and associated names
+        matches = re.findall(r'"providerId":"(CD_I\d+)","firstName":"([^"]+)"', content)
+        
+        for provider_id, found_name in matches:
+            if found_name.lower() == first_name:
+                return provider_id.replace('CD_I', '')
+        
+        # If no name match, try to find the most prominent providerId
+        all_ids = re.findall(r'CD_I(\d+)', content)
+        if all_ids:
+            # Return the most common one (likely the main player)
+            from collections import Counter
+            most_common = Counter(all_ids).most_common(1)
+            if most_common:
+                return most_common[0][0]
+        
+        return None
+    except Exception as e:
+        logging.debug(f"Error fetching player page: {e}")
         return None
 
 def construct_image_urls(provider_id):
@@ -379,9 +459,20 @@ def update_photos(max_downloads=None, force_refresh=False, check_team_changes=Tr
             full_name = f"{first_name} {surname}"
             
             if player_name.lower() in full_name or full_name in player_name.lower():
-                provider_id = player_obj.get('providerId', '').replace('CD_I', '')
+                provider_id_raw = player_obj.get('providerId') or ''
+                provider_id = provider_id_raw.replace('CD_I', '') if provider_id_raw else ''
+                
+                # Handle St Kilda fallback - providerId might need to be fetched from player page
+                if not provider_id and player_obj.get('_pageUrl'):
+                    logging.debug(f"  Fetching providerId from player page...")
+                    provider_id = get_provider_id_from_player_page(
+                        player_obj['_pageUrl'], 
+                        player_name
+                    )
+                    time.sleep(0.5)  # Rate limit
                 
                 if not provider_id:
+                    logging.debug(f"  No providerId found for {player_name}")
                     continue
                 
                 # Try image URLs
