@@ -5340,9 +5340,18 @@ elif page == "Player Profile":
         st.warning("No players found for this team.")
         st.stop()
 
+    # Check if a player was searched for and pre-select them
+    player_default_idx = 0
+    if "selected_player_search" in st.session_state and st.session_state.selected_player_search:
+        searched_player = st.session_state.selected_player_search
+        if searched_player in player_names:
+            player_default_idx = player_names.index(searched_player)
+        # Clear the search state after using it
+        st.session_state.selected_player_search = None
+
     player_col1, player_col2 = st.columns([5, 1])
     with player_col1:
-        selected_player = st.selectbox("Select Player", player_names, key="pp_player")
+        selected_player = st.selectbox("Select Player", player_names, index=player_default_idx, key="pp_player")
     with player_col2:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         player_fav_key = f"{selected_player}|{selected_team}"
