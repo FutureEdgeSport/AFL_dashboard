@@ -1830,7 +1830,7 @@ def _phase_card(title: str, rating: int, stats_rows):
 
     with st.expander(f"Show inputs for {title}", expanded=False):
         df = pd.DataFrame(stats_rows, columns=["Stat", "Value", "Direction"])
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width="stretch", hide_index=True)
 
 
 def render_game_day_playground(teams: list[str]):
@@ -3088,7 +3088,7 @@ elif page == "Team Breakdown":
                 height=500
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
         except ImportError:
             st.warning("Plotly not installed. Install with: `conda install -n afl plotly -y`")
@@ -3721,7 +3721,7 @@ elif page == "Team Compare":
                 font=dict(color='white')
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
         except ImportError:
             st.warning("Plotly not installed. Install with: `conda install -n afl plotly -y`")
@@ -4158,10 +4158,10 @@ elif page == "Club List":
 
     c1, c2, _ = st.columns([1, 1, 6])
     with c1:
-        if st.button("Show full list", use_container_width=True):
+        if st.button("Show full list", width="stretch"):
             st.session_state.club_list_full = True
     with c2:
-        if st.button("Top 5 only", use_container_width=True):
+        if st.button("Top 5 only", width="stretch"):
             st.session_state.club_list_full = False
 
     # ---------- Team slice ----------
@@ -4366,7 +4366,7 @@ elif page == "Player Profile":
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(latest_team, logo_col, size=160)
 
-    display_player_photo(selected_player, col_photo, use_container_width=True)
+    display_player_photo(selected_player, col_photo, width="stretch")
 
     # Summary meta
     summary_df = load_player_summary()
@@ -4636,7 +4636,7 @@ elif page == "Player Profile":
             )
             .properties(height=260)
         )
-        st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, width="stretch")
 
     # -----------------------------------
     # Performance Projection (Next 5 Years)
@@ -4705,14 +4705,14 @@ elif page == "Player Profile":
             if hist_chart is not None:
                 combined = combined + hist_chart
 
-            st.altair_chart(combined.properties(height=300).interactive(), use_container_width=True)
+            st.altair_chart(combined.properties(height=300).interactive(), width="stretch")
 
             with st.expander("📊 View Detailed Predictions", expanded=False):
                 pred_table = pred.copy()
                 for c in ["Predicted_Rating", "Upper_Band", "Lower_Band"]:
                     if c in pred_table.columns:
                         pred_table[c] = pd.to_numeric(pred_table[c], errors="coerce").round(1)
-                st.dataframe(pred_table, hide_index=True, use_container_width=True)
+                st.dataframe(pred_table, hide_index=True, width="stretch")
         else:
             st.info("Unable to generate performance projection with available data.")
     except Exception as e:
@@ -5401,7 +5401,7 @@ elif page == "Player Traits":
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(team_name_full, logo_col, size=160)
 
-    display_player_photo(selected_player_full, col_photo, use_container_width=True)
+    display_player_photo(selected_player_full, col_photo, width="stretch")
 
     header_html = f"""
     <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
@@ -7819,7 +7819,7 @@ elif page == "Best 23":
             })
 
         st.subheader("Where the differences came from")
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
         st.caption(
             "How to use this: If Overall Δ is negative, your selection is weaker than the model on average. "
@@ -8536,7 +8536,7 @@ elif page == "List Breakdown - Traits":
                 font=dict(color='white')
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
         except ImportError:
             st.warning("Plotly not installed.")
@@ -9167,7 +9167,7 @@ elif page == "IDP":
     with col_photo:
         _, logo_col, _ = st.columns([1, 2, 1])
         display_logo(selected_team_display, logo_col, size=160)
-        display_player_photo(selected_player_display, col_photo, use_container_width=True, team_name=selected_team_display)
+        display_player_photo(selected_player_display, col_photo, width="stretch", team_name=selected_team_display)
     
     # Display player info
     with col_info:
@@ -9311,7 +9311,7 @@ elif page == "IDP":
         height=550
     )
     
-    st.plotly_chart(fig, use_container_width=True, key="player_spider")
+    st.plotly_chart(fig, width="stretch", key="player_spider")
     
     # Sub-stats breakdown
     st.markdown("<h4 style='color:#FFFFFF;margin:24px 0 16px 0;font-weight:900;font-size:18px;'>Contributing Statistics</h4>", unsafe_allow_html=True)
@@ -9497,7 +9497,7 @@ elif page == "IDP":
             height=450
         )
         
-        st.plotly_chart(fig_comp, use_container_width=True, key="comparison_spider")
+        st.plotly_chart(fig_comp, width="stretch", key="comparison_spider")
         
         st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
         
