@@ -4331,11 +4331,9 @@ elif page == "Club List":
     else:
         df["TimeOnGround"] = np.nan
 
-    # Remove unrated rows
-    df = df.dropna(subset=["RatingPoints_Avg"]).copy()
-    if df.empty:
-        st.warning(f"No rated players found for {season}.")
-        st.stop()
+    # Fill missing ratings with 0 (keep all players including those who didn't play)
+    df["RatingPoints_Avg"] = df["RatingPoints_Avg"].fillna(0)
+    df["Matches"] = df["Matches"].fillna(0)
 
     # ---------- Team selector (pre-load from Home) ----------
     teams = sorted([t for t in df["Team"].dropna().unique().tolist() if str(t).strip() != ""])
