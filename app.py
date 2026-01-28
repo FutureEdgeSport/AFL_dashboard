@@ -4522,12 +4522,14 @@ elif page == "Club List":
         return f"{n}{ {1:'st',2:'nd',3:'rd'}.get(n%10,'th') }"
 
     # ---------- Build output ----------
+    # Use Age_Decimal if available, otherwise fall back to Age
+    age_col = "Age_Decimal" if "Age_Decimal" in team_df.columns else "Age"
     out = pd.DataFrame({
         "PLAYER": team_df["Player"].fillna("—"),
         "SEASON": int(season),
         "TEAM": team_df["Team"].fillna("—"),
         "POSITION": team_df["DepthPos"].fillna("—"),
-        "AGE": pd.to_numeric(team_df["Age"], errors="coerce").round(1),
+        "AGE": pd.to_numeric(team_df[age_col], errors="coerce").round(2),
         "MATCHES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
         "RATING": pd.to_numeric(team_df["RatingPoints_Avg"], errors="coerce").round(1),
         "COMP RANK": team_df["CompRank"].apply(ordinal),
