@@ -621,6 +621,74 @@ def make_name_key(name: str) -> str:
     return name
 
 
+def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_name: str = None) -> pd.DataFrame:
+    """
+    Match a full player name (e.g., 'Chad Warner') to the abbreviated format in traits (e.g., 'Ch. Warner').
+    Returns matching rows from traits_df.
+    """
+    if traits_df is None or traits_df.empty or "Player_Full" not in traits_df.columns:
+        return pd.DataFrame()
+    
+    # First try exact match
+    exact_match = traits_df[traits_df["Player_Full"] == full_name]
+    if not exact_match.empty:
+        return exact_match
+    
+    # Parse the full name
+    parts = full_name.strip().split()
+    if len(parts) < 2:
+        return pd.DataFrame()
+    
+    first_name = parts[0]
+    last_name = parts[-1]
+    
+    # Try matching by last name and first initial
+    first_initial = first_name[0].upper() + "."
+    
+    # Build possible abbreviated patterns
+    # Pattern 1: "F. Lastname" (e.g., "C. Warner" for "Chad Warner")
+    # Pattern 2: "Fi. Lastname" (e.g., "Ch. Warner" for "Chad Warner") 
+    # Pattern 3: First few letters + ". Lastname"
+    patterns = [
+        f"{first_initial} {last_name}",  # C. Warner
+        f"{first_name[:2]}. {last_name}",  # Ch. Warner
+        f"{first_name[:3]}. {last_name}",  # Cha. Warner
+    ]
+    
+    # Also handle middle names if present
+    if len(parts) > 2:
+        middle_parts = " ".join(parts[1:-1])
+        patterns.append(f"{first_initial} {middle_parts} {last_name}")
+    
+    # Filter by team if provided (use Team_Full column)
+    search_df = traits_df.copy()
+    if team_name and "Team_Full" in search_df.columns:
+        team_filtered = search_df[search_df["Team_Full"] == team_name]
+        if not team_filtered.empty:
+            search_df = team_filtered
+    
+    # Try each pattern
+    for pattern in patterns:
+        matches = search_df[search_df["Player_Full"].str.strip() == pattern]
+        if not matches.empty:
+            return matches
+    
+    # Fallback: match by last name only within the team
+    last_name_matches = search_df[search_df["Player_Full"].str.contains(last_name, case=False, na=False)]
+    if len(last_name_matches) == 1:
+        return last_name_matches
+    
+    # If multiple last name matches, try to narrow by first initial
+    if not last_name_matches.empty:
+        initial_matches = last_name_matches[
+            last_name_matches["Player_Full"].str.strip().str.startswith(first_initial[0], na=False)
+        ]
+        if len(initial_matches) == 1:
+            return initial_matches
+    
+    return pd.DataFrame()
+
+
 # ---------------- DATA LOADERS – TEAM LADDERS ----------------
 def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
     header_idx_candidates = raw.index[
@@ -948,7 +1016,7 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
         "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
         "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
-        "SFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
+        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
     }
 
     POSITION_ABBREV_TO_FULL = {
@@ -5824,29 +5892,73 @@ elif page == "Player Profile":
         render_sortable_table(html_season_table)
 
     # -----------------------------------
-    # Traits Snapshot (ENRICHED, selected season)
+    # Traits Snapshot (ENRICHED, selected season) - Professional Card Design
     # -----------------------------------
-    st.markdown("---")
-    st.markdown("<h3 style='color: #FFFFFF; margin-bottom: 15px;'>🎯 Traits Snapshot (ENRICHED)</h3>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
 
     try:
         traits_selected = load_traits(int(selected_season))
         if traits_selected is not None and not traits_selected.empty and "Player_Full" in traits_selected.columns:
-            t = traits_selected[traits_selected["Player_Full"] == selected_player].copy()
+            # Use smart matching function to handle abbreviated names
+            t = match_player_name_to_traits(selected_player, traits_selected, latest_team)
             if not t.empty:
                 row = t.iloc[0]
-                cols = st.columns(5)
+                
+                # Get all ratings for percentile calculation
+                all_ratings = pd.to_numeric(traits_selected["Rating"], errors="coerce").dropna()
+                
+                def get_trait_color_and_label(val, all_vals):
+                    """Return color and label based on percentile ranking."""
+                    try:
+                        v = float(val)
+                        percentile = (all_vals < v).sum() / len(all_vals) * 100
+                        if percentile >= 75:
+                            return "#00C853", "Elite"
+                        elif percentile >= 50:
+                            return "#FFC107", "Above Avg"
+                        elif percentile >= 25:
+                            return "#FF9800", "Below Avg"
+                        else:
+                            return "#F44336", "Poor"
+                    except:
+                        return "#9E9E9E", "—"
+                
+                # Header
+                st.markdown("""
+                <div style='display: flex; align-items: center; margin-bottom: 20px; margin-top: 20px;'>
+                    <span style='font-size: 1.5em; margin-right: 12px;'>🎯</span>
+                    <h3 style='color: #FFFFFF; margin: 0; font-size: 1.4em; font-weight: 700;'>Player Traits Analysis</h3>
+                    <span style='margin-left: 12px; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.85em; color: rgba(255,255,255,0.7);'>ENRICHED</span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Use Streamlit columns for reliable rendering
+                trait_cols = st.columns(5)
                 metrics = [
-                    ("Rating", row.get("Rating")),
-                    ("Ball Winning", row.get("Ball Winning")),
-                    ("Ball Use", row.get("Ball Use")),
-                    ("Aerial", row.get("Aerial")),
-                    ("Defence", row.get("Defence")),
+                    ("Rating", "Rating", row.get("Rating")),
+                    ("Ball Winning", "Ball Winning", row.get("Ball Winning")),
+                    ("Ball Use", "Ball Use", row.get("Ball Use")),
+                    ("Aerial", "Aerial", row.get("Aerial")),
+                    ("Defence", "Defence", row.get("Defence")),
                 ]
-                for i, (label, val) in enumerate(metrics):
-                    with cols[i]:
+                
+                for i, (label, col_name, val) in enumerate(metrics):
+                    with trait_cols[i]:
                         v = safe_float(val)
-                        st.metric(label, "—" if v is None else f"{v:.2f}")
+                        all_trait_vals = pd.to_numeric(traits_selected[col_name], errors="coerce").dropna() if col_name in traits_selected.columns else all_ratings
+                        color, tier = get_trait_color_and_label(v, all_trait_vals) if v else ("#9E9E9E", "—")
+                        display_val = f"{v:.2f}" if v else "—"
+                        
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
+                                    border: 1px solid rgba(255,255,255,0.1); border-left: 3px solid {color};
+                                    border-radius: 10px; padding: 16px 10px; text-align: center;'>
+                            <div style='font-size: 0.7em; color: rgba(255,255,255,0.5); text-transform: uppercase;
+                                        letter-spacing: 1px; margin-bottom: 6px; font-weight: 600;'>{label}</div>
+                            <div style='font-size: 1.8em; font-weight: 800; color: {color}; line-height: 1;'>{display_val}</div>
+                            <div style='font-size: 0.65em; color: rgba(255,255,255,0.4); margin-top: 4px;'>{tier}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
             else:
                 st.info("No ENRICHED traits row found for this player in the selected season.")
         else:
@@ -5874,7 +5986,8 @@ elif page == "Player Profile":
 
         traits_2025 = load_traits(CURRENT_SEASON)
         if traits_2025 is not None and not traits_2025.empty and "Player_Full" in traits_2025.columns:
-            player_traits_2025 = traits_2025[traits_2025["Player_Full"] == selected_player].copy()
+            # Use smart matching function to handle abbreviated names
+            player_traits_2025 = match_player_name_to_traits(selected_player, traits_2025, latest_team)
 
             if "Season" in player_traits_2025.columns:
                 player_traits_2025["Season"] = pd.to_numeric(player_traits_2025["Season"], errors="coerce")
@@ -5948,76 +6061,89 @@ elif page == "Player Profile":
                             position_rank = int((pos_df["Rating"] >= rv).sum())
 
                 # ---------------------------
-                # Render KPI cards
+                # Render Professional KPI Dashboard
                 # ---------------------------
                 
+                st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+                
+                # Header
+                st.markdown("""
+                <div style='display: flex; align-items: center; justify-content: center; margin-bottom: 20px;'>
+                    <span style='font-size: 1.5em; margin-right: 12px;'>⭐</span>
+                    <h3 style='color: #FFFFFF; margin: 0; font-size: 1.4em; font-weight: 700;'>Performance Rankings</h3>
+                    <span style='margin-left: 12px; background: rgba(255,215,0,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.85em; color: #FFD700;'>2025</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-                st.markdown("---")
-                st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>⭐ Key Performance Metrics (2025 Traits)</h3>", unsafe_allow_html=True)
-
-                key_metrics = []
-
+                # Use Streamlit columns
+                kpi_cols = st.columns(3)
+                
                 if rv is not None:
                     all_ratings_traits = pd.to_numeric(all_traits_sorted["Rating"], errors="coerce").dropna()
                     bg_color, _ = rating_colour_for_value(rv, all_ratings_traits)
                     rating_label = get_trait_label(rv)
-
-                    if bg_color == "#008000":
-                        rating_gradient = "rgba(0,128,0,0.3)"
-                        rating_text_color = "#FFFFFF"
-                    elif bg_color == "#90EE90":
-                        rating_gradient = "rgba(144,238,144,0.3)"
-                        rating_text_color = "#000000"
-                    elif bg_color == "#FFA500":
-                        rating_gradient = "rgba(255,165,0,0.3)"
-                        rating_text_color = "#000000"
+                    
+                    # Determine tier color
+                    if rv >= 3.0:
+                        tier_color = "#00C853"
+                    elif rv >= 2.5:
+                        tier_color = "#8BC34A"
+                    elif rv >= 2.0:
+                        tier_color = "#FFC107"
                     else:
-                        rating_gradient = "rgba(255,0,0,0.3)"
-                        rating_text_color = "#FFFFFF"
-
-                    key_metrics.append(f"""
-                    <div style='background: linear-gradient(135deg, {rating_gradient} 0%, rgba(0,0,0,0.2) 100%);
-                                border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
-                        <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
-                        <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rv:.2f}</div>
-                        <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
-                    </div>
-                    """)
+                        tier_color = "#F44336"
+                    
+                    with kpi_cols[0]:
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
+                                    border: 1px solid rgba(255,255,255,0.1); border-top: 3px solid {tier_color};
+                                    border-radius: 12px; padding: 20px 16px; text-align: center;'>
+                            <div style='font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase;
+                                        letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600;'>Overall Rating</div>
+                            <div style='font-size: 2.8em; font-weight: 800; color: {tier_color}; line-height: 1;'>{rv:.2f}</div>
+                            <div style='margin-top: 10px; display: inline-block; background: rgba(255,255,255,0.1);
+                                        padding: 4px 12px; border-radius: 15px; font-size: 0.8em; color: {tier_color};
+                                        font-weight: 600;'>{rating_label}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                 if overall_rank:
-                    key_metrics.append(f"""
-                    <div style='background: linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%);
-                                border-left: 5px solid #FFD700; padding: 25px; border-radius: 12px; margin-bottom: 15px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
-                        <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>OVERALL RANK</div>
-                        <div style='color: #FFD700; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(overall_rank)}</div>
-                        <div style='color: rgba(255,215,0,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>Out of {len(all_traits_sorted)} Players</div>
-                    </div>
-                    """)
+                    with kpi_cols[1]:
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0.1) 100%);
+                                    border: 1px solid rgba(255,255,255,0.1); border-top: 3px solid #FFD700;
+                                    border-radius: 12px; padding: 20px 16px; text-align: center;'>
+                            <div style='font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase;
+                                        letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600;'>League Rank</div>
+                            <div style='font-size: 2.8em; font-weight: 800; color: #FFD700; line-height: 1;'>{get_ordinal(overall_rank)}</div>
+                            <div style='margin-top: 10px; font-size: 0.75em; color: rgba(255,255,255,0.5);'>
+                                out of <span style='color: #FFD700; font-weight: 600;'>{len(all_traits_sorted)}</span> players
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                 if position_rank and position:
-                    key_metrics.append(f"""
-                    <div style='background: linear-gradient(135deg, rgba(100,149,237,0.25) 0%, rgba(100,149,237,0.05) 100%);
-                                border-left: 5px solid #6495ED; padding: 25px; border-radius: 12px; margin-bottom: 15px;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
-                        <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>POSITION RANK</div>
-                        <div style='color: #6495ED; font-size: 4em; font-weight: 900; line-height: 1;'>{get_ordinal(position_rank)}</div>
-                        <div style='color: rgba(100,149,237,0.8); font-size: 1.1em; font-weight: 600; margin-top: 12px;'>{position}</div>
-                    </div>
-                    """)
+                    with kpi_cols[2]:
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, rgba(100,149,237,0.1) 0%, rgba(0,0,0,0.1) 100%);
+                                    border: 1px solid rgba(255,255,255,0.1); border-top: 3px solid #6495ED;
+                                    border-radius: 12px; padding: 20px 16px; text-align: center;'>
+                            <div style='font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase;
+                                        letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600;'>Position Rank</div>
+                            <div style='font-size: 2.8em; font-weight: 800; color: #6495ED; line-height: 1;'>{get_ordinal(position_rank)}</div>
+                            <div style='margin-top: 10px; display: inline-block; background: rgba(100,149,237,0.2);
+                                        padding: 4px 12px; border-radius: 15px; font-size: 0.8em; color: #6495ED;
+                                        font-weight: 600;'>{position}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-                if key_metrics:
-                    c1, c2, c3 = st.columns(3)
-                    if len(key_metrics) > 0:
-                        render_html(c1, key_metrics[0])
-                    if len(key_metrics) > 1:
-                        render_html(c2, key_metrics[1])
-                    if len(key_metrics) > 2:
-                        render_html(c3, key_metrics[2])
-
-                st.markdown("---")
-                st.markdown("<h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 25px;'>📊 Trait Analysis</h3>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+                st.markdown("""
+                <div style='display: flex; align-items: center; justify-content: center; margin-bottom: 24px;'>
+                    <span style='font-size: 1.5em; margin-right: 12px;'>📊</span>
+                    <h3 style='color: #FFFFFF; margin: 0; font-size: 1.4em; font-weight: 700;'>Trait Analysis</h3>
+                </div>
+                """, unsafe_allow_html=True)
 
                 ball_winning_substats = {
                     "Stoppage": player_trait.get("Stoppage", ""),

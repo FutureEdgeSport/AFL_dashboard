@@ -1,0 +1,19 @@
+team_name,full_name,abbreviation,champion_data_team_id,cd_team_id_formatted
+Adelaide,Adelaide Crows,ADL,10,CD_T10
+Brisbane Lions,Brisbane,BRI,20,CD_T20
+Carlton,Carlton Blues,CAR,30,CD_T30
+Collingwood,Collingwood Magpies,COL,40,CD_T40
+Essendon,Essendon Bombers,ESS,50,CD_T50
+Fremantle,Fremantle Dockers,FRE,60,CD_T60
+Geelong,Geelong Cats,GEE,70,CD_T70
+Hawthorn,Hawthorn Hawks,HAW,80,CD_T80
+Melbourne,Melbourne Demons,MEL,90,CD_T90
+North Melbourne,North Melbourne Kangaroos,NTH,100,CD_T100
+Port Adelaide,Port Adelaide Power,PTA,110,CD_T110
+Richmond,Richmond Tigers,RIC,120,CD_T120
+St Kilda,St Kilda Saints,STK,130,CD_T130
+Western Bulldogs,Footscray,WBD,140,CD_T140
+West Coast,West Coast Eagles,WCE,150,CD_T150
+Sydney,Sydney Swans,SYD,160,CD_T160
+Gold Coast,Gold Coast Suns,GCS,1000,CD_T1000
+GWS Giants,Greater Western Sydney,GWS,1010,CD_T1010

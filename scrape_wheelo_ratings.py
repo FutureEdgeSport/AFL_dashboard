@@ -16,23 +16,25 @@ Data Sources:
     - Player Stats: https://www.wheeloratings.com/afl_stats.html  
     - Squad Lists: https://www.wheeloratings.com/afl_team_lists.html
 
-Excel Files Updated:
-    - AFL Team Ratings.xlsx
-    - AFL Player Ratings.xlsx
+Output Files (SEPARATE from main app files to avoid corruption):
+    - Wheelo_Team_Data.xlsx (team statistics)
+    - Wheelo_Player_Data.xlsx (player statistics and squad lists)
+    
+NOTE: This scraper saves to SEPARATE Excel files to avoid corrupting the main
+      AFL Team Ratings.xlsx and AFL Player Ratings.xlsx files. openpyxl strips
+      Excel features like conditional formatting when saving, which breaks the app.
 
 Sheet Naming Conventions:
-    Team Ratings (AFL Team Ratings.xlsx):
+    Wheelo_Team_Data.xlsx:
         - "Wheelo 2025 Season" for full season data
         - "Wheelo 2025 L10" for last 10 games
         - "Wheelo 2025 L5" for last 5 games
         
-    Player Ratings (AFL Player Ratings.xlsx):
+    Wheelo_Player_Data.xlsx:
         - "Wheelo 2025 Season" for full season data
         - "Wheelo 2025 L10" for last 10 games
         - "Wheelo 2025 L5" for last 5 games
         - "2025 AFL Squads" for squad lists
-        
-    Note: "Wheelo" prefix prevents overwriting existing app data sheets.
 """
 
 import os
@@ -67,6 +69,11 @@ except ImportError:
 # Configuration
 BASE_DIR = Path(__file__).parent
 DOWNLOAD_DIR = BASE_DIR / "wheelo_downloads"
+# IMPORTANT: Save to SEPARATE files to avoid corrupting the main Excel files
+# openpyxl strips Excel features (conditional formatting, data validation, etc.) when saving
+WHEELO_TEAM_FILE = BASE_DIR / "Wheelo_Team_Data.xlsx"
+WHEELO_PLAYER_FILE = BASE_DIR / "Wheelo_Player_Data.xlsx"
+# Original files (kept for reference but NOT modified by scraper)
 TEAM_RATINGS_FILE = BASE_DIR / "AFL Team Ratings.xlsx"
 PLAYER_RATINGS_FILE = BASE_DIR / "AFL Player Ratings.xlsx"
 
@@ -366,133 +373,63 @@ class WheeloScraper:
             self._close_driver()
     
     def update_team_excel(self, downloaded_files):
-        """Update AFL Team Ratings.xlsx with downloaded data."""
+        """Update Wheelo Team Data file with downloaded data."""
         if not downloaded_files:
             print("  ⚠️ No files to update")
             return
             
-        if not TEAM_RATINGS_FILE.exists():
-            print(f"  ⚠️ Excel file not found: {TEAM_RATINGS_FILE}")
-            return
-            
-        print(f"\n📝 Updating: {TEAM_RATINGS_FILE.name}")
+        print(f"\n📝 Saving to: {WHEELO_TEAM_FILE.name}")
         
-        # Create backup
-        backup_name = TEAM_RATINGS_FILE.with_suffix(f".backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        shutil.copy(TEAM_RATINGS_FILE, backup_name)
-        print(f"  📦 Backup created: {backup_name.name}")
-        
-        # Load existing workbook
-        book = load_workbook(TEAM_RATINGS_FILE)
-        
-        for season, csv_path in downloaded_files.items():
-            sheet_name = SEASONS[season]["team_sheet"]
-            print(f"  Updating sheet: {sheet_name}")
-            
-            # Read CSV
-            try:
-                df = pd.read_csv(csv_path)
-            except Exception as e:
-                print(f"    ❌ Error reading CSV: {e}")
-                continue
-            
-            # Remove existing sheet if it exists
-            if sheet_name in book.sheetnames:
-                del book[sheet_name]
+        # Create new Excel file with all team data (don't touch original files)
+        with pd.ExcelWriter(WHEELO_TEAM_FILE, engine='openpyxl') as writer:
+            for season, csv_path in downloaded_files.items():
+                sheet_name = SEASONS[season]["team_sheet"]
+                print(f"  Writing sheet: {sheet_name}")
                 
-            # Create new sheet
-            ws = book.create_sheet(sheet_name)
-            
-            # Write headers
-            for col_idx, col_name in enumerate(df.columns, 1):
-                ws.cell(row=1, column=col_idx, value=col_name)
-                
-            # Write data
-            for row_idx, row in enumerate(df.values, 2):
-                for col_idx, value in enumerate(row, 1):
-                    ws.cell(row=row_idx, column=col_idx, value=value)
+                try:
+                    df = pd.read_csv(csv_path)
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    print(f"    ✅ Written {len(df)} rows")
+                except Exception as e:
+                    print(f"    ❌ Error: {e}")
                     
-            print(f"    ✅ Updated with {len(df)} rows")
-            
-        book.save(TEAM_RATINGS_FILE)
-        print(f"  💾 Saved: {TEAM_RATINGS_FILE.name}")
+        print(f"  💾 Saved: {WHEELO_TEAM_FILE.name}")
     
     def update_player_excel(self, downloaded_files, squad_file=None):
-        """Update AFL Player Ratings.xlsx with downloaded data."""
+        """Update Wheelo Player Data file with downloaded data."""
         if not downloaded_files and not squad_file:
             print("  ⚠️ No files to update")
             return
             
-        if not PLAYER_RATINGS_FILE.exists():
-            print(f"  ⚠️ Excel file not found: {PLAYER_RATINGS_FILE}")
-            return
-            
-        print(f"\n📝 Updating: {PLAYER_RATINGS_FILE.name}")
+        print(f"\n📝 Saving to: {WHEELO_PLAYER_FILE.name}")
         
-        # Create backup
-        backup_name = PLAYER_RATINGS_FILE.with_suffix(f".backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        shutil.copy(PLAYER_RATINGS_FILE, backup_name)
-        print(f"  📦 Backup created: {backup_name.name}")
-        
-        # Load existing workbook
-        book = load_workbook(PLAYER_RATINGS_FILE)
-        
-        # Update player stats sheets
-        for season, csv_path in downloaded_files.items():
-            sheet_name = SEASONS[season]["player_sheet"]
-            print(f"  Updating sheet: {sheet_name}")
-            
-            # Read CSV
-            try:
-                df = pd.read_csv(csv_path)
-            except Exception as e:
-                print(f"    ❌ Error reading CSV: {e}")
-                continue
-            
-            # Remove existing sheet if it exists
-            if sheet_name in book.sheetnames:
-                del book[sheet_name]
+        # Create new Excel file with all player data (don't touch original files)
+        with pd.ExcelWriter(WHEELO_PLAYER_FILE, engine='openpyxl') as writer:
+            # Update player stats sheets
+            for season, csv_path in downloaded_files.items():
+                sheet_name = SEASONS[season]["player_sheet"]
+                print(f"  Writing sheet: {sheet_name}")
                 
-            # Create new sheet
-            ws = book.create_sheet(sheet_name)
-            
-            # Write headers
-            for col_idx, col_name in enumerate(df.columns, 1):
-                ws.cell(row=1, column=col_idx, value=col_name)
+                try:
+                    df = pd.read_csv(csv_path)
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    print(f"    ✅ Written {len(df)} rows")
+                except Exception as e:
+                    print(f"    ❌ Error: {e}")
                 
-            # Write data
-            for row_idx, row in enumerate(df.values, 2):
-                for col_idx, value in enumerate(row, 1):
-                    ws.cell(row=row_idx, column=col_idx, value=value)
-                    
-            print(f"    ✅ Updated with {len(df)} rows")
-            
-        # Update squad list sheet
-        if squad_file:
-            sheet_name = "2025 AFL Squads"
-            print(f"  Updating sheet: {sheet_name}")
-            
-            try:
-                df = pd.read_csv(squad_file)
+            # Update squad list sheet
+            if squad_file:
+                sheet_name = "2025 AFL Squads"
+                print(f"  Writing sheet: {sheet_name}")
                 
-                if sheet_name in book.sheetnames:
-                    del book[sheet_name]
-                    
-                ws = book.create_sheet(sheet_name)
+                try:
+                    df = pd.read_csv(squad_file)
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    print(f"    ✅ Written {len(df)} rows")
+                except Exception as e:
+                    print(f"    ❌ Error: {e}")
                 
-                for col_idx, col_name in enumerate(df.columns, 1):
-                    ws.cell(row=1, column=col_idx, value=col_name)
-                    
-                for row_idx, row in enumerate(df.values, 2):
-                    for col_idx, value in enumerate(row, 1):
-                        ws.cell(row=row_idx, column=col_idx, value=value)
-                        
-                print(f"    ✅ Updated with {len(df)} rows")
-            except Exception as e:
-                print(f"    ❌ Error updating squads: {e}")
-            
-        book.save(PLAYER_RATINGS_FILE)
-        print(f"  💾 Saved: {PLAYER_RATINGS_FILE.name}")
+        print(f"  💾 Saved: {WHEELO_PLAYER_FILE.name}")
 
 
 def interactive_menu():
