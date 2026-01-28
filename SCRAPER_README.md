@@ -1,8 +1,84 @@
-# AFL Image Scraper
+# AFL Scrapers
 
-This script downloads player photos and team logos from AFL.com.au to keep your dashboard images consistent and up-to-date.
+This directory contains scripts to download AFL data and images to keep your dashboard up-to-date.
 
-## Features
+## Available Scrapers
+
+1. **[Wheelo Ratings Scraper](#wheelo-ratings-scraper)** - Downloads team/player statistics
+2. **[AFL Image Scraper](#afl-image-scraper)** - Downloads player photos and team logos
+
+---
+
+## Wheelo Ratings Scraper
+
+The `scrape_wheelo_ratings.py` script downloads AFL statistics from [wheeloratings.com](https://www.wheeloratings.com) and updates your Excel spreadsheets.
+
+### Features
+
+- Downloads team statistics (Season, Last 10 games, Last 5 games)
+- Downloads player statistics (Season, Last 10 games, Last 5 games)
+- Downloads current squad lists
+- Automatically updates `AFL Team Ratings.xlsx` and `AFL Player Ratings.xlsx`
+- Creates backups before updating
+- Supports headless Chrome for background operation
+
+### Requirements
+
+```bash
+pip install selenium webdriver-manager pandas openpyxl
+```
+
+### Usage
+
+**Interactive Mode:**
+```bash
+python scrape_wheelo_ratings.py
+```
+
+**Command Line:**
+```bash
+python scrape_wheelo_ratings.py --all      # Download everything
+python scrape_wheelo_ratings.py --team     # Team stats only
+python scrape_wheelo_ratings.py --player   # Player stats only
+python scrape_wheelo_ratings.py --squads   # Squad lists only
+```
+
+**Options:**
+- `--no-headless` - Run browser in visible mode (for debugging)
+
+### Data Sources
+
+| Data Type | URL | Excel File | Sheet Names |
+|-----------|-----|------------|-------------|
+| Team Stats | afl_stats_team.html | AFL Team Ratings.xlsx | 2025, 2025 Ladders (L10), 2025 Ladders (L5) |
+| Player Stats | afl_stats.html | AFL Player Ratings.xlsx | 2025, 2025 (L10), 2025 (L5) |
+| Squad Lists | afl_team_lists.html | AFL Player Ratings.xlsx | 2025 AFL Squads |
+
+### Scheduling
+
+To run automatically, you can set up a cron job or scheduled task:
+
+**macOS/Linux (cron):**
+```bash
+# Edit crontab
+crontab -e
+
+# Run every Monday at 8am
+0 8 * * 1 cd /path/to/AFL_dashboard && python scrape_wheelo_ratings.py --all
+```
+
+**Windows (Task Scheduler):**
+1. Open Task Scheduler
+2. Create Basic Task
+3. Set trigger (e.g., weekly)
+4. Action: Start a program
+5. Program: `python`
+6. Arguments: `scrape_wheelo_ratings.py --all`
+7. Start in: `C:\path\to\AFL_dashboard`
+
+---
+
+## AFL Image Scraper
 
 - Downloads team logos for all 18 AFL teams
 - Downloads player photos based on your Excel player list
