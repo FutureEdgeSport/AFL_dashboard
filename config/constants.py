@@ -217,6 +217,47 @@ class UIConfig:
 
 
 # ============================================================================
+# METRIC TOOLTIPS - Explanations for key metrics
+# ============================================================================
+METRIC_TOOLTIPS: Dict[str, str] = {
+    # Team Metrics
+    "Ball Winning Ranking": "Measures a team's ability to win contested possessions, clearances, and ground balls. Higher = better at winning the ball.",
+    "Ball Movement Ranking": "Evaluates efficiency in moving the ball from defense to attack through kicking, handballing, and chain plays.",
+    "Scoring Ranking": "Assesses attacking efficiency including goals per inside 50, accuracy, and expected score performance.",
+    "Defence Ranking": "Measures defensive effectiveness including scores conceded, defensive pressure, and opposition scoring efficiency.",
+    "Pressure Ranking": "Evaluates tackling pressure, forward 50 tackles, pressure acts, and 1%ers defensive efforts.",
+    "Team Rating": "Overall composite rating combining all game phases. Higher = stronger overall team performance.",
+    
+    # Player Metrics  
+    "Rating": "Overall player rating based on performance across all measured attributes. Scale typically 0-100.",
+    "Ball Winning": "Player's ability to win contested possessions, clearances, and ground balls.",
+    "Ball Use": "Efficiency with disposals including kick/handball accuracy and decision making.",
+    "Aerial": "Marking ability including contested marks, intercept marks, and aerial duels won.",
+    "Defence": "Defensive actions including tackles, spoils, intercepts, and one-percenters.",
+    
+    # Age/Position Metrics
+    "Age Band": "Player age groupings for list composition analysis. Elite lists typically balance across bands.",
+    "Depth Position": "Primary positional role for depth chart analysis.",
+    "RatingPoints_Avg": "Average rating points accumulated per game. Higher = more consistent impact.",
+    
+    # Comparison Metrics
+    "League Avg": "Average value across all 18 AFL teams for comparison.",
+    "Top 4 Avg": "Average value for current top 4 teams - benchmark for elite performance.",
+    "Diff vs League": "Difference compared to league average. Positive = above average.",
+    "Diff vs Top 4": "Difference compared to top 4 average. Positive = exceeding elite benchmark.",
+    "Rank": "Position among 18 teams (1st = best, 18th = worst).",
+}
+
+
+def get_tooltip_html(metric: str) -> str:
+    """Get HTML attribute for tooltip on a metric."""
+    tooltip_text = METRIC_TOOLTIPS.get(metric, "")
+    if tooltip_text:
+        return f' data-tooltip="{tooltip_text}"'
+    return ""
+
+
+# ============================================================================
 # UNIFIED TABLE STYLES
 # ============================================================================
 UNIFIED_TABLE_CSS = """
@@ -526,6 +567,281 @@ UNIFIED_TABLE_CSS = """
 .fe-table-light.fe-sortable thead th:hover {
     background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
 }
+
+/* ============================================
+   EXPORT BUTTONS
+   ============================================ */
+
+.fe-export-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.fe-export-btn {
+    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fe-export-btn:hover {
+    background: linear-gradient(135deg, #3a3a4e 0%, #4a4a5e 100%);
+    border-color: #FFD700;
+    color: #FFD700;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ============================================
+   LOADING SKELETONS
+   ============================================ */
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.fe-skeleton-container {
+    padding: 20px;
+}
+
+.fe-skeleton {
+    background: linear-gradient(90deg, #2a2a3e 25%, #3a3a4e 50%, #2a2a3e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.fe-skeleton-header {
+    height: 48px;
+    width: 100%;
+}
+
+.fe-skeleton-row {
+    height: 40px;
+    width: 100%;
+}
+
+.fe-skeleton-card {
+    height: 120px;
+    width: 100%;
+}
+
+/* ============================================
+   TOOLTIPS
+   ============================================ */
+
+.fe-tooltip {
+    position: fixed;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+    color: #FFFFFF;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+    max-width: 280px;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,215,0,0.3);
+    pointer-events: none;
+    animation: tooltipFade 0.2s ease;
+}
+
+@keyframes tooltipFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fe-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #2a2a3e;
+}
+
+[data-tooltip] {
+    cursor: help;
+    border-bottom: 1px dotted rgba(255,215,0,0.5);
+}
+
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+
+.fe-theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.fe-theme-toggle:hover {
+    background: linear-gradient(135deg, #3a3a4e 0%, #4a4a5e 100%);
+    border-color: #FFD700;
+    color: #FFD700;
+    transform: scale(1.05);
+}
+
+/* ============================================
+   LIGHT MODE THEME
+   ============================================ */
+
+.fe-light-mode .stApp {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+}
+
+.fe-light-mode .fe-table {
+    background: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.fe-light-mode .fe-table thead th {
+    background: linear-gradient(135deg, #333333 0%, #444444 100%);
+}
+
+.fe-light-mode .fe-table tbody td {
+    color: #333333;
+    border-bottom-color: rgba(0,0,0,0.08);
+}
+
+.fe-light-mode .fe-table tbody td:first-child {
+    color: #1a1a1a;
+}
+
+.fe-light-mode .fe-table tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.03);
+}
+
+.fe-light-mode .fe-table tbody tr:hover {
+    background: rgba(255,215,0,0.1) !important;
+}
+
+.fe-light-mode .fe-export-btn,
+.fe-light-mode .fe-theme-toggle {
+    background: linear-gradient(135deg, #333333 0%, #444444 100%);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    /* Hide non-essential elements */
+    .stSidebar,
+    .stButton,
+    .fe-export-buttons,
+    .fe-theme-toggle,
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    header,
+    footer {
+        display: none !important;
+    }
+    
+    /* Full width content */
+    .main .block-container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Clean table styling for print */
+    .fe-table {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+    }
+    
+    .fe-table thead th {
+        background: #333 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .fe-table tbody tr:nth-child(even) {
+        background: #f5f5f5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Ensure color-coded cells print properly */
+    .cell-elite, .cell-good, .cell-average, .cell-below {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Page breaks */
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+    
+    .fe-table {
+        page-break-inside: avoid;
+    }
+    
+    /* Print header */
+    @page {
+        margin: 1cm;
+        @top-center {
+            content: "FutureEdge AFL Dashboard";
+        }
+        @bottom-center {
+            content: counter(page);
+        }
+    }
+}
+
+/* ============================================
+   KEYBOARD SHORTCUT HINT
+   ============================================ */
+
+.fe-shortcuts-hint {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    color: rgba(255,255,255,0.7);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.75em;
+    z-index: 9998;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    line-height: 1.6;
+}
+
+.fe-shortcuts-hint kbd {
+    background: rgba(255,255,255,0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    margin: 0 2px;
+}
 </style>
 
 <!-- Sortable Table JavaScript -->
@@ -632,6 +948,176 @@ function sortTable(table, colIndex, header) {
         row.style.background = '';
     });
 }
+
+// ============================================
+// KEYBOARD SHORTCUTS
+// ============================================
+document.addEventListener('keydown', function(e) {
+    // Only trigger if not in an input field
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    
+    const shortcuts = {
+        '1': 0,  // Home
+        '2': 1,  // Club Overview
+        '3': 2,  // Player Search
+        '4': 3,  // Player Profile
+        '5': 4,  // Depth Chart
+        '6': 5,  // Team List Summary
+        '7': 6,  // Draft Guide
+        '8': 7,  // Individual Development Plan
+        '9': 8,  // Game Model Scorecard
+        '0': 9,  // Club Comparison
+    };
+    
+    if (e.key in shortcuts && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const sidebar = document.querySelector('[data-testid="stSidebar"]');
+        if (sidebar) {
+            const radioButtons = sidebar.querySelectorAll('input[type="radio"]');
+            if (radioButtons[shortcuts[e.key]]) {
+                radioButtons[shortcuts[e.key]].click();
+            }
+        }
+    }
+    
+    // Ctrl+P or Cmd+P for print
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+    }
+    
+    // Ctrl+D or Cmd+D for theme toggle
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        toggleTheme();
+    }
+});
+
+// ============================================
+// THEME TOGGLE (Dark/Light)
+// ============================================
+function toggleTheme() {
+    const body = document.body;
+    const isLight = body.classList.toggle('fe-light-mode');
+    localStorage.setItem('fe-theme', isLight ? 'light' : 'dark');
+    
+    // Update theme button text if it exists
+    const themeBtn = document.querySelector('.fe-theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+    }
+}
+
+// Load saved theme preference
+(function() {
+    const saved = localStorage.getItem('fe-theme');
+    if (saved === 'light') {
+        document.body.classList.add('fe-light-mode');
+    }
+})();
+
+// ============================================
+// EXPORT TABLE TO CSV
+// ============================================
+function exportTableToCSV(tableSelector, filename) {
+    const table = document.querySelector(tableSelector);
+    if (!table) {
+        alert('No table found to export');
+        return;
+    }
+    
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('th, td');
+        const rowData = [];
+        cols.forEach(col => {
+            // Clean the text content
+            let text = col.textContent.trim().replace(/"/g, '""');
+            rowData.push('"' + text + '"');
+        });
+        csv.push(rowData.join(','));
+    });
+    
+    // Create download link
+    const blob = new Blob([csv.join('\\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename || 'table_export.csv';
+    link.click();
+}
+
+// Add export buttons to tables
+function addExportButtons() {
+    const tables = document.querySelectorAll('.fe-table');
+    tables.forEach((table, index) => {
+        if (table.dataset.exportInit) return;
+        table.dataset.exportInit = 'true';
+        
+        // Create export button container
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'fe-export-buttons';
+        btnContainer.innerHTML = `
+            <button class="fe-export-btn" onclick="exportTableToCSV('.fe-table:nth-of-type(${index + 1})', 'afl_data_${index + 1}.csv')">
+                📥 Export CSV
+            </button>
+        `;
+        
+        // Insert before table
+        table.parentNode.insertBefore(btnContainer, table);
+    });
+}
+
+setTimeout(addExportButtons, 1000);
+setTimeout(addExportButtons, 2500);
+
+// ============================================
+// LOADING SKELETONS
+// ============================================
+function showLoadingSkeleton(container) {
+    container.innerHTML = `
+        <div class="fe-skeleton-container">
+            <div class="fe-skeleton fe-skeleton-header"></div>
+            <div class="fe-skeleton fe-skeleton-row"></div>
+            <div class="fe-skeleton fe-skeleton-row"></div>
+            <div class="fe-skeleton fe-skeleton-row"></div>
+            <div class="fe-skeleton fe-skeleton-row"></div>
+        </div>
+    `;
+}
+
+// ============================================
+// TOOLTIPS
+// ============================================
+function initTooltips() {
+    document.querySelectorAll('[data-tooltip]').forEach(el => {
+        if (el.dataset.tooltipInit) return;
+        el.dataset.tooltipInit = 'true';
+        
+        el.addEventListener('mouseenter', function(e) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'fe-tooltip';
+            tooltip.textContent = this.dataset.tooltip;
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = rect.top - tooltip.offsetHeight - 8 + 'px';
+            
+            this._tooltip = tooltip;
+        });
+        
+        el.addEventListener('mouseleave', function() {
+            if (this._tooltip) {
+                this._tooltip.remove();
+                this._tooltip = null;
+            }
+        });
+    });
+}
+
+setTimeout(initTooltips, 500);
+setTimeout(initTooltips, 1500);
 </script>
 """
 

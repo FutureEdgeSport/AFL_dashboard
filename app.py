@@ -24,7 +24,7 @@ from config.constants import (
     AGE_BANDS, AGE_BANDS_ALT,
     METRIC_ORDER, RATING_COL_CANDIDATES, TRAIT_COLUMNS,
     UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, safe_int, normalize_team_name,
-    get_unified_table_css
+    get_unified_table_css, METRIC_TOOLTIPS, get_tooltip_html
 )
 
 # ---------------- STREAMLIT CONFIG ----------------
@@ -36,6 +36,17 @@ st.set_page_config(
 
 # Inject unified table CSS globally
 st.markdown(get_unified_table_css(), unsafe_allow_html=True)
+
+# Add theme toggle button and keyboard shortcuts hint
+st.markdown('''
+<button class="fe-theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+<div class="fe-shortcuts-hint">
+    <strong>Keyboard Shortcuts:</strong><br>
+    <kbd>1</kbd>-<kbd>0</kbd> Navigate pages<br>
+    <kbd>Ctrl</kbd>+<kbd>P</kbd> Print report<br>
+    <kbd>Ctrl</kbd>+<kbd>D</kbd> Toggle theme
+</div>
+''', unsafe_allow_html=True)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -6438,13 +6449,13 @@ elif page == "Team List Summary":
     html_age_table = """<table class='fe-table fe-table-striped fe-sortable'>
 <thead>
 <tr>
-<th>Age Band</th>
+<th data-tooltip="Player age groupings for list composition analysis">Age Band</th>
 <th>""" + selected_team + """</th>
-<th>League Avg</th>
-<th>Top 4 Avg</th>
-<th>Diff vs League</th>
-<th>Diff vs Top 4</th>
-<th>Rank</th>
+<th data-tooltip="Average value across all 18 AFL teams">League Avg</th>
+<th data-tooltip="Average for current top 4 teams - elite benchmark">Top 4 Avg</th>
+<th data-tooltip="Difference compared to league average. Positive = above average">Diff vs League</th>
+<th data-tooltip="Difference compared to top 4. Positive = exceeding elite benchmark">Diff vs Top 4</th>
+<th data-tooltip="Position among 18 teams (1st = best)">Rank</th>
 </tr>
 </thead>
 <tbody>
@@ -6586,13 +6597,13 @@ elif page == "Team List Summary":
     html_pos_table = """<table class='fe-table fe-table-striped fe-sortable'>
 <thead>
 <tr>
-<th>Position</th>
+<th data-tooltip="Primary positional role for depth chart analysis">Position</th>
 <th>""" + selected_team + """</th>
-<th>League Avg</th>
-<th>Top 4 Avg</th>
-<th>Diff vs League</th>
-<th>Diff vs Top 4</th>
-<th>Rank</th>
+<th data-tooltip="Average value across all 18 AFL teams">League Avg</th>
+<th data-tooltip="Average for current top 4 teams - elite benchmark">Top 4 Avg</th>
+<th data-tooltip="Difference compared to league average. Positive = above average">Diff vs League</th>
+<th data-tooltip="Difference compared to top 4. Positive = exceeding elite benchmark">Diff vs Top 4</th>
+<th data-tooltip="Position among 18 teams (1st = best)">Rank</th>
 </tr>
 </thead>
 <tbody>
