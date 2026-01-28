@@ -1823,12 +1823,12 @@ if page == "Home":
     col1, col2, col3 = st.columns([1, 3, 1])
     
     with col2:
-        # Display main logo image
+        # Display main logo image - centered
         logo_path = "team_logos/Logo Transparent.png"
         
         if os.path.exists(logo_path):
-            st.markdown("<style>.home-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='home-logo'>", unsafe_allow_html=True)
-            st.image(logo_path, width=400)
+            st.markdown("<style>.home-logo { display: flex; justify-content: center; } .home-logo img { filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)) drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }</style><div class='home-logo'>", unsafe_allow_html=True)
+            st.image(logo_path, width=350)
             st.markdown("</div>", unsafe_allow_html=True)
         else:
             # Fallback if logo not found - show placeholder
@@ -1837,20 +1837,20 @@ if page == "Home":
                 unsafe_allow_html=True
             )
         
-        # Heading
+        # Heading - reduced margin to bring closer to logo
         st.markdown(
             """
-            <h1 style='text-align: center; font-size: 2.5em; margin-top: 40px;'>
+            <h1 style='text-align: center; font-size: 2.5em; margin-top: 10px; margin-bottom: 5px;'>
                 AFL Dashboards
             </h1>
             """,
             unsafe_allow_html=True
         )
         
-        # Team selection instruction
+        # Team selection instruction - reduced margins
         st.markdown(
             """
-            <h3 style='text-align: center; color: #FFFFFF; margin-top: 30px; margin-bottom: 30px;'>
+            <h3 style='text-align: center; color: #FFFFFF; margin-top: 15px; margin-bottom: 20px;'>
                 Select Your Team
             </h3>
             """,
