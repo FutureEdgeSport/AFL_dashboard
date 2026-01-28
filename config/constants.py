@@ -225,6 +225,18 @@ UNIFIED_TABLE_CSS = """
    UNIFIED TABLE SYSTEM - FutureEdge AFL Dashboard
    ============================================ */
 
+/* Smooth fade-in animation for tables */
+@keyframes tableSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Base table styling - applied to all .fe-table variants */
 .fe-table {
     width: 100%;
@@ -236,6 +248,7 @@ UNIFIED_TABLE_CSS = """
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     margin: 20px 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    animation: tableSlideIn 0.4s ease-out;
 }
 
 /* Header styling */
@@ -285,13 +298,19 @@ UNIFIED_TABLE_CSS = """
     border-right: none;
 }
 
-/* Row hover effect */
+/* Row hover effect - professional highlight */
 .fe-table tbody tr {
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .fe-table tbody tr:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,215,0,0.08) !important;
+    box-shadow: inset 4px 0 0 #FFD700;
+}
+
+.fe-table tbody tr:hover td {
+    color: #FFFFFF;
 }
 
 /* Alternating row colors */
@@ -300,7 +319,7 @@ UNIFIED_TABLE_CSS = """
 }
 
 .fe-table tbody tr:nth-child(even):hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,215,0,0.08) !important;
 }
 
 /* ============================================
@@ -455,7 +474,165 @@ UNIFIED_TABLE_CSS = """
         padding-left: 12px;
     }
 }
+
+/* ============================================
+   SORTABLE TABLE HEADERS
+   ============================================ */
+
+/* Sortable header styling */
+.fe-table.fe-sortable thead th {
+    cursor: pointer;
+    position: relative;
+    padding-right: 28px;
+    user-select: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fe-table.fe-sortable thead th:hover {
+    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    color: #FFD700;
+}
+
+/* Sort indicator arrows */
+.fe-table.fe-sortable thead th::after {
+    content: '⇅';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75em;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+.fe-table.fe-sortable thead th:hover::after {
+    opacity: 0.8;
+}
+
+/* Active sort states */
+.fe-table.fe-sortable thead th.sort-asc::after {
+    content: '▲';
+    opacity: 1;
+    color: #FFD700;
+}
+
+.fe-table.fe-sortable thead th.sort-desc::after {
+    content: '▼';
+    opacity: 1;
+    color: #FFD700;
+}
+
+/* Light theme sortable adjustments */
+.fe-table-light.fe-sortable thead th:hover {
+    background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+}
 </style>
+
+<!-- Sortable Table JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initSortableTables();
+});
+
+// Re-initialize on Streamlit reruns
+if (typeof Streamlit !== 'undefined') {
+    document.addEventListener('streamlit:render', function() {
+        setTimeout(initSortableTables, 100);
+    });
+}
+
+// Also run after a short delay (for Streamlit dynamic content)
+setTimeout(initSortableTables, 500);
+setTimeout(initSortableTables, 1500);
+
+function initSortableTables() {
+    const tables = document.querySelectorAll('.fe-table.fe-sortable');
+    
+    tables.forEach(table => {
+        // Skip if already initialized
+        if (table.dataset.sortInit) return;
+        table.dataset.sortInit = 'true';
+        
+        const headers = table.querySelectorAll('thead th');
+        
+        headers.forEach((header, colIndex) => {
+            header.addEventListener('click', function() {
+                sortTable(table, colIndex, this);
+            });
+        });
+    });
+}
+
+function sortTable(table, colIndex, header) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    if (rows.length === 0) return;
+    
+    // Determine sort direction
+    const isAsc = header.classList.contains('sort-asc');
+    const isDesc = header.classList.contains('sort-desc');
+    
+    // Remove sort classes from all headers
+    table.querySelectorAll('thead th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
+    
+    // Set new sort direction
+    let direction;
+    if (!isAsc && !isDesc) {
+        direction = 'asc';
+        header.classList.add('sort-asc');
+    } else if (isAsc) {
+        direction = 'desc';
+        header.classList.add('sort-desc');
+    } else {
+        direction = 'asc';
+        header.classList.add('sort-asc');
+    }
+    
+    // Sort the rows
+    rows.sort((a, b) => {
+        const aCell = a.cells[colIndex];
+        const bCell = b.cells[colIndex];
+        
+        if (!aCell || !bCell) return 0;
+        
+        let aVal = aCell.textContent.trim();
+        let bVal = bCell.textContent.trim();
+        
+        // Remove ordinal suffixes (1st, 2nd, 3rd, etc.)
+        aVal = aVal.replace(/(st|nd|rd|th)$/i, '');
+        bVal = bVal.replace(/(st|nd|rd|th)$/i, '');
+        
+        // Remove percentage signs and plus signs
+        aVal = aVal.replace(/[%+]/g, '');
+        bVal = bVal.replace(/[%+]/g, '');
+        
+        // Try to parse as numbers
+        const aNum = parseFloat(aVal);
+        const bNum = parseFloat(bVal);
+        
+        let comparison;
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            comparison = aNum - bNum;
+        } else {
+            comparison = aVal.localeCompare(bVal, undefined, {numeric: true, sensitivity: 'base'});
+        }
+        
+        return direction === 'asc' ? comparison : -comparison;
+    });
+    
+    // Re-append rows in sorted order
+    rows.forEach(row => tbody.appendChild(row));
+    
+    // Re-apply zebra striping
+    rows.forEach((row, index) => {
+        row.style.background = '';
+    });
+}
+</script>
 """
 
 

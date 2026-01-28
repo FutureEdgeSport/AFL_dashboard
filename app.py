@@ -2765,7 +2765,7 @@ if page == "Overview":
 
     # Build HTML table using unified .fe-table-light CSS
     html = []
-    html.append("<table class='fe-table fe-table-light'><thead><tr>")
+    html.append("<table class='fe-table fe-table-light fe-sortable'><thead><tr>")
 
     # headers
     for c in ladder_view.columns:
@@ -4225,7 +4225,7 @@ elif page == "Club List":
     league_ratings = season_df["RatingPoints_Avg"].dropna()
 
     html = """
-<table class="fe-table">
+<table class="fe-table fe-sortable">
 <thead>
 <tr>
 <th>PLAYER</th>
@@ -4778,7 +4778,7 @@ elif page == "Player Profile":
 
         # Uses unified .fe-table CSS
         html_season_table = """
-        <table class='fe-table fe-table-striped'>
+        <table class='fe-table fe-table-striped fe-sortable'>
         <thead><tr>
         """
         for col in player_table.columns:
@@ -5347,7 +5347,7 @@ elif page == "Player Traits":
 
         # ---- Styled HTML table (uses unified .fe-table CSS) ----
         traits_html = """
-    <table class="fe-table fe-table-striped">
+    <table class="fe-table fe-table-striped fe-sortable">
     <thead>
         <tr>
     """
@@ -5867,7 +5867,7 @@ elif page == "Team Age Breakdown":
     margin-left: 4px;
 }
 </style>
-<table class='fe-table'>
+<table class='fe-table fe-sortable'>
 <thead>
 <tr>
 """
@@ -6088,7 +6088,7 @@ elif page == "List Ladder":
     margin-left: 4px;
 }
 </style>
-<table class='fe-table'>
+<table class='fe-table fe-sortable'>
 <thead>
 <tr>
 """
@@ -6435,7 +6435,7 @@ elif page == "Team List Summary":
             return "#FF0000", "white"
     
     # Create HTML table for age breakdown (uses unified .fe-table CSS)
-    html_age_table = """<table class='fe-table fe-table-striped'>
+    html_age_table = """<table class='fe-table fe-table-striped fe-sortable'>
 <thead>
 <tr>
 <th>Age Band</th>
@@ -6583,7 +6583,7 @@ elif page == "Team List Summary":
 </div>""", unsafe_allow_html=True)
     
     # Create HTML table for positional depth (uses unified .fe-table CSS)
-    html_pos_table = """<table class='fe-table fe-table-striped'>
+    html_pos_table = """<table class='fe-table fe-table-striped fe-sortable'>
 <thead>
 <tr>
 <th>Position</th>
