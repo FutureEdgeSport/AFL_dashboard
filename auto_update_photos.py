@@ -193,10 +193,13 @@ def get_team_player_data(team_name):
 
 def construct_image_urls(provider_id):
     """Construct possible AFL player image URLs."""
-    year = datetime.now().year
+    year = datetime.now().year  # 2026 in 2026
+    team_code = "014"  # All players stored under this code
+    
+    # Try current year first, then previous year as fallback
     urls = [
-        f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year}014/{provider_id}.png",
-        f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year-1}014/{provider_id}.png",
+        f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year}{team_code}/{provider_id}.png",
+        f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year-1}{team_code}/{provider_id}.png",
     ]
     return urls
 

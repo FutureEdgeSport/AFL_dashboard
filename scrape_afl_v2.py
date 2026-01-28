@@ -123,18 +123,21 @@ def get_team_player_data(team_name):
 
 def construct_image_url(player_id, provider_id, team_name):
     """Construct AFL player image URL from IDs."""
-    # Pattern: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1014026.png
-    # Note: ALL players use team code "014" (not specific to Adelaide) and year prefix "2025"
-    year = 2025
+    # Pattern: https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1014026.png
+    # Note: ALL players use team code "014" (not specific to Adelaide) and year prefix
+    from datetime import datetime
+    year = datetime.now().year  # Dynamic year (2026 in 2026, etc.)
     team_code = "014"  # All players stored under this code
     
     # Add image scaling parameter for better quality/size
     base_url = f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year}{team_code}/{provider_id}.png"
     
-    # Try with and without scaling parameter
+    # Try current year first, then previous year as fallback
     urls_to_try = [
         f"{base_url}?im=Scale,width=0.6,height=0.6",
         base_url,
+        # Fallback to previous year in case new photos aren't up yet
+        f"https://s.afl.com.au/staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/{year-1}{team_code}/{provider_id}.png",
     ]
     
     return urls_to_try
