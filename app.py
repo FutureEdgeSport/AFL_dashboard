@@ -4377,7 +4377,7 @@ elif page == "Player Profile":
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(latest_team, logo_col, size=160)
 
-    display_player_photo(selected_player, col_photo, width="stretch")
+    display_player_photo(selected_player, col_photo, use_container_width=True)
 
     # Summary meta
     summary_df = load_player_summary()
@@ -5412,7 +5412,7 @@ elif page == "Player Traits":
         _, logo_col, _ = col_photo.columns([1, 2, 1])
         display_logo(team_name_full, logo_col, size=160)
 
-    display_player_photo(selected_player_full, col_photo, width="stretch")
+    display_player_photo(selected_player_full, col_photo, use_container_width=True)
 
     header_html = f"""
     <div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
@@ -9178,7 +9178,7 @@ elif page == "IDP":
     with col_photo:
         _, logo_col, _ = st.columns([1, 2, 1])
         display_logo(selected_team_display, logo_col, size=160)
-        display_player_photo(selected_player_display, col_photo, width="stretch", team_name=selected_team_display)
+        display_player_photo(selected_player_display, col_photo, use_container_width=True, team_name=selected_team_display)
     
     # Display player info
     with col_info:
