@@ -4201,6 +4201,7 @@ elif page == "Team Compare":
             "Scoring",
             "Defence",
             "Pressure",
+            "Health Check",
         ]
         
         # Get all stats from the 6 main metrics to exclude them (use spider_metrics which has the full names)
