@@ -23,7 +23,8 @@ from config.constants import (
     DEPTH_POSITIONS, POSITION_ABBREV_TO_FULL, POSITION_COLOURS,
     AGE_BANDS, AGE_BANDS_ALT,
     METRIC_ORDER, RATING_COL_CANDIDATES, TRAIT_COLUMNS,
-    UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, safe_int, normalize_team_name
+    UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, safe_int, normalize_team_name,
+    get_unified_table_css
 )
 
 # ---------------- STREAMLIT CONFIG ----------------
@@ -32,6 +33,9 @@ st.set_page_config(
     page_icon="🏉",
     layout="wide",
 )
+
+# Inject unified table CSS globally
+st.markdown(get_unified_table_css(), unsafe_allow_html=True)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -2759,58 +2763,9 @@ if page == "Overview":
         if not s.isna().all():
             column_rankings[c] = s.rank(ascending=False, method="min")
 
-    # Build HTML with NO leading indentation + dedent at the end
+    # Build HTML table using unified .fe-table-light CSS
     html = []
-    html.append("""
-    <style>
-    .overview-ladder-table{
-        width:100%;
-        border-collapse:separate;
-        border-spacing:0;
-        margin:20px 0;
-        border-radius:12px;
-        overflow:hidden;
-        background:#ffffff;
-        font-size:0.90em;
-        box-shadow:0 4px 20px rgba(0,0,0,0.15);
-    }
-    .overview-ladder-table th{
-        padding:14px 8px;
-        text-align:center;
-        font-weight:900;
-        font-size:0.85em;
-        letter-spacing:0.5px;
-        border-right:1px solid rgba(255,255,255,0.15);
-        white-space:pre-line;
-        line-height:1.25;
-        border-bottom:2px solid rgba(0,0,0,0.10);
-    }
-    .overview-ladder-table th:first-child{
-        text-align:left;
-        padding-left:18px;
-    }
-    .overview-ladder-table td{
-        padding:12px 8px;
-        text-align:center;
-        font-weight:800;
-        border-bottom:1px solid rgba(0,0,0,0.06);
-        border-right:1px solid rgba(0,0,0,0.04);
-    }
-    .overview-ladder-table td:first-child{
-        text-align:left;
-        padding-left:18px;
-        font-weight:900;
-        background:#fafafa !important;
-        border-right:2px solid rgba(0,0,0,0.08);
-        color:#1a1a1a;
-    }
-    .overview-ladder-table tr:hover{
-        background:#f6f6f6;
-    }
-    </style>
-    """)
-
-    html.append("<table class='overview-ladder-table'><thead><tr>")
+    html.append("<table class='fe-table fe-table-light'><thead><tr>")
 
     # headers
     for c in ladder_view.columns:
@@ -4266,42 +4221,11 @@ elif page == "Club List":
     if not st.session_state.club_list_full:
         out = out.head(5).copy()
 
-    # ---------- Render in Player Profile style (IMPORTANT: use render_html) ----------
+    # ---------- Render using unified table system ----------
     league_ratings = season_df["RatingPoints_Avg"].dropna()
 
     html = """
-<style>
-.player-season-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #2a2a2a;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.player-season-table th {
-    background: linear-gradient(135deg, #1a1a1a, #3a3a3a);
-    color: white;
-    padding: 14px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 0.85em;
-}
-.player-season-table td {
-    padding: 10px;
-    text-align: center;
-    font-weight: 600;
-    color: #ccc;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.player-season-table tbody tr:nth-child(even) { background: #333333; }
-.player-season-table tbody tr:hover { background: #4a4a4a; }
-.player-season-table td:first-child { text-align: left; padding-left: 14px; }
-.player-season-table th:first-child { text-align: left; padding-left: 14px; }
-
-</style>
-
-<table class="player-season-table">
+<table class="fe-table">
 <thead>
 <tr>
 <th>PLAYER</th>
@@ -4852,51 +4776,9 @@ elif page == "Player Profile":
         cols2.remove("Pos Rank")
         player_table = player_table[["Comp Rank", "Pos Rank"] + cols2]
 
+        # Uses unified .fe-table CSS
         html_season_table = """
-        <style>
-        .player-season-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #2a2a2a;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            margin-bottom: 40px;
-        }
-        .player-season-table th {
-            background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-            color: #FFFFFF;
-            padding: 14px 10px;
-            text-align: center;
-            font-weight: 900;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-        .player-season-table th:nth-child(3) { text-align: left; }
-        .player-season-table th:last-child { border-right: none; }
-        .player-season-table td {
-            padding: 10px;
-            text-align: center;
-            font-size: 0.9em;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            border-right: 1px solid rgba(255,255,255,0.05);
-            color: #CCCCCC;
-        }
-        .player-season-table td:nth-child(3) { text-align: left; }
-        .player-season-table td:last-child { border-right: none; }
-        .player-season-table tbody tr { background: #3a3a3a; transition: all 0.3s ease; }
-        .player-season-table tbody tr:hover {
-            background: #4a4a4a;
-            transform: scale(1.002);
-            box-shadow: 0 4px 12px rgba(200,200,200,0.2);
-        }
-        .player-season-table tbody tr:nth-child(even) { background: #333333; }
-        .player-season-table tbody tr:nth-child(even):hover { background: #4a4a4a; }
-        </style>
-        <table class='player-season-table'>
+        <table class='fe-table fe-table-striped'>
         <thead><tr>
         """
         for col in player_table.columns:
@@ -5463,58 +5345,9 @@ elif page == "Player Traits":
         except Exception:
             league_ratings = pd.to_numeric(view["Rating"], errors="coerce").dropna() if "Rating" in view.columns else pd.Series(dtype=float)
 
-        # ---- Styled HTML table (matches your other tables) ----
+        # ---- Styled HTML table (uses unified .fe-table CSS) ----
         traits_html = """
-    <style>
-    .traits-history-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #2a2a2a;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        margin-bottom: 40px;
-    }
-    .traits-history-table th {
-        background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-        color: #FFFFFF;
-        padding: 14px 10px;
-        text-align: center;
-        font-weight: 900;
-        font-size: 0.9em;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-right: 1px solid rgba(255,255,255,0.1);
-    }
-    .traits-history-table th:nth-child(2),
-    .traits-history-table td:nth-child(2),
-    .traits-history-table th:nth-child(3),
-    .traits-history-table td:nth-child(3) {
-        text-align: left;
-    }
-    .traits-history-table th:last-child,
-    .traits-history-table td:last-child { border-right: none; }
-
-    .traits-history-table td {
-        padding: 10px;
-        text-align: center;
-        font-size: 0.9em;
-        font-weight: 600;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        border-right: 1px solid rgba(255,255,255,0.05);
-        color: #CCCCCC;
-    }
-
-    .traits-history-table tbody tr { background: #3a3a3a; transition: all 0.3s ease; }
-    .traits-history-table tbody tr:nth-child(even) { background: #333333; }
-    .traits-history-table tbody tr:hover {
-        background: #4a4a4a;
-        transform: scale(1.002);
-        box-shadow: 0 4px 12px rgba(200,200,200,0.2);
-    }
-    </style>
-
-    <table class="traits-history-table">
+    <table class="fe-table fe-table-striped">
     <thead>
         <tr>
     """
@@ -6011,80 +5844,19 @@ elif page == "Team Age Breakdown":
         else:
             return "#FF0000", "white"  # red
     
-    # Create professional HTML table with color-coded rankings
+    # Create HTML table using unified table system with custom league-avg row styling
     html_table = """<style>
-.age-breakdown-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #2a2a2a;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    margin-bottom: 40px;
-}
-.age-breakdown-table th {
-    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-    color: #FFFFFF;
-    padding: 16px 12px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 0.95em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-.age-breakdown-table th:first-child {
-    text-align: left;
-    padding-left: 20px;
-}
-.age-breakdown-table th:last-child {
-    border-right: none;
-}
-.age-breakdown-table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 0.95em;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    color: #CCCCCC;
-}
-.age-breakdown-table td:first-child {
-    text-align: left;
-    padding-left: 20px;
-    font-weight: 700;
-    color: #FFFFFF;
-}
-.age-breakdown-table td:last-child {
-    border-right: none;
-}
-.age-breakdown-table tbody tr {
-    background: #3a3a3a;
-    transition: all 0.3s ease;
-}
-.age-breakdown-table tbody tr:hover {
-    background: #4a4a4a;
-    transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
-}
-.age-breakdown-table tbody tr:nth-child(even) {
-    background: #333333;
-}
-.age-breakdown-table tbody tr:nth-child(even):hover {
-    background: #4a4a4a;
-}
-.age-breakdown-table .league-avg-row {
+.fe-table .league-avg-row {
     background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
     border-top: 3px solid #CCCCCC !important;
 }
-.age-breakdown-table .league-avg-row td {
+.fe-table .league-avg-row td {
     font-weight: 800 !important;
     color: #FFFFFF !important;
     font-size: 1.05em !important;
 }
-.age-breakdown-table .league-avg-row:hover {
+.fe-table .league-avg-row:hover {
     background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
-    transform: none !important;
 }
 .rank-badge {
     display: inline-block;
@@ -6095,7 +5867,7 @@ elif page == "Team Age Breakdown":
     margin-left: 4px;
 }
 </style>
-<table class='age-breakdown-table'>
+<table class='fe-table'>
 <thead>
 <tr>
 """
@@ -6292,83 +6064,20 @@ elif page == "List Ladder":
     # Display the main ladder table with professional HTML styling
     st.markdown("<h3 style='color: #FFFFFF; margin: 20px 0;'>📋 Positional Depth Rankings</h3>", unsafe_allow_html=True)
     
-    # Create professional HTML table with color-coded rankings
+    # Create HTML table using unified table system with custom styling for total column
     html_table = """<style>
-.list-ladder-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #2a2a2a;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    margin-bottom: 40px;
-}
-.list-ladder-table th {
-    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-    color: #FFFFFF;
-    padding: 16px 12px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 0.95em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-.list-ladder-table th:first-child {
-    text-align: center;
-    width: 60px;
-}
-.list-ladder-table th:nth-child(2) {
-    text-align: left;
-    padding-left: 20px;
-}
-.list-ladder-table th:last-child {
-    border-right: none;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    color: white;
-}
-.list-ladder-table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 0.9em;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    color: #CCCCCC;
-}
-.list-ladder-table td:first-child {
-    text-align: center;
+.fe-table td:first-child {
+    text-align: center !important;
     font-weight: 800;
-    color: #FFFFFF;
-    font-size: 1em;
 }
-.list-ladder-table td:nth-child(2) {
-    text-align: left;
-    padding-left: 20px;
-    font-weight: 700;
-    color: #FFFFFF;
+.fe-table td:nth-child(2) {
+    text-align: left !important;
+    padding-left: 20px !important;
 }
-.list-ladder-table td:last-child {
-    border-right: none;
+.fe-table td:last-child {
     background: rgba(100,100,100,0.2);
     font-weight: 800;
     color: #FFFFFF;
-    font-size: 1em;
-}
-.list-ladder-table tbody tr {
-    background: #3a3a3a;
-    transition: all 0.3s ease;
-}
-.list-ladder-table tbody tr:hover {
-    background: #4a4a4a;
-    transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
-}
-.list-ladder-table tbody tr:nth-child(even) {
-    background: #333333;
-}
-.list-ladder-table tbody tr:nth-child(even):hover {
-    background: #4a4a4a;
 }
 .rank-badge {
     display: inline-block;
@@ -6379,7 +6088,7 @@ elif page == "List Ladder":
     margin-left: 4px;
 }
 </style>
-<table class='list-ladder-table'>
+<table class='fe-table'>
 <thead>
 <tr>
 """
@@ -6468,33 +6177,8 @@ elif page == "List Ladder":
                         # Position header with gradient
                         st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%); padding: 12px; border-radius: 8px 8px 0 0; margin-top: 15px;'><h4 style='margin: 0; color: #FFFFFF; text-align: center; font-weight: 900; font-size: 1.2em;'>{position}</h4></div>""", unsafe_allow_html=True)
                         
-                        # Create HTML table with color coding
-                        html_player_table = """<style>
-.player-breakdown-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(255,255,255,0.05);
-    border-radius: 0 0 8px 8px;
-    overflow: hidden;
-}
-.player-breakdown-table th {
-    background: rgba(255,215,0,0.2);
-    color: #FFFFFF;
-    padding: 10px;
-    text-align: left;
-    font-weight: 800;
-    font-size: 0.9em;
-}
-.player-breakdown-table td {
-    padding: 8px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    color: #FFFFFF;
-}
-.player-breakdown-table tr:hover {
-    background: rgba(255,215,0,0.1);
-}
-</style>
-<table class='player-breakdown-table'>
+                        # Create HTML table with color coding (uses unified .fe-table CSS)
+                        html_player_table = """<table class='fe-table fe-table-compact'>
 <thead>
 <tr>
 <th>Player</th>
@@ -6750,67 +6434,8 @@ elif page == "Team List Summary":
         else:
             return "#FF0000", "white"
     
-    # Create HTML table for age breakdown
-    html_age_table = """<style>
-.age-comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #2a2a2a;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    margin-bottom: 40px;
-}
-.age-comparison-table th {
-    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-    color: #FFFFFF;
-    padding: 14px 10px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-.age-comparison-table th:last-child {
-    border-right: none;
-}
-.age-comparison-table td {
-    padding: 12px 10px;
-    text-align: center;
-    font-size: 0.95em;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    color: #CCCCCC;
-}
-.age-comparison-table td:last-child {
-    border-right: none;
-}
-.age-comparison-table tbody tr {
-    background: #3a3a3a;
-    transition: all 0.3s ease;
-}
-.age-comparison-table tbody tr:hover {
-    background: #4a4a4a;
-    transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(200,200,200,0.2);
-}
-.age-comparison-table tbody tr:nth-child(even) {
-    background: #333333;
-}
-.age-comparison-table tbody tr:nth-child(even):hover {
-    background: #4a4a4a;
-}
-.rank-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 700;
-    font-size: 0.85em;
-}
-</style>
-<table class='age-comparison-table'>
+    # Create HTML table for age breakdown (uses unified .fe-table CSS)
+    html_age_table = """<table class='fe-table fe-table-striped'>
 <thead>
 <tr>
 <th>Age Band</th>
@@ -6957,67 +6582,8 @@ elif page == "Team List Summary":
 </p>
 </div>""", unsafe_allow_html=True)
     
-    # Create HTML table for positional depth
-    html_pos_table = """<style>
-.pos-comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #0a0e27;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    margin-bottom: 40px;
-}
-.pos-comparison-table th {
-    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-    color: #FFFFFF;
-    padding: 14px 10px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 0.9em;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-.pos-comparison-table th:first-child {
-    text-align: left;
-    padding-left: 20px;
-}
-.pos-comparison-table th:last-child {
-    border-right: none;
-}
-.pos-comparison-table td {
-    padding: 12px 10px;
-    text-align: center;
-    font-size: 0.95em;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    color: #CCCCCC;
-}
-.pos-comparison-table td:first-child {
-    text-align: left;
-    padding-left: 20px;
-}
-.pos-comparison-table td:last-child {
-    border-right: none;
-}
-.pos-comparison-table tbody tr {
-    background: #1a1a1a;
-    transition: all 0.3s ease;
-}
-.pos-comparison-table tbody tr:hover {
-    background: #2a2a2a;
-    transform: scale(1.002);
-    box-shadow: 0 4px 12px rgba(255,255,255,0.1);
-}
-.pos-comparison-table tbody tr:nth-child(even) {
-    background: #222222;
-}
-.pos-comparison-table tbody tr:nth-child(even):hover {
-    background: #2a2a2a;
-}
-</style>
-<table class='pos-comparison-table'>
+    # Create HTML table for positional depth (uses unified .fe-table CSS)
+    html_pos_table = """<table class='fe-table fe-table-striped'>
 <thead>
 <tr>
 <th>Position</th>
@@ -9484,32 +9050,7 @@ elif page == "IDP":
     .strength { border-color: #00FF00; }
     .focus { border-color: #FF6B6B; }
     .neutral { border-color: #FFA500; }
-    .idp-comparison-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: rgba(255,255,255,0.05);
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-    .idp-comparison-table th {
-        background: rgba(255,255,255,0.12);
-        color: #FFFFFF;
-        font-weight: 900;
-        padding: 14px 12px;
-        text-align: center;
-        border-bottom: 2px solid rgba(255,255,255,0.2);
-    }
-    .idp-comparison-table td {
-        padding: 12px;
-        text-align: center;
-        font-weight: 700;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        color: #FFFFFF;
-    }
-    .idp-comparison-table tbody tr:hover {
-        background: rgba(255,255,255,0.08);
-    }
+    /* idp-comparison-table now uses unified .fe-table CSS */
     </style>
     """, unsafe_allow_html=True)
     
@@ -10023,7 +9564,7 @@ elif page == "IDP":
             comparison_rows.append(f"<tr><td style='text-align:left;'>{substat}</td><td style='background:{p1_bg};'>{p1_val:.2f}</td><td style='background:{p2_bg};'>{p2_val:.2f}</td><td style='color:{delta_color};'>{delta:+.2f}</td></tr>")
         
         if comparison_rows:
-            st.markdown(f"<table class='idp-comparison-table'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
+            st.markdown(f"<table class='fe-table fe-table-compact'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     

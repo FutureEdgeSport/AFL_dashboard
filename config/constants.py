@@ -217,6 +217,254 @@ class UIConfig:
 
 
 # ============================================================================
+# UNIFIED TABLE STYLES
+# ============================================================================
+UNIFIED_TABLE_CSS = """
+<style>
+/* ============================================
+   UNIFIED TABLE SYSTEM - FutureEdge AFL Dashboard
+   ============================================ */
+
+/* Base table styling - applied to all .fe-table variants */
+.fe-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Header styling */
+.fe-table thead th {
+    background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
+    color: #FFFFFF;
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    white-space: nowrap;
+}
+
+.fe-table thead th:first-child {
+    text-align: left;
+    padding-left: 20px;
+}
+
+.fe-table thead th:last-child {
+    border-right: none;
+}
+
+/* Cell styling */
+.fe-table tbody td {
+    padding: 14px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #E0E0E0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+}
+
+.fe-table tbody td:first-child {
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.fe-table tbody td:last-child {
+    border-right: none;
+}
+
+/* Row hover effect */
+.fe-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.fe-table tbody tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* Alternating row colors */
+.fe-table tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.15);
+}
+
+.fe-table tbody tr:nth-child(even):hover {
+    background: rgba(255,255,255,0.08);
+}
+
+/* ============================================
+   TABLE VARIANTS
+   ============================================ */
+
+/* Compact table - less padding */
+.fe-table-compact thead th {
+    padding: 12px 8px;
+    font-size: 0.8em;
+}
+
+.fe-table-compact tbody td {
+    padding: 10px 8px;
+    font-size: 0.85em;
+}
+
+/* Wide table - more padding */
+.fe-table-wide thead th {
+    padding: 18px 16px;
+    font-size: 0.9em;
+}
+
+.fe-table-wide tbody td {
+    padding: 16px;
+    font-size: 0.95em;
+}
+
+/* Striped emphasis - stronger alternating */
+.fe-table-striped tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.25);
+}
+
+/* Bordered - visible cell borders */
+.fe-table-bordered tbody td {
+    border-right: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Light theme - white background for contrast with colored cells */
+.fe-table-light {
+    background: #ffffff !important;
+}
+
+.fe-table-light thead th {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    color: #FFFFFF;
+}
+
+.fe-table-light tbody td {
+    color: #333333;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    border-right: 1px solid rgba(0,0,0,0.04);
+}
+
+.fe-table-light tbody td:first-child {
+    background: #fafafa !important;
+    border-right: 2px solid rgba(0,0,0,0.08);
+    color: #1a1a1a;
+}
+
+.fe-table-light tbody tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.fe-table-light tbody tr:hover {
+    background: #f0f0f0;
+}
+
+.fe-table-light tbody tr:nth-child(even):hover {
+    background: #f0f0f0;
+}
+
+/* ============================================
+   SPECIAL COLUMN STYLES
+   ============================================ */
+
+/* Rank column - centered with badge style */
+.fe-table .col-rank {
+    font-weight: 900;
+    font-size: 0.95em;
+    min-width: 50px;
+}
+
+/* Rating column - for colored values */
+.fe-table .col-rating {
+    font-weight: 800;
+    border-radius: 6px;
+    min-width: 70px;
+}
+
+/* Player name column */
+.fe-table .col-player {
+    font-weight: 700;
+    color: #FFFFFF !important;
+    text-align: left !important;
+}
+
+/* Team column */
+.fe-table .col-team {
+    font-weight: 600;
+    text-align: left !important;
+}
+
+/* Number/stat columns */
+.fe-table .col-stat {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+/* ============================================
+   COLOR-CODED CELLS
+   ============================================ */
+
+.fe-table .cell-elite {
+    background: #008000 !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+}
+
+.fe-table .cell-good {
+    background: #90EE90 !important;
+    color: #000000 !important;
+    font-weight: 800;
+}
+
+.fe-table .cell-average {
+    background: #FFA500 !important;
+    color: #000000 !important;
+    font-weight: 800;
+}
+
+.fe-table .cell-below {
+    background: #FF0000 !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .fe-table thead th,
+    .fe-table tbody td {
+        padding: 10px 6px;
+        font-size: 0.8em;
+    }
+    
+    .fe-table thead th:first-child,
+    .fe-table tbody td:first-child {
+        padding-left: 12px;
+    }
+}
+</style>
+"""
+
+
+def get_unified_table_css() -> str:
+    """Return the unified table CSS for injection into the app."""
+    return UNIFIED_TABLE_CSS
+
+
+# ============================================================================
 # COLOR FUNCTIONS
 # ============================================================================
 def get_rating_color(
