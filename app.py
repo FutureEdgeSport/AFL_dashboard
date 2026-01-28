@@ -4359,6 +4359,20 @@ elif page == "Club List":
     else:
         st.session_state.default_team = default_selection[0]
 
+    # ---------- TPP (Total Player Payments) Input ----------
+    tpp_col1, tpp_col2 = st.columns([2, 6])
+    with tpp_col1:
+        tpp_value = st.number_input(
+            "TPP (Total Player Payments $)",
+            min_value=0,
+            max_value=50_000_000,
+            value=18_000_000,
+            step=100_000,
+            format="%d",
+            key="club_list_tpp",
+            help="Enter the Total Player Payments cap for the selected season (e.g. $18,000,000)"
+        )
+
     # ---------- Toggle ----------
     if "club_list_full" not in st.session_state:
         st.session_state.club_list_full = False
@@ -4390,6 +4404,9 @@ elif page == "Club List":
     # Calculate % of Team's Ratings for each team separately
     team_ratings_sum = team_df.groupby("Team")["RatingsTotal"].transform("sum")
     team_df["PctOfTeamRatings"] = (team_df["RatingsTotal"] / team_ratings_sum * 100).round(1)
+
+    # Calculate TPP OUTPUT (% of Team * TPP value)
+    team_df["TPP_Output"] = (team_df["PctOfTeamRatings"] / 100 * tpp_value).round(0)
 
     # ---------- Rankings (season-wide) ----------
     season_df = df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
@@ -4433,6 +4450,7 @@ elif page == "Club List":
         "TOG %": pd.to_numeric(team_df["TimeOnGround"], errors="coerce").round(1),
         "RATINGS TOTAL": pd.to_numeric(team_df["RatingsTotal"], errors="coerce").round(1),
         "% OF TEAM": pd.to_numeric(team_df["PctOfTeamRatings"], errors="coerce").round(1),
+        "TPP OUTPUT": pd.to_numeric(team_df["TPP_Output"], errors="coerce").round(0),
     })
 
 
@@ -4459,6 +4477,7 @@ elif page == "Club List":
 <th>TOG %</th>
 <th>RATINGS TOTAL</th>
 <th>% OF TEAM</th>
+<th>TPP OUTPUT</th>
 </tr>
 </thead>
 <tbody>
@@ -4488,6 +4507,9 @@ elif page == "Club List":
         pct_team_val = r["% OF TEAM"]
         pct_team_str = "—" if pd.isna(pct_team_val) else f"{float(pct_team_val):.1f}%"
 
+        tpp_output_val = r["TPP OUTPUT"]
+        tpp_output_str = "—" if pd.isna(tpp_output_val) else f"${int(tpp_output_val):,}"
+
         html += f"""
 <tr>
 <td>{r['PLAYER']}</td>
@@ -4503,6 +4525,7 @@ elif page == "Club List":
 <td>{tog_str}</td>
 <td>{ratings_total_str}</td>
 <td>{pct_team_str}</td>
+<td>{tpp_output_str}</td>
 </tr>
 """
 
