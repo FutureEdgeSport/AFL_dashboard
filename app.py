@@ -3486,172 +3486,194 @@ elif page == "Team Breakdown":
     else:
         stat_names = [b["stat_name"] for b in blocks]
         which_block = "Last10" if window == "Last 10 Games" else "Season"
-        # Show first 4 stats in 4 columns
-        stat_cols = st.columns(4)
-        for idx, stat_name in enumerate(stat_names[:4]):
+        
+        # Health Check shows 6 stats in 2 rows of 3, others show 4 stats in 1 row
+        if selected_attribute == "Health Check":
+            num_stats = min(6, len(stat_names))
+            num_cols = 3  # 3 columns per row for Health Check
+            stats_per_row = 3
+        else:
+            num_stats = min(4, len(stat_names))
+            num_cols = 4
+            stats_per_row = 4
+        
+        # Helper function to render a stat column
+        def render_stat_column(stat_name, col_idx, total_cols):
             dist_df = get_attribute_stat_distribution(
                 summary_year,
                 selected_attribute,
                 stat_name,
                 block=which_block,
             )
-            with stat_cols[idx]:
-                # add a subtle right border between columns for visual separation
-                col_border = (
-                    "border-right:2px solid rgba(255,215,0,0.2);padding-right:12px;margin-right:8px;"
-                    if idx < 3
-                    else ""
-                )
-                st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
-                st.markdown(f"<h3 style='color: #FFFFFF; font-size: 1.2em; margin-bottom: 15px;'>{stat_name}</h3>", unsafe_allow_html=True)
-                if dist_df.empty:
-                    st.info("No data found for this stat across teams.")
+            # add a subtle right border between columns for visual separation
+            col_border = (
+                "border-right:2px solid rgba(255,215,0,0.2);padding-right:12px;margin-right:8px;"
+                if col_idx < total_cols - 1
+                else ""
+            )
+            st.markdown(f"<div style='{col_border}'>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='color: #FFFFFF; font-size: 1.2em; margin-bottom: 15px;'>{stat_name}</h3>", unsafe_allow_html=True)
+            if dist_df.empty:
+                st.info("No data found for this stat across teams.")
+            else:
+                dist_df = dist_df.copy()
+                dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
+                dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
+                dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                expected_team_count = 18
+                actual_team_count = dist_df["Team"].nunique()
+                if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
+                    dist_df = dist_df.sort_values("Value", ascending=False)
+                    dist_df["Rank"] = range(1, len(dist_df) + 1)
                 else:
-                    dist_df = dist_df.copy()
-                    dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
-                    dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
-                    dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
-                    expected_team_count = 18
-                    actual_team_count = dist_df["Team"].nunique()
-                    if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
-                        dist_df = dist_df.sort_values("Value", ascending=False)
-                        dist_df["Rank"] = range(1, len(dist_df) + 1)
+                    dist_df = dist_df.sort_values("Rank", ascending=True)
+                dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
+                sel_row = dist_df[dist_df["Team"] == team_name]
+                if sel_row.empty:
+                    st.warning(f"{team_name} has no data for this stat.")
+                else:
+                    sel = sel_row.iloc[0]
+                    val = sel["Value"]
+                    rank = int(sel["Rank"])
+                    canonical_teams = set([
+                        "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
+                        "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
+                        "Sydney", "West Coast", "Western Bulldogs"
+                    ])
+                    missing_teams = canonical_teams - set(dist_df["Team"].unique())
+                    if actual_team_count != expected_team_count:
+                        n_teams = actual_team_count
+                        rank_str = f"{rank} / {n_teams}"
+                        st.warning(f"Warning: Only {actual_team_count} teams found in data (expected 18). Data may be incomplete.")
+                        if missing_teams:
+                            st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
                     else:
-                        dist_df = dist_df.sort_values("Rank", ascending=True)
-                    dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
-                    sel_row = dist_df[dist_df["Team"] == team_name]
-                    if sel_row.empty:
-                        st.warning(f"{team_name} has no data for this stat.")
+                        n_teams = expected_team_count
+                        rank_str = f"{rank} / {n_teams}"
+                    try:
+                        val_str = f"{float(val):.1f}"
+                    except Exception:
+                        val_str = str(val)
+                    if rank <= 4:
+                        main_color = "#006400"
+                        bg_gradient = "linear-gradient(135deg, rgba(0,100,0,0.3) 0%, rgba(0,100,0,0.1) 100%)"
+                        border_color = "#00AA00"
+                    elif rank <= 9:
+                        main_color = "#90EE90"
+                        bg_gradient = "linear-gradient(135deg, rgba(144,238,144,0.3) 0%, rgba(144,238,144,0.1) 100%)"
+                        border_color = "#90EE90"
+                    elif rank <= 14:
+                        main_color = "#FFA500"
+                        bg_gradient = "linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.1) 100%)"
+                        border_color = "#FFA500"
                     else:
-                        sel = sel_row.iloc[0]
-                        val = sel["Value"]
-                        rank = int(sel["Rank"])
-                        canonical_teams = set([
-                            "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon", "Fremantle", "Geelong", "Gold Coast",
-                            "GWS Giants", "Hawthorn", "Melbourne", "North Melbourne", "Port Adelaide", "Richmond", "St Kilda",
-                            "Sydney", "West Coast", "Western Bulldogs"
-                        ])
-                        missing_teams = canonical_teams - set(dist_df["Team"].unique())
-                        if actual_team_count != expected_team_count:
-                            n_teams = actual_team_count
-                            rank_str = f"{rank} / {n_teams}"
-                            st.warning(f"Warning: Only {actual_team_count} teams found in data (expected 18). Data may be incomplete.")
-                            if missing_teams:
-                                st.warning(f"Missing teams: {', '.join(sorted(missing_teams))}")
+                        main_color = "#FF0000"
+                        bg_gradient = "linear-gradient(135deg, rgba(255,0,0,0.3) 0%, rgba(255,0,0,0.1) 100%)"
+                        border_color = "#DD0000"
+                    # compute ordinal (1st, 2nd, 3rd, 4th...)
+                    try:
+                        r_int = int(rank)
+                        if 10 <= (r_int % 100) <= 20:
+                            suf = "th"
                         else:
-                            n_teams = expected_team_count
-                            rank_str = f"{rank} / {n_teams}"
+                            suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
+                        ord_str = f"{r_int}{suf}"
+                    except Exception:
+                        ord_str = str(rank)
+                    # Enhanced card with gradient background
+                    card_html = f"""
+                    <div style='background: {bg_gradient}; padding: 15px; border-radius: 10px; 
+                                border-left: 4px solid {border_color}; margin-bottom: 10px;'>
+                        <div style='color: #AAAAAA; font-size: 0.9em; margin-bottom: 4px;'>{stat_name}</div>
+                        <div style='font-size: 1.8em; font-weight: 900; color: {main_color};'>{val_str}</div>
+                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 4px;'>Rank: {ord_str}</div>
+                    </div>
+                    """
+                    st.markdown(card_html, unsafe_allow_html=True)
+                # Top 4 by Rank
+                st.markdown("<h4 style='color: #FFFFFF; margin-top: 20px; margin-bottom: 10px;'>🏆 Top 4 Teams</h4>", unsafe_allow_html=True)
+                top4 = (
+                    dist_df.dropna(subset=["Rank"])
+                    .sort_values("Rank", ascending=True)
+                    .head(4)
+                )
+                if top4.empty:
+                    st.info("No ranked teams found for this stat.")
+                else:
+                    lines = []
+                    for _, row in top4.iterrows():
+                        t = row["Team"]
+                        val = row["Value"]
+                        r = int(row["Rank"])
                         try:
                             val_str = f"{float(val):.1f}"
                         except Exception:
                             val_str = str(val)
-                        if rank <= 4:
-                            main_color = "#006400"
-                            bg_gradient = "linear-gradient(135deg, rgba(0,100,0,0.3) 0%, rgba(0,100,0,0.1) 100%)"
-                            border_color = "#00AA00"
-                        elif rank <= 9:
-                            main_color = "#90EE90"
-                            bg_gradient = "linear-gradient(135deg, rgba(144,238,144,0.3) 0%, rgba(144,238,144,0.1) 100%)"
-                            border_color = "#90EE90"
-                        elif rank <= 14:
-                            main_color = "#FFA500"
-                            bg_gradient = "linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.1) 100%)"
-                            border_color = "#FFA500"
+                        if t == team_name:
+                            bg_color = "rgba(0,200,0,0.2)"
+                            border = "2px solid #00CC00"
+                            size = "1.0em"
+                            weight = "900"
+                            color = "#00FF00"
+                        elif r == 1:
+                            bg_color = "rgba(255,215,0,0.15)"
+                            border = "2px solid #FFD700"
+                            size = "1.0em"
+                            weight = "800"
+                            color = "#FFD700"
                         else:
-                            main_color = "#FF0000"
-                            bg_gradient = "linear-gradient(135deg, rgba(255,0,0,0.3) 0%, rgba(255,0,0,0.1) 100%)"
-                            border_color = "#DD0000"
-                        # compute ordinal (1st, 2nd, 3rd, 4th...)
-                        try:
-                            r_int = int(rank)
-                            if 10 <= (r_int % 100) <= 20:
-                                suf = "th"
-                            else:
-                                suf = {1: "st", 2: "nd", 3: "rd"}.get(r_int % 10, "th")
-                            ord_str = f"{r_int}{suf}"
-                        except Exception:
-                            ord_str = str(rank)
-                        # Enhanced card with gradient background
-                        card_html = f"""
-                        <div style='background: {bg_gradient}; padding: 15px; border-radius: 10px; 
-                                    border-left: 4px solid {border_color}; margin-bottom: 10px;'>
-                            <div style='color: #AAAAAA; font-size: 0.9em; margin-bottom: 4px;'>{stat_name}</div>
-                            <div style='font-size: 1.8em; font-weight: 900; color: {main_color};'>{val_str}</div>
-                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 4px;'>Rank: {ord_str}</div>
+                            bg_color = "rgba(255,255,255,0.05)"
+                            border = "1px solid #555555"
+                            size = "0.95em"
+                            weight = "700"
+                            color = "#CCCCCC"
+                        line_html = (
+                            f"<div style='background: {bg_color}; border: {border}; "
+                            f"border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; "
+                            f"font-size: {size}; font-weight: {weight}; color: {color};'>"
+                            f"{r}. {t} <span style='float: right; font-weight: bold;'>{val_str}</span></div>"
+                        )
+                        lines.append(line_html)
+                    st.markdown("".join(lines), unsafe_allow_html=True)
+                    
+                    # Professional Averages Section
+                    st.markdown("<hr style='border:0;border-top:1px solid rgba(255,255,255,0.1);margin:20px 0 16px 0;'>", unsafe_allow_html=True)
+                    
+                    # Calculate both averages
+                    top4_avg = top4["Value"].dropna().mean() if not top4.empty and top4["Value"].notna().any() else None
+                    league_avg = dist_df["Value"].dropna().mean() if "Value" in dist_df.columns and dist_df["Value"].notna().any() else None
+                    
+                    avg_html = """
+                    <div style='display: flex; gap: 12px;'>
+                        <div style='flex: 1; background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.05) 100%); 
+                                    border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
+                            <div style='color: #FFD700; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>🏆 Top 4 Avg</div>
+                            <div style='font-size: 1.6em; font-weight: 900; color: #FFD700;'>""" + (f"{top4_avg:.1f}" if top4_avg is not None else "–") + """</div>
                         </div>
-                        """
-                        st.markdown(card_html, unsafe_allow_html=True)
-                    # Top 4 by Rank
-                    st.markdown("<h4 style='color: #FFFFFF; margin-top: 20px; margin-bottom: 10px;'>🏆 Top 4 Teams</h4>", unsafe_allow_html=True)
-                    top4 = (
-                        dist_df.dropna(subset=["Rank"])
-                        .sort_values("Rank", ascending=True)
-                        .head(4)
-                    )
-                    if top4.empty:
-                        st.info("No ranked teams found for this stat.")
-                    else:
-                        lines = []
-                        for _, row in top4.iterrows():
-                            t = row["Team"]
-                            val = row["Value"]
-                            r = int(row["Rank"])
-                            try:
-                                val_str = f"{float(val):.1f}"
-                            except Exception:
-                                val_str = str(val)
-                            if t == team_name:
-                                bg_color = "rgba(0,200,0,0.2)"
-                                border = "2px solid #00CC00"
-                                size = "1.0em"
-                                weight = "900"
-                                color = "#00FF00"
-                            elif r == 1:
-                                bg_color = "rgba(255,215,0,0.15)"
-                                border = "2px solid #FFD700"
-                                size = "1.0em"
-                                weight = "800"
-                                color = "#FFD700"
-                            else:
-                                bg_color = "rgba(255,255,255,0.05)"
-                                border = "1px solid #555555"
-                                size = "0.95em"
-                                weight = "700"
-                                color = "#CCCCCC"
-                            line_html = (
-                                f"<div style='background: {bg_color}; border: {border}; "
-                                f"border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; "
-                                f"font-size: {size}; font-weight: {weight}; color: {color};'>"
-                                f"{r}. {t} <span style='float: right; font-weight: bold;'>{val_str}</span></div>"
-                            )
-                            lines.append(line_html)
-                        st.markdown("".join(lines), unsafe_allow_html=True)
-                        
-                        # Professional Averages Section
-                        st.markdown("<hr style='border:0;border-top:1px solid rgba(255,255,255,0.1);margin:20px 0 16px 0;'>", unsafe_allow_html=True)
-                        
-                        # Calculate both averages
-                        top4_avg = top4["Value"].dropna().mean() if not top4.empty and top4["Value"].notna().any() else None
-                        league_avg = dist_df["Value"].dropna().mean() if "Value" in dist_df.columns and dist_df["Value"].notna().any() else None
-                        
-                        avg_html = """
-                        <div style='display: flex; gap: 12px;'>
-                            <div style='flex: 1; background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.05) 100%); 
-                                        border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
-                                <div style='color: #FFD700; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>🏆 Top 4 Avg</div>
-                                <div style='font-size: 1.6em; font-weight: 900; color: #FFD700;'>""" + (f"{top4_avg:.1f}" if top4_avg is not None else "–") + """</div>
-                            </div>
-                            <div style='flex: 1; background: linear-gradient(135deg, rgba(100,149,237,0.15) 0%, rgba(100,149,237,0.05) 100%); 
-                                        border: 1px solid rgba(100,149,237,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
-                                <div style='color: #6495ED; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>📊 League Avg</div>
-                                <div style='font-size: 1.6em; font-weight: 900; color: #6495ED;'>""" + (f"{league_avg:.1f}" if league_avg is not None else "–") + """</div>
-                            </div>
+                        <div style='flex: 1; background: linear-gradient(135deg, rgba(100,149,237,0.15) 0%, rgba(100,149,237,0.05) 100%); 
+                                    border: 1px solid rgba(100,149,237,0.3); border-radius: 10px; padding: 14px; text-align: center;'>
+                            <div style='color: #6495ED; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>📊 League Avg</div>
+                            <div style='font-size: 1.6em; font-weight: 900; color: #6495ED;'>""" + (f"{league_avg:.1f}" if league_avg is not None else "–") + """</div>
                         </div>
-                        """
-                        st.markdown(avg_html, unsafe_allow_html=True)
-                    # close the bordered div
-                    st.markdown("</div>", unsafe_allow_html=True)
-
+                    </div>
+                    """
+                    st.markdown(avg_html, unsafe_allow_html=True)
+            # close the bordered div
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        # First row of stats
+        stat_cols = st.columns(num_cols)
+        for idx in range(min(stats_per_row, len(stat_names))):
+            with stat_cols[idx]:
+                render_stat_column(stat_names[idx], idx, num_cols)
+        
+        # Second row for Health Check (stats 4-6)
+        if selected_attribute == "Health Check" and len(stat_names) > 3:
+            st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+            stat_cols_row2 = st.columns(num_cols)
+            for idx in range(3, min(6, len(stat_names))):
+                with stat_cols_row2[idx - 3]:
+                    render_stat_column(stat_names[idx], idx - 3, num_cols)
 
 
 # ================= TEAM COMPARE =================
