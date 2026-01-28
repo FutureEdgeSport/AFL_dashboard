@@ -844,110 +844,105 @@ UNIFIED_TABLE_CSS = """
 }
 </style>
 
-<!-- Sortable Table JavaScript -->
+<!-- Sortable Table JavaScript - Works with Streamlit -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    initSortableTables();
-});
-
-// Re-initialize on Streamlit reruns
-if (typeof Streamlit !== 'undefined') {
-    document.addEventListener('streamlit:render', function() {
-        setTimeout(initSortableTables, 100);
-    });
-}
-
-// Also run after a short delay (for Streamlit dynamic content)
-setTimeout(initSortableTables, 500);
-setTimeout(initSortableTables, 1500);
-
-function initSortableTables() {
-    const tables = document.querySelectorAll('.fe-table.fe-sortable');
+(function() {
+    // Core sort function
+    window.feSortTable = function(tableId, colIndex) {
+        const table = document.getElementById(tableId) || document.querySelector('.fe-table.fe-sortable');
+        if (!table) return;
+        
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        
+        const header = table.querySelectorAll('thead th')[colIndex];
+        if (!header) return;
+        
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        if (rows.length === 0) return;
+        
+        // Determine sort direction
+        const isAsc = header.classList.contains('sort-asc');
+        
+        // Remove sort classes from all headers
+        table.querySelectorAll('thead th').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+        });
+        
+        // Toggle direction
+        const direction = isAsc ? 'desc' : 'asc';
+        header.classList.add('sort-' + direction);
+        
+        // Sort the rows
+        rows.sort((a, b) => {
+            const aCell = a.cells[colIndex];
+            const bCell = b.cells[colIndex];
+            
+            if (!aCell || !bCell) return 0;
+            
+            let aVal = aCell.textContent.trim();
+            let bVal = bCell.textContent.trim();
+            
+            // Remove ordinal suffixes, percentages, plus signs
+            aVal = aVal.replace(/(st|nd|rd|th)$/i, '').replace(/[%+]/g, '');
+            bVal = bVal.replace(/(st|nd|rd|th)$/i, '').replace(/[%+]/g, '');
+            
+            const aNum = parseFloat(aVal);
+            const bNum = parseFloat(bVal);
+            
+            let cmp;
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                cmp = aNum - bNum;
+            } else {
+                cmp = aVal.localeCompare(bVal, undefined, {numeric: true, sensitivity: 'base'});
+            }
+            
+            return direction === 'asc' ? cmp : -cmp;
+        });
+        
+        // Re-append sorted rows
+        rows.forEach(row => tbody.appendChild(row));
+    };
     
-    tables.forEach(table => {
-        // Skip if already initialized
-        if (table.dataset.sortInit) return;
-        table.dataset.sortInit = 'true';
-        
-        const headers = table.querySelectorAll('thead th');
-        
-        headers.forEach((header, colIndex) => {
-            header.addEventListener('click', function() {
-                sortTable(table, colIndex, this);
+    // Initialize sortable tables
+    function initSort() {
+        document.querySelectorAll('.fe-table.fe-sortable').forEach((table, tableIndex) => {
+            if (table.dataset.feSort) return;
+            table.dataset.feSort = '1';
+            
+            // Give table a unique ID if it doesn't have one
+            if (!table.id) {
+                table.id = 'fe-table-' + tableIndex + '-' + Date.now();
+            }
+            
+            const headers = table.querySelectorAll('thead th');
+            headers.forEach((th, colIndex) => {
+                th.style.cursor = 'pointer';
+                th.onclick = function() {
+                    window.feSortTable(table.id, colIndex);
+                };
             });
         });
-    });
-}
-
-function sortTable(table, colIndex, header) {
-    const tbody = table.querySelector('tbody');
-    if (!tbody) return;
-    
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    if (rows.length === 0) return;
-    
-    // Determine sort direction
-    const isAsc = header.classList.contains('sort-asc');
-    const isDesc = header.classList.contains('sort-desc');
-    
-    // Remove sort classes from all headers
-    table.querySelectorAll('thead th').forEach(th => {
-        th.classList.remove('sort-asc', 'sort-desc');
-    });
-    
-    // Set new sort direction
-    let direction;
-    if (!isAsc && !isDesc) {
-        direction = 'asc';
-        header.classList.add('sort-asc');
-    } else if (isAsc) {
-        direction = 'desc';
-        header.classList.add('sort-desc');
-    } else {
-        direction = 'asc';
-        header.classList.add('sort-asc');
     }
     
-    // Sort the rows
-    rows.sort((a, b) => {
-        const aCell = a.cells[colIndex];
-        const bCell = b.cells[colIndex];
-        
-        if (!aCell || !bCell) return 0;
-        
-        let aVal = aCell.textContent.trim();
-        let bVal = bCell.textContent.trim();
-        
-        // Remove ordinal suffixes (1st, 2nd, 3rd, etc.)
-        aVal = aVal.replace(/(st|nd|rd|th)$/i, '');
-        bVal = bVal.replace(/(st|nd|rd|th)$/i, '');
-        
-        // Remove percentage signs and plus signs
-        aVal = aVal.replace(/[%+]/g, '');
-        bVal = bVal.replace(/[%+]/g, '');
-        
-        // Try to parse as numbers
-        const aNum = parseFloat(aVal);
-        const bNum = parseFloat(bVal);
-        
-        let comparison;
-        if (!isNaN(aNum) && !isNaN(bNum)) {
-            comparison = aNum - bNum;
-        } else {
-            comparison = aVal.localeCompare(bVal, undefined, {numeric: true, sensitivity: 'base'});
-        }
-        
-        return direction === 'asc' ? comparison : -comparison;
+    // Run initialization multiple times to catch dynamically loaded content
+    initSort();
+    setTimeout(initSort, 100);
+    setTimeout(initSort, 500);
+    setTimeout(initSort, 1000);
+    setTimeout(initSort, 2000);
+    setTimeout(initSort, 3000);
+    
+    // Use MutationObserver to catch new tables
+    const observer = new MutationObserver(function(mutations) {
+        initSort();
     });
     
-    // Re-append rows in sorted order
-    rows.forEach(row => tbody.appendChild(row));
-    
-    // Re-apply zebra striping
-    rows.forEach((row, index) => {
-        row.style.background = '';
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
-}
+})();
 
 // ============================================
 // KEYBOARD SHORTCUTS
