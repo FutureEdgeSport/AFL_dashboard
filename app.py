@@ -559,6 +559,8 @@ def load_players(season: int) -> pd.DataFrame:
             "Position",
             "Matches",
             "RatingPoints_Avg",
+            "CoachesVotes_Avg",
+            "TimeOnGround",
             "Height",
             "Height_cm",
             "Jumper",
@@ -4318,6 +4320,17 @@ elif page == "Club List":
     else:
         df["Matches"] = np.nan
 
+    # New columns: Coaches Votes and Time on Ground
+    if "CoachesVotes_Avg" in df.columns:
+        df["CoachesVotes_Avg"] = pd.to_numeric(df["CoachesVotes_Avg"], errors="coerce")
+    else:
+        df["CoachesVotes_Avg"] = np.nan
+
+    if "TimeOnGround" in df.columns:
+        df["TimeOnGround"] = pd.to_numeric(df["TimeOnGround"], errors="coerce")
+    else:
+        df["TimeOnGround"] = np.nan
+
     # Remove unrated rows
     df = df.dropna(subset=["RatingPoints_Avg"]).copy()
     if df.empty:
@@ -4371,6 +4384,13 @@ elif page == "Club List":
 
     team_df = team_df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
 
+    # Calculate Ratings Total (Matches * RatingPoints_Avg)
+    team_df["RatingsTotal"] = team_df["Matches"].fillna(0) * team_df["RatingPoints_Avg"].fillna(0)
+
+    # Calculate % of Team's Ratings for each team separately
+    team_ratings_sum = team_df.groupby("Team")["RatingsTotal"].transform("sum")
+    team_df["PctOfTeamRatings"] = (team_df["RatingsTotal"] / team_ratings_sum * 100).round(1)
+
     # ---------- Rankings (season-wide) ----------
     season_df = df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
 
@@ -4409,6 +4429,10 @@ elif page == "Club List":
         "AGE": pd.to_numeric(team_df["Age"], errors="coerce").round(1),
         "MATCHES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
         "RATING": pd.to_numeric(team_df["RatingPoints_Avg"], errors="coerce").round(1),
+        "COACHES VOTES": pd.to_numeric(team_df["CoachesVotes_Avg"], errors="coerce").round(2),
+        "TOG %": pd.to_numeric(team_df["TimeOnGround"], errors="coerce").round(1),
+        "RATINGS TOTAL": pd.to_numeric(team_df["RatingsTotal"], errors="coerce").round(1),
+        "% OF TEAM": pd.to_numeric(team_df["PctOfTeamRatings"], errors="coerce").round(1),
     })
 
 
@@ -4431,6 +4455,10 @@ elif page == "Club List":
 <th>AGE</th>
 <th>MATCHES</th>
 <th>RATING</th>
+<th>COACHES VOTES</th>
+<th>TOG %</th>
+<th>RATINGS TOTAL</th>
+<th>% OF TEAM</th>
 </tr>
 </thead>
 <tbody>
@@ -4448,6 +4476,18 @@ elif page == "Club List":
 
         rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.1f}"
 
+        coaches_val = r["COACHES VOTES"]
+        coaches_str = "—" if pd.isna(coaches_val) else f"{float(coaches_val):.2f}"
+
+        tog_val = r["TOG %"]
+        tog_str = "—" if pd.isna(tog_val) else f"{float(tog_val):.1f}%"
+
+        ratings_total_val = r["RATINGS TOTAL"]
+        ratings_total_str = "—" if pd.isna(ratings_total_val) else f"{float(ratings_total_val):.1f}"
+
+        pct_team_val = r["% OF TEAM"]
+        pct_team_str = "—" if pd.isna(pct_team_val) else f"{float(pct_team_val):.1f}%"
+
         html += f"""
 <tr>
 <td>{r['PLAYER']}</td>
@@ -4459,6 +4499,10 @@ elif page == "Club List":
 <td>{age_str}</td>
 <td>{matches_str}</td>
 <td style="background-color:{bg}; color:{fg}; font-weight:900;">{rating_str}</td>
+<td>{coaches_str}</td>
+<td>{tog_str}</td>
+<td>{ratings_total_str}</td>
+<td>{pct_team_str}</td>
 </tr>
 """
 
