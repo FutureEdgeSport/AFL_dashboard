@@ -3,7 +3,10 @@ import os
 import warnings
 import math
 import string
+import textwrap
+import base64
 from collections import defaultdict
+from typing import Optional, Any, Tuple, List, Dict
 
 import altair as alt
 import numpy as np
@@ -11,6 +14,17 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
+# Import centralized configuration
+from config.constants import (
+    CURRENT_SEASON, AVAILABLE_SEASONS, DEFAULT_SEASON,
+    TEAM_FILE, PLAYER_FILE, TRAITS_FILE, LADDERS_FILE,
+    LOGO_FOLDER, PLAYER_PHOTO_FOLDER,
+    TEAM_CODE_MAP, TEAM_CODE_TO_NAME, TEAM_COLOURS, ALL_TEAMS,
+    DEPTH_POSITIONS, POSITION_ABBREV_TO_FULL, POSITION_COLOURS,
+    AGE_BANDS, AGE_BANDS_ALT,
+    METRIC_ORDER, RATING_COL_CANDIDATES, TRAIT_COLUMNS,
+    UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, normalize_team_name
+)
 
 # ---------------- STREAMLIT CONFIG ----------------
 st.set_page_config(
@@ -23,23 +37,109 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 BASE_DIR = Path(__file__).resolve().parent
 
-import textwrap
 
+# ============================================================================
+# UNIFIED HELPER FUNCTIONS
+# ============================================================================
 def render_html(container, html_str: str):
+    """Render HTML safely without code block artifacts."""
     container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
 
 
+def render_page_header(title: str, subtitle: str = None, icon: str = "📊"):
+    """Render consistent page header across all pages."""
+    subtitle_html = f'<p style="text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;">{subtitle}</p>' if subtitle else ''
+    st.markdown(f'''
+    <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+                padding: 40px 20px;
+                border-radius: 15px;
+                margin-bottom: 30px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+        <h1 style="text-align: center; color: #FFFFFF; margin: 0;
+                   font-size: 2.8em; font-weight: 900;
+                   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+            {icon} {title.upper()}
+        </h1>
+        {subtitle_html}
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+def render_footer():
+    """Render professional footer on all pages."""
+    st.markdown('''
+    <div style="text-align: center;
+                color: rgba(255,255,255,0.4);
+                padding: 40px 20px;
+                margin-top: 60px;
+                border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="margin: 0 0 8px 0; font-weight: 600;">
+            AFL Analytics Dashboard | Powered by FutureEdge Sport
+        </p>
+        <p style="margin: 0; font-size: 0.85em;">
+            Data accuracy verified as of latest AFL.com.au update
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+def render_info_box(content: str, box_type: str = "info"):
+    """Render consistent info/warning/success boxes."""
+    colors = {
+        "info": ("rgba(100,149,237,0.1)", "#6495ED", "rgba(100,149,237,0.3)"),
+        "warning": ("rgba(255,165,0,0.1)", "#FFA500", "rgba(255,165,0,0.3)"),
+        "success": ("rgba(0,128,0,0.1)", "#008000", "rgba(0,128,0,0.3)"),
+        "error": ("rgba(255,0,0,0.1)", "#FF0000", "rgba(255,0,0,0.3)")
+    }
+    bg, border, accent = colors.get(box_type, colors["info"])
+    st.markdown(f'''
+    <div style="background: {bg};
+                padding: 20px;
+                border-radius: 10px;
+                border-left: 4px solid {border};
+                margin-bottom: 20px;">
+        <p style="color: #DDDDDD; margin: 0; line-height: 1.6;">{content}</p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+def render_empty_state(message: str, suggestion: str = None):
+    """Render consistent empty state when no data is available."""
+    suggestion_html = f'<p style="color: rgba(255,255,255,0.6);">{suggestion}</p>' if suggestion else ''
+    st.markdown(f'''
+    <div style="text-align: center;
+                padding: 60px 20px;
+                background: rgba(255,255,255,0.02);
+                border-radius: 16px;
+                border: 2px dashed rgba(255,255,255,0.1);">
+        <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+        <h3 style="color: #FFFFFF; margin-bottom: 12px;">{message}</h3>
+        {suggestion_html}
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+def safe_load_file(file_path: Path, description: str) -> bool:
+    """Check if a required file exists and show error if not."""
+    if not file_path.exists():
+        st.error(f"❌ Missing required file: {file_path.name}")
+        render_info_box(
+            f"<strong>File Not Found</strong><br>"
+            f"Please ensure <code>{file_path.name}</code> is in the dashboard folder.<br>"
+            f"Required for: {description}",
+            "error"
+        )
+        return False
+    return True
+
+
 # -------------------------
-# Global season defaults (safe)
+# Global season defaults (using config)
 # -------------------------
-TEAM_SEASONS = [2025, 2024, 2023]
+TEAM_SEASONS = AVAILABLE_SEASONS  # Use config value
 
 def get_default_season() -> int:
-    try:
-        vals = [int(x) for x in TEAM_SEASONS]
-        return max(vals) if vals else 2025
-    except Exception:
-        return 2025
+    return CURRENT_SEASON
 
 if "selected_season" not in st.session_state:
     st.session_state["selected_season"] = get_default_season()
@@ -48,103 +148,8 @@ if "primary_season" not in st.session_state:
     st.session_state["primary_season"] = st.session_state["selected_season"]
 
 
-# ---------------- PATHS & CONSTANTS ----------------
-TEAM_FILE = "AFL Team Ratings.xlsx"
-PLAYER_FILE = "AFL Player Ratings.xlsx"
-
-LOGO_FOLDER = "team_logos"
-PLAYER_PHOTO_FOLDER = "player_photos"
-
-TEAM_CODE_MAP = {
-    "Adelaide": "afc",
-    "Brisbane": "lions",
-    "Carlton": "cfc",
-    "Collingwood": "cofc",
-    "Essendon": "efc",
-    "Fremantle": "ffc",
-    "Geelong": "gfc",
-    "Gold Coast": "gcfc",
-    "GWS": "gws",
-    "GWS Giants": "gws",
-    "Hawthorn": "hfc",
-    "Melbourne": "mfc",
-    "North Melbourne": "nmfc",
-    "Port Adelaide": "pafc",
-    "Richmond": "rfc",
-    "St Kilda": "skfc",
-    "Sydney": "sfc",
-    "West Coast": "wcfc",
-    "Western Bulldogs": "wbfc",
-}
-
-TEAM_COLOURS = {
-    "Adelaide": "#002B5C",
-    "Brisbane": "#7C003E",
-    "Carlton": "#031A28",
-    "Collingwood": "#000000",
-    "Essendon": "#D50032",
-    "Fremantle": "#2F0055",
-    "Geelong": "#001F3D",
-    "Gold Coast": "#E2001A",
-    "GWS": "#F37A20",
-    "GWS Giants": "#F37A20",
-    "Hawthorn": "#4D2004",
-    "Melbourne": "#0F1131",
-    "North Melbourne": "#0055A4",
-    "Port Adelaide": "#01A0E1",
-    "Richmond": "#FFCC00",
-    "St Kilda": "#E00034",
-    "Sydney": "#E00034",
-    "West Coast": "#003087",
-    "Western Bulldogs": "#0055A4",
-}
-
-METRIC_ORDER = [
-    "Team Rating",
-    "Ball Winning Ranking",
-    "Ball Movement Ranking",
-    "Scoring Ranking",
-    "Defence Ranking",
-    "Pressure Ranking",
-]
-
-# Rating column candidates in per-season sheets
-RATING_COL_CANDIDATES = [
-    "RatingPoints_Avg",
-    "RatingPoints_Ave",
-    "RatingPoint_Ave",
-    "RatingPoint_Avg",
-]
-
-# Depth chart layout (you were missing these)
-DEPTH_POSITIONS = [
-    "Key Defender",
-    "Gen. Defender",
-    "Midfielder",
-    "Mid-Forward",
-    "Wing",
-    "Gen. Forward",
-    "Ruck",
-    "Key Forward",
-]
-
-AGE_BANDS = [
-    "Under 22",
-    "22 to 26 Year Old",
-    "26 to 30 Year Old",
-    "30+ Year Old",
-]
-
-POSITION_COLOURS = {
-    "Key Defender": ("#ff0000", "white"),
-    "Gen. Defender": ("#ff9900", "white"),
-    "Midfielder": ("#00aa00", "white"),
-    "Mid-Forward": ("#00aa00", "white"),
-    "Wing": ("#ffff00", "black"),
-    "Gen. Forward": ("#ffff00", "black"),
-    "Ruck": ("#0099ff", "white"),
-    "Key Forward": ("#0099ff", "white"),
-}
+# NOTE: TEAM_CODE_MAP, TEAM_COLOURS, METRIC_ORDER, DEPTH_POSITIONS, AGE_BANDS, 
+# POSITION_COLOURS are now imported from config.constants
 
 
 # -------------------------
@@ -228,10 +233,18 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
-    xl = pd.ExcelFile(TEAM_FILE)
-    sheet_name = f"{season} Ladders (L10)" if last10 else f"{season} Ladders"
-    raw = xl.parse(sheet_name)
-    return _normalise_ladder_df(raw)
+    """Load team ladder data for a specific season with error handling."""
+    try:
+        xl = pd.ExcelFile(TEAM_FILE)
+        sheet_name = f"{season} Ladders (L10)" if last10 else f"{season} Ladders"
+        raw = xl.parse(sheet_name)
+        return _normalise_ladder_df(raw)
+    except FileNotFoundError:
+        st.error(f"❌ Team ratings file not found: {TEAM_FILE}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.warning(f"⚠️ Could not load {season} ladder data: {e}")
+        return pd.DataFrame()
 
 
 @st.cache_data(show_spinner=False)
@@ -291,20 +304,32 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
 # ---------------- DATA LOADERS – PLAYERS ----------------
 @st.cache_data(show_spinner=False)
 def load_player_summary() -> pd.DataFrame:
-    xl = pd.ExcelFile(PLAYER_FILE)
-    df = xl.parse("Summary")
-    df.columns = df.columns.astype(str).str.strip()
-    return df
+    """Load player summary data with error handling."""
+    try:
+        xl = pd.ExcelFile(PLAYER_FILE)
+        df = xl.parse("Summary")
+        df.columns = df.columns.astype(str).str.strip()
+        return df
+    except FileNotFoundError:
+        st.error(f"❌ Player ratings file not found: {PLAYER_FILE}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.warning(f"⚠️ Could not load player summary: {e}")
+        return pd.DataFrame()
 
 
 @st.cache_data(show_spinner=False)
 def get_player_seasons() -> list[int]:
-    xl = pd.ExcelFile(PLAYER_FILE)
-    seasons = []
-    for s in xl.sheet_names:
-        if str(s).isdigit():
-            seasons.append(int(s))
-    return sorted(seasons, reverse=True)
+    """Get available player seasons with error handling."""
+    try:
+        xl = pd.ExcelFile(PLAYER_FILE)
+        seasons = []
+        for s in xl.sheet_names:
+            if str(s).isdigit():
+                seasons.append(int(s))
+        return sorted(seasons, reverse=True)
+    except Exception:
+        return AVAILABLE_SEASONS  # Fall back to config default
 
 
 def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
@@ -322,44 +347,51 @@ def load_players(season: int) -> pd.DataFrame:
     Player Ratings loader (AFL Player Ratings.xlsx per-season sheets).
     This should NOT enforce traits columns.
     """
-    xl = pd.ExcelFile(PLAYER_FILE)
-    df = xl.parse(str(season))
-    df.columns = df.columns.astype(str).str.strip()
-    df = _normalise_rating_column(df)
+    try:
+        xl = pd.ExcelFile(PLAYER_FILE)
+        df = xl.parse(str(season))
+        df.columns = df.columns.astype(str).str.strip()
+        df = _normalise_rating_column(df)
 
-    cols = [
-        "Player",
-        "Team",
-        "Age",
-        "Age_Decimal",
-        "Position",
-        "Matches",
-        "RatingPoints_Avg",
-        "Height",
-        "Height_cm",
-        "Jumper",
-        "Jersey",
-        "Number",
-        "Guernsey",
-        "No",
-    ]
-    existing = [c for c in cols if c in df.columns]
-    df = df[existing].copy()
+        cols = [
+            "Player",
+            "Team",
+            "Age",
+            "Age_Decimal",
+            "Position",
+            "Matches",
+            "RatingPoints_Avg",
+            "Height",
+            "Height_cm",
+            "Jumper",
+            "Jersey",
+            "Number",
+            "Guernsey",
+            "No",
+        ]
+        existing = [c for c in cols if c in df.columns]
+        df = df[existing].copy()
 
-    # clean key columns
-    if "Player" in df.columns:
-        df["Player"] = df["Player"].astype(str).str.strip()
-    if "Team" in df.columns:
-        df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
-    if "Position" in df.columns:
-        df["Position"] = df["Position"].astype(str).str.strip()
+        # clean key columns
+        if "Player" in df.columns:
+            df["Player"] = df["Player"].astype(str).str.strip()
+        if "Team" in df.columns:
+            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+        if "Position" in df.columns:
+            df["Position"] = df["Position"].astype(str).str.strip()
 
-    return df
+        return df
+    except FileNotFoundError:
+        st.error(f"❌ Player ratings file not found: {PLAYER_FILE}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.warning(f"⚠️ Could not load player data for {season}: {e}")
+        return pd.DataFrame()
 
 
 # ---------------- DATA LOADERS – TRAITS (ENRICHED source of truth) ----------------
 @st.cache_data(show_spinner=False)
-def load_traits(season: int = 2025) -> pd.DataFrame:
+def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """
     Load ENRICHED traits for a season.
 
@@ -1259,7 +1291,7 @@ def predict_player_trajectory(
     current_rating: float,
     historical_ratings: list,
     all_players_df: pd.DataFrame,
-    current_season: int = 2025,
+    current_season: int = CURRENT_SEASON,
     projection_years: int = 5,
     confidence_band: float = 0.15,
 ) -> pd.DataFrame:
@@ -2437,7 +2469,9 @@ def render_game_day_playground(teams: list[str]):
     
     st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
     st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>Note: All impact areas and scores are hypothetical for demonstration purposes</div>", unsafe_allow_html=True)
-
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= OVERVIEW =================
@@ -2449,12 +2483,8 @@ if page == "Overview":
     st.title("🏉 FutureEdge AFL Dashboard – Overview")
 
     # ----------------------------
-    # Helpers
+    # Helpers (render_html is imported from top of file)
     # ----------------------------
-    def render_html(container, html_str: str):
-        """Always dedent/strip so Streamlit markdown doesn't treat it as a code block."""
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
     def to_ordinal(n):
         if pd.isna(n) or n == "":
             return ""
@@ -4343,6 +4373,9 @@ elif page == "Club List":
 
     # CRITICAL: render_html prevents HTML appearing as a code block
     render_html(st, html)
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= PLAYER PROFILE =================
@@ -4351,11 +4384,7 @@ elif page == "Player Profile":
 
     st.title("👤 Player Profile")
 
-    # -------------------------------------------------
-    # HTML render helper (prevents raw <div> showing)
-    # -------------------------------------------------
-    def render_html(container, html_str: str):
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
+    # (render_html is imported from top of file)
 
     # Helper: ordinal
     def get_ordinal(n):
@@ -4990,13 +5019,13 @@ elif page == "Player Profile":
             except Exception:
                 return ""
 
-        traits_2025 = load_traits(2025)
+        traits_2025 = load_traits(CURRENT_SEASON)
         if traits_2025 is not None and not traits_2025.empty and "Player_Full" in traits_2025.columns:
             player_traits_2025 = traits_2025[traits_2025["Player_Full"] == selected_player].copy()
 
             if "Season" in player_traits_2025.columns:
                 player_traits_2025["Season"] = pd.to_numeric(player_traits_2025["Season"], errors="coerce")
-                player_traits_2025 = player_traits_2025[player_traits_2025["Season"] == 2025]
+                player_traits_2025 = player_traits_2025[player_traits_2025["Season"] == CURRENT_SEASON]
 
             if not player_traits_2025.empty:
                 player_trait = player_traits_2025.iloc[0]
@@ -5332,30 +5361,8 @@ elif page == "Player Traits":
         else:
             return "Poor"
 
-    def rating_colour_for_value(value, all_values):
-        try:
-            v = float(value)
-            series = pd.to_numeric(all_values, errors="coerce").dropna()
-        except Exception:
-            return "#666666", "#FFFFFF"
-        if series.empty:
-            return "#666666", "#FFFFFF"
-        p = (series < v).mean()
-        if p >= 0.85:
-            return "#008000", "#FFFFFF"
-        elif p >= 0.65:
-            return "#90EE90", "#000000"
-        elif p >= 0.45:
-            return "#FFA500", "#000000"
-        else:
-            return "#FF0000", "#FFFFFF"
-
-    import textwrap
-
-    def render_html(container, html_str: str):
-        """Prevents Streamlit markdown from treating indented HTML as a code block."""
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
-
+    # NOTE: rating_colour_for_value is defined globally at line ~715
+    # (render_html is imported from top of file)
 
     # -------------------------
     # Season selection
@@ -5461,10 +5468,7 @@ elif page == "Player Traits":
     st.markdown("---")
     st.subheader("Traits history (by season)")
 
-    import textwrap
-
-    def render_html(container, html_str: str):
-        container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
+    # (render_html is imported from top of file)
 
     traits_history_parts = []
     for y in sorted([int(s) for s in history_seasons], reverse=True):
@@ -5506,9 +5510,9 @@ elif page == "Player Traits":
 
         view = view.sort_values("Season", ascending=False).reset_index(drop=True)
 
-        # Ratings distribution for conditional formatting (prefer 2025, else fallback to view)
+        # Ratings distribution for conditional formatting (prefer current season, else fallback to view)
         try:
-            t2025 = load_traits(2025)
+            t2025 = load_traits(CURRENT_SEASON)
             if t2025 is not None and not t2025.empty and "Rating" in t2025.columns:
                 league_ratings = pd.to_numeric(t2025["Rating"], errors="coerce").dropna()
             else:
@@ -5774,13 +5778,7 @@ elif page == "Player Traits":
         unsafe_allow_html=True
     )
 
-    def render_html(html_str: str, container=None):
-        """Ensure Streamlit doesn't treat indented HTML as a markdown code block."""
-        clean = textwrap.dedent(html_str).strip()
-        if container is None:
-            st.markdown(clean, unsafe_allow_html=True)
-        else:
-            container.markdown(clean, unsafe_allow_html=True)
+    # (render_html is imported from top of file)
 
     ball_winning_substats = {
         "Stoppage": player_trait.get("Stoppage", ""),
@@ -5865,10 +5863,12 @@ elif page == "Player Traits":
     if trait_cards:
         c1, c2 = st.columns(2)
         for i, card in enumerate(trait_cards):
-            render_html(card, container=(c1 if i % 2 == 0 else c2))
+            render_html(c1 if i % 2 == 0 else c2, card)
     else:
         st.info("No trait card values available for this player.")
-
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= DEPTH CHART =================
@@ -5933,15 +5933,18 @@ elif page == "Depth Chart":
 
     html = build_depth_chart_html(df_team, summary_df_with_ratings)
     st.markdown(html, unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= TEAM AGE BREAKDOWN =================
 
 elif page == "Team Age Breakdown":
     # Professional header
-    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{CURRENT_SEASON} Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
 
-    selected_season = 2025
+    selected_season = CURRENT_SEASON
 
     # Load player data for the selected season
     try:
@@ -6192,23 +6195,26 @@ elif page == "Team Age Breakdown":
     
     html_table += "</tbody>\n</table>"
     st.markdown(html_table, unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= LIST LADDER =================
 
 elif page == "List Ladder":
     # Professional header
-    st.markdown("""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>2025 Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>📊 AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{CURRENT_SEASON} Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
 
     # Load player data
     try:
-        players_df = load_players(2025)
+        players_df = load_players(CURRENT_SEASON)
     except Exception as e:
         st.error(f"Error loading player data: {e}")
         st.stop()
 
     if players_df.empty:
-        st.warning("No player data found for 2025.")
+        st.warning(f"No player data found for {CURRENT_SEASON}.")
         st.stop()
 
     # Ensure required columns exist
@@ -6573,6 +6579,9 @@ elif page == "List Ladder":
 """
                         
                         st.markdown(html_player_table, unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= TEAM LIST SUMMARY =================
@@ -6583,7 +6592,7 @@ elif page == "Team List Summary":
     # Team selection
     # Get teams from player data
     try:
-        players_df = load_players(2025)
+        players_df = load_players(CURRENT_SEASON)
     except Exception as e:
         st.error(f"Error loading player data: {e}")
         st.stop()
@@ -7170,6 +7179,9 @@ elif page == "Team List Summary":
 </div>"""
     
     st.markdown(summary_html, unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
 
 # ================= BEST 23 (ALL-IN) =================
 elif page == "Best 23":
@@ -8308,6 +8320,9 @@ elif page == "Best 23":
 
     # Call once (and only once)
     render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench)
+    
+    # Professional footer
+    render_footer()
 
 
 # ================= LIST BREAKDOWN - TRAITS =================
@@ -10085,6 +10100,9 @@ elif page == "IDP":
             st.markdown(f"<div style='margin:12px 0;padding:18px;background:rgba(0,255,0,0.1);border-left:5px solid #00FF00;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:18px;font-weight:900;color:#00FF00;margin-bottom:10px;'>✓ {stat}</div><div style='color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;'>Performing <strong style='color:#00FF00;'>{pct:.1f}%</strong> above average. Maintain this advantage through consistent application.</div></div>", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
 
 # ================= GAME MODEL SCORECARD =================
 elif page == "Game Model Scorecard":
@@ -10724,6 +10742,9 @@ elif page == "Game Model Scorecard":
             <span style='color: #FF0000;'>■</span> Bottom 35%
         </div>
         """, unsafe_allow_html=True)
+        
+        # Professional footer
+        render_footer()
         
     except Exception as e:
         st.error(f"Error loading data: {e}")
