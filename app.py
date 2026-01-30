@@ -5157,6 +5157,31 @@ elif page == "Club List":
     else:
         st.session_state.default_team = default_selection[0]
 
+    # ---------- Rating Type Selector ----------
+    rating_type_col1, rating_type_col2 = st.columns([2, 6])
+    with rating_type_col1:
+        rating_type = st.selectbox(
+            "Rating Type",
+            ["Rating", "Trait Rating"],
+            index=0,
+            key="club_list_rating_type",
+            help="Select 'Rating' for Wheelo ratings or 'Trait Rating' for trait-based ratings"
+        )
+    
+    # ---------- Load Traits Data (if Trait Rating selected) ----------
+    traits_df = None
+    if rating_type == "Trait Rating":
+        try:
+            traits_df = load_traits(int(season))
+            if traits_df is not None and not traits_df.empty:
+                # Ensure numeric Rating column
+                traits_df["Rating"] = pd.to_numeric(traits_df["Rating"], errors="coerce")
+                traits_df["Player_Full"] = traits_df["Player_Full"].astype(str).str.strip()
+                traits_df["Team_Full"] = traits_df["Team_Full"].astype(str).str.strip()
+        except Exception as e:
+            st.warning(f"Could not load traits data: {e}. Falling back to standard ratings.")
+            traits_df = None
+
     # ---------- TPP (Total Player Payments) Input ----------
     tpp_col1, tpp_col2 = st.columns([2, 6])
     with tpp_col1:
@@ -5194,10 +5219,45 @@ elif page == "Club List":
         st.info("No players found for this team.")
         st.stop()
 
-    team_df = team_df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
+    # ---------- Merge Trait Ratings if selected ----------
+    if rating_type == "Trait Rating" and traits_df is not None and not traits_df.empty:
+        # Create a lookup from traits_df by Player_Full and Team_Full
+        traits_lookup = traits_df[["Player_Full", "Team_Full", "Rating", "Position_Full"]].copy()
+        traits_lookup = traits_lookup.rename(columns={"Rating": "TraitRating", "Player_Full": "Player", "Team_Full": "Team"})
+        traits_lookup["Player"] = traits_lookup["Player"].astype(str).str.strip()
+        traits_lookup["Team"] = traits_lookup["Team"].astype(str).str.strip()
+        traits_lookup["TraitRating"] = pd.to_numeric(traits_lookup["TraitRating"], errors="coerce")
+        
+        # Deduplicate: keep only the highest rated entry for each Player+Team combination
+        traits_lookup = traits_lookup.sort_values("TraitRating", ascending=False).drop_duplicates(
+            subset=["Player", "Team"], keep="first"
+        )
+        
+        # Merge trait ratings into team_df
+        team_df = team_df.merge(
+            traits_lookup[["Player", "Team", "TraitRating"]],
+            on=["Player", "Team"],
+            how="left"
+        )
+        team_df["TraitRating"] = team_df["TraitRating"].fillna(0)
+        
+        # Also merge into main df for season-wide rankings
+        df = df.merge(
+            traits_lookup[["Player", "Team", "TraitRating"]],
+            on=["Player", "Team"],
+            how="left"
+        )
+        df["TraitRating"] = df["TraitRating"].fillna(0)
+        
+        # Use TraitRating as the display rating
+        display_rating_col = "TraitRating"
+    else:
+        display_rating_col = "RatingPoints_Avg"
 
-    # Calculate Ratings Total (Matches * RatingPoints_Avg)
-    team_df["RatingsTotal"] = team_df["Matches"].fillna(0) * team_df["RatingPoints_Avg"].fillna(0)
+    team_df = team_df.sort_values(display_rating_col, ascending=False).reset_index(drop=True)
+
+    # Calculate Ratings Total (Matches * Rating)
+    team_df["RatingsTotal"] = team_df["Matches"].fillna(0) * team_df[display_rating_col].fillna(0)
 
     # Calculate % of Team's Ratings for each team separately
     team_ratings_sum = team_df.groupby("Team")["RatingsTotal"].transform("sum")
@@ -5208,23 +5268,23 @@ elif page == "Club List":
     team_df["TPP_Output"] = (team_df["PctOfTeamRatings"] / 100 * tpp_value).clip(lower=MIN_PLAYER_PAYMENT).round(0)
 
     # ---------- Rankings (season-wide) ----------
-    season_df = df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
+    season_df = df.sort_values(display_rating_col, ascending=False).reset_index(drop=True)
 
-    season_df["CompRank"] = season_df["RatingPoints_Avg"].rank(method="min", ascending=False).astype(int)
+    season_df["CompRank"] = season_df[display_rating_col].rank(method="min", ascending=False).astype(int)
 
     season_df["DepthPos"] = season_df["Position"].apply(
         lambda x: map_position_to_depth(x) if pd.notna(x) and str(x).strip() != "" else "—"
     )
 
     season_df["PosRank"] = (
-        season_df.groupby("DepthPos")["RatingPoints_Avg"]
+        season_df.groupby("DepthPos")[display_rating_col]
         .rank(method="min", ascending=False)
         .astype(int)
     )
 
     # Merge ranks by Player (within-season unique enough)
     rank_map = season_df.set_index("Player")[["CompRank", "PosRank", "DepthPos"]]
-    team_df = team_df.join(rank_map, on="Player")
+    team_df = team_df.join(rank_map, on="Player", rsuffix="_season")
 
     def ordinal(n):
         if pd.isna(n):
@@ -5237,6 +5297,13 @@ elif page == "Club List":
     # ---------- Build output ----------
     # Use Age_Decimal if available, otherwise fall back to Age
     age_col = "Age_Decimal" if "Age_Decimal" in team_df.columns else "Age"
+    
+    # Determine which rating value to display
+    rating_display_values = team_df[display_rating_col] if display_rating_col in team_df.columns else team_df["RatingPoints_Avg"]
+    
+    # Use 2 decimal places for Trait Rating, 1 for standard Rating
+    rating_decimals = 2 if rating_type == "Trait Rating" else 1
+    
     out = pd.DataFrame({
         "PLAYER": team_df["Player"].fillna("—"),
         "SEASON": int(season),
@@ -5244,7 +5311,7 @@ elif page == "Club List":
         "POSITION": team_df["DepthPos"].fillna("—"),
         "AGE": pd.to_numeric(team_df[age_col], errors="coerce").round(2),
         "MATCHES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
-        "RATING": pd.to_numeric(team_df["RatingPoints_Avg"], errors="coerce").round(1),
+        "RATING": pd.to_numeric(rating_display_values, errors="coerce").round(rating_decimals),
         "COMP RANK": team_df["CompRank"].apply(ordinal),
         "POS RANK": team_df["PosRank"].apply(ordinal),
         "COACHES VOTES": pd.to_numeric(team_df["CoachesVotes_Avg"], errors="coerce").round(2),
@@ -5259,9 +5326,13 @@ elif page == "Club List":
         out = out.head(5).copy()
 
     # ---------- Render using unified table system ----------
-    league_ratings = season_df["RatingPoints_Avg"].dropna()
+    # Use the appropriate rating column for color scaling
+    league_ratings = season_df[display_rating_col].dropna() if display_rating_col in season_df.columns else season_df["RatingPoints_Avg"].dropna()
+    
+    # Dynamic column header based on rating type
+    rating_header = "TRAIT RATING" if rating_type == "Trait Rating" else "RATING"
 
-    html = """
+    html = f"""
 <table class="fe-table fe-sortable">
 <thead>
 <tr>
@@ -5271,7 +5342,7 @@ elif page == "Club List":
 <th>POSITION</th>
 <th>AGE</th>
 <th>MATCHES</th>
-<th>RATING</th>
+<th>{rating_header}</th>
 <th>COMP RANK</th>
 <th>POS RANK</th>
 <th>COACHES VOTES</th>
@@ -5294,7 +5365,11 @@ elif page == "Club List":
         matches_val = r["MATCHES"]
         matches_str = "—" if pd.isna(matches_val) else f"{int(matches_val)}"
 
-        rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.1f}"
+        # Use 2 decimal places for Trait Rating, 1 for standard Rating
+        if rating_type == "Trait Rating":
+            rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.2f}"
+        else:
+            rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.1f}"
 
         coaches_val = r["COACHES VOTES"]
         coaches_str = "—" if pd.isna(coaches_val) else f"{float(coaches_val):.2f}"
