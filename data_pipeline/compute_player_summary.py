@@ -1,0 +1,458 @@
+"""
+compute_player_summary.py
+=========================
+Phase 3: Python computation of player summary data.
+
+Replaces Excel formulas in AFL Player Ratings.xlsx 'Summary' sheet.
+
+Key calculations:
+- Career average ratings across all seasons
+- Last 2 years average ratings
+- Last 20 games average
+- Position rankings
+- Overall rankings
+- Cap value calculations
+- Impact calculations
+"""
+
+import pandas as pd
+import numpy as np
+from pathlib import Path
+from typing import Optional
+
+
+# Path to data directory
+DATA_DIR = Path(__file__).parent.parent / "data"
+
+
+def load_all_season_data(seasons: list[int] = None) -> dict[int, pd.DataFrame]:
+    """
+    Load player statistics from all available season CSV files.
+    
+    Args:
+        seasons: List of seasons to load. If None, loads all available.
+        
+    Returns:
+        Dictionary mapping season year to DataFrame
+    """
+    raw_player_dir = DATA_DIR / "raw" / "player"
+    season_data = {}
+    
+    if seasons is None:
+        # Find all available season files
+        seasons = []
+        for f in raw_player_dir.glob("player_stats_*.csv"):
+            try:
+                year = int(f.stem.split("_")[-1])
+                seasons.append(year)
+            except ValueError:
+                continue
+        seasons = sorted(seasons)
+    
+    for season in seasons:
+        csv_path = raw_player_dir / f"player_stats_{season}.csv"
+        if csv_path.exists():
+            df = pd.read_csv(csv_path)
+            df.columns = df.columns.str.strip()
+            season_data[season] = df
+    
+    return season_data
+
+
+def load_squads_data(season: int = 2025) -> pd.DataFrame:
+    """Load squad/roster data for a season."""
+    csv_path = DATA_DIR / "raw" / "player" / f"squads_{season}.csv"
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        df.columns = df.columns.str.strip()
+        return df
+    return pd.DataFrame()
+
+
+def load_contract_data() -> pd.DataFrame:
+    """Load contract expiry data."""
+    csv_path = DATA_DIR / "raw" / "player" / "contract_expiry.csv"
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        df.columns = df.columns.str.strip()
+        return df
+    return pd.DataFrame()
+
+
+def load_draft_data() -> pd.DataFrame:
+    """Load draft data."""
+    csv_path = DATA_DIR / "raw" / "player" / "draft_data.csv"
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        df.columns = df.columns.str.strip()
+        return df
+    return pd.DataFrame()
+
+
+def compute_career_average(
+    player_name: str,
+    season_data: dict[int, pd.DataFrame],
+    rating_col: str = "RatingPoints_Avg",
+    min_matches: int = 5
+) -> float:
+    """
+    Compute career average rating for a player.
+    
+    Args:
+        player_name: Player's name
+        season_data: Dict of season DataFrames
+        rating_col: Column name for rating
+        min_matches: Minimum matches in a season to include
+        
+    Returns:
+        Career average rating weighted by matches
+    """
+    total_rating = 0.0
+    total_matches = 0
+    
+    for season, df in season_data.items():
+        if "Player" not in df.columns:
+            continue
+        
+        player_row = df[df["Player"] == player_name]
+        if player_row.empty:
+            continue
+            
+        row = player_row.iloc[0]
+        matches = row.get("Matches", 0)
+        rating = row.get(rating_col, np.nan)
+        
+        if pd.notna(rating) and matches >= min_matches:
+            total_rating += rating * matches
+            total_matches += matches
+    
+    if total_matches > 0:
+        return total_rating / total_matches
+    return np.nan
+
+
+def compute_last_n_years_average(
+    player_name: str,
+    season_data: dict[int, pd.DataFrame],
+    current_season: int,
+    n_years: int = 2,
+    rating_col: str = "RatingPoints_Avg",
+    min_matches: int = 5
+) -> float:
+    """
+    Compute average rating over last N years.
+    
+    Args:
+        player_name: Player's name
+        season_data: Dict of season DataFrames
+        current_season: Current season year
+        n_years: Number of years to look back
+        rating_col: Column name for rating
+        min_matches: Minimum matches in a season to include
+        
+    Returns:
+        Average rating weighted by matches over last N years
+    """
+    total_rating = 0.0
+    total_matches = 0
+    
+    for year in range(current_season - n_years + 1, current_season + 1):
+        if year not in season_data:
+            continue
+            
+        df = season_data[year]
+        if "Player" not in df.columns:
+            continue
+            
+        player_row = df[df["Player"] == player_name]
+        if player_row.empty:
+            continue
+            
+        row = player_row.iloc[0]
+        matches = row.get("Matches", 0)
+        rating = row.get(rating_col, np.nan)
+        
+        if pd.notna(rating) and matches >= min_matches:
+            total_rating += rating * matches
+            total_matches += matches
+    
+    if total_matches > 0:
+        return total_rating / total_matches
+    return np.nan
+
+
+def compute_player_summary(
+    current_season: int = 2025,
+    rating_col: str = "RatingPoints_Avg"
+) -> pd.DataFrame:
+    """
+    Compute complete player summary data from raw CSVs.
+    
+    Replicates Excel Summary sheet calculations.
+    
+    Args:
+        current_season: The current/most recent season
+        rating_col: Column name for player rating
+        
+    Returns:
+        DataFrame with player summary including:
+        - Basic info (name, team, age, position, height)
+        - Draft info
+        - Contract info
+        - Career statistics
+        - Last 2 year averages
+        - Rankings
+        - Cap calculations
+    """
+    # Load all data sources
+    season_data = load_all_season_data()
+    squads_df = load_squads_data(current_season)
+    contract_df = load_contract_data()
+    draft_df = load_draft_data()
+    
+    if current_season not in season_data:
+        raise ValueError(f"No data available for season {current_season}")
+    
+    current_df = season_data[current_season]
+    
+    # Build base summary from current season players
+    summary_rows = []
+    
+    # Get unique players from current season
+    if "Player" not in current_df.columns:
+        raise ValueError("Player column not found in current season data")
+    
+    players = current_df["Player"].unique()
+    
+    for player_name in players:
+        player_current = current_df[current_df["Player"] == player_name].iloc[0]
+        
+        row = {
+            "Player": player_name,
+            "Team": player_current.get("Team", ""),
+            "Age": player_current.get("Age", np.nan),
+            "Age_Decimal": player_current.get("Age_Decimal", np.nan),
+            "Position": player_current.get("Position", ""),
+            "Height": player_current.get("Height", np.nan),
+        }
+        
+        # Add current season stats
+        row["2025 Matches"] = player_current.get("Matches", 0)
+        row["2025 Rating"] = player_current.get(rating_col, np.nan)
+        
+        # Compute total matches across all seasons
+        total_matches = 0
+        for season, df in season_data.items():
+            if "Player" not in df.columns:
+                continue
+            player_row = df[df["Player"] == player_name]
+            if not player_row.empty:
+                total_matches += player_row.iloc[0].get("Matches", 0)
+        row["Total Matches"] = total_matches
+        
+        # Compute historical ratings per season
+        for season in sorted(season_data.keys()):
+            if "Player" not in season_data[season].columns:
+                continue
+            player_row = season_data[season][season_data[season]["Player"] == player_name]
+            if not player_row.empty:
+                row[str(season)] = player_row.iloc[0].get(rating_col, np.nan)
+            else:
+                row[str(season)] = np.nan
+        
+        # Compute career average
+        row["Career"] = compute_career_average(player_name, season_data, rating_col)
+        
+        # Compute last 2 years average
+        row["Last 2 Average"] = compute_last_n_years_average(
+            player_name, season_data, current_season, n_years=2, rating_col=rating_col
+        )
+        
+        # Compute 2025 vs 2024 change
+        rating_2025 = row.get("2025", np.nan) if "2025" in row else np.nan
+        rating_2024 = row.get("2024", np.nan) if "2024" in row else np.nan
+        if pd.notna(rating_2025) and pd.notna(rating_2024):
+            row["2025 vs 2024"] = rating_2025 - rating_2024
+        else:
+            row["2025 vs 2024"] = np.nan
+        
+        summary_rows.append(row)
+    
+    # Create DataFrame
+    summary_df = pd.DataFrame(summary_rows)
+    
+    # Add draft data if available
+    if not draft_df.empty and "Player" in draft_df.columns:
+        draft_cols = ["Player"]
+        for col in ["Draft Year", "Draft Pick", "Draft #", "Draft Round"]:
+            if col in draft_df.columns:
+                draft_cols.append(col)
+        if len(draft_cols) > 1:
+            summary_df = summary_df.merge(
+                draft_df[draft_cols].drop_duplicates("Player"),
+                on="Player",
+                how="left"
+            )
+    
+    # Add contract data if available
+    if not contract_df.empty and "Player" in contract_df.columns:
+        contract_cols = ["Player"]
+        for col in ["Contract Expiry", "Contract End"]:
+            if col in contract_df.columns:
+                contract_cols.append(col)
+        if len(contract_cols) > 1:
+            summary_df = summary_df.merge(
+                contract_df[contract_cols].drop_duplicates("Player"),
+                on="Player",
+                how="left"
+            )
+    
+    # Add squads data (jumper number, etc) if available
+    if not squads_df.empty and "Player" in squads_df.columns:
+        squad_cols = ["Player"]
+        for col in ["Jumper", "Jersey", "Number"]:
+            if col in squads_df.columns:
+                squad_cols.append(col)
+        if len(squad_cols) > 1:
+            summary_df = summary_df.merge(
+                squads_df[squad_cols].drop_duplicates("Player"),
+                on="Player",
+                how="left"
+            )
+    
+    # Compute rankings
+    summary_df = compute_rankings(summary_df, current_season)
+    
+    # Compute cap values (placeholder - needs salary cap constant)
+    summary_df = compute_cap_values(summary_df, current_season)
+    
+    return summary_df
+
+
+def compute_rankings(df: pd.DataFrame, current_season: int = 2025) -> pd.DataFrame:
+    """
+    Compute rankings for career, current season, and last 2 years.
+    
+    Rankings are computed:
+    - Overall (all players)
+    - By position (within position group)
+    """
+    # Career rank (only for players with >20 games)
+    mask = df["Total Matches"] > 20
+    df["Career Rank >20gms"] = np.nan
+    df.loc[mask, "Career Rank >20gms"] = df.loc[mask, "Career"].rank(ascending=False)
+    
+    # 2025 ranking
+    current_col = str(current_season)
+    if current_col in df.columns:
+        df["2025 Rank"] = df[current_col].rank(ascending=False)
+    
+    # Last 2 years overall rank
+    df["L2 Overall Rank"] = df["Last 2 Average"].rank(ascending=False)
+    
+    # Position-based rankings
+    if "Position" in df.columns:
+        # 2025 position rank
+        df["2025 Pos Rank"] = df.groupby("Position")[current_col].rank(ascending=False) if current_col in df.columns else np.nan
+        
+        # L2 position rank
+        df["L2 Pos Rank"] = df.groupby("Position")["Last 2 Average"].rank(ascending=False)
+    
+    # Compute impact (difference from median rating)
+    current_col = str(current_season)
+    if current_col in df.columns:
+        median_rating = df[current_col].median()
+        df["2025 Impact"] = (df[current_col] - median_rating) * df["2025 Matches"]
+    
+    if "Last 2 Average" in df.columns:
+        median_l2 = df["Last 2 Average"].median()
+        l2_matches = df["Total Matches"].clip(upper=40)  # Cap at ~2 seasons
+        df["Last 2 Impact"] = (df["Last 2 Average"] - median_l2) * l2_matches
+    
+    return df
+
+
+def compute_cap_values(
+    df: pd.DataFrame,
+    current_season: int = 2025,
+    salary_cap: float = 18_500_000,  # 2025 AFL salary cap estimate
+) -> pd.DataFrame:
+    """
+    Compute cap value calculations for players.
+    
+    This replicates the Excel cap % and cap value calculations.
+    """
+    current_col = str(current_season)
+    
+    # Total ratings in league for current season
+    if current_col in df.columns:
+        total_rating = df[current_col].sum()
+        if total_rating > 0:
+            df["2025 Rating %"] = (df[current_col] / total_rating) * 100
+            df["2025 Cap %"] = df["2025 Rating %"]  # Simplified
+            df["2025 Cap Value"] = (df["2025 Rating %"] / 100) * salary_cap
+    
+    # Last 2 years cap calculation
+    if "Last 2 Average" in df.columns:
+        total_l2 = df["Last 2 Average"].sum()
+        if total_l2 > 0:
+            df["L2 Rating %"] = (df["Last 2 Average"] / total_l2) * 100
+            df["L2 Cap %"] = df["L2 Rating %"]
+            df["Last 2 Years Cap Value"] = (df["L2 Rating %"] / 100) * salary_cap
+    
+    return df
+
+
+def compute_last_20_games_average(
+    player_name: str,
+    season_data: dict[int, pd.DataFrame],
+    current_season: int,
+    rating_col: str = "RatingPoints_Avg"
+) -> float:
+    """
+    Compute rolling average over last 20 games.
+    
+    Note: This requires game-by-game data, not season averages.
+    For now, approximates using season data weighted by recency.
+    """
+    # Simplified approximation using last 2 seasons
+    # Actual implementation would need game-level data
+    return compute_last_n_years_average(
+        player_name, season_data, current_season, n_years=2, rating_col=rating_col
+    )
+
+
+def save_player_summary(df: pd.DataFrame, filename: str = "player_summary.csv"):
+    """Save computed player summary to CSV."""
+    output_path = DATA_DIR / "computed" / filename
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
+    return output_path
+
+
+# ============================================================
+# Module entry point
+# ============================================================
+
+if __name__ == "__main__":
+    print("Computing player summary from raw CSV data...")
+    
+    try:
+        summary = compute_player_summary(current_season=2025)
+        print(f"\n✅ Computed summary for {len(summary)} players")
+        print(f"\nColumns: {list(summary.columns)}")
+        
+        # Show sample
+        print("\n=== Sample Data ===")
+        cols = ["Player", "Team", "Position", "Total Matches", "Career", "Last 2 Average", "2025 Rank"]
+        available_cols = [c for c in cols if c in summary.columns]
+        print(summary[available_cols].head(10).to_string())
+        
+        # Save to CSV
+        path = save_player_summary(summary)
+        print(f"\n💾 Saved to: {path}")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()

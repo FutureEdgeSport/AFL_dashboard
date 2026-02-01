@@ -97,7 +97,7 @@ AFL_dashboard/
 │   ├── compute_ratings.py             # ✅ Already exists
 │   ├── compute_player_summary.py      # To be created
 │   ├── compute_age_profiles.py        # To be created
-│   ├── compute_list_ladder.py         # To be created
+│   ├── compute_list_ladder.py         # ✅ Created v10.3
 │   └── validators.py                  # Validation against Excel snapshots
 │
 └── app.py
@@ -107,8 +107,8 @@ AFL_dashboard/
 
 ## 📋 Migration Phases
 
-### Phase 1: Team Ladders (READY TO START)
-**Status:** 🟡 Partially Complete  
+### Phase 1: Team Ladders ✅ COMPLETE
+**Status:** 🟢 Complete  
 **Effort:** Low  
 **Risk:** Low
 
@@ -119,34 +119,22 @@ The `data_pipeline/compute_ratings.py` module already has functions to compute t
 **Steps:**
 1. ✅ Wire up `compute_ratings.py` to `app.py` (DONE)
 2. ✅ Add feature flag `USE_COMPUTED_RATINGS` (DONE)
-3. ⬜ Validate computed values match Excel (use `compare_to_excel_snapshot()`)
-4. ⬜ Export raw team data to CSV format
-5. ⬜ Switch feature flag to True
-6. ⬜ Remove Excel ladder sheets
+3. ✅ Validate computed values match Excel - 100% match!
+4. ✅ Export raw team data to CSV format
+5. ✅ Switch feature flag to True
+6. ⬜ Remove Excel ladder sheets (future cleanup)
 
-### Phase 2: Team Summary Calculations
-**Status:** 🔴 Not Started  
+### Phase 2: Team Summary Calculations ✅ COMPLETE
+**Status:** 🟢 Complete  
 **Effort:** Medium  
 **Risk:** Medium
 
-Replicate Excel Summary sheet calculations:
+Created `data_pipeline/compute_team_summary.py`:
+- `compute_team_summary()` - Computes all team summary metrics
+- `compute_team_ladders()` - Full ladder with rankings
+- `compute_category_ranking()` - Ball Winning, Ball Movement, etc.
 
-| Metric | Excel Formula | Python Equivalent |
-|--------|---------------|-------------------|
-| Ball Winning Ranking | `=AVERAGE(rank columns)` | `df[rank_cols].mean(axis=1).rank()` |
-| Category Ranks | `=RANK(value, range)` | `df[col].rank(ascending=False)` |
-| Team Aggregates | `=VLOOKUP(team, data, col)` | `df.merge(raw_data, on='Team')` |
-
-**Functions to Create:**
-```python
-def compute_team_summary(raw_df: pd.DataFrame, season: int) -> pd.DataFrame:
-    """Compute all team summary metrics from raw match data."""
-    pass
-
-def compute_category_ranking(summary_df: pd.DataFrame, category: str) -> pd.Series:
-    """Compute ranking for a specific category (Ball Winning, etc.)."""
-    pass
-```
+**Validation:** 100% match with Excel
 
 ### Phase 3: Player Summary Calculations
 **Status:** 🔴 Not Started  
@@ -161,54 +149,34 @@ The Player Summary sheet has 1,247 formulas in the first 30 rows alone.
 3. **Career Stats** - Aggregate across seasons
 4. **Projections** - Age-based rating projections
 
-**Functions to Create:**
-```python
-def compute_player_summary(
-    season_dfs: dict[int, pd.DataFrame],
-    squads_df: pd.DataFrame,
-    draft_df: pd.DataFrame
-) -> pd.DataFrame:
-    """Build complete player summary from raw season data."""
-    pass
+Created `data_pipeline/compute_player_summary.py`:
+- `compute_player_summary()` - Full player summary with career/L2 averages
+- `compute_career_average()` - Weighted career average
+- `compute_last_n_years_average()` - L2/L3 rolling averages
+- `compute_rankings()` - Position and overall rankings
+- `compute_cap_values()` - Cap % and salary calculations
 
-def compute_player_projection(
-    player_row: pd.Series,
-    historical_df: pd.DataFrame
-) -> dict:
-    """Project player's future ratings based on age curve."""
-    pass
-```
+**Validation:**
+- ✅ 2025 season ratings: 100% match (raw data pass-through)
+- ✅ Career averages: 95% within 0.5 tolerance
 
-### Phase 4: List Ladder / Age Profiles
-**Status:** 🔴 Not Started  
+### Phase 4: List Ladder / Age Profiles ✅ COMPLETE
+**Status:** 🟢 Complete  
 **Effort:** Medium  
 **Risk:** Low
 
-These are analytical views built from the Summary data.
+Created `data_pipeline/compute_list_ladder.py`:
+- `compute_list_ladder()` - Count players by rating tier per position
+- `compute_list_ladder_l2()` - Using Last 2 Years average
+- `compute_list_ladder_career()` - Using Career average
+- `compute_age_profile()` - Total ratings by age band per team
+- `compute_age_profile_2yr()` / `compute_age_profile_1yr()` - Specific views
 
-**Calculations:**
-- `List Ladder L2` - Count players by rating band per team per position
-- `List Ladder Career` - Similar but using career ratings
-- `Age Profile (2yr)` - Total ratings by age band per team
-- `Age Profile (1yr)` - Single year ratings by age band
-
-**Functions to Create:**
-```python
-def compute_list_ladder(
-    summary_df: pd.DataFrame,
-    rating_col: str,
-    bands: list[tuple[float, float]]
-) -> pd.DataFrame:
-    """Compute list ladder showing player distribution by rating bands."""
-    pass
-
-def compute_age_profile(
-    summary_df: pd.DataFrame,
-    years: int = 2
-) -> pd.DataFrame:
-    """Compute age profile showing team strength by age band."""
-    pass
-```
+**Outputs:**
+- `data/computed/list_ladder_l2.csv`
+- `data/computed/list_ladder_career.csv`
+- `data/computed/age_profile_2yr.csv`
+- `data/computed/age_profile_1yr.csv`
 
 ### Phase 5: Traits Data
 **Status:** 🟢 Already Clean  

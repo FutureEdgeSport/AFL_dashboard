@@ -704,7 +704,7 @@ def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_na
 # ============================================================================
 # Feature flag for using Python-computed ratings vs Excel formulas
 # Set to True to use computed ratings (future default), False to use Excel
-USE_COMPUTED_RATINGS = False  # Toggle this to switch between Excel and Python-computed data
+USE_COMPUTED_RATINGS = True  # ✅ ENABLED - Using Python-computed data from CSV files
 
 def get_data_source_info() -> dict:
     """Return information about current data source configuration."""
