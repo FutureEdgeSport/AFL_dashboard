@@ -689,6 +689,92 @@ def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_na
     return pd.DataFrame()
 
 
+# ---------------- FC/FIFA STYLE RATING CONVERSION ----------------
+def convert_trait_to_fc_rating(value, min_orig=1.0, max_orig=4.0, min_fc=50, max_fc=99):
+    """
+    Convert a trait rating from original scale (1-4) to FC/FIFA style (50-99).
+    Maintains the shape of the data curve using linear interpolation.
+    
+    Args:
+        value: The original trait value (1-4 scale)
+        min_orig: Minimum value in original scale (default 1.0)
+        max_orig: Maximum value in original scale (default 4.0)
+        min_fc: Minimum value in FC scale (default 50)
+        max_fc: Maximum value in FC scale (default 99)
+    
+    Returns:
+        Converted value in FC scale (50-99) as integer, or None if invalid
+    """
+    try:
+        val = float(value)
+        if pd.isna(val):
+            return None
+        # Clamp to original range
+        val = max(min_orig, min(max_orig, val))
+        # Linear interpolation: (val - min_orig) / (max_orig - min_orig) = (result - min_fc) / (max_fc - min_fc)
+        normalized = (val - min_orig) / (max_orig - min_orig)
+        fc_value = min_fc + normalized * (max_fc - min_fc)
+        return int(round(fc_value))
+    except (ValueError, TypeError):
+        return None
+
+
+def convert_df_traits_to_fc(df, trait_columns=None):
+    """
+    Convert all trait columns in a DataFrame from 1-4 scale to FC/FIFA scale (50-99).
+    
+    Args:
+        df: DataFrame containing trait data
+        trait_columns: List of column names to convert. If None, uses default trait columns.
+    
+    Returns:
+        DataFrame with converted trait values
+    """
+    if df is None or df.empty:
+        return df
+    
+    if trait_columns is None:
+        trait_columns = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+    
+    df_converted = df.copy()
+    for col in trait_columns:
+        if col in df_converted.columns:
+            df_converted[col] = df_converted[col].apply(convert_trait_to_fc_rating)
+    
+    return df_converted
+
+
+def get_fc_rating_label(value):
+    """Get tier label for FC-style rating (50-99 scale)."""
+    try:
+        val = int(value) if value is not None else 0
+    except (ValueError, TypeError):
+        return ""
+    
+    if val >= 85:
+        return "Elite"
+    elif val >= 75:
+        return "Above Average"
+    elif val >= 65:
+        return "Below Average"
+    else:
+        return "Poor"
+
+
+def format_trait_display(value, fc_mode=False):
+    """Format trait value for display based on current mode."""
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return "—"
+    try:
+        if fc_mode:
+            fc_val = convert_trait_to_fc_rating(value)
+            return str(fc_val) if fc_val is not None else "—"
+        else:
+            return f"{float(value):.2f}"
+    except (ValueError, TypeError):
+        return "—"
+
+
 # ---------------- DATA LOADERS – TEAM LADDERS ----------------
 def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
     header_idx_candidates = raw.index[
@@ -1628,11 +1714,12 @@ def get_rating_color_team_context(rating_value, df_team, rating_col):
         return "#333333", "white"
 
 
-def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = None) -> str:
+def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = None, fc_mode: bool = False) -> str:
     """
     df_team is the Summary subset for one team, with:
     Player, Jumper, Age, Height, Position, RatingPoints_Avg.
     all_teams_df is the full Summary DataFrame for all teams (for ranking calculations).
+    fc_mode: if True, display ratings in FIFA/FC style (50-99 scale).
     """
     # Remove duplicate columns if they exist
     if len(df_team.columns) != len(set(df_team.columns)):
@@ -1711,8 +1798,15 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 bg_color, text_color = get_rating_color_team_context(
                     rating_float, df_team, rating_col
                 )
+                
+                # Format rating based on FC mode
+                if fc_mode:
+                    fc_val = convert_trait_to_fc_rating(rating_float)
+                    rating_display = str(fc_val) if fc_val is not None else "—"
+                else:
+                    rating_display = f"{rating_float:.2f}"
 
-                rating_box_html = f"<span style='display:inline-block;padding:8px 16px;border-radius:10px;background:{bg_color};color:{text_color};font-weight:900;font-size:1.5em;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);min-width:50px;text-align:center;'>{rating_float:.2f}</span>"
+                rating_box_html = f"<span style='display:inline-block;padding:8px 16px;border-radius:10px;background:{bg_color};color:{text_color};font-weight:900;font-size:1.5em;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);min-width:50px;text-align:center;'>{rating_display}</span>"
             except Exception:
                 rating_box_html = f"<span>{rating}</span>"
         
@@ -2100,7 +2194,18 @@ def predict_player_trajectory(
 
 # ---------------- PAGE NAV ----------------
 
-PAGES = ["Home", "Overview", "Team Breakdown", "Team Compare", "Club List", "Player Profile", "Player Traits", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits", "Game Day Playground", "IDP", "Game Model Scorecard"]
+# Define page groups for organized navigation
+PAGE_GROUPS = {
+    "Home": ["Home"],
+    "Team": ["Overview", "Team Breakdown", "Team Compare", "Game Day Playground", "Game Model Scorecard"],
+    "Player": ["Player Profile", "Player Traits", "IDP", "Club List"],
+    "List Management": ["Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits"],
+}
+
+# Flat list of all pages for compatibility
+PAGES = []
+for group_pages in PAGE_GROUPS.values():
+    PAGES.extend(group_pages)
 
 # Initialize session state for page navigation
 if "selected_page" not in st.session_state:
@@ -2108,74 +2213,149 @@ if "selected_page" not in st.session_state:
 if "page_override" not in st.session_state:
     st.session_state.page_override = False
 
+def render_grouped_navigation():
+    """Render grouped sidebar navigation with styled sections."""
+    selected = st.session_state.selected_page
+    
+    # Custom CSS for navigation groups
+    st.sidebar.markdown("""
+    <style>
+    .nav-group-header {
+        font-size: 0.75em;
+        font-weight: 700;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 12px 0 6px 8px;
+        margin-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-group-header:first-child {
+        border-top: none;
+        margin-top: 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    new_page = selected
+    
+    # Render Home button first
+    home_selected = "Home" == selected
+    if st.sidebar.button(
+        "🏠 Home",
+        key="nav_Home",
+        use_container_width=True,
+        type="primary" if home_selected else "secondary"
+    ):
+        new_page = "Home"
+        st.session_state.selected_page = "Home"
+        st.rerun()
+    
+    # --- Player Search (right after Home) ---
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("🔍 **Player Search**")
+    
+    @st.cache_data(show_spinner=False)
+    def get_all_players_for_search(season: int):
+        """Get all players for search functionality."""
+        try:
+            players = load_players(season)
+            if players.empty:
+                return []
+            player_list = []
+            for _, row in players.iterrows():
+                player = row.get("Player", "")
+                team = row.get("Team", "")
+                if player and team:
+                    player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
+            return player_list
+        except:
+            return []
+
+    all_players_search = get_all_players_for_search(CURRENT_SEASON)
+    
+    search_query = st.sidebar.text_input("Search for a player...", key="global_player_search", placeholder="Type player name...")
+    
+    if search_query and len(search_query) >= 2:
+        matches = [p for p in all_players_search if search_query.lower() in p["player"].lower()][:5]
+        if matches:
+            for match in matches:
+                col1, col2 = st.sidebar.columns([4, 1])
+                with col1:
+                    if st.button(f"🏃 {match['player']}", key=f"search_{match['player']}_{match['team']}", use_container_width=True):
+                        st.session_state.selected_player_search = match['player']
+                        st.session_state.selected_team_search = match['team']
+                        st.session_state.default_team = match['team']
+                        st.session_state.selected_page = "Player Profile"
+                        st.session_state.page_override = True
+                        add_to_recent_views("player", match['player'], match['team'], "Player Profile")
+                        st.rerun()
+                with col2:
+                    player_key = f"{match['player']}|{match['team']}"
+                    is_fav = player_key in st.session_state.favorite_players
+                    star_label = "⭐" if is_fav else "☆"
+                    if st.button(star_label, key=f"fav_search_{match['player']}_{match['team']}"):
+                        toggle_favorite_player(match['player'], match['team'])
+                        st.rerun()
+        else:
+            st.sidebar.caption("No players found")
+    
+    # Render remaining groups (skip Home since we already rendered it)
+    for group_name, pages in PAGE_GROUPS.items():
+        if group_name == "Home":
+            continue  # Already rendered above
+            
+        st.sidebar.markdown(f"<div class='nav-group-header'>📁 {group_name}</div>", unsafe_allow_html=True)
+        
+        for page_name in pages:
+            icons = {
+                "Home": "🏠",
+                "Overview": "📊",
+                "Team Breakdown": "📈",
+                "Team Compare": "⚖️",
+                "Club List": "📋",
+                "Game Day Playground": "🎮",
+                "Game Model Scorecard": "🎯",
+                "Player Profile": "👤",
+                "Player Traits": "🎯",
+                "IDP": "🏈",
+                "Depth Chart": "📋",
+                "Team Age Breakdown": "📅",
+                "List Ladder": "🪜",
+                "Team List Summary": "📝",
+                "Best 23": "🏆",
+                "List Breakdown - Traits": "📊",
+            }
+            icon = icons.get(page_name, "📄")
+            
+            is_selected = page_name == selected
+            button_type = "primary" if is_selected else "secondary"
+            
+            if st.sidebar.button(
+                f"{icon} {page_name}",
+                key=f"nav_{page_name}",
+                use_container_width=True,
+                type=button_type
+            ):
+                new_page = page_name
+                st.session_state.selected_page = page_name
+                st.rerun()
+    
+    return new_page
+
 # Check if there's a page override from a button click
 if st.session_state.page_override:
     page = st.session_state.selected_page
-    # Show sidebar with the current page selected
-    st.sidebar.radio("Navigate", PAGES, index=PAGES.index(page) if page in PAGES else 0, key="page_nav")
+    render_grouped_navigation()
     # Clear the override flag for next rerun
     st.session_state.page_override = False
 else:
     # Normal sidebar navigation
-    page = st.sidebar.radio("Navigate", PAGES, index=PAGES.index(st.session_state.selected_page) if st.session_state.selected_page in PAGES else 0, key="page_nav")
+    page = render_grouped_navigation()
     # Update session state with the current page selection
     st.session_state.selected_page = page
 
 # ================= SIDEBAR ENHANCEMENTS =================
-
-# --- Global Player Search ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("🔍 **Player Search**")
-
-@st.cache_data(show_spinner=False)
-def get_all_players_for_search(season: int):
-    """Get all players for search functionality."""
-    try:
-        players = load_players(season)
-        if players.empty:
-            return []
-        # Create list of "Player Name (Team)" for search
-        player_list = []
-        for _, row in players.iterrows():
-            player = row.get("Player", "")
-            team = row.get("Team", "")
-            if player and team:
-                player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
-        return player_list
-    except:
-        return []
-
-all_players_search = get_all_players_for_search(CURRENT_SEASON)
-player_names_display = [p["display"] for p in all_players_search]
-
-# Search box
-search_query = st.sidebar.text_input("Search for a player...", key="global_player_search", placeholder="Type player name...")
-
-# Filter and show results
-if search_query and len(search_query) >= 2:
-    matches = [p for p in all_players_search if search_query.lower() in p["player"].lower()][:5]
-    if matches:
-        for match in matches:
-            col1, col2 = st.sidebar.columns([4, 1])
-            with col1:
-                if st.button(f"🏃 {match['player']}", key=f"search_{match['player']}_{match['team']}", use_container_width=True):
-                    st.session_state.selected_player_search = match['player']
-                    st.session_state.selected_team_search = match['team']
-                    st.session_state.default_team = match['team']
-                    st.session_state.selected_page = "Player Profile"
-                    st.session_state.page_override = True
-                    add_to_recent_views("player", match['player'], match['team'], "Player Profile")
-                    st.rerun()
-            with col2:
-                # Star button for favorites
-                player_key = f"{match['player']}|{match['team']}"
-                is_fav = player_key in st.session_state.favorite_players
-                star_label = "⭐" if is_fav else "☆"
-                if st.button(star_label, key=f"fav_search_{match['player']}_{match['team']}"):
-                    toggle_favorite_player(match['player'], match['team'])
-                    st.rerun()
-    else:
-        st.sidebar.caption("No players found")
 
 # --- Favorites Section ---
 if st.session_state.favorite_teams or st.session_state.favorite_players:
@@ -2766,7 +2946,7 @@ def render_game_day_playground(teams: list[str]):
     c1, c2, c3 = st.columns([2.2, 0.6, 2.2], vertical_alignment="center")
     with c1:
         gdp_default_idx = 0
-        if st.session_state.default_team in teams:
+        if "default_team" in st.session_state and st.session_state.default_team in teams:
             gdp_default_idx = teams.index(st.session_state.default_team)
         team_a = st.selectbox("Team A", teams, index=gdp_default_idx, key="gdp_team_a")
     with c2:
@@ -5158,7 +5338,7 @@ elif page == "Club List":
         st.session_state.default_team = default_selection[0]
 
     # ---------- Rating Type Selector ----------
-    rating_type_col1, rating_type_col2 = st.columns([2, 6])
+    rating_type_col1, rating_type_col2, rating_type_col3 = st.columns([2, 2, 4])
     with rating_type_col1:
         rating_type = st.selectbox(
             "Rating Type",
@@ -5167,6 +5347,12 @@ elif page == "Club List":
             key="club_list_rating_type",
             help="Select 'Rating' for Wheelo ratings or 'Trait Rating' for trait-based ratings"
         )
+    
+    # FC Mode toggle (only show when Trait Rating is selected)
+    fc_mode = False
+    if rating_type == "Trait Rating":
+        with rating_type_col2:
+            fc_mode = st.toggle("⚽ FC Rating Mode", key="club_list_fc_mode", help="Convert trait ratings to FIFA/FC style 50-99 scale")
     
     # ---------- Load Traits Data (if Trait Rating selected) ----------
     traits_df = None
@@ -5301,8 +5487,19 @@ elif page == "Club List":
     # Determine which rating value to display
     rating_display_values = team_df[display_rating_col] if display_rating_col in team_df.columns else team_df["RatingPoints_Avg"]
     
-    # Use 2 decimal places for Trait Rating, 1 for standard Rating
-    rating_decimals = 2 if rating_type == "Trait Rating" else 1
+    # Use 2 decimal places for Trait Rating (or integer for FC mode), 1 for standard Rating
+    if rating_type == "Trait Rating" and fc_mode:
+        rating_decimals = 0  # FC mode uses integers
+    elif rating_type == "Trait Rating":
+        rating_decimals = 2
+    else:
+        rating_decimals = 1
+    
+    # Convert ratings to FC mode if enabled
+    if rating_type == "Trait Rating" and fc_mode:
+        out_rating = rating_display_values.apply(convert_trait_to_fc_rating)
+    else:
+        out_rating = pd.to_numeric(rating_display_values, errors="coerce").round(rating_decimals)
     
     out = pd.DataFrame({
         "PLAYER": team_df["Player"].fillna("—"),
@@ -5311,7 +5508,7 @@ elif page == "Club List":
         "POSITION": team_df["DepthPos"].fillna("—"),
         "AGE": pd.to_numeric(team_df[age_col], errors="coerce").round(2),
         "MATCHES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
-        "RATING": pd.to_numeric(rating_display_values, errors="coerce").round(rating_decimals),
+        "RATING": out_rating,
         "COMP RANK": team_df["CompRank"].apply(ordinal),
         "POS RANK": team_df["PosRank"].apply(ordinal),
         "COACHES VOTES": pd.to_numeric(team_df["CoachesVotes_Avg"], errors="coerce").round(2),
@@ -5329,8 +5526,17 @@ elif page == "Club List":
     # Use the appropriate rating column for color scaling
     league_ratings = season_df[display_rating_col].dropna() if display_rating_col in season_df.columns else season_df["RatingPoints_Avg"].dropna()
     
+    # Convert league ratings to FC mode for proper color scaling
+    if rating_type == "Trait Rating" and fc_mode:
+        league_ratings = league_ratings.apply(convert_trait_to_fc_rating).dropna()
+    
     # Dynamic column header based on rating type
-    rating_header = "TRAIT RATING" if rating_type == "Trait Rating" else "RATING"
+    if rating_type == "Trait Rating" and fc_mode:
+        rating_header = "FC RATING"
+    elif rating_type == "Trait Rating":
+        rating_header = "TRAIT RATING"
+    else:
+        rating_header = "RATING"
 
     html = f"""
 <table class="fe-table fe-sortable">
@@ -5365,8 +5571,10 @@ elif page == "Club List":
         matches_val = r["MATCHES"]
         matches_str = "—" if pd.isna(matches_val) else f"{int(matches_val)}"
 
-        # Use 2 decimal places for Trait Rating, 1 for standard Rating
-        if rating_type == "Trait Rating":
+        # Use 2 decimal places for Trait Rating (or integer for FC mode), 1 for standard Rating
+        if rating_type == "Trait Rating" and fc_mode:
+            rating_str = "—" if pd.isna(rating_val) else f"{int(rating_val)}"
+        elif rating_type == "Trait Rating":
             rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.2f}"
         else:
             rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.1f}"
@@ -5458,7 +5666,13 @@ elif page == "Player Profile":
         st.stop()
 
     default_season_idx = seasons_available.index(2025) if 2025 in seasons_available else 0
-    selected_season = st.selectbox("Select Season", seasons_available, index=default_season_idx, key="pp_season")
+    
+    # Season and FC Mode controls in columns
+    ctrl_col1, ctrl_col2 = st.columns([2, 1])
+    with ctrl_col1:
+        selected_season = st.selectbox("Select Season", seasons_available, index=default_season_idx, key="pp_season")
+    with ctrl_col2:
+        fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="pp_fc_mode", help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
 
     # Filter by selected season
     players_season = players_full[players_full["Season"] == selected_season].copy()
@@ -6021,8 +6235,15 @@ elif page == "Player Profile":
                     with trait_cols[i]:
                         v = safe_float(val)
                         all_trait_vals = pd.to_numeric(traits_selected[col_name], errors="coerce").dropna() if col_name in traits_selected.columns else all_ratings
-                        color, tier = get_trait_color_and_label(v, all_trait_vals) if v else ("#9E9E9E", "—")
-                        display_val = f"{v:.2f}" if v else "—"
+                        color, tier_orig = get_trait_color_and_label(v, all_trait_vals) if v else ("#9E9E9E", "—")
+                        
+                        # Format based on FC mode
+                        if fc_mode and v:
+                            display_val = str(convert_trait_to_fc_rating(v))
+                            tier = get_fc_rating_label(convert_trait_to_fc_rating(v))
+                        else:
+                            display_val = f"{v:.2f}" if v else "—"
+                            tier = tier_orig
                         
                         st.markdown(f"""
                         <div style='background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%);
@@ -6156,7 +6377,14 @@ elif page == "Player Profile":
                 if rv is not None:
                     all_ratings_traits = pd.to_numeric(all_traits_sorted["Rating"], errors="coerce").dropna()
                     bg_color, _ = rating_colour_for_value(rv, all_ratings_traits)
-                    rating_label = get_trait_label(rv)
+                    
+                    # Format based on FC mode
+                    if fc_mode:
+                        rating_display = str(convert_trait_to_fc_rating(rv))
+                        rating_label = get_fc_rating_label(convert_trait_to_fc_rating(rv))
+                    else:
+                        rating_display = f"{rv:.2f}"
+                        rating_label = get_trait_label(rv)
                     
                     # Determine tier color
                     if rv >= 3.0:
@@ -6175,7 +6403,7 @@ elif page == "Player Profile":
                                     border-radius: 12px; padding: 20px 16px; text-align: center;'>
                             <div style='font-size: 0.75em; color: rgba(255,255,255,0.5); text-transform: uppercase;
                                         letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600;'>Overall Rating</div>
-                            <div style='font-size: 2.8em; font-weight: 800; color: {tier_color}; line-height: 1;'>{rv:.2f}</div>
+                            <div style='font-size: 2.8em; font-weight: 800; color: {tier_color}; line-height: 1;'>{rating_display}</div>
                             <div style='margin-top: 10px; display: inline-block; background: rgba(255,255,255,0.1);
                                         padding: 4px 12px; border-radius: 15px; font-size: 0.8em; color: {tier_color};
                                         font-weight: 600;'>{rating_label}</div>
@@ -6257,7 +6485,15 @@ elif page == "Player Profile":
                     if trait_value not in [None, ""] and pd.notna(trait_value):
                         try:
                             trait_val = float(trait_value)
-                            trait_label = get_trait_label(trait_val)
+                            
+                            # Format based on FC mode
+                            if fc_mode:
+                                trait_display = str(convert_trait_to_fc_rating(trait_val))
+                                trait_label = get_fc_rating_label(convert_trait_to_fc_rating(trait_val))
+                            else:
+                                trait_display = f"{trait_val:.2f}"
+                                trait_label = get_trait_label(trait_val)
+                            
                             r, g, b = int(trait_color.lstrip('#')[:2], 16), int(trait_color.lstrip('#')[2:4], 16), int(trait_color.lstrip('#')[4:], 16)
 
                             substats_html = ""
@@ -6265,12 +6501,20 @@ elif page == "Player Profile":
                                 if substat_value not in [None, ""] and pd.notna(substat_value):
                                     try:
                                         substat_val = float(substat_value)
-                                        substat_label = get_trait_label(substat_val)
+                                        
+                                        # Format substats based on FC mode
+                                        if fc_mode:
+                                            substat_display = str(convert_trait_to_fc_rating(substat_val))
+                                            substat_label = get_fc_rating_label(convert_trait_to_fc_rating(substat_val))
+                                        else:
+                                            substat_display = f"{substat_val:.2f}"
+                                            substat_label = get_trait_label(substat_val)
+                                        
                                         substats_html += textwrap.dedent(f"""
                                         <div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>
                                             <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>{substat_name}</div>
                                             <div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>
-                                                {substat_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span>
+                                                {substat_display} <span style='font-size: 0.7em; font-weight: 600;'>{substat_label}</span>
                                             </div>
                                         </div>
                                         """).strip() + "\n"
@@ -6287,7 +6531,7 @@ elif page == "Player Profile":
                                         border-left: 4px solid {trait_color}; padding: 20px; border-radius: 12px; margin-bottom: 15px;
                                         box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>
                                 <div style='color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>{trait_name}</div>
-                                <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
+                                <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_display}</div>
                                 <div style='color: rgba(255, 255, 255, 0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>{trait_label}</div>
                                 {substats_html}
                             </div>
@@ -6416,7 +6660,12 @@ elif page == "Player Traits":
     if not seasons_available:
         seasons_available = [2025, 2024, 2023]
 
-    primary_season = st.selectbox("Select Season", seasons_available, index=0, key="traits_primary_season")
+    # Season and FC Mode controls in columns
+    ctrl_col1, ctrl_col2 = st.columns([2, 1])
+    with ctrl_col1:
+        primary_season = st.selectbox("Select Season", seasons_available, index=0, key="traits_primary_season")
+    with ctrl_col2:
+        fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="traits_fc_mode", help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
 
     default_history = [s for s in seasons_available if s >= (int(primary_season) - 2)]
     history_seasons = st.multiselect(
@@ -6581,8 +6830,13 @@ elif page == "Player Traits":
     <tbody>
     """
 
-        def fmt2(x):
-            return "—" if pd.isna(x) else f"{float(x):.2f}"
+        def fmt_trait(x, is_fc=False):
+            if pd.isna(x):
+                return "—"
+            if is_fc:
+                fc_val = convert_trait_to_fc_rating(x)
+                return str(fc_val) if fc_val is not None else "—"
+            return f"{float(x):.2f}"
 
         for _, r in view.iterrows():
             traits_html += "<tr>"
@@ -6591,13 +6845,13 @@ elif page == "Player Traits":
                     v = r.get(c, np.nan)
                     if pd.notna(v) and len(league_ratings) > 0:
                         bg, fg = rating_colour_for_value(float(v), league_ratings)
-                        traits_html += f"<td style='background-color:{bg}; color:{fg}; font-weight:900;'>{fmt2(v)}</td>"
+                        traits_html += f"<td style='background-color:{bg}; color:{fg}; font-weight:900;'>{fmt_trait(v, fc_mode)}</td>"
                     else:
                         traits_html += "<td>—</td>"
                 else:
                     # numeric trait formatting
                     if c in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
-                        traits_html += f"<td>{fmt2(r.get(c, np.nan))}</td>"
+                        traits_html += f"<td>{fmt_trait(r.get(c, np.nan), fc_mode)}</td>"
                     else:
                         traits_html += f"<td>{r.get(c, '—')}</td>"
             traits_html += "</tr>"
@@ -6708,7 +6962,14 @@ elif page == "Player Traits":
     if rating_val is not None:
         all_ratings = pd.to_numeric(traits_df["Rating"], errors="coerce").dropna() if "Rating" in traits_df.columns else pd.Series(dtype=float)
         bg_color, _ = rating_colour_for_value(rating_val, all_ratings)
-        rating_label = get_trait_label(rating_val)
+        
+        # Format rating based on FC mode
+        if fc_mode:
+            rating_display = str(convert_trait_to_fc_rating(rating_val))
+            rating_label = get_fc_rating_label(convert_trait_to_fc_rating(rating_val))
+        else:
+            rating_display = f"{rating_val:.2f}"
+            rating_label = get_trait_label(rating_val)
 
         if bg_color == "#008000":
             rating_gradient = "rgba(0,128,0,0.3)"
@@ -6728,7 +6989,7 @@ elif page == "Player Traits":
                     border-left: 5px solid {bg_color}; padding: 25px; border-radius: 12px; margin-bottom: 15px;
                     box-shadow: 0 4px 12px rgba(0,0,0,0.4); text-align: center;'>
             <div style='color: rgba(255, 255, 255, 0.8); font-size: 1.1em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;'>RATING</div>
-            <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_val:.2f}</div>
+            <div style='color: {rating_text_color}; font-size: 4em; font-weight: 900; line-height: 1;'>{rating_display}</div>
             <div style='color: {rating_text_color}; font-size: 1.3em; font-weight: 700; margin-top: 12px;'>{rating_label}</div>
         </div>
         """)
@@ -6816,7 +7077,13 @@ elif page == "Player Traits":
         if trait_val is None:
             continue
 
-        trait_label = get_trait_label(trait_val)
+        # Format based on FC mode
+        if fc_mode:
+            trait_display = str(convert_trait_to_fc_rating(trait_val))
+            trait_label = get_fc_rating_label(convert_trait_to_fc_rating(trait_val))
+        else:
+            trait_display = f"{trait_val:.2f}"
+            trait_label = get_trait_label(trait_val)
 
         r = int(trait_color.lstrip("#")[:2], 16)
         g = int(trait_color.lstrip("#")[2:4], 16)
@@ -6828,13 +7095,20 @@ elif page == "Player Traits":
             sub_val = safe_float(substat_value)
             if sub_val is None:
                 continue
-            sub_label = get_trait_label(sub_val)
+            
+            # Format substats based on FC mode
+            if fc_mode:
+                sub_display = str(convert_trait_to_fc_rating(sub_val))
+                sub_label = get_fc_rating_label(convert_trait_to_fc_rating(sub_val))
+            else:
+                sub_display = f"{sub_val:.2f}"
+                sub_label = get_trait_label(sub_val)
 
             substats_html_parts.append(
                 f"<div style='background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; margin-bottom: 6px;'>"
                 f"  <div style='color: rgba(255,255,255,0.7); font-size: 0.75em; margin-bottom: 4px;'>{sanitize_text(substat_name)}</div>"
                 f"  <div style='color: #FFFFFF; font-size: 1.2em; font-weight: 800;'>"
-                f"    {sub_val:.2f} <span style='font-size: 0.7em; font-weight: 600;'> {sanitize_text(sub_label)}</span>"
+                f"    {sub_display} <span style='font-size: 0.7em; font-weight: 600;'> {sanitize_text(sub_label)}</span>"
                 f"  </div>"
                 f"</div>"
             )
@@ -6848,7 +7122,7 @@ elif page == "Player Traits":
             <div style='color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;'>
                 {sanitize_text(trait_name)}
             </div>
-            <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_val:.2f}</div>
+            <div style='color: #FFFFFF; font-size: 2.5em; font-weight: 900;'>{trait_display}</div>
             <div style='color: rgba(255,255,255,0.9); font-size: 0.95em; font-weight: 700; margin-top: 8px; margin-bottom: 15px;'>
                 {sanitize_text(trait_label)}
             </div>
@@ -8173,7 +8447,7 @@ elif page == "Best 23":
     # AUTO BEST 23 DISPLAY
     # =====================================================
     best23_default_idx = 0
-    if st.session_state.default_team in teams:
+    if "default_team" in st.session_state and st.session_state.default_team in teams:
         best23_default_idx = teams.index(st.session_state.default_team)
     team = st.selectbox("Select Team", teams, index=best23_default_idx)
     slots, used = build_best23(team)
@@ -8384,7 +8658,7 @@ elif page == "Best 23":
     c1, c2 = st.columns(2)
     with c1:
         best23_cmp_idx = 0
-        if st.session_state.default_team in teams:
+        if "default_team" in st.session_state and st.session_state.default_team in teams:
             best23_cmp_idx = teams.index(st.session_state.default_team)
         team_a = st.selectbox("Team A", teams, index=best23_cmp_idx, key="best23_team_a")
     with c2:
@@ -9203,12 +9477,18 @@ elif page == "List Breakdown - Traits":
         st.stop()
     
     default_season_idx = available_seasons.index(2025) if 2025 in available_seasons else 0
-    selected_season = st.selectbox(
-        "Season",
-        available_seasons,
-        index=default_season_idx,
-        key="traits_breakdown_season"
-    )
+    
+    # Season and FC Mode controls in columns
+    ctrl_col1, ctrl_col2 = st.columns([2, 1])
+    with ctrl_col1:
+        selected_season = st.selectbox(
+            "Season",
+            available_seasons,
+            index=default_season_idx,
+            key="traits_breakdown_season"
+        )
+    with ctrl_col2:
+        fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="traits_breakdown_fc_mode", help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
 
     # Load traits data
     traits_df = load_traits(int(selected_season))
@@ -9411,9 +9691,14 @@ elif page == "List Breakdown - Traits":
     trait_cards = []
     for trait_name in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
         stats = team_stats[trait_name]
+        # Format value based on FC mode
+        if fc_mode:
+            display_val = str(convert_trait_to_fc_rating(stats["avg"]))
+        else:
+            display_val = f'{stats["avg"]:.2f}'
         card_html = f"""<div style='background-color: {stats["color"]}; color: {stats["text_color"]}; padding: 25px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.15);'>
 <div style='font-size: 0.85em; font-weight: 600; letter-spacing: 0.12em; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{trait_name}</div>
-<div style='font-size: 2.5em; font-weight: 900; line-height: 1; margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{stats["avg"]:.2f}</div>
+<div style='font-size: 2.5em; font-weight: 900; line-height: 1; margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{display_val}</div>
 <div style='font-size: 0.95em; font-weight: 700; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>#{stats["rank"]} of {stats["total"]}</div>
 </div>"""
         trait_cards.append(card_html)
@@ -9421,6 +9706,11 @@ elif page == "List Breakdown - Traits":
     trait_grid = "".join(trait_cards)
     
     overall_stats = team_stats["Overall Rating"]
+    # Format overall value based on FC mode
+    if fc_mode:
+        overall_display_val = str(convert_trait_to_fc_rating(overall_stats["avg"]))
+    else:
+        overall_display_val = f'{overall_stats["avg"]:.2f}'
     
     header_html = f"""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 20px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 2px solid #e94560;'>
 <div style='text-align: center; margin-bottom: 20px;'>{logo_html}</div>
@@ -9428,7 +9718,7 @@ elif page == "List Breakdown - Traits":
 <div style='text-align: center; margin-bottom: 30px;'>
 <div style='display: inline-block; background-color: {overall_stats["color"]}; color: {overall_stats["text_color"]}; padding: 20px 40px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);'>
 <div style='font-size: 0.9em; font-weight: 600; letter-spacing: 0.15em; opacity: 0.9; margin-bottom: 5px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>OVERALL TRAIT RATING</div>
-<div style='font-size: 3.5em; font-weight: 900; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{overall_stats["avg"]:.2f}</div>
+<div style='font-size: 3.5em; font-weight: 900; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{overall_display_val}</div>
 <div style='font-size: 1.1em; font-weight: 700; margin-top: 8px; letter-spacing: 0.1em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>RANKED #{overall_stats["rank"]} OF {overall_stats["total"]}</div>
 </div>
 </div>
@@ -9479,7 +9769,7 @@ elif page == "List Breakdown - Traits":
     
     st.markdown(section_header, unsafe_allow_html=True)
 
-    html = build_depth_chart_html(df_team, traits_df_renamed)
+    html = build_depth_chart_html(df_team, traits_df_renamed, fc_mode=fc_mode)
     st.markdown(html, unsafe_allow_html=True)
     
     # ============= TRAITS-BASED LIST LADDER =============
@@ -9566,8 +9856,13 @@ elif page == "List Breakdown - Traits":
             val = row[col]
             trait_rank = row[f"{col}_Rank"]
             bg, fg = get_ladder_rank_color(trait_rank, len(ladder_df))
+            # Format value based on FC mode
+            if fc_mode:
+                display_val = str(convert_trait_to_fc_rating(val))
+            else:
+                display_val = f'{val:.2f}'
             
-            ladder_html.append(f"<td style='{row_bg}padding:14px 12px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;text-align:center;'><div style='display:inline-block;background:{bg};color:{fg};padding:10px 16px;border-radius:10px;font-weight:900;font-size:1.15em;box-shadow:0 3px 10px rgba(0,0,0,0.2);min-width:70px;'>{val:.2f}<div style='font-size:0.7em;opacity:0.8;margin-top:2px;'>#{trait_rank}</div></div></td>")
+            ladder_html.append(f"<td style='{row_bg}padding:14px 12px;border-right:2px solid #e0e0e0;border-top:2px solid #e0e0e0;text-align:center;'><div style='display:inline-block;background:{bg};color:{fg};padding:10px 16px;border-radius:10px;font-weight:900;font-size:1.15em;box-shadow:0 3px 10px rgba(0,0,0,0.2);min-width:70px;'>{display_val}<div style='font-size:0.7em;opacity:0.8;margin-top:2px;'>#{trait_rank}</div></div></td>")
         
         ladder_html.append("</tr>")
     
@@ -9841,15 +10136,19 @@ elif page == "List Breakdown - Traits":
                     
                     rank_diff = int(t2_rank - t1_rank)
                     
+                    # Format values based on FC mode
+                    t1_val_str = str(convert_trait_to_fc_rating(t1_val)) if fc_mode else f"{t1_val:.2f}"
+                    t2_val_str = str(convert_trait_to_fc_rating(t2_val)) if fc_mode else f"{t2_val:.2f}"
+                    
                     st.markdown(
                         f"""
                         <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
                                     border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
                             <div style='font-weight: bold; color: #00CC00;'>{metric}</div>
                             <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                                {team1_trait}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.2f}</span> {t1_rank_str} 
+                                {team1_trait}: <span style='font-weight: bold; color: #00FF00;'>{t1_val_str}</span> {t1_rank_str} 
                                 <span style='color: #888;'>vs</span> 
-                                {team2_trait}: <span style='font-weight: bold;'>{t2_val:.2f}</span> {t2_rank_str}
+                                {team2_trait}: <span style='font-weight: bold;'>{t2_val_str}</span> {t2_rank_str}
                             </div>
                             <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
                                 +{rank_diff} positions ahead
@@ -9875,15 +10174,19 @@ elif page == "List Breakdown - Traits":
                     
                     rank_diff = int(t1_rank - t2_rank)
                     
+                    # Format values based on FC mode
+                    t1_val_str = str(convert_trait_to_fc_rating(t1_val)) if fc_mode else f"{t1_val:.2f}"
+                    t2_val_str = str(convert_trait_to_fc_rating(t2_val)) if fc_mode else f"{t2_val:.2f}"
+                    
                     st.markdown(
                         f"""
                         <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
                                     border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
                             <div style='font-weight: bold; color: #FF4444;'>{metric}</div>
                             <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                                {team1_trait}: <span style='font-weight: bold;'>{t1_val:.2f}</span> {t1_rank_str} 
+                                {team1_trait}: <span style='font-weight: bold;'>{t1_val_str}</span> {t1_rank_str} 
                                 <span style='color: #888;'>vs</span> 
-                                {team2_trait}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.2f}</span> {t2_rank_str}
+                                {team2_trait}: <span style='font-weight: bold; color: #FF6666;'>{t2_val_str}</span> {t2_rank_str}
                             </div>
                             <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>
                                 -{rank_diff} positions behind
@@ -10094,6 +10397,9 @@ elif page == "List Breakdown - Traits":
                 # Get conditional color for value
                 rating_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])[0]
                 
+                # Format value based on FC mode
+                value_display = str(convert_trait_to_fc_rating(value)) if fc_mode else f"{value:.2f}"
+                
                 st.markdown(
                     f"""
                     <div style="background: linear-gradient(145deg, rgba(20,20,30,0.98), rgba(30,30,45,0.98));
@@ -10112,7 +10418,7 @@ elif page == "List Breakdown - Traits":
                                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                                             line-height: 1;
                                             margin-bottom: 4px;">
-                                    {value:.2f}
+                                    {value_display}
                                 </div>
                                 <div style="font-size: 10px;
                                             color: rgba(255,255,255,0.5);
@@ -10172,11 +10478,8 @@ elif page == "List Breakdown - Traits":
                 # Get conditional color
                 rating_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])[0]
                 
-                # Format value based on pillar type
-                if pillar_name in ["DISPOSALS", "MARKS", "GOALS"]:
-                    formatted_value = f"{value:.2f}"
-                else:
-                    formatted_value = f"{value:.2f}"
+                # Format value based on FC mode
+                formatted_value = str(convert_trait_to_fc_rating(value)) if fc_mode else f"{value:.2f}"
                 
                 # Render rank card
                 st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;margin-left: 12px;white-space: nowrap;">{formatted_value}</div></div>', unsafe_allow_html=True)
@@ -10214,8 +10517,8 @@ elif page == "List Breakdown - Traits":
                     # Get conditional color (returns tuple of color, text_color)
                     rating_color, rating_text_color = rating_colour_for_value(value, filtered_leaders_df[metric_col])
                     
-                    # Format value
-                    formatted_value = f"{value:.2f}"
+                    # Format value based on FC mode
+                    formatted_value = str(convert_trait_to_fc_rating(value)) if fc_mode else f"{value:.2f}"
                     
                     # Create rank badge using the same color as the rating with contrasting text
                     rank_badge = f'<div style="background: {rating_color};border-radius: 6px;padding: 4px 10px;margin-right: 10px;min-width: 32px;text-align: center;box-shadow: 0 2px 4px rgba(0,0,0,0.2);"><span style="font-size: 12px;font-weight: 900;color: {rating_text_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">#{rank}</span></div>'
@@ -10360,7 +10663,21 @@ elif page == "IDP":
     if not seasons_available:
         seasons_available = [2025, 2024, 2023]
     
-    selected_season = st.selectbox("Select Season", seasons_available, index=0, key="idp_season")
+    # Season and FC Mode controls
+    ctrl_col1, ctrl_col2 = st.columns([2, 1])
+    with ctrl_col1:
+        selected_season = st.selectbox("Select Season", seasons_available, index=0, key="idp_season")
+    with ctrl_col2:
+        fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="idp_fc_mode", help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
+    
+    # Helper function to format trait values based on FC mode
+    def format_trait_val(val):
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return "—"
+        if fc_mode:
+            fc_val = convert_trait_to_fc_rating(val)
+            return str(fc_val) if fc_val is not None else "—"
+        return f"{float(val):.2f}"
     
     # Load traits data
     traits_df = load_traits(int(selected_season))
@@ -10463,20 +10780,33 @@ elif page == "IDP":
             delta_bg = "#FF0000" if delta < -0.5 else "#FF6B6B"
             delta_text = "#FFFFFF"
         
+        # Format values based on FC mode
+        if fc_mode:
+            player_display_val = convert_trait_to_fc_rating(player_trait_val)
+            top10_display_val = convert_trait_to_fc_rating(top10_trait_avg)
+            delta_display = player_display_val - top10_display_val if player_display_val is not None and top10_display_val is not None else 0
+            player_val_str = str(player_display_val) if player_display_val is not None else "—"
+            top10_val_str = str(top10_display_val) if top10_display_val is not None else "—"
+            delta_val_str = f"{delta_display:+d}"
+        else:
+            player_val_str = f"{player_trait_val:.2f}"
+            top10_val_str = f"{top10_trait_avg:.2f}"
+            delta_val_str = f"{delta:+.2f}"
+        
         # Create visually appealing metric cards
         st.markdown(f"""
         <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px;'>
             <div style='background:linear-gradient(135deg,{player_bg}25 0%,{player_bg}15 100%);border:2px solid {player_bg};border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
                 <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Your Rating</div>
-                <div style='color:{player_text};background:{player_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{player_trait_val:.2f}</div>
+                <div style='color:{player_text};background:{player_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{player_val_str}</div>
             </div>
             <div style='background:linear-gradient(135deg,rgba(100,149,237,0.25) 0%,rgba(100,149,237,0.15) 100%);border:2px solid #6495ED;border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
                 <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Top 10 Average</div>
-                <div style='color:#FFFFFF;background:#6495ED;font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{top10_trait_avg:.2f}</div>
+                <div style='color:#FFFFFF;background:#6495ED;font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{top10_val_str}</div>
             </div>
             <div style='background:linear-gradient(135deg,{delta_bg}25 0%,{delta_bg}15 100%);border:2px solid {delta_bg};border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
                 <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Difference</div>
-                <div style='color:{delta_text};background:{delta_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{delta:+.2f}</div>
+                <div style='color:{delta_text};background:{delta_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{delta_val_str}</div>
                 <div style='color:{delta_text};background:rgba(0,0,0,0.3);font-size:14px;font-weight:700;margin-top:10px;padding:6px 12px;border-radius:8px;'>{delta_pct:+.1f}%</div>
             </div>
         </div>
@@ -10489,13 +10819,23 @@ elif page == "IDP":
     
     # Get player values for the 5 main traits
     trait_categories = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
-    player_values = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
+    player_values_raw = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
     
     # Calculate Top 10 averages for each trait
-    top10_values = []
+    top10_values_raw = []
     for trait in trait_categories:
         trait_avg = pd.to_numeric(top_10_position[trait], errors="coerce").mean()
-        top10_values.append(trait_avg if pd.notna(trait_avg) else 0)
+        top10_values_raw.append(trait_avg if pd.notna(trait_avg) else 0)
+    
+    # Convert to FC mode if enabled
+    if fc_mode:
+        player_values = [convert_trait_to_fc_rating(v) or 50 for v in player_values_raw]
+        top10_values = [convert_trait_to_fc_rating(v) or 50 for v in top10_values_raw]
+        spider_range = [50, 99]
+    else:
+        player_values = player_values_raw
+        top10_values = top10_values_raw
+        spider_range = [0, max(max(player_values), max(top10_values)) * 1.1]
     
     # Create spider chart
     fig = go.Figure()
@@ -10524,7 +10864,7 @@ elif page == "IDP":
         polar=dict(
             radialaxis=dict(
                 visible=True,
-                range=[0, max(max(player_values), max(top10_values)) * 1.1],
+                range=spider_range,
                 gridcolor='rgba(255,255,255,0.2)',
                 tickfont=dict(color='white', size=12)
             ),
@@ -10586,7 +10926,19 @@ elif page == "IDP":
         # Color coding
         border_color = "#00FF00" if delta >= 0 else "#FF6B6B"
         
-        st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};"><div style="flex:1;"><span style="font-weight:900;font-size:15px;color:#FFFFFF;">{substat}</span></div><div style="display:flex;gap:24px;align-items:center;"><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val:.2f}</div></div><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg:.2f}</div></div><div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta:+.2f}</div></div><div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div></div></div>""", unsafe_allow_html=True)
+        # Format values based on FC mode
+        if fc_mode:
+            player_val_fc = convert_trait_to_fc_rating(player_val)
+            top10_avg_fc = convert_trait_to_fc_rating(top10_avg)
+            player_val_str = str(player_val_fc) if player_val_fc is not None else "—"
+            top10_avg_str = str(top10_avg_fc) if top10_avg_fc is not None else "—"
+            delta_str = f"{(player_val_fc or 0) - (top10_avg_fc or 0):+d}"
+        else:
+            player_val_str = f"{player_val:.2f}"
+            top10_avg_str = f"{top10_avg:.2f}"
+            delta_str = f"{delta:+.2f}"
+        
+        st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};"><div style="flex:1;"><span style="font-weight:900;font-size:15px;color:#FFFFFF;">{substat}</span></div><div style="display:flex;gap:24px;align-items:center;"><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div><div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div><div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div></div></div>""", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -10619,28 +10971,160 @@ elif page == "IDP":
         
         st.markdown("</div>", unsafe_allow_html=True)
     
+    # ========== SECTION: 5 MOST SIMILAR PLAYERS ==========
+    # Calculate similarity for all players in same position (excluding selected player)
+    trait_cols = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+    same_position_players = traits_df[
+        (traits_df["Position_Full"] == player_position) & 
+        (traits_df["Player_Full"] != selected_player)
+    ].copy()
+    
+    # Calculate similarity scores (Euclidean distance - lower = more similar)
+    most_similar_player = None
+    most_similar_team = None
+    top_5_similar = []
+    
+    if not same_position_players.empty:
+        player_traits = [safe_float(player_data.get(t)) or 0 for t in trait_cols]
+        
+        def calc_similarity(row):
+            other_traits = [safe_float(row.get(t)) or 0 for t in trait_cols]
+            return sum((a - b) ** 2 for a, b in zip(player_traits, other_traits)) ** 0.5
+        
+        same_position_players["similarity_score"] = same_position_players.apply(calc_similarity, axis=1)
+        
+        # Get top 5 most similar (lowest distance)
+        top_5_df = same_position_players.nsmallest(5, "similarity_score")
+        top_5_similar = top_5_df.to_dict('records')
+        
+        most_similar_row = same_position_players.loc[same_position_players["similarity_score"].idxmin()]
+        most_similar_player = most_similar_row["Player_Full"]
+        most_similar_team = most_similar_row["Team_Full"]
+    
+    st.markdown("<div class='idp-section-header'>👥 5 Most Similar Players</div>", unsafe_allow_html=True)
+    
+    if top_5_similar:
+        # Create 5 columns for the similar players
+        sim_cols = st.columns(5)
+        
+        for idx, sim_player_data in enumerate(top_5_similar):
+            with sim_cols[idx]:
+                sim_player_name = sim_player_data.get("Player_Full", "")
+                sim_team = str(sim_player_data.get("Team_Full", ""))
+                sim_position = str(sim_player_data.get("Position_Full", ""))
+                sim_age = sim_player_data.get("Age", "N/A")
+                
+                # Normalize names for display
+                sim_player_display = get_full_player_name(sim_player_name, sim_team)
+                sim_team_display = normalize_team_display(sim_team)
+                
+                # Get ratings
+                sim_overall = safe_float(sim_player_data.get("Rating"))
+                sim_ball_winning = safe_float(sim_player_data.get("Ball Winning"))
+                sim_ball_use = safe_float(sim_player_data.get("Ball Use"))
+                sim_aerial = safe_float(sim_player_data.get("Aerial"))
+                sim_defence = safe_float(sim_player_data.get("Defence"))
+                
+                # Format ratings for display
+                if fc_mode:
+                    sim_overall_str = str(convert_trait_to_fc_rating(sim_overall)) if sim_overall else "—"
+                    sim_ball_winning_str = str(convert_trait_to_fc_rating(sim_ball_winning)) if sim_ball_winning else "—"
+                    sim_ball_use_str = str(convert_trait_to_fc_rating(sim_ball_use)) if sim_ball_use else "—"
+                    sim_aerial_str = str(convert_trait_to_fc_rating(sim_aerial)) if sim_aerial else "—"
+                    sim_defence_str = str(convert_trait_to_fc_rating(sim_defence)) if sim_defence else "—"
+                else:
+                    sim_overall_str = f"{sim_overall:.2f}" if sim_overall else "—"
+                    sim_ball_winning_str = f"{sim_ball_winning:.2f}" if sim_ball_winning else "—"
+                    sim_ball_use_str = f"{sim_ball_use:.2f}" if sim_ball_use else "—"
+                    sim_aerial_str = f"{sim_aerial:.2f}" if sim_aerial else "—"
+                    sim_defence_str = f"{sim_defence:.2f}" if sim_defence else "—"
+                
+                # Get rating colors for visual feedback
+                overall_color = "#00FF00"
+                if sim_overall is not None and "Rating" in traits_df.columns:
+                    overall_color, _ = rating_colour_for_value(sim_overall, pd.to_numeric(traits_df["Rating"], errors="coerce"))
+                
+                # Determine badge color based on rank
+                rank_colors = ["#FFD700", "#C0C0C0", "#CD7F32", "#4A90D9", "#7B68EE"]
+                badge_color = rank_colors[idx] if idx < len(rank_colors) else "#666666"
+                
+                st.markdown(f"""
+                <div class='idp-card' style='padding:16px;text-align:center;position:relative;'>
+                    <div style='position:absolute;top:8px;left:8px;background:{badge_color};color:#000;font-weight:900;font-size:14px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);'>
+                        {idx + 1}
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # Display player photo
+                display_player_photo(sim_player_display, st, size=120, team_name=sim_team_display)
+                
+                st.markdown(f"""
+                    <div style='margin-top:12px;'>
+                        <h4 style='color:#FFFFFF;margin:0 0 4px 0;font-size:14px;font-weight:900;line-height:1.2;'>{sim_player_display}</h4>
+                        <p style='color:rgba(255,255,255,0.7);margin:2px 0;font-size:12px;font-weight:600;'>{sim_team_display}</p>
+                        <p style='color:rgba(255,255,255,0.5);margin:2px 0;font-size:11px;'>{sim_position} • Age {sim_age}</p>
+                    </div>
+                    <div style='margin-top:12px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;'>
+                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'>
+                            <span style='color:rgba(255,255,255,0.6);font-size:10px;'>Overall</span>
+                            <span style='color:{overall_color};font-weight:900;font-size:28px;'>{sim_overall_str}</span>
+                        </div>
+                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;'>
+                            <span style='color:rgba(255,255,255,0.5);font-size:9px;'>Ball Win</span>
+                            <span style='color:rgba(255,255,255,0.8);font-weight:700;font-size:22px;'>{sim_ball_winning_str}</span>
+                        </div>
+                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;'>
+                            <span style='color:rgba(255,255,255,0.5);font-size:9px;'>Ball Use</span>
+                            <span style='color:rgba(255,255,255,0.8);font-weight:700;font-size:22px;'>{sim_ball_use_str}</span>
+                        </div>
+                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;'>
+                            <span style='color:rgba(255,255,255,0.5);font-size:9px;'>Aerial</span>
+                            <span style='color:rgba(255,255,255,0.8);font-weight:700;font-size:22px;'>{sim_aerial_str}</span>
+                        </div>
+                        <div style='display:flex;justify-content:space-between;align-items:center;'>
+                            <span style='color:rgba(255,255,255,0.5);font-size:9px;'>Defence</span>
+                            <span style='color:rgba(255,255,255,0.8);font-weight:700;font-size:22px;'>{sim_defence_str}</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+    else:
+        st.markdown("<div class='idp-card'><p style='color:rgba(255,255,255,0.6);text-align:center;padding:20px;'>No similar players found for this position.</p></div>", unsafe_allow_html=True)
+    
     # ========== SECTION 2: PLAYER COMPARISON TOOL ==========
     st.markdown("<div class='idp-section-header'>⚖️ Player Comparison Tool</div>", unsafe_allow_html=True)
     
     st.markdown("<div class='idp-card'><h3 style='color:#FFFFFF;margin:0 0 20px 0;font-weight:900;font-size:22px;'>Compare Against Specific Player</h3>", unsafe_allow_html=True)
     
-    # Team filter for comparison
+    # Team filter for comparison - default to most similar player's team
     comparison_teams = sorted(traits_df["Team_Full"].dropna().unique().tolist())
+    default_team_idx = 0
+    if most_similar_team and most_similar_team in comparison_teams:
+        default_team_idx = comparison_teams.index(most_similar_team)
+    
+    # Use dynamic keys based on selected player so selections reset when player changes
     comparison_team = st.selectbox(
         "Select Team",
         comparison_teams,
-        key="idp_comparison_team"
+        index=default_team_idx,
+        key=f"idp_comparison_team_{selected_player}"
     )
     
     # Filter players by selected team
     team_players_df = traits_df[traits_df["Team_Full"] == comparison_team]
     team_players = sorted(team_players_df["Player_Full"].dropna().unique().tolist())
     
+    # Pre-select most similar player if they're on the selected team
+    default_player_idx = 0
+    if comparison_team == most_similar_team and most_similar_player and most_similar_player in team_players:
+        default_player_idx = team_players.index(most_similar_player)
+    
     # Select comparison player from filtered team
     comparison_player = st.selectbox(
         "Select Player to Compare",
         team_players,
-        key="idp_comparison_player"
+        index=default_player_idx,
+        key=f"idp_comparison_player_{selected_player}"
     )
     
     if comparison_player:
@@ -10653,6 +11137,39 @@ elif page == "IDP":
         comparison_player_display = get_full_player_name(comparison_player, comp_team)
         comp_team_display = normalize_team_display(comp_team)
         
+        # Calculate similarity percentage between the two players
+        all_trait_cols = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence", 
+                         "Stoppage", "Contest", "Power", "Receives",
+                         "Handballing", "Kicking", "Goal Kicking", "Connecting",
+                         "Marking", "Contested", "Moks", "Ruck",
+                         "Pressure", "Tackling", "Intercepting", "1v1"]
+        
+        similarity_scores = []
+        for col in all_trait_cols:
+            if col not in traits_df.columns:
+                continue
+            p1_val = safe_float(player_data.get(col))
+            p2_val = safe_float(comp_data.get(col))
+            if p1_val is None or p2_val is None:
+                continue
+            # Get column range for normalization
+            col_vals = pd.to_numeric(traits_df[col], errors="coerce")
+            col_min = col_vals.min()
+            col_max = col_vals.max()
+            if pd.isna(col_min) or pd.isna(col_max) or col_max == col_min:
+                continue
+            # Normalize both values to 0-100 scale
+            norm1 = ((p1_val - col_min) / (col_max - col_min)) * 100
+            norm2 = ((p2_val - col_min) / (col_max - col_min)) * 100
+            # Calculate similarity (100 - absolute difference)
+            similarity = 100 - abs(norm1 - norm2)
+            similarity_scores.append(similarity)
+        
+        if similarity_scores:
+            player_similarity = sum(similarity_scores) / len(similarity_scores)
+        else:
+            player_similarity = 0
+        
         # Comparison header with photos
         col_p1, col_vs, col_p2 = st.columns([2, 1, 2])
         
@@ -10664,7 +11181,25 @@ elif page == "IDP":
             st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{selected_player_display}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{selected_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{player_position} • Age {player_age}</p></div>", unsafe_allow_html=True)
         
         with col_vs:
-            st.markdown("<div style='display:flex;align-items:center;justify-content:center;height:100%;'><div style='font-size:48px;font-weight:900;color:rgba(255,255,255,0.5);text-shadow:2px 2px 6px rgba(0,0,0,0.5);'>VS</div></div>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;'>
+                <div style='font-size:48px;font-weight:900;color:rgba(255,255,255,0.5);text-shadow:2px 2px 6px rgba(0,0,0,0.5);'>VS</div>
+                <div style='background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%); 
+                            border-radius: 12px; padding: 16px 20px; margin-top: 16px;
+                            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.3);text-align:center;'>
+                    <div style='font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); 
+                                text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>
+                        Similarity
+                    </div>
+                    <div style='font-size: 32px; font-weight: 900; color: #ffffff;'>
+                        {player_similarity:.1f}%
+                    </div>
+                    <div style='font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px;'>
+                        {len(similarity_scores)} traits
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_p2:
             # Center the photo
@@ -10680,8 +11215,18 @@ elif page == "IDP":
         
         # Get values for both players
         trait_categories = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]
-        player1_values = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
-        player2_values = [safe_float(comp_data.get(trait, 0)) or 0 for trait in trait_categories]
+        player1_values_raw = [safe_float(player_data.get(trait, 0)) or 0 for trait in trait_categories]
+        player2_values_raw = [safe_float(comp_data.get(trait, 0)) or 0 for trait in trait_categories]
+        
+        # Convert to FC mode if enabled
+        if fc_mode:
+            player1_values = [convert_trait_to_fc_rating(v) or 50 for v in player1_values_raw]
+            player2_values = [convert_trait_to_fc_rating(v) or 50 for v in player2_values_raw]
+            comp_spider_range = [50, 99]
+        else:
+            player1_values = player1_values_raw
+            player2_values = player2_values_raw
+            comp_spider_range = [0, max(max(player1_values), max(player2_values)) * 1.1]
         
         # Create spider chart
         fig_comp = go.Figure()
@@ -10710,7 +11255,7 @@ elif page == "IDP":
             polar=dict(
                 radialaxis=dict(
                     visible=True,
-                    range=[0, max(max(player1_values), max(player2_values)) * 1.1],
+                    range=comp_spider_range,
                     gridcolor='rgba(255,255,255,0.2)',
                     tickfont=dict(color='white', size=11)
                 ),
@@ -10759,6 +11304,19 @@ elif page == "IDP":
             p1_color, _ = rating_colour_for_value(player_comp_val, trait_values)
             p2_color, _ = rating_colour_for_value(comp_player_val, trait_values)
             
+            # Format values for display
+            if fc_mode:
+                p1_fc = convert_trait_to_fc_rating(player_comp_val)
+                p2_fc = convert_trait_to_fc_rating(comp_player_val)
+                p1_val_str = str(p1_fc) if p1_fc is not None else "—"
+                p2_val_str = str(p2_fc) if p2_fc is not None else "—"
+                delta_fc = (p1_fc or 0) - (p2_fc or 0)
+                delta_str = f"{delta_fc:+d}"
+            else:
+                p1_val_str = f"{player_comp_val:.2f}"
+                p2_val_str = f"{comp_player_val:.2f}"
+                delta_str = f"{delta:+.2f}"
+            
             # Determine advantage text and color
             if abs(delta) < 0.05:
                 advantage_text = "Even"
@@ -10773,12 +11331,12 @@ elif page == "IDP":
             col1, col2, col3 = st.columns(3)
             with col1:
                 p1_display = selected_player_display.split()[-1] if ' ' in selected_player_display else selected_player_display
-                st.markdown(f"<div style='background:linear-gradient(135deg, {p1_color}25 0%, {p1_color}15 100%);border:2px solid {p1_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p1_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p1_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{player_comp_val:.2f}</div></div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:linear-gradient(135deg, {p1_color}25 0%, {p1_color}15 100%);border:2px solid {p1_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p1_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p1_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{p1_val_str}</div></div></div>", unsafe_allow_html=True)
             with col2:
                 p2_display = comparison_player_display.split()[-1] if ' ' in comparison_player_display else comparison_player_display
-                st.markdown(f"<div style='background:linear-gradient(135deg, {p2_color}25 0%, {p2_color}15 100%);border:2px solid {p2_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p2_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p2_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{comp_player_val:.2f}</div></div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:linear-gradient(135deg, {p2_color}25 0%, {p2_color}15 100%);border:2px solid {p2_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p2_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p2_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{p2_val_str}</div></div></div>", unsafe_allow_html=True)
             with col3:
-                st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta:+.2f} ({delta_pct:+.1f}%)</div></div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta_str} ({delta_pct:+.1f}%)</div></div></div>", unsafe_allow_html=True)
         
         # Sub-stats comparison table
         st.markdown("<h4 style='color:#FFFFFF;margin:28px 0 16px 0;font-weight:900;font-size:18px;'>Detailed Comparison</h4>", unsafe_allow_html=True)
@@ -10802,7 +11360,20 @@ elif page == "IDP":
             p1_bg = "rgba(0,255,0,0.2)" if delta > 0 else "transparent"
             p2_bg = "rgba(0,255,0,0.2)" if delta < 0 else "transparent"
             
-            comparison_rows.append(f"<tr><td style='text-align:left;'>{substat}</td><td style='background:{p1_bg};'>{p1_val:.2f}</td><td style='background:{p2_bg};'>{p2_val:.2f}</td><td style='color:{delta_color};'>{delta:+.2f}</td></tr>")
+            # Format values based on FC mode
+            if fc_mode:
+                p1_fc = convert_trait_to_fc_rating(p1_val)
+                p2_fc = convert_trait_to_fc_rating(p2_val)
+                p1_str = str(p1_fc) if p1_fc is not None else "—"
+                p2_str = str(p2_fc) if p2_fc is not None else "—"
+                delta_fc = (p1_fc or 0) - (p2_fc or 0)
+                delta_display = f"{delta_fc:+d}"
+            else:
+                p1_str = f"{p1_val:.2f}"
+                p2_str = f"{p2_val:.2f}"
+                delta_display = f"{delta:+.2f}"
+            
+            comparison_rows.append(f"<tr><td style='text-align:left;'>{substat}</td><td style='background:{p1_bg};'>{p1_str}</td><td style='background:{p2_bg};'>{p2_str}</td><td style='color:{delta_color};'>{delta_display}</td></tr>")
         
         if comparison_rows:
             st.markdown(f"<table class='fe-table fe-table-compact'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
