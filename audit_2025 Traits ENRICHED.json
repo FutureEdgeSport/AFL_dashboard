@@ -1,0 +1,51 @@
+{
+  "file": "2025 Traits ENRICHED.xlsx",
+  "sheets": {
+    "2025": {
+      "rows": 633,
+      "cols": 39,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2024": {
+      "rows": 594,
+      "cols": 39,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2023": {
+      "rows": 592,
+      "cols": 39,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2022": {
+      "rows": 611,
+      "cols": 39,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2021": {
+      "rows": 620,
+      "cols": 39,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    }
+  },
+  "formulas": [],
+  "summary": {
+    "sheet_count": 5,
+    "sheet_names": [
+      "2025",
+      "2024",
+      "2023",
+      "2022",
+      "2021"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "file": "Wheelo_Team_Data.xlsx",
+  "sheets": {
+    "Sheet1": {
+      "rows": 20,
+      "cols": 288,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    }
+  },
+  "formulas": [],
+  "summary": {
+    "sheet_count": 1,
+    "sheet_names": [
+      "Sheet1"
+    ]
+  }
+}

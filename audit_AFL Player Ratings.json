@@ -1,0 +1,735 @@
+{
+  "file": "AFL Player Ratings.xlsx",
+  "sheets": {
+    "2025 AFL Squads": {
+      "rows": 809,
+      "cols": 24,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2012": {
+      "rows": 677,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2013": {
+      "rows": 678,
+      "cols": 73,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2014": {
+      "rows": 664,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2015": {
+      "rows": 666,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2016": {
+      "rows": 657,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2017": {
+      "rows": 657,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2018": {
+      "rows": 659,
+      "cols": 72,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2019": {
+      "rows": 656,
+      "cols": 73,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2020": {
+      "rows": 655,
+      "cols": 73,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2021": {
+      "rows": 675,
+      "cols": 102,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2022": {
+      "rows": 685,
+      "cols": 102,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2023": {
+      "rows": 664,
+      "cols": 102,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2024": {
+      "rows": 659,
+      "cols": 102,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2025": {
+      "rows": 669,
+      "cols": 102,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Contract Expiry": {
+      "rows": 767,
+      "cols": 7,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Draft Data": {
+      "rows": 760,
+      "cols": 6,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Summary": {
+      "rows": 813,
+      "cols": 52,
+      "formulas": [],
+      "formula_count": 1247,
+      "sample_formulas": [
+        {
+          "cell": "B2",
+          "formula": "=VLOOKUP(A2,'2025 AFL Squads'!A:X,2,FALSE)"
+        },
+        {
+          "cell": "C2",
+          "formula": "=VLOOKUP(A2,'2025 AFL Squads'!A:X,3,FALSE)"
+        },
+        {
+          "cell": "D2",
+          "formula": "=VLOOKUP(A2,'2025 AFL Squads'!A:X,5,FALSE)"
+        },
+        {
+          "cell": "E2",
+          "formula": "=IFERROR(VLOOKUP(A2,'Draft Data'!A:F,4,FALSE),\"\")"
+        },
+        {
+          "cell": "F2",
+          "formula": "=IFERROR(VLOOKUP(A2,'Draft Data'!A:F,5,FALSE),\"\")"
+        },
+        {
+          "cell": "G2",
+          "formula": "=IFERROR(VLOOKUP(A2,'Draft Data'!A:F,6,FALSE),\"\")"
+        },
+        {
+          "cell": "H2",
+          "formula": "=IFERROR(VLOOKUP(A2,'Contract Expiry'!A:G,3,FALSE),\"NA\")"
+        },
+        {
+          "cell": "I2",
+          "formula": "=VLOOKUP(A2,'2025 AFL Squads'!A:X,6,FALSE)"
+        },
+        {
+          "cell": "J2",
+          "formula": "=_xlfn.IFNA(\n   VLOOKUP(A2, Wings!A:X, 6, FALSE),\n   VLOOKUP(A2, '2025 AFL Squads'!A:X, 7, FALSE)\n)"
+        },
+        {
+          "cell": "K2",
+          "formula": "=VLOOKUP(A2,'2025 AFL Squads'!A:X,9,FALSE)"
+        }
+      ]
+    },
+    "Player Summary": {
+      "rows": 47,
+      "cols": 32,
+      "formulas": [],
+      "formula_count": 21,
+      "sample_formulas": [
+        {
+          "cell": "A6",
+          "formula": "=VLOOKUP($A2,Summary!$A:$AW,10,FALSE)"
+        },
+        {
+          "cell": "A9",
+          "formula": "=VLOOKUP(A$2,Summary!$A:$AW,9,FALSE)"
+        },
+        {
+          "cell": "A12",
+          "formula": "=VLOOKUP($A2,Summary!$A:$AW,4,FALSE)"
+        },
+        {
+          "cell": "A15",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,11,FALSE)"
+        },
+        {
+          "cell": "A18",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,12,FALSE)"
+        },
+        {
+          "cell": "A21",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,5,FALSE)"
+        },
+        {
+          "cell": "A24",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,6,FALSE)"
+        },
+        {
+          "cell": "A27",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,8,FALSE)"
+        },
+        {
+          "cell": "E27",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,29,FALSE)"
+        },
+        {
+          "cell": "G27",
+          "formula": "=VLOOKUP($A$2,Summary!$A:$AW,31,FALSE)"
+        }
+      ]
+    },
+    "Graphs 2025": {
+      "rows": 46,
+      "cols": 5,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Graphs Career": {
+      "rows": 46,
+      "cols": 5,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Depth Chart": {
+      "rows": 29,
+      "cols": 9,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "List Ladder L2": {
+      "rows": 2669,
+      "cols": 45,
+      "formulas": [],
+      "formula_count": 550,
+      "sample_formulas": [
+        {
+          "cell": "D5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\"<20.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "E5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">20.1\",Summary!$AH:$AH,\"<40.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "F5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">40.1\",Summary!$AH:$AH,\"<60.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "G5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\"<5.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "H5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">5.1\",Summary!$AH:$AH,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "I5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">10.1\",Summary!$AH:$AH,\"<15.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "J5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\"<5.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "K5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">5.1\",Summary!$AH:$AH,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "L5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\">10.1\",Summary!$AH:$AH,\"<15.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "M5",
+          "formula": "=COUNTIFS(Summary!$AH:$AH,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Key Forward\")"
+        }
+      ]
+    },
+    "List Ladder Career": {
+      "rows": 274,
+      "cols": 36,
+      "formulas": [],
+      "formula_count": 550,
+      "sample_formulas": [
+        {
+          "cell": "D5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\"<20.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "E5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">20.1\",Summary!$AE:$AE,\"<40.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "F5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">40.1\",Summary!$AE:$AE,\"<60.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Midfielder\")"
+        },
+        {
+          "cell": "G5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\"<5.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "H5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">5.1\",Summary!$AE:$AE,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "I5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">10.1\",Summary!$AE:$AE,\"<15.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Mid-Forward\")"
+        },
+        {
+          "cell": "J5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\"<5.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "K5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">5.1\",Summary!$AE:$AE,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "L5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\">10.1\",Summary!$AE:$AE,\"<15.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Ruck\")"
+        },
+        {
+          "cell": "M5",
+          "formula": "=COUNTIFS(Summary!$AE:$AE,\"<10.1\",Summary!$B:$B,$C5,Summary!$J:$J,\"Key Forward\")"
+        }
+      ]
+    },
+    "Age Profile (2yr)": {
+      "rows": 21,
+      "cols": 15,
+      "formulas": [],
+      "formula_count": 256,
+      "sample_formulas": [
+        {
+          "cell": "B3",
+          "formula": "=SUMIF(Summary!B:B,'Age Profile (2yr)'!A3,Summary!AG:AG)"
+        },
+        {
+          "cell": "C3",
+          "formula": "=_xlfn.RANK.EQ(B3,$B$3:$B$20)"
+        },
+        {
+          "cell": "D3",
+          "formula": "=SUMIFS(Summary!$AG:$AG,Summary!$B:$B,'Age Profile (2yr)'!$A3,Summary!$D:$D,'Age Profile (2yr)'!D$1)"
+        },
+        {
+          "cell": "E3",
+          "formula": "=D3/B3"
+        },
+        {
+          "cell": "F3",
+          "formula": "=_xlfn.RANK.EQ(E3,$E$3:$E$20)"
+        },
+        {
+          "cell": "G3",
+          "formula": "=SUMIFS(Summary!$AG:$AG,Summary!$B:$B,'Age Profile (2yr)'!$A3,Summary!$D:$D,'Age Profile (2yr)'!G$1)-D3"
+        },
+        {
+          "cell": "H3",
+          "formula": "=G3/B3"
+        },
+        {
+          "cell": "I3",
+          "formula": "=_xlfn.RANK.EQ(H3,$H$3:$H$20)"
+        },
+        {
+          "cell": "J3",
+          "formula": "=SUMIFS(Summary!$AG:$AG,Summary!$B:$B,'Age Profile (2yr)'!$A3,Summary!$D:$D,'Age Profile (2yr)'!J$1)-G3-D3"
+        },
+        {
+          "cell": "K3",
+          "formula": "=J3/B3"
+        }
+      ]
+    },
+    "Age Profile (1yr)": {
+      "rows": 21,
+      "cols": 15,
+      "formulas": [],
+      "formula_count": 256,
+      "sample_formulas": [
+        {
+          "cell": "B3",
+          "formula": "=SUMIF(Summary!B:B,'Age Profile (1yr)'!A3,Summary!AJ:AJ)"
+        },
+        {
+          "cell": "C3",
+          "formula": "=_xlfn.RANK.EQ(B3,$B$3:$B$20)"
+        },
+        {
+          "cell": "D3",
+          "formula": "=SUMIFS(Summary!$AJ:$AJ,Summary!$B:$B,'Age Profile (1yr)'!$A3,Summary!$D:$D,'Age Profile (1yr)'!D$1)"
+        },
+        {
+          "cell": "E3",
+          "formula": "=D3/B3"
+        },
+        {
+          "cell": "F3",
+          "formula": "=_xlfn.RANK.EQ(E3,$E$3:$E$20)"
+        },
+        {
+          "cell": "G3",
+          "formula": "=SUMIFS(Summary!$AJ:$AJ,Summary!$B:$B,'Age Profile (1yr)'!$A3,Summary!$D:$D,'Age Profile (1yr)'!G$1)-D3"
+        },
+        {
+          "cell": "H3",
+          "formula": "=G3/B3"
+        },
+        {
+          "cell": "I3",
+          "formula": "=_xlfn.RANK.EQ(H3,$H$3:$H$20)"
+        },
+        {
+          "cell": "J3",
+          "formula": "=SUMIFS(Summary!$AJ:$AJ,Summary!$B:$B,'Age Profile (1yr)'!$A3,Summary!$D:$D,'Age Profile (1yr)'!J$1)-G3-D3"
+        },
+        {
+          "cell": "K3",
+          "formula": "=J3/B3"
+        }
+      ]
+    },
+    "Age Games": {
+      "rows": 20,
+      "cols": 7,
+      "formulas": [],
+      "formula_count": 108,
+      "sample_formulas": [
+        {
+          "cell": "B3",
+          "formula": "=AVERAGEIF(Summary!$B:$B,'Age Games'!$A3,Summary!D:D)"
+        },
+        {
+          "cell": "C3",
+          "formula": "=_xlfn.RANK.EQ(B3,B$3:B$20,0)"
+        },
+        {
+          "cell": "D3",
+          "formula": "=AVERAGEIF(Summary!$B:$B,'Age Games'!$A3,Summary!K:K)"
+        },
+        {
+          "cell": "E3",
+          "formula": "=_xlfn.RANK.EQ(D3,D$3:D$20,0)"
+        },
+        {
+          "cell": "F3",
+          "formula": "=AVERAGEIF(Summary!$B:$B,'Age Games'!$A3,Summary!L:L)"
+        },
+        {
+          "cell": "G3",
+          "formula": "=_xlfn.RANK.EQ(F3,F$3:F$20,0)"
+        },
+        {
+          "cell": "B4",
+          "formula": "=AVERAGEIF(Summary!$B:$B,'Age Games'!$A4,Summary!D:D)"
+        },
+        {
+          "cell": "C4",
+          "formula": "=_xlfn.RANK.EQ(B4,B$3:B$20,0)"
+        },
+        {
+          "cell": "D4",
+          "formula": "=AVERAGEIF(Summary!$B:$B,'Age Games'!$A4,Summary!K:K)"
+        },
+        {
+          "cell": "E4",
+          "formula": "=_xlfn.RANK.EQ(D4,D$3:D$20,0)"
+        }
+      ]
+    },
+    "Draft List": {
+      "rows": 54,
+      "cols": 22,
+      "formulas": [],
+      "formula_count": 6,
+      "sample_formulas": [
+        {
+          "cell": "F7",
+          "formula": "=IF($B$2=\"All Teams\",\n COUNTIF(Summary!$F$2:$F$10000,\"Rookie\"),\n COUNTIFS(Summary!$B$2:$B$10000,$B$2, Summary!$F$2:$F$10000,\"Rookie\")\n)"
+        },
+        {
+          "cell": "G7",
+          "formula": "=IF($B$2=\"All Teams\",\n COUNTIF(Summary!$F$2:$F$10000,\"Cat-B\"),\n COUNTIFS(Summary!$B$2:$B$10000,$B$2, Summary!$F$2:$F$10000,\"Cat-B\")\n)"
+        },
+        {
+          "cell": "H7",
+          "formula": "=IF($B$2=\"All Teams\",\n COUNTIF(Summary!$F$2:$F$10000,\"MSD\"),\n COUNTIFS(Summary!$B$2:$B$10000,$B$2, Summary!$F$2:$F$10000,\"MSD\")\n)"
+        },
+        {
+          "cell": "I7",
+          "formula": "=IF($B$2=\"All Teams\",\n COUNTIF(Summary!$F$2:$F$10000,\"SSP\"),\n COUNTIFS(Summary!$B$2:$B$10000,$B$2, Summary!$F$2:$F$10000,\"SSP\")\n)"
+        },
+        {
+          "cell": "J7",
+          "formula": "=IF($B$2=\"All Teams\",\n COUNTA(Summary!$B$2:$B$10000) - SUM($A$7:$I$7),\n COUNTIF(Summary!$B$2:$B$10000,$B$2) - SUM($A$7:$I$7)\n)"
+        },
+        {
+          "cell": "K7",
+          "formula": "=SUM(A7:J7)"
+        }
+      ]
+    },
+    "AvgRatings": {
+      "rows": 24,
+      "cols": 10,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Counts": {
+      "rows": 24,
+      "cols": 10,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "AvgMask": {
+      "rows": 24,
+      "cols": 10,
+      "formulas": [],
+      "formula_count": 207,
+      "sample_formulas": [
+        {
+          "cell": "B2",
+          "formula": "=IF(AND(Counts!B2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!B2,\"\")"
+        },
+        {
+          "cell": "C2",
+          "formula": "=IF(AND(Counts!C2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!C2,\"\")"
+        },
+        {
+          "cell": "D2",
+          "formula": "=IF(AND(Counts!D2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!D2,\"\")"
+        },
+        {
+          "cell": "E2",
+          "formula": "=IF(AND(Counts!E2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!E2,\"\")"
+        },
+        {
+          "cell": "F2",
+          "formula": "=IF(AND(Counts!F2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!F2,\"\")"
+        },
+        {
+          "cell": "G2",
+          "formula": "=IF(AND(Counts!G2>=Projection!$B$20,AvgRatings!B2<=35),AvgRatings!G2,\"\")"
+        },
+        {
+          "cell": "H2",
+          "formula": "=IF(AND(Counts!H2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!H2,\"\")"
+        },
+        {
+          "cell": "I2",
+          "formula": "=IF(AND(Counts!I2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!I2,\"\")"
+        },
+        {
+          "cell": "J2",
+          "formula": "=IF(AND(Counts!J2>=Projection!$B$20,AvgRatings!A2<=35),AvgRatings!J2,\"\")"
+        },
+        {
+          "cell": "B3",
+          "formula": "=IF(AND(Counts!B3>=Projection!$B$20,AvgRatings!A3<=35),AvgRatings!B3,\"\")"
+        }
+      ]
+    },
+    "CountsFlag": {
+      "rows": 24,
+      "cols": 10,
+      "formulas": [],
+      "formula_count": 207,
+      "sample_formulas": [
+        {
+          "cell": "B2",
+          "formula": "=IF(Counts!B2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "C2",
+          "formula": "=IF(Counts!C2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "D2",
+          "formula": "=IF(Counts!D2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "E2",
+          "formula": "=IF(Counts!E2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "F2",
+          "formula": "=IF(Counts!F2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "G2",
+          "formula": "=IF(Counts!G2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "H2",
+          "formula": "=IF(Counts!H2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "I2",
+          "formula": "=IF(Counts!I2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "J2",
+          "formula": "=IF(Counts!J2<Projection!$B$20,1,0)"
+        },
+        {
+          "cell": "B3",
+          "formula": "=IF(Counts!B3<Projection!$B$20,1,0)"
+        }
+      ]
+    },
+    "Params": {
+      "rows": 47,
+      "cols": 9,
+      "formulas": [],
+      "formula_count": 2,
+      "sample_formulas": [
+        {
+          "cell": "F3",
+          "formula": "='Player Summary'!A1"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Player Summary'!A2"
+        }
+      ]
+    },
+    "Projection": {
+      "rows": 56,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 75,
+      "sample_formulas": [
+        {
+          "cell": "B4",
+          "formula": "=Params!F4"
+        },
+        {
+          "cell": "B5",
+          "formula": "=Params!F3"
+        },
+        {
+          "cell": "B6",
+          "formula": "=Params!B3"
+        },
+        {
+          "cell": "B7",
+          "formula": "=Params!B4"
+        },
+        {
+          "cell": "J7",
+          "formula": "=I12"
+        },
+        {
+          "cell": "K7",
+          "formula": "=I13"
+        },
+        {
+          "cell": "B8",
+          "formula": "=Params!B5"
+        },
+        {
+          "cell": "J8",
+          "formula": "=I12"
+        },
+        {
+          "cell": "K8",
+          "formula": "=I16"
+        },
+        {
+          "cell": "B10",
+          "formula": "=IFERROR(INDEX(AvgRatings!$B:$AA, MATCH(B7, AvgRatings!$A:$A, 0), MATCH(B6, AvgRatings!$B$1:$AA$1, 0)),\"\")"
+        }
+      ]
+    },
+    "Wings": {
+      "rows": 65,
+      "cols": 8,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    }
+  },
+  "formulas": [],
+  "summary": {
+    "sheet_count": 35,
+    "sheet_names": [
+      "2025 AFL Squads",
+      "2012",
+      "2013",
+      "2014",
+      "2015",
+      "2016",
+      "2017",
+      "2018",
+      "2019",
+      "2020",
+      "2021",
+      "2022",
+      "2023",
+      "2024",
+      "2025",
+      "Contract Expiry",
+      "Draft Data",
+      "Summary",
+      "Player Summary",
+      "Graphs 2025",
+      "Graphs Career",
+      "Depth Chart",
+      "List Ladder L2",
+      "List Ladder Career",
+      "Age Profile (2yr)",
+      "Age Profile (1yr)",
+      "Age Games",
+      "Draft List",
+      "AvgRatings",
+      "Counts",
+      "AvgMask",
+      "CountsFlag",
+      "Params",
+      "Projection",
+      "Wings"
+    ]
+  }
+}

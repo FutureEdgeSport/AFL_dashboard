@@ -28,6 +28,16 @@ from config.constants import (
     get_unified_table_css, METRIC_TOOLTIPS, get_tooltip_html
 )
 
+# Import data pipeline for computed ratings (migration from Excel formulas)
+from data_pipeline.compute_ratings import (
+    get_player_seasons as dp_get_player_seasons,
+    get_team_seasons as dp_get_team_seasons,
+    load_team_ladders_computed,
+    compute_player_summary_from_seasons,
+    parse_table_with_detected_header,
+    compare_to_excel_snapshot,
+)
+
 # ---------------- STREAMLIT CONFIG ----------------
 st.set_page_config(
     page_title="FutureEdge AFL Dashboard",
@@ -689,6 +699,24 @@ def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_na
     return pd.DataFrame()
 
 
+# ============================================================================
+# DATA PIPELINE CONFIGURATION
+# ============================================================================
+# Feature flag for using Python-computed ratings vs Excel formulas
+# Set to True to use computed ratings (future default), False to use Excel
+USE_COMPUTED_RATINGS = False  # Toggle this to switch between Excel and Python-computed data
+
+def get_data_source_info() -> dict:
+    """Return information about current data source configuration."""
+    return {
+        "mode": "computed" if USE_COMPUTED_RATINGS else "excel",
+        "description": "Python-computed from raw data" if USE_COMPUTED_RATINGS else "Excel formulas (legacy)",
+        "team_file": TEAM_FILE,
+        "player_file": PLAYER_FILE,
+        "traits_file": TRAITS_FILE,
+    }
+
+
 # ---------------- FC/FIFA STYLE RATING CONVERSION ----------------
 def convert_trait_to_fc_rating(value, min_orig=1.0, max_orig=4.0, min_fc=50, max_fc=99):
     """
@@ -843,8 +871,8 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False)
-def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
-    """Load team ladder data for a specific season with error handling."""
+def load_team_ladders_from_excel(season: int, last10: bool = False) -> pd.DataFrame:
+    """Load team ladder data from Excel sheets (legacy method with formulas)."""
     try:
         xl = pd.ExcelFile(TEAM_FILE)
         sheet_name = f"{season} Ladders (L10)" if last10 else f"{season} Ladders"
@@ -856,6 +884,34 @@ def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
     except Exception as e:
         st.warning(f"⚠️ Could not load {season} ladder data: {e}")
         return pd.DataFrame()
+
+
+@st.cache_data(show_spinner=False)
+def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.DataFrame:
+    """Load team ladder data computed from raw data (Python calculations)."""
+    try:
+        xl = pd.ExcelFile(TEAM_FILE)
+        block = "L10" if last10 else "Season"
+        return load_team_ladders_computed(xl, season, block)
+    except FileNotFoundError:
+        st.error(f"❌ Team ratings file not found: {TEAM_FILE}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.warning(f"⚠️ Could not compute {season} ladder data: {e}")
+        return pd.DataFrame()
+
+
+def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
+    """
+    Load team ladder data - automatically chooses data source based on USE_COMPUTED_RATINGS flag.
+    
+    When USE_COMPUTED_RATINGS is True: Uses Python-computed values from raw data
+    When USE_COMPUTED_RATINGS is False: Uses Excel formulas (current default)
+    """
+    if USE_COMPUTED_RATINGS:
+        return load_team_ladders_computed_wrapper(season, last10)
+    else:
+        return load_team_ladders_from_excel(season, last10)
 
 
 @st.cache_data(show_spinner=False)

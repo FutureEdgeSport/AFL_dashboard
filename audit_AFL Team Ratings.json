@@ -1,0 +1,1055 @@
+{
+  "file": "AFL Team Ratings.xlsx",
+  "sheets": {
+    "2025 Season All": {
+      "rows": 72,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 924,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2025 Last 10 Summary": {
+      "rows": 23,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,'L10'!$A:$IZ,222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,'L10'!$A:$IZ,218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,'L10'!$A:$IZ,49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,'L10'!$A:$IZ,229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2025 Summary": {
+      "rows": 22,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,'2025'!$A:$IZ,229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2024 Summary": {
+      "rows": 24,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2023 Summary": {
+      "rows": 24,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2022 Summary": {
+      "rows": 24,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2021 Summary": {
+      "rows": 24,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 792,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "Seasons Summary (2)": {
+      "rows": 46,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 924,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "Seasons Summary": {
+      "rows": 46,
+      "cols": 78,
+      "formulas": [],
+      "formula_count": 924,
+      "sample_formulas": [
+        {
+          "cell": "B5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),222,FALSE)"
+        },
+        {
+          "cell": "C5",
+          "formula": "=RANK(B5,B$5:B$22)"
+        },
+        {
+          "cell": "D5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),218,FALSE)"
+        },
+        {
+          "cell": "E5",
+          "formula": "=RANK(D5,D$5:D$22)"
+        },
+        {
+          "cell": "F5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),49,FALSE)"
+        },
+        {
+          "cell": "G5",
+          "formula": "=RANK(F5,F$5:F$22)"
+        },
+        {
+          "cell": "H5",
+          "formula": "=VLOOKUP($A5,INDIRECT(\"'\"&$B$1&\"'!$A:$IZ\"),229,FALSE)"
+        },
+        {
+          "cell": "I5",
+          "formula": "=RANK(H5,H$5:H$22)"
+        },
+        {
+          "cell": "J5",
+          "formula": "=104-(C5+E5+G5+I5)"
+        },
+        {
+          "cell": "K5",
+          "formula": "=RANK(J5,J$5:J$22)"
+        }
+      ]
+    },
+    "2025 Team Summary": {
+      "rows": 36,
+      "cols": 24,
+      "formulas": [],
+      "formula_count": 144,
+      "sample_formulas": [
+        {
+          "cell": "K1",
+          "formula": "=_xlfn.XLOOKUP(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, '2025 Ladders'!#REF!, \"Not Available\")"
+        },
+        {
+          "cell": "N1",
+          "formula": "=_xlfn.LET(\n  _xlpm.a, IFERROR(_xlfn.NUMBERVALUE(SUBSTITUTE(K1,CHAR(160),\"\" )),0),\n  _xlpm.b, IFERROR(_xlfn.NUMBERVALUE(SUBSTITUTE(H1,CHAR(160),\"\" )),0),\n  _xlpm.a-_xlpm.b\n)"
+        },
+        {
+          "cell": "H2",
+          "formula": "=IFERROR(\n  INDEX('2025 Ladders'!N4:N21, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!A4:A21, 0))\n  & IF(OR(ABS(MOD(INDEX('2025 Ladders'!N4:N21, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!A4:A21, 0)),100))=11,\n         ABS(MOD(INDEX('2025 Ladders'!N4:N21, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!A4:A21, 0)),100))=12,\n         ABS(MOD(INDEX('2025 Ladders'!N4:N21, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!A4:A21, 0)),100))=13),\n     \"th\",\n     CHOOSE(MOD(INDEX('2025 Ladders'!N4:N21, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!A4:A21, 0)),10)+1,\n        \"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\")\n  ),\n  \"Not Available\"\n)"
+        },
+        {
+          "cell": "K2",
+          "formula": "=IFERROR(\n  INDEX('2025 Ladders'!#REF!, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, 0))\n  & IF(OR(ABS(MOD(INDEX('2025 Ladders'!#REF!, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, 0)),100))=11,\n         ABS(MOD(INDEX('2025 Ladders'!#REF!, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, 0)),100))=12,\n         ABS(MOD(INDEX('2025 Ladders'!#REF!, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, 0)),100))=13),\n     \"th\",\n     CHOOSE(MOD(INDEX('2025 Ladders'!#REF!, MATCH(TRIM(CLEAN('2025 Team Summary'!B1)), '2025 Ladders'!#REF!, 0)),10)+1,\n        \"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\")\n  ),\n  \"Not Available\"\n)"
+        },
+        {
+          "cell": "B3",
+          "formula": "='2025 Summary'!J4"
+        },
+        {
+          "cell": "F3",
+          "formula": "='2025 Summary'!U4"
+        },
+        {
+          "cell": "J3",
+          "formula": "='2025 Summary'!AF4"
+        },
+        {
+          "cell": "N3",
+          "formula": "='2025 Summary'!AQ4"
+        },
+        {
+          "cell": "D4",
+          "formula": "=_xlfn.LET(\n  _xlpm.t, TRIM(CLEAN('2025 Team Summary'!B1)),\n  _xlpm.r, _xlfn.XLOOKUP(_xlpm.t, '2025 Ladders'!A4:A21, '2025 Ladders'!C4:C21, \"\"),\n  IF(_xlpm.r=\"\",\"Not Available\",\n     _xlpm.r & IF(OR(MOD(_xlpm.r,100)=11,MOD(_xlpm.r,100)=12,MOD(_xlpm.r,100)=13),\n            \"th\",\n            CHOOSE(MOD(_xlpm.r,10)+1,\"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\")\n     )\n  )\n)"
+        },
+        {
+          "cell": "H4",
+          "formula": "=_xlfn.LET(_xlpm.t,TRIM(CLEAN('2025 Team Summary'!B1)), _xlpm.r, _xlfn.XLOOKUP(_xlpm.t, '2025 Ladders'!A4:A21, '2025 Ladders'!E4:E21, \"\"),\n IF(_xlpm.r=\"\",\"Not Available\",\n   _xlpm.r & IF(OR(MOD(_xlpm.r,100)=11,MOD(_xlpm.r,100)=12,MOD(_xlpm.r,100)=13),\"th\",\n          CHOOSE(MOD(_xlpm.r,10)+1,\"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\"))))"
+        }
+      ]
+    },
+    "Seasons Team Summary": {
+      "rows": 35,
+      "cols": 18,
+      "formulas": [],
+      "formula_count": 136,
+      "sample_formulas": [
+        {
+          "cell": "F1",
+          "formula": "=B2"
+        },
+        {
+          "cell": "H1",
+          "formula": "=_xlfn.XLOOKUP(TRIM(CLEAN('Seasons Team Summary'!B1)), 'Seasons Ladders'!A4:A21, 'Seasons Ladders'!M4:M21, \"Not Available\")"
+        },
+        {
+          "cell": "I1",
+          "formula": "=B13"
+        },
+        {
+          "cell": "K1",
+          "formula": "=_xlfn.XLOOKUP(TRIM(CLEAN('Seasons Team Summary'!B1)), 'Seasons Ladders'!A26:A43, 'Seasons Ladders'!M26:M43, \"Not Available\")"
+        },
+        {
+          "cell": "B2",
+          "formula": "='Seasons Summary'!B1"
+        },
+        {
+          "cell": "H2",
+          "formula": "=_xlfn.LET(\n  _xlpm.t, TRIM(CLEAN('Seasons Team Summary'!B1)),\n  _xlpm.r, _xlfn.XLOOKUP(_xlpm.t, 'Seasons Ladders'!A4:A21, 'Seasons Ladders'!N4:N21, \"\"),\n  IF(_xlpm.r=\"\",\"Not Available\",\n     _xlpm.r & IF(OR(MOD(_xlpm.r,100)=11, MOD(_xlpm.r,100)=12, MOD(_xlpm.r,100)=13),\n             \"th\",\n             CHOOSE(MOD(_xlpm.r,10)+1,\"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\")\n     )\n  )\n)"
+        },
+        {
+          "cell": "K2",
+          "formula": "=_xlfn.LET(\n  _xlpm.t, TRIM(CLEAN('Seasons Team Summary'!B1)),\n  _xlpm.r, _xlfn.XLOOKUP(_xlpm.t, 'Seasons Ladders'!A26:A43, 'Seasons Ladders'!N26:N43, \"\"),\n  IF(_xlpm.r=\"\",\"Not Available\",\n     _xlpm.r & IF(OR(MOD(_xlpm.r,100)=11, MOD(_xlpm.r,100)=12, MOD(_xlpm.r,100)=13),\n             \"th\",\n             CHOOSE(MOD(_xlpm.r,10)+1,\"th\",\"st\",\"nd\",\"rd\",\"th\",\"th\",\"th\",\"th\",\"th\",\"th\")\n     )\n  )\n)"
+        },
+        {
+          "cell": "B3",
+          "formula": "='Seasons Summary'!J4"
+        },
+        {
+          "cell": "F3",
+          "formula": "='Seasons Summary'!U4"
+        },
+        {
+          "cell": "J3",
+          "formula": "='Seasons Summary'!AF4"
+        }
+      ]
+    },
+    "2025 Ladders": {
+      "rows": 27,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 216,
+      "sample_formulas": [
+        {
+          "cell": "B4",
+          "formula": "='2025 Summary'!J11"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='2025 Summary'!U11"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='2025 Summary'!AF11"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='2025 Summary'!AQ11"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='2025 Summary'!BB11"
+        },
+        {
+          "cell": "K4",
+          "formula": "=RANK(J4,J$4:J$21)"
+        }
+      ]
+    },
+    "2025 Ladders (L10)": {
+      "rows": 26,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 216,
+      "sample_formulas": [
+        {
+          "cell": "B4",
+          "formula": "='2025 Last 10 Summary'!J5"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='2025 Last 10 Summary'!U5"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='2025 Last 10 Summary'!AF5"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='2025 Last 10 Summary'!AQ5"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='2025 Last 10 Summary'!BB5"
+        },
+        {
+          "cell": "K4",
+          "formula": "=RANK(J4,J$4:J$21)"
+        }
+      ]
+    },
+    "2024 Ladders": {
+      "rows": 22,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 217,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary'!B1"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary'!J20"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary'!U20"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary'!AF20"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary'!AQ20"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary'!BB20"
+        }
+      ]
+    },
+    "2023 Ladders": {
+      "rows": 25,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 217,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary'!B24"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary'!J28"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary'!U28"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary'!AF28"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary'!AQ28"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary'!BB28"
+        }
+      ]
+    },
+    "2022 Ladders": {
+      "rows": 26,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 217,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary (2)'!B1"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary (2)'!J20"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary (2)'!U20"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary (2)'!AF20"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary (2)'!AQ20"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary (2)'!BB20"
+        }
+      ]
+    },
+    "2021 Ladders": {
+      "rows": 47,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 267,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary (2)'!B24"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary (2)'!J28"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary (2)'!U28"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary (2)'!AF28"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary (2)'!AQ28"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary (2)'!BB28"
+        }
+      ]
+    },
+    "Seasons Ladders (2)": {
+      "rows": 69,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 278,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary (2)'!B1"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary (2)'!J20"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary (2)'!U20"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary (2)'!AF20"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary (2)'!AQ20"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary (2)'!BB20"
+        }
+      ]
+    },
+    "Seasons Ladders": {
+      "rows": 69,
+      "cols": 16,
+      "formulas": [],
+      "formula_count": 278,
+      "sample_formulas": [
+        {
+          "cell": "A1",
+          "formula": "='Seasons Summary'!B1"
+        },
+        {
+          "cell": "B4",
+          "formula": "='Seasons Summary'!J20"
+        },
+        {
+          "cell": "C4",
+          "formula": "=RANK(B4,B$4:B$21)"
+        },
+        {
+          "cell": "D4",
+          "formula": "='Seasons Summary'!U20"
+        },
+        {
+          "cell": "E4",
+          "formula": "=RANK(D4,D$4:D$21)"
+        },
+        {
+          "cell": "F4",
+          "formula": "='Seasons Summary'!AF20"
+        },
+        {
+          "cell": "G4",
+          "formula": "=RANK(F4,F$4:F$21)"
+        },
+        {
+          "cell": "H4",
+          "formula": "='Seasons Summary'!AQ20"
+        },
+        {
+          "cell": "I4",
+          "formula": "=RANK(H4,H$4:H$21)"
+        },
+        {
+          "cell": "J4",
+          "formula": "='Seasons Summary'!BB20"
+        }
+      ]
+    },
+    "2025 Scatter Data": {
+      "rows": 16349,
+      "cols": 25,
+      "formulas": [],
+      "formula_count": 20,
+      "sample_formulas": [
+        {
+          "cell": "G4",
+          "formula": "='2025 Summary'!A5"
+        },
+        {
+          "cell": "G5",
+          "formula": "='2025 Summary'!A6"
+        },
+        {
+          "cell": "G6",
+          "formula": "='2025 Summary'!A7"
+        },
+        {
+          "cell": "G7",
+          "formula": "='2025 Summary'!A8"
+        },
+        {
+          "cell": "G8",
+          "formula": "='2025 Summary'!A9"
+        },
+        {
+          "cell": "G9",
+          "formula": "='2025 Summary'!A10"
+        },
+        {
+          "cell": "G10",
+          "formula": "='2025 Summary'!A11"
+        },
+        {
+          "cell": "G11",
+          "formula": "='2025 Summary'!A12"
+        },
+        {
+          "cell": "G12",
+          "formula": "='2025 Summary'!A13"
+        },
+        {
+          "cell": "G13",
+          "formula": "='2025 Summary'!A14"
+        }
+      ]
+    },
+    "Scatter Plot": {
+      "rows": 1,
+      "cols": 1,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "Ratings Season": {
+      "rows": 21,
+      "cols": 13,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2025": {
+      "rows": 22,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2024": {
+      "rows": 20,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2023": {
+      "rows": 20,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2022": {
+      "rows": 20,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "2021": {
+      "rows": 20,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    },
+    "L10": {
+      "rows": 20,
+      "cols": 260,
+      "formulas": [],
+      "formula_count": 0,
+      "sample_formulas": []
+    }
+  },
+  "formulas": [],
+  "summary": {
+    "sheet_count": 28,
+    "sheet_names": [
+      "2025 Season All",
+      "2025 Last 10 Summary",
+      "2025 Summary",
+      "2024 Summary",
+      "2023 Summary",
+      "2022 Summary",
+      "2021 Summary",
+      "Seasons Summary (2)",
+      "Seasons Summary",
+      "2025 Team Summary",
+      "Seasons Team Summary",
+      "2025 Ladders",
+      "2025 Ladders (L10)",
+      "2024 Ladders",
+      "2023 Ladders",
+      "2022 Ladders",
+      "2021 Ladders",
+      "Seasons Ladders (2)",
+      "Seasons Ladders",
+      "2025 Scatter Data",
+      "Scatter Plot",
+      "Ratings Season",
+      "2025",
+      "2024",
+      "2023",
+      "2022",
+      "2021",
+      "L10"
+    ]
+  }
+}
