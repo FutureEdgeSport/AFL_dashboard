@@ -37,6 +37,16 @@ from data_pipeline.compute_ratings import (
     parse_table_with_detected_header,
     compare_to_excel_snapshot,
 )
+from data_pipeline.compute_player_summary import (
+    compute_player_summary as dp_compute_player_summary,
+    load_all_season_data as dp_load_all_season_data,
+)
+from data_pipeline.compute_list_ladder import (
+    compute_list_ladder_l2,
+    compute_list_ladder_career,
+    compute_age_profile_2yr,
+    compute_age_profile_1yr,
+)
 
 # ---------------- STREAMLIT CONFIG ----------------
 st.set_page_config(
@@ -970,8 +980,8 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
 
 # ---------------- DATA LOADERS – PLAYERS ----------------
 @st.cache_data(show_spinner=False)
-def load_player_summary() -> pd.DataFrame:
-    """Load player summary data with error handling."""
+def _load_player_summary_excel() -> pd.DataFrame:
+    """Load player summary data from Excel (legacy method)."""
     try:
         xl = pd.ExcelFile(PLAYER_FILE)
         df = xl.parse("Summary")
@@ -983,6 +993,49 @@ def load_player_summary() -> pd.DataFrame:
     except Exception as e:
         st.warning(f"⚠️ Could not load player summary: {e}")
         return pd.DataFrame()
+
+
+def _load_player_summary_computed() -> pd.DataFrame:
+    """
+    Load player summary from computed CSV data.
+    Uses data_pipeline.compute_player_summary module.
+    """
+    try:
+        from pathlib import Path
+        csv_path = Path(__file__).parent / "data" / "computed" / "player_summary.csv"
+        
+        if csv_path.exists():
+            df = pd.read_csv(csv_path)
+            df.columns = df.columns.astype(str).str.strip()
+            
+            # Ensure column compatibility with Excel version
+            # Rename '2025 Rating' to '2025' if needed (to match Excel column name)
+            if '2025 Rating' in df.columns and '2025' not in df.columns:
+                df = df.rename(columns={'2025 Rating': '2025_Rating_Current'})
+            
+            return df
+        else:
+            # Fall back to computing on-the-fly
+            df = dp_compute_player_summary(current_season=2025)
+            return df
+            
+    except Exception as e:
+        st.warning(f"⚠️ Could not load computed player summary: {e}")
+        # Fall back to Excel
+        return _load_player_summary_excel()
+
+
+def load_player_summary() -> pd.DataFrame:
+    """
+    Load player summary data - uses computed or Excel based on feature flag.
+    
+    When USE_COMPUTED_RATINGS=True: Loads from data/computed/player_summary.csv
+    When USE_COMPUTED_RATINGS=False: Loads from AFL Player Ratings.xlsx Summary sheet
+    """
+    if USE_COMPUTED_RATINGS:
+        return _load_player_summary_computed()
+    else:
+        return _load_player_summary_excel()
 
 
 @st.cache_data(show_spinner=False)

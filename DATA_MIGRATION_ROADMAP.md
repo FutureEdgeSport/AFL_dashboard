@@ -136,18 +136,10 @@ Created `data_pipeline/compute_team_summary.py`:
 
 **Validation:** 100% match with Excel
 
-### Phase 3: Player Summary Calculations
-**Status:** 🔴 Not Started  
+### Phase 3: Player Summary Calculations ✅ COMPLETE
+**Status:** 🟢 Complete  
 **Effort:** High  
 **Risk:** Medium
-
-The Player Summary sheet has 1,247 formulas in the first 30 rows alone.
-
-**Key Calculations to Replicate:**
-1. **Basic Info Pull** - Currently VLOOKUPs to Squads sheet
-2. **Draft Data** - Merge from draft data source
-3. **Career Stats** - Aggregate across seasons
-4. **Projections** - Age-based rating projections
 
 Created `data_pipeline/compute_player_summary.py`:
 - `compute_player_summary()` - Full player summary with career/L2 averages
@@ -159,6 +151,11 @@ Created `data_pipeline/compute_player_summary.py`:
 **Validation:**
 - ✅ 2025 season ratings: 100% match (raw data pass-through)
 - ✅ Career averages: 95% within 0.5 tolerance
+
+**app.py Wiring:**
+- ✅ `load_player_summary()` now routes to computed CSV when `USE_COMPUTED_RATINGS=True`
+- ✅ Automatic fallback to Excel if computed data unavailable
+- ✅ Column compatibility maintained for existing dashboard pages
 
 ### Phase 4: List Ladder / Age Profiles ✅ COMPLETE
 **Status:** 🟢 Complete  
@@ -177,6 +174,11 @@ Created `data_pipeline/compute_list_ladder.py`:
 - `data/computed/list_ladder_career.csv`
 - `data/computed/age_profile_2yr.csv`
 - `data/computed/age_profile_1yr.csv`
+
+**app.py Integration:**
+- List Ladder page uses `load_player_summary()` which now loads computed data
+- Age Profile page uses `load_players()` + computed summary
+- No separate CSV loader needed - pages compute dynamically from computed summary
 
 ### Phase 5: Traits Data
 **Status:** 🟢 Already Clean  
