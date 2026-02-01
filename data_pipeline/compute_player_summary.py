@@ -376,29 +376,90 @@ def compute_cap_values(
     df: pd.DataFrame,
     current_season: int = 2025,
     salary_cap: float = 18_500_000,  # 2025 AFL salary cap estimate
+    min_cap_pct: float = 1.0,  # Minimum cap % (floor value)
 ) -> pd.DataFrame:
     """
     Compute cap value calculations for players.
     
     This replicates the Excel cap % and cap value calculations.
+    Rating % is calculated as: (Rating × Matches) / Team's Total (Rating × Matches)
+    This gives more weight to players who played more games.
+    
+    Args:
+        df: DataFrame with player data including 'Team' and matches columns
+        current_season: Season year to calculate for
+        salary_cap: Total team salary cap
+        min_cap_pct: Minimum cap percentage (floor for all players)
     """
     current_col = str(current_season)
+    matches_col = f"{current_season} Matches"
     
-    # Total ratings in league for current season
-    if current_col in df.columns:
-        total_rating = df[current_col].sum()
-        if total_rating > 0:
-            df["2025 Rating %"] = (df[current_col] / total_rating) * 100
-            df["2025 Cap %"] = df["2025 Rating %"]  # Simplified
-            df["2025 Cap Value"] = (df["2025 Rating %"] / 100) * salary_cap
+    # Calculate 2025 Rating % using Rating × Matches formula
+    if current_col in df.columns and "Team" in df.columns:
+        # Get matches - try various column names
+        matches = None
+        for col in [matches_col, "2025 Matches", "Matches"]:
+            if col in df.columns:
+                matches = df[col].fillna(0)
+                break
+        
+        if matches is not None:
+            # Calculate Rating × Matches for each player
+            df["_rating_x_matches"] = df[current_col].fillna(0) * matches
+            
+            # Calculate team totals for Rating × Matches
+            team_rxm_totals = df.groupby("Team")["_rating_x_matches"].transform("sum")
+            
+            # Calculate player's percentage of their team's total
+            df["2025 Rating %"] = (df["_rating_x_matches"] / team_rxm_totals) * 100
+            
+            # Handle teams with zero total (shouldn't happen, but safety check)
+            df.loc[team_rxm_totals == 0, "2025 Rating %"] = 0
+            
+            # Apply minimum cap percentage floor
+            df["2025 Rating %"] = df["2025 Rating %"].clip(lower=min_cap_pct)
+            
+            # Cleanup temp column
+            df = df.drop(columns=["_rating_x_matches"])
+        else:
+            # Fallback to simple rating / team total if no matches column
+            team_totals = df.groupby("Team")[current_col].transform("sum")
+            df["2025 Rating %"] = (df[current_col] / team_totals) * 100
+            df["2025 Rating %"] = df["2025 Rating %"].clip(lower=min_cap_pct)
+            df.loc[team_totals == 0, "2025 Rating %"] = 0
+        
+        df["2025 Cap %"] = df["2025 Rating %"]
+        df["2025 Cap Value"] = (df["2025 Rating %"] / 100) * salary_cap
     
-    # Last 2 years cap calculation
-    if "Last 2 Average" in df.columns:
-        total_l2 = df["Last 2 Average"].sum()
-        if total_l2 > 0:
-            df["L2 Rating %"] = (df["Last 2 Average"] / total_l2) * 100
-            df["L2 Cap %"] = df["L2 Rating %"]
-            df["Last 2 Years Cap Value"] = (df["L2 Rating %"] / 100) * salary_cap
+    # Last 2 years cap calculation (also using weighted formula)
+    if "Last 2 Average" in df.columns and "Team" in df.columns:
+        # For L2, we use L2 matches if available, otherwise estimate
+        l2_matches_col = "L2 Matches"
+        l2_matches = None
+        
+        if l2_matches_col in df.columns:
+            l2_matches = df[l2_matches_col].fillna(0)
+        elif "Total Matches" in df.columns and matches_col in df.columns:
+            # Estimate L2 matches from total - but this isn't accurate
+            # Better to use the raw L2 average directly
+            pass
+        
+        if l2_matches is not None:
+            df["_l2_rxm"] = df["Last 2 Average"].fillna(0) * l2_matches
+            team_l2_rxm = df.groupby("Team")["_l2_rxm"].transform("sum")
+            df["L2 Rating %"] = (df["_l2_rxm"] / team_l2_rxm) * 100
+            df.loc[team_l2_rxm == 0, "L2 Rating %"] = 0
+            df["L2 Rating %"] = df["L2 Rating %"].clip(lower=min_cap_pct)
+            df = df.drop(columns=["_l2_rxm"])
+        else:
+            # Fallback: use simple L2 average / team total
+            team_l2_totals = df.groupby("Team")["Last 2 Average"].transform("sum")
+            df["L2 Rating %"] = (df["Last 2 Average"] / team_l2_totals) * 100
+            df["L2 Rating %"] = df["L2 Rating %"].clip(lower=min_cap_pct)
+            df.loc[team_l2_totals == 0, "L2 Rating %"] = 0
+        
+        df["L2 Cap %"] = df["L2 Rating %"]
+        df["Last 2 Years Cap Value"] = (df["L2 Rating %"] / 100) * salary_cap
     
     return df
 
