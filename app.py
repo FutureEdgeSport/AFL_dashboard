@@ -2652,16 +2652,19 @@ if page == "Home":
             
             if os.path.exists(team_logo_path):
                 try:
-                    # Display logo
+                    # Display logo centered
                     img = Image.open(team_logo_path)
                     # Resize image to fixed dimensions for consistency
                     img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                    st.image(img_resized, width="content")
+                    # Center the image using columns
+                    _, img_col, _ = st.columns([0.1, 0.8, 0.1])
+                    with img_col:
+                        st.image(img_resized, use_container_width=True)
                     
                     # Add small spacer before button
                     st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                     # Create clickable button
-                    if st.button("Select", key=f"home_team_{team}_{idx}", width="stretch", help=f"Select {team}"):
+                    if st.button("Select", key=f"home_team_{team}_{idx}", use_container_width=True, help=f"Select {team}"):
                         # Set default team in session state
                         st.session_state.default_team = team
                         st.session_state.selected_page = "Team Breakdown"
@@ -2680,16 +2683,19 @@ if page == "Home":
             
             if os.path.exists(team_logo_path):
                 try:
-                    # Display logo
+                    # Display logo centered
                     img = Image.open(team_logo_path)
                     # Resize image to fixed dimensions for consistency
                     img_resized = img.resize((120, 120), Image.Resampling.LANCZOS)
-                    st.image(img_resized, width="content")
+                    # Center the image using columns
+                    _, img_col, _ = st.columns([0.1, 0.8, 0.1])
+                    with img_col:
+                        st.image(img_resized, use_container_width=True)
                     
                     # Add small spacer before button
                     st.markdown('<div style="height: 5px;"></div>', unsafe_allow_html=True)
                     # Create clickable button
-                    if st.button("Select", key=f"home_team_{team}_{idx+9}", width="stretch", help=f"Select {team}"):
+                    if st.button("Select", key=f"home_team_{team}_{idx+9}", use_container_width=True, help=f"Select {team}"):
                         # Set default team in session state
                         st.session_state.default_team = team
                         st.session_state.selected_page = "Team Breakdown"
