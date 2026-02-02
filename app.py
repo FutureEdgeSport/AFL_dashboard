@@ -11113,51 +11113,175 @@ elif page == "IDP":
     
     st.plotly_chart(fig, width="stretch", key="player_spider")
     
-    # Sub-stats breakdown
+    # Sub-stats breakdown - organized by pillar with expandable details
     st.markdown("<h4 style='color:#FFFFFF;margin:24px 0 16px 0;font-weight:900;font-size:18px;'>Contributing Statistics</h4>", unsafe_allow_html=True)
     
     strengths = []
     focus_areas = []
     
-    for substat in substats:
-        if substat not in top_10_position.columns:
-            continue
-        
-        player_val = safe_float(player_data.get(substat))
-        top10_avg = pd.to_numeric(top_10_position[substat], errors="coerce").mean()
-        
-        if player_val is None or pd.isna(top10_avg):
-            continue
-        
-        delta = player_val - top10_avg
-        delta_pct = (delta / top10_avg * 100) if top10_avg != 0 else 0
-        
-        # Determine if strength or focus area
-        if delta_pct >= 10:
-            category = "strength"
-            strengths.append((substat, delta_pct))
-        elif delta_pct <= -10:
-            category = "focus"
-            focus_areas.append((substat, delta_pct))
-        else:
-            category = "neutral"
-        
-        # Color coding
-        border_color = "#00FF00" if delta >= 0 else "#FF6B6B"
-        
-        # Format values based on FC mode
-        if fc_mode:
-            player_val_fc = convert_trait_to_fc_rating(player_val)
-            top10_avg_fc = convert_trait_to_fc_rating(top10_avg)
-            player_val_str = str(player_val_fc) if player_val_fc is not None else "—"
-            top10_avg_str = str(top10_avg_fc) if top10_avg_fc is not None else "—"
-            delta_str = f"{(player_val_fc or 0) - (top10_avg_fc or 0):+d}"
-        else:
-            player_val_str = f"{player_val:.2f}"
-            top10_avg_str = f"{top10_avg:.2f}"
-            delta_str = f"{delta:+.2f}"
-        
-        st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};"><div style="flex:1;"><span style="font-weight:900;font-size:15px;color:#FFFFFF;">{substat}</span></div><div style="display:flex;gap:24px;align-items:center;"><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div><div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div><div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div><div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div></div></div>""", unsafe_allow_html=True)
+    # If Rating is selected, group substats (the 4 pillars) and show their sub-traits in expanders
+    if selected_trait == "Rating":
+        for pillar_name in substats:  # substats = ["Ball Winning", "Ball Use", "Aerial", "Defence"]
+            if pillar_name not in top_10_position.columns:
+                continue
+            
+            pillar_info = trait_pillars.get(pillar_name, {})
+            pillar_substats = pillar_info.get('substats', [])
+            pillar_icon = pillar_info.get('icon', '📊')
+            pillar_color = pillar_info.get('color', '#333333')
+            
+            player_val = safe_float(player_data.get(pillar_name))
+            top10_avg = pd.to_numeric(top_10_position[pillar_name], errors="coerce").mean()
+            
+            if player_val is None or pd.isna(top10_avg):
+                continue
+            
+            delta = player_val - top10_avg
+            delta_pct = (delta / top10_avg * 100) if top10_avg != 0 else 0
+            
+            # Determine if strength or focus area
+            if delta_pct >= 10:
+                category = "strength"
+                strengths.append((pillar_name, delta_pct))
+            elif delta_pct <= -10:
+                category = "focus"
+                focus_areas.append((pillar_name, delta_pct))
+            else:
+                category = "neutral"
+            
+            # Color coding
+            border_color = "#00FF00" if delta >= 0 else "#FF6B6B"
+            
+            # Format values based on FC mode
+            if fc_mode:
+                player_val_fc = convert_trait_to_fc_rating(player_val)
+                top10_avg_fc = convert_trait_to_fc_rating(top10_avg)
+                player_val_str = str(player_val_fc) if player_val_fc is not None else "—"
+                top10_avg_str = str(top10_avg_fc) if top10_avg_fc is not None else "—"
+                delta_str = f"{(player_val_fc or 0) - (top10_avg_fc or 0):+d}"
+            else:
+                player_val_str = f"{player_val:.2f}"
+                top10_avg_str = f"{top10_avg:.2f}"
+                delta_str = f"{delta:+.2f}"
+            
+            # Pillar header row
+            st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};background:{pillar_color}30;">
+                <div style="flex:1;"><span style="font-weight:900;font-size:16px;color:#FFFFFF;">{pillar_icon} {pillar_name}</span></div>
+                <div style="display:flex;gap:24px;align-items:center;">
+                    <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div>
+                    <div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div>
+                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            
+            # Expandable sub-traits for this pillar
+            with st.expander(f"📋 View {pillar_name} Sub-Traits", expanded=False):
+                for substat in pillar_substats:
+                    if substat not in top_10_position.columns:
+                        continue
+                    
+                    sub_player_val = safe_float(player_data.get(substat))
+                    sub_top10_avg = pd.to_numeric(top_10_position[substat], errors="coerce").mean()
+                    
+                    if sub_player_val is None or pd.isna(sub_top10_avg):
+                        continue
+                    
+                    sub_delta = sub_player_val - sub_top10_avg
+                    sub_delta_pct = (sub_delta / sub_top10_avg * 100) if sub_top10_avg != 0 else 0
+                    sub_border_color = "#00FF00" if sub_delta >= 0 else "#FF6B6B"
+                    
+                    if fc_mode:
+                        sub_pv_fc = convert_trait_to_fc_rating(sub_player_val)
+                        sub_ta_fc = convert_trait_to_fc_rating(sub_top10_avg)
+                        sub_pv_str = str(sub_pv_fc) if sub_pv_fc is not None else "—"
+                        sub_ta_str = str(sub_ta_fc) if sub_ta_fc is not None else "—"
+                        sub_delta_str = f"{(sub_pv_fc or 0) - (sub_ta_fc or 0):+d}"
+                    else:
+                        sub_pv_str = f"{sub_player_val:.2f}"
+                        sub_ta_str = f"{sub_top10_avg:.2f}"
+                        sub_delta_str = f"{sub_delta:+.2f}"
+                    
+                    tier, tier_color = get_trait_tier(sub_player_val)
+                    
+                    st.markdown(f"""
+                    <div style='padding:12px 16px;margin:6px 0;background:rgba(255,255,255,0.05);
+                                border-radius:8px;border-left:4px solid {tier_color};display:flex;
+                                justify-content:space-between;align-items:center;'>
+                        <span style='font-weight:700;color:#FFFFFF;font-size:14px;'>{substat}</span>
+                        <div style='display:flex;gap:20px;align-items:center;'>
+                            <div style='text-align:center;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.5);'>You</div>
+                                <div style='font-size:16px;font-weight:900;color:#FFFFFF;'>{sub_pv_str}</div>
+                            </div>
+                            <div style='text-align:center;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Top 10</div>
+                                <div style='font-size:16px;font-weight:900;color:#6495ED;'>{sub_ta_str}</div>
+                            </div>
+                            <div style='text-align:center;min-width:60px;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.5);'>+/-</div>
+                                <div style='font-size:16px;font-weight:900;color:{sub_border_color};'>{sub_delta_str}</div>
+                            </div>
+                            <div style='text-align:center;min-width:60px;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.5);'>%</div>
+                                <div style='font-size:16px;font-weight:900;color:{sub_border_color};'>{sub_delta_pct:+.1f}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+    else:
+        # Specific pillar selected - show its substats directly
+        for substat in substats:
+            if substat not in top_10_position.columns:
+                continue
+            
+            player_val = safe_float(player_data.get(substat))
+            top10_avg = pd.to_numeric(top_10_position[substat], errors="coerce").mean()
+            
+            if player_val is None or pd.isna(top10_avg):
+                continue
+            
+            delta = player_val - top10_avg
+            delta_pct = (delta / top10_avg * 100) if top10_avg != 0 else 0
+            
+            # Determine if strength or focus area
+            if delta_pct >= 10:
+                category = "strength"
+                strengths.append((substat, delta_pct))
+            elif delta_pct <= -10:
+                category = "focus"
+                focus_areas.append((substat, delta_pct))
+            else:
+                category = "neutral"
+            
+            # Color coding
+            border_color = "#00FF00" if delta >= 0 else "#FF6B6B"
+            
+            # Format values based on FC mode
+            if fc_mode:
+                player_val_fc = convert_trait_to_fc_rating(player_val)
+                top10_avg_fc = convert_trait_to_fc_rating(top10_avg)
+                player_val_str = str(player_val_fc) if player_val_fc is not None else "—"
+                top10_avg_str = str(top10_avg_fc) if top10_avg_fc is not None else "—"
+                delta_str = f"{(player_val_fc or 0) - (top10_avg_fc or 0):+d}"
+            else:
+                player_val_str = f"{player_val:.2f}"
+                top10_avg_str = f"{top10_avg:.2f}"
+                delta_str = f"{delta:+.2f}"
+            
+            tier, tier_color = get_trait_tier(player_val)
+            
+            st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};">
+                <div style="flex:1;"><span style="font-weight:900;font-size:15px;color:#FFFFFF;">{substat}</span>
+                    <span style="font-size:12px;color:{tier_color};margin-left:10px;background:{tier_color}20;padding:2px 8px;border-radius:10px;">{tier}</span>
+                </div>
+                <div style="display:flex;gap:24px;align-items:center;">
+                    <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div>
+                    <div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div>
+                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div>
+                </div>
+            </div>""", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -11557,45 +11681,169 @@ elif page == "IDP":
             with col3:
                 st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta_str} ({delta_pct:+.1f}%)</div></div></div>", unsafe_allow_html=True)
         
-        # Sub-stats comparison table
+        # Sub-stats comparison - organized by pillar with expandable details
         st.markdown("<h4 style='color:#FFFFFF;margin:28px 0 16px 0;font-weight:900;font-size:18px;'>Detailed Comparison</h4>", unsafe_allow_html=True)
         
-        # Build table rows
-        comparison_rows = []
-        for substat in comp_substats:
-            if substat not in traits_df.columns:
-                continue
+        if comp_trait == "Rating":
+            # Show pillars with expandable sub-traits
+            for pillar_name in comp_substats:  # comp_substats = ["Ball Winning", "Ball Use", "Aerial", "Defence"]
+                if pillar_name not in traits_df.columns:
+                    continue
+                
+                pillar_info = trait_pillars.get(pillar_name, {})
+                pillar_substats_list = pillar_info.get('substats', [])
+                pillar_icon = pillar_info.get('icon', '📊')
+                pillar_color = pillar_info.get('color', '#333333')
+                
+                p1_val = safe_float(player_data.get(pillar_name))
+                p2_val = safe_float(comp_data.get(pillar_name))
+                
+                if p1_val is None or p2_val is None:
+                    continue
+                
+                delta = p1_val - p2_val
+                delta_color = "#00FF00" if delta > 0 else "#FF6B6B" if delta < 0 else "#FFA500"
+                winner_bg = f"{pillar_color}40"
+                
+                # Format values
+                if fc_mode:
+                    p1_fc = convert_trait_to_fc_rating(p1_val)
+                    p2_fc = convert_trait_to_fc_rating(p2_val)
+                    p1_str = str(p1_fc) if p1_fc is not None else "—"
+                    p2_str = str(p2_fc) if p2_fc is not None else "—"
+                    delta_display = f"{(p1_fc or 0) - (p2_fc or 0):+d}"
+                else:
+                    p1_str = f"{p1_val:.2f}"
+                    p2_str = f"{p2_val:.2f}"
+                    delta_display = f"{delta:+.2f}"
+                
+                # Pillar comparison row
+                p1_display = selected_player_display.split()[-1] if ' ' in selected_player_display else selected_player_display
+                p2_display = comparison_player_display.split()[-1] if ' ' in comparison_player_display else comparison_player_display
+                
+                p1_bg = "rgba(0,255,0,0.2)" if delta > 0 else "transparent"
+                p2_bg = "rgba(0,255,0,0.2)" if delta < 0 else "transparent"
+                
+                st.markdown(f"""
+                <div style='background:{pillar_color}30;border-radius:12px;padding:16px 20px;margin:12px 0;
+                            border-left:5px solid {pillar_color};box-shadow:0 4px 12px rgba(0,0,0,0.3);'>
+                    <div style='display:flex;justify-content:space-between;align-items:center;'>
+                        <span style='font-weight:900;font-size:16px;color:#FFFFFF;'>{pillar_icon} {pillar_name}</span>
+                        <div style='display:flex;gap:24px;align-items:center;'>
+                            <div style='text-align:center;background:{p1_bg};padding:8px 16px;border-radius:8px;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.6);'>{p1_display}</div>
+                                <div style='font-size:20px;font-weight:900;color:#FFFFFF;'>{p1_str}</div>
+                            </div>
+                            <div style='text-align:center;background:{p2_bg};padding:8px 16px;border-radius:8px;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.6);'>{p2_display}</div>
+                                <div style='font-size:20px;font-weight:900;color:#FFFFFF;'>{p2_str}</div>
+                            </div>
+                            <div style='text-align:center;min-width:70px;'>
+                                <div style='font-size:10px;color:rgba(255,255,255,0.5);'>+/-</div>
+                                <div style='font-size:20px;font-weight:900;color:{delta_color};'>{delta_display}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Expandable sub-traits for this pillar
+                with st.expander(f"📋 View {pillar_name} Sub-Trait Comparison", expanded=False):
+                    for substat in pillar_substats_list:
+                        if substat not in traits_df.columns:
+                            continue
+                        
+                        sub_p1_val = safe_float(player_data.get(substat))
+                        sub_p2_val = safe_float(comp_data.get(substat))
+                        
+                        if sub_p1_val is None or sub_p2_val is None:
+                            continue
+                        
+                        sub_delta = sub_p1_val - sub_p2_val
+                        sub_delta_color = "#00FF00" if sub_delta > 0 else "#FF6B6B" if sub_delta < 0 else "#FFA500"
+                        
+                        if fc_mode:
+                            sub_p1_fc = convert_trait_to_fc_rating(sub_p1_val)
+                            sub_p2_fc = convert_trait_to_fc_rating(sub_p2_val)
+                            sub_p1_str = str(sub_p1_fc) if sub_p1_fc is not None else "—"
+                            sub_p2_str = str(sub_p2_fc) if sub_p2_fc is not None else "—"
+                            sub_delta_display = f"{(sub_p1_fc or 0) - (sub_p2_fc or 0):+d}"
+                        else:
+                            sub_p1_str = f"{sub_p1_val:.2f}"
+                            sub_p2_str = f"{sub_p2_val:.2f}"
+                            sub_delta_display = f"{sub_delta:+.2f}"
+                        
+                        sub_p1_bg = "rgba(0,255,0,0.15)" if sub_delta > 0 else "transparent"
+                        sub_p2_bg = "rgba(0,255,0,0.15)" if sub_delta < 0 else "transparent"
+                        
+                        tier1, tier1_color = get_trait_tier(sub_p1_val)
+                        tier2, tier2_color = get_trait_tier(sub_p2_val)
+                        
+                        st.markdown(f"""
+                        <div style='padding:12px 16px;margin:6px 0;background:rgba(255,255,255,0.05);
+                                    border-radius:8px;display:flex;justify-content:space-between;align-items:center;'>
+                            <span style='font-weight:700;color:#FFFFFF;font-size:14px;'>{substat}</span>
+                            <div style='display:flex;gap:20px;align-items:center;'>
+                                <div style='text-align:center;background:{sub_p1_bg};padding:6px 12px;border-radius:6px;min-width:60px;'>
+                                    <div style='font-size:16px;font-weight:900;color:{tier1_color};'>{sub_p1_str}</div>
+                                </div>
+                                <div style='text-align:center;background:{sub_p2_bg};padding:6px 12px;border-radius:6px;min-width:60px;'>
+                                    <div style='font-size:16px;font-weight:900;color:{tier2_color};'>{sub_p2_str}</div>
+                                </div>
+                                <div style='text-align:center;min-width:50px;'>
+                                    <div style='font-size:16px;font-weight:900;color:{sub_delta_color};'>{sub_delta_display}</div>
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+        else:
+            # Specific pillar selected - show simple comparison table
+            comparison_rows = []
+            for substat in comp_substats:
+                if substat not in traits_df.columns:
+                    continue
+                
+                p1_val = safe_float(player_data.get(substat))
+                p2_val = safe_float(comp_data.get(substat))
+                
+                if p1_val is None or p2_val is None:
+                    continue
+                
+                delta = p1_val - p2_val
+                delta_color = "#00FF00" if delta > 0 else "#FF6B6B" if delta < 0 else "#FFA500"
+                
+                # Highlight winner
+                p1_bg = "rgba(0,255,0,0.2)" if delta > 0 else "transparent"
+                p2_bg = "rgba(0,255,0,0.2)" if delta < 0 else "transparent"
+                
+                # Get tier for display
+                tier1, tier1_color = get_trait_tier(p1_val)
+                tier2, tier2_color = get_trait_tier(p2_val)
+                
+                # Format values based on FC mode
+                if fc_mode:
+                    p1_fc = convert_trait_to_fc_rating(p1_val)
+                    p2_fc = convert_trait_to_fc_rating(p2_val)
+                    p1_str = str(p1_fc) if p1_fc is not None else "—"
+                    p2_str = str(p2_fc) if p2_fc is not None else "—"
+                    delta_fc = (p1_fc or 0) - (p2_fc or 0)
+                    delta_display = f"{delta_fc:+d}"
+                else:
+                    p1_str = f"{p1_val:.2f}"
+                    p2_str = f"{p2_val:.2f}"
+                    delta_display = f"{delta:+.2f}"
+                
+                comparison_rows.append(f"""<tr>
+                    <td style='text-align:left;font-weight:600;'>{substat}
+                        <span style='font-size:11px;color:{tier1_color};margin-left:8px;background:{tier1_color}20;padding:2px 6px;border-radius:8px;'>{tier1}</span>
+                    </td>
+                    <td style='background:{p1_bg};font-weight:700;color:{tier1_color};'>{p1_str}</td>
+                    <td style='background:{p2_bg};font-weight:700;color:{tier2_color};'>{p2_str}</td>
+                    <td style='color:{delta_color};font-weight:700;'>{delta_display}</td>
+                </tr>""")
             
-            p1_val = safe_float(player_data.get(substat))
-            p2_val = safe_float(comp_data.get(substat))
-            
-            if p1_val is None or p2_val is None:
-                continue
-            
-            delta = p1_val - p2_val
-            delta_color = "#00FF00" if delta > 0 else "#FF6B6B" if delta < 0 else "#FFA500"
-            
-            # Highlight winner
-            p1_bg = "rgba(0,255,0,0.2)" if delta > 0 else "transparent"
-            p2_bg = "rgba(0,255,0,0.2)" if delta < 0 else "transparent"
-            
-            # Format values based on FC mode
-            if fc_mode:
-                p1_fc = convert_trait_to_fc_rating(p1_val)
-                p2_fc = convert_trait_to_fc_rating(p2_val)
-                p1_str = str(p1_fc) if p1_fc is not None else "—"
-                p2_str = str(p2_fc) if p2_fc is not None else "—"
-                delta_fc = (p1_fc or 0) - (p2_fc or 0)
-                delta_display = f"{delta_fc:+d}"
-            else:
-                p1_str = f"{p1_val:.2f}"
-                p2_str = f"{p2_val:.2f}"
-                delta_display = f"{delta:+.2f}"
-            
-            comparison_rows.append(f"<tr><td style='text-align:left;'>{substat}</td><td style='background:{p1_bg};'>{p1_str}</td><td style='background:{p2_bg};'>{p2_str}</td><td style='color:{delta_color};'>{delta_display}</td></tr>")
-        
-        if comparison_rows:
-            st.markdown(f"<table class='fe-table fe-table-compact'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
+            if comparison_rows:
+                st.markdown(f"<table class='fe-table fe-table-compact'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -11634,12 +11882,16 @@ elif page == "IDP":
         if strength_list:
             all_strength_details[pillar_name] = sorted(strength_list, key=lambda x: x[3], reverse=True)
     
-    if focus_areas:
+    # Check if there are any focus areas or strengths across ALL pillars
+    has_any_focus = any(all_focus_details.values())
+    has_any_strengths = any(all_strength_details.values())
+    
+    if has_any_focus:
         st.markdown("<h4 style='color:#FF6B6B;font-weight:900;font-size:18px;margin-top:16px;'>🎯 Priority Focus Areas:</h4>", unsafe_allow_html=True)
         
-        # Group focus areas by pillar
+        # Display focus areas by pillar using all_focus_details
         for pillar_name, pillar_info in trait_pillars.items():
-            pillar_focus = [f for f in focus_areas if f[0] in pillar_info['substats']]
+            pillar_focus = all_focus_details.get(pillar_name, [])
             if pillar_focus:
                 pillar_val = safe_float(player_data.get(pillar_name))
                 pillar_tier, pillar_color = get_trait_tier(pillar_val)
@@ -11661,59 +11913,54 @@ elif page == "IDP":
                 """, unsafe_allow_html=True)
                 
                 with st.expander(f"📋 View {pillar_name} Sub-Trait Analysis", expanded=False):
-                    for substat, pct in pillar_focus:
-                        # Find the detailed data
-                        details = next(((s, pv, ta, dp) for s, pv, ta, dp in all_focus_details.get(pillar_name, []) if s == substat), None)
-                        if details:
-                            _, player_val, top10_avg, delta_pct = details
-                            
-                            # Format values
-                            if fc_mode:
-                                pv_fc = convert_trait_to_fc_rating(player_val)
-                                ta_fc = convert_trait_to_fc_rating(top10_avg)
-                                pv_str = str(pv_fc) if pv_fc is not None else "—"
-                                ta_str = str(ta_fc) if ta_fc is not None else "—"
-                            else:
-                                pv_str = f"{player_val:.2f}"
-                                ta_str = f"{top10_avg:.2f}"
-                            
-                            tier, tier_color = get_trait_tier(player_val)
-                            if fc_mode:
-                                tier = get_fc_rating_label(convert_trait_to_fc_rating(player_val))
-                                tier_color = "#00FF00" if tier == "Elite" else "#90EE90" if tier == "Above Average" else "#FFA500" if tier == "Below Average" else "#FF6B6B"
-                            
-                            st.markdown(f"""
-                            <div style='padding:14px 18px;margin:8px 0;background:rgba(255,255,255,0.05);
-                                        border-radius:10px;border-left:4px solid {tier_color};'>
-                                <div style='display:flex;justify-content:space-between;align-items:center;'>
-                                    <span style='font-weight:700;color:#FFFFFF;font-size:15px;'>{substat}</span>
-                                    <div style='display:flex;gap:16px;align-items:center;'>
-                                        <div style='text-align:center;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>You</div>
-                                            <div style='font-size:18px;font-weight:900;color:#FFFFFF;'>{pv_str}</div>
-                                        </div>
-                                        <div style='text-align:center;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Top 10</div>
-                                            <div style='font-size:18px;font-weight:900;color:#6495ED;'>{ta_str}</div>
-                                        </div>
-                                        <div style='text-align:center;min-width:70px;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Gap</div>
-                                            <div style='font-size:18px;font-weight:900;color:#FF6B6B;'>{delta_pct:.1f}%</div>
-                                        </div>
+                    for substat, player_val, top10_avg, delta_pct in pillar_focus:
+                        # Format values
+                        if fc_mode:
+                            pv_fc = convert_trait_to_fc_rating(player_val)
+                            ta_fc = convert_trait_to_fc_rating(top10_avg)
+                            pv_str = str(pv_fc) if pv_fc is not None else "—"
+                            ta_str = str(ta_fc) if ta_fc is not None else "—"
+                        else:
+                            pv_str = f"{player_val:.2f}"
+                            ta_str = f"{top10_avg:.2f}"
+                        
+                        tier, tier_color = get_trait_tier(player_val)
+                        if fc_mode:
+                            tier = get_fc_rating_label(convert_trait_to_fc_rating(player_val))
+                            tier_color = "#00FF00" if tier == "Elite" else "#90EE90" if tier == "Above Average" else "#FFA500" if tier == "Below Average" else "#FF6B6B"
+                        
+                        st.markdown(f"""
+                        <div style='padding:14px 18px;margin:8px 0;background:rgba(255,255,255,0.05);
+                                    border-radius:10px;border-left:4px solid {tier_color};'>
+                            <div style='display:flex;justify-content:space-between;align-items:center;'>
+                                <span style='font-weight:700;color:#FFFFFF;font-size:15px;'>{substat}</span>
+                                <div style='display:flex;gap:16px;align-items:center;'>
+                                    <div style='text-align:center;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>You</div>
+                                        <div style='font-size:18px;font-weight:900;color:#FFFFFF;'>{pv_str}</div>
+                                    </div>
+                                    <div style='text-align:center;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Top 10</div>
+                                        <div style='font-size:18px;font-weight:900;color:#6495ED;'>{ta_str}</div>
+                                    </div>
+                                    <div style='text-align:center;min-width:70px;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Gap</div>
+                                        <div style='font-size:18px;font-weight:900;color:#FF6B6B;'>{delta_pct:.1f}%</div>
                                     </div>
                                 </div>
-                                <div style='margin-top:10px;color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;'>
-                                    Focus on improving {substat.lower()} to reach elite {player_position} standards.
-                                </div>
                             </div>
-                            """, unsafe_allow_html=True)
+                            <div style='margin-top:10px;color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;'>
+                                Focus on improving {substat.lower()} to reach elite {player_position} standards.
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
     
-    if strengths:
+    if has_any_strengths:
         st.markdown("<h4 style='color:#00FF00;font-weight:900;margin-top:28px;font-size:18px;'>💪 Key Strengths to Maintain:</h4>", unsafe_allow_html=True)
         
-        # Group strengths by pillar
+        # Display strengths by pillar using all_strength_details
         for pillar_name, pillar_info in trait_pillars.items():
-            pillar_strengths = [s for s in strengths if s[0] in pillar_info['substats']]
+            pillar_strengths = all_strength_details.get(pillar_name, [])
             if pillar_strengths:
                 pillar_val = safe_float(player_data.get(pillar_name))
                 pillar_tier, pillar_color = get_trait_tier(pillar_val)
@@ -11735,50 +11982,45 @@ elif page == "IDP":
                 """, unsafe_allow_html=True)
                 
                 with st.expander(f"📋 View {pillar_name} Sub-Trait Analysis", expanded=False):
-                    for substat, pct in pillar_strengths:
-                        # Find the detailed data
-                        details = next(((s, pv, ta, dp) for s, pv, ta, dp in all_strength_details.get(pillar_name, []) if s == substat), None)
-                        if details:
-                            _, player_val, top10_avg, delta_pct = details
-                            
-                            # Format values
-                            if fc_mode:
-                                pv_fc = convert_trait_to_fc_rating(player_val)
-                                ta_fc = convert_trait_to_fc_rating(top10_avg)
-                                pv_str = str(pv_fc) if pv_fc is not None else "—"
-                                ta_str = str(ta_fc) if ta_fc is not None else "—"
-                            else:
-                                pv_str = f"{player_val:.2f}"
-                                ta_str = f"{top10_avg:.2f}"
-                            
-                            tier, tier_color = get_trait_tier(player_val)
-                            if fc_mode:
-                                tier = get_fc_rating_label(convert_trait_to_fc_rating(player_val))
-                                tier_color = "#00FF00" if tier == "Elite" else "#90EE90" if tier == "Above Average" else "#FFA500" if tier == "Below Average" else "#FF6B6B"
-                            
-                            st.markdown(f"""
-                            <div style='padding:14px 18px;margin:8px 0;background:rgba(255,255,255,0.05);
-                                        border-radius:10px;border-left:4px solid {tier_color};'>
-                                <div style='display:flex;justify-content:space-between;align-items:center;'>
-                                    <span style='font-weight:700;color:#FFFFFF;font-size:15px;'>{substat}</span>
-                                    <div style='display:flex;gap:16px;align-items:center;'>
-                                        <div style='text-align:center;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>You</div>
-                                            <div style='font-size:18px;font-weight:900;color:#FFFFFF;'>{pv_str}</div>
-                                        </div>
-                                        <div style='text-align:center;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Top 10</div>
-                                            <div style='font-size:18px;font-weight:900;color:#6495ED;'>{ta_str}</div>
-                                        </div>
-                                        <div style='text-align:center;min-width:70px;'>
-                                            <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Lead</div>
-                                            <div style='font-size:18px;font-weight:900;color:#00FF00;'>+{delta_pct:.1f}%</div>
-                                        </div>
+                    for substat, player_val, top10_avg, delta_pct in pillar_strengths:
+                        # Format values
+                        if fc_mode:
+                            pv_fc = convert_trait_to_fc_rating(player_val)
+                            ta_fc = convert_trait_to_fc_rating(top10_avg)
+                            pv_str = str(pv_fc) if pv_fc is not None else "—"
+                            ta_str = str(ta_fc) if ta_fc is not None else "—"
+                        else:
+                            pv_str = f"{player_val:.2f}"
+                            ta_str = f"{top10_avg:.2f}"
+                        
+                        tier, tier_color = get_trait_tier(player_val)
+                        if fc_mode:
+                            tier = get_fc_rating_label(convert_trait_to_fc_rating(player_val))
+                            tier_color = "#00FF00" if tier == "Elite" else "#90EE90" if tier == "Above Average" else "#FFA500" if tier == "Below Average" else "#FF6B6B"
+                        
+                        st.markdown(f"""
+                        <div style='padding:14px 18px;margin:8px 0;background:rgba(255,255,255,0.05);
+                                    border-radius:10px;border-left:4px solid {tier_color};'>
+                            <div style='display:flex;justify-content:space-between;align-items:center;'>
+                                <span style='font-weight:700;color:#FFFFFF;font-size:15px;'>{substat}</span>
+                                <div style='display:flex;gap:16px;align-items:center;'>
+                                    <div style='text-align:center;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>You</div>
+                                        <div style='font-size:18px;font-weight:900;color:#FFFFFF;'>{pv_str}</div>
+                                    </div>
+                                    <div style='text-align:center;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Top 10</div>
+                                        <div style='font-size:18px;font-weight:900;color:#6495ED;'>{ta_str}</div>
+                                    </div>
+                                    <div style='text-align:center;min-width:70px;'>
+                                        <div style='font-size:10px;color:rgba(255,255,255,0.5);'>Lead</div>
+                                        <div style='font-size:18px;font-weight:900;color:#00FF00;'>+{delta_pct:.1f}%</div>
                                     </div>
                                 </div>
-                                <div style='margin-top:10px;color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;'>
-                                    ✓ Excellent {substat.lower()} performance. Maintain this competitive advantage.
-                                </div>
+                            </div>
+                            <div style='margin-top:10px;color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;'>
+                                ✓ Excellent {substat.lower()} performance. Maintain this competitive advantage.
+                            </div>
                             </div>
                             """, unsafe_allow_html=True)
     
