@@ -1300,7 +1300,7 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             df["Team_Full"] = ""
         df["Team_Full"] = df["Team_Full"].astype(str).str.strip()
 
-        # Player_Full
+        # Player_Full - Fix Sydney abbreviated names (e.g., "E. Gulden" -> "Errol Gulden")
         if "Player_Full" not in df.columns:
             if "Player" in df.columns:
                 df["Player_Full"] = df["Player"].astype(str).str.strip()
@@ -1308,6 +1308,34 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
                 st.error(f"ENRICHED traits sheet '{season}' is missing Player/Player_Full.")
                 return pd.DataFrame()
         df["Player_Full"] = df["Player_Full"].astype(str).str.strip()
+        
+        # Fix Sydney player names by matching surnames with player summary
+        try:
+            sydney_mask = df["Team_Full"] == "Sydney"
+            if sydney_mask.any():
+                # Load player summary to get full names
+                player_summary_path = "data/computed/player_summary.csv"
+                if os.path.exists(player_summary_path):
+                    player_summary = pd.read_csv(player_summary_path)
+                    sydney_players = player_summary[player_summary["Team"] == "Sydney"]["Player"].tolist()
+                    
+                    # Create surname -> full name mapping
+                    def extract_surname(name):
+                        parts = str(name).strip().split()
+                        return parts[-1] if len(parts) >= 2 else name
+                    
+                    surname_to_full = {extract_surname(n): n for n in sydney_players}
+                    
+                    # Apply mapping to Sydney players
+                    def fix_sydney_name(row):
+                        if row["Team_Full"] == "Sydney":
+                            surname = extract_surname(row["Player_Full"])
+                            return surname_to_full.get(surname, row["Player_Full"])
+                        return row["Player_Full"]
+                    
+                    df["Player_Full"] = df.apply(fix_sydney_name, axis=1)
+        except Exception:
+            pass  # If name fixing fails, continue with original names
 
         # Position_Full
         if "Position_Full" not in df.columns:
