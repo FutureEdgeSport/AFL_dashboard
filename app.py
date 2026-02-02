@@ -902,7 +902,17 @@ def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.
     try:
         xl = pd.ExcelFile(TEAM_FILE)
         block = "L10" if last10 else "Season"
-        return load_team_ladders_computed(xl, season, block)
+        df = load_team_ladders_computed(xl, season, block)
+        
+        # Map column names to match Excel format (app expects "Team Rating", computed uses "Overall Rating")
+        column_mapping = {
+            "Overall Rating": "Team Rating",
+            "Overall Rating Rank": "Team Rating Rank",
+            "Overall Rank": "Team Rating Rank",
+        }
+        df = df.rename(columns=column_mapping)
+        
+        return df
     except FileNotFoundError:
         st.error(f"❌ Team ratings file not found: {TEAM_FILE}")
         return pd.DataFrame()
