@@ -11439,63 +11439,102 @@ elif page == "IDP":
     
     st.markdown("<div class='idp-card'><h3 style='color:#FFFFFF;margin:0 0 20px 0;font-weight:900;font-size:22px;'>Compare Against Specific Player</h3>", unsafe_allow_html=True)
     
-    # Team filter for comparison - default to most similar player's team
-    comparison_teams = sorted(traits_df["Team_Full"].dropna().unique().tolist())
-    default_team_idx = 0
-    if most_similar_team and most_similar_team in comparison_teams:
-        default_team_idx = comparison_teams.index(most_similar_team)
+    # Season selector for comparison - allows comparing across seasons
+    st.markdown("<p style='color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:8px;'>Compare against players from different seasons to track development over time.</p>", unsafe_allow_html=True)
     
-    # Use dynamic keys based on selected player so selections reset when player changes
-    comparison_team = st.selectbox(
-        "Select Team",
-        comparison_teams,
-        index=default_team_idx,
-        key=f"idp_comparison_team_{selected_player}"
-    )
+    comp_col1, comp_col2 = st.columns(2)
     
-    # Filter players by selected team
-    team_players_df = traits_df[traits_df["Team_Full"] == comparison_team]
+    with comp_col1:
+        # Season filter for comparison player
+        comparison_season = st.selectbox(
+            "Comparison Season",
+            AVAILABLE_SEASONS,
+            index=0,  # Default to current season
+            key=f"idp_comparison_season_{selected_player}"
+        )
+    
+    # Load traits data for the comparison season
+    if comparison_season != CURRENT_SEASON:
+        comp_traits_df = load_traits(comparison_season)
+        if comp_traits_df is None or comp_traits_df.empty:
+            st.warning(f"No traits data available for {comparison_season}. Using current season.")
+            comp_traits_df = traits_df
+            comparison_season = CURRENT_SEASON
+    else:
+        comp_traits_df = traits_df
+    
+    with comp_col2:
+        # Team filter for comparison - default to most similar player's team
+        comparison_teams = sorted(comp_traits_df["Team_Full"].dropna().unique().tolist())
+        default_team_idx = 0
+        if most_similar_team and most_similar_team in comparison_teams:
+            default_team_idx = comparison_teams.index(most_similar_team)
+        
+        comparison_team = st.selectbox(
+            "Select Team",
+            comparison_teams,
+            index=default_team_idx,
+            key=f"idp_comparison_team_{selected_player}_{comparison_season}"
+        )
+    
+    # Filter players by selected team from the comparison season's data
+    team_players_df = comp_traits_df[comp_traits_df["Team_Full"] == comparison_team]
     team_players = sorted(team_players_df["Player_Full"].dropna().unique().tolist())
     
-    # Pre-select most similar player if they're on the selected team
+    # Pre-select most similar player if they're on the selected team (only for current season)
     default_player_idx = 0
-    if comparison_team == most_similar_team and most_similar_player and most_similar_player in team_players:
+    if comparison_season == CURRENT_SEASON and comparison_team == most_similar_team and most_similar_player and most_similar_player in team_players:
         default_player_idx = team_players.index(most_similar_player)
     
     # Select comparison player from filtered team
     comparison_player = st.selectbox(
-        "Select Player to Compare",
+        f"Select Player to Compare ({comparison_season})",
         team_players,
         index=default_player_idx,
-        key=f"idp_comparison_player_{selected_player}"
+        key=f"idp_comparison_player_{selected_player}_{comparison_season}"
     )
     
     if comparison_player:
-        comp_data = traits_df[traits_df["Player_Full"] == comparison_player].iloc[0]
+        comp_data = comp_traits_df[comp_traits_df["Player_Full"] == comparison_player].iloc[0]
         comp_position = str(comp_data.get("Position_Full", ""))
         comp_team = str(comp_data.get("Team_Full", ""))
         comp_age = comp_data.get("Age", "N/A")
         
+        # Check if comparing same player across seasons
+        is_same_player = (comparison_player == selected_player) or (
+            selected_player_display and comparison_player and 
+            selected_player_display.lower() in comparison_player.lower() or 
+            comparison_player.lower() in selected_player_display.lower()
+        )
+        
         # Normalize names for display
         comparison_player_display = get_full_player_name(comparison_player, comp_team)
         comp_team_display = normalize_team_display(comp_team)
+        
+        # Add season to display if comparing across seasons
+        if comparison_season != CURRENT_SEASON:
+            comparison_player_display_with_season = f"{comparison_player_display} ({comparison_season})"
+            selected_player_display_with_season = f"{selected_player_display} ({CURRENT_SEASON})"
+        else:
+            comparison_player_display_with_season = comparison_player_display
+            selected_player_display_with_season = selected_player_display
         
         # Calculate similarity percentage between the two players
         all_trait_cols = ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence", 
                          "Stoppage", "Contest", "Power", "Receives",
                          "Handballing", "Kicking", "Goal Kicking", "Connecting",
                          "Marking", "Contested", "Moks", "Ruck",
-                         "Pressure", "Tackling", "Intercepting", "1v1"]
+                         "Pressure", "Tackling", "Intercepting", "Neutralise"]
         
         similarity_scores = []
         for col in all_trait_cols:
-            if col not in traits_df.columns:
+            if col not in comp_traits_df.columns:
                 continue
             p1_val = safe_float(player_data.get(col))
             p2_val = safe_float(comp_data.get(col))
             if p1_val is None or p2_val is None:
                 continue
-            # Get column range for normalization
+            # Get column range for normalization (use current season for consistent scaling)
             col_vals = pd.to_numeric(traits_df[col], errors="coerce")
             col_min = col_vals.min()
             col_max = col_vals.max()
@@ -11513,6 +11552,17 @@ elif page == "IDP":
         else:
             player_similarity = 0
         
+        # Determine comparison type label
+        if is_same_player and comparison_season != CURRENT_SEASON:
+            comparison_type = "Season Progress"
+            vs_label = "THEN vs NOW"
+        elif comparison_season != CURRENT_SEASON:
+            comparison_type = "Cross-Season"
+            vs_label = "VS"
+        else:
+            comparison_type = "Head-to-Head"
+            vs_label = "VS"
+        
         # Comparison header with photos
         col_p1, col_vs, col_p2 = st.columns([2, 1, 2])
         
@@ -11521,24 +11571,25 @@ elif page == "IDP":
             _, photo_col, _ = st.columns([0.5, 1, 0.5])
             with photo_col:
                 display_player_photo(selected_player_display, st, size=200, team_name=selected_team_display)
-            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{selected_player_display}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{selected_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{player_position} • Age {player_age}</p></div>", unsafe_allow_html=True)
+            season_badge_p1 = f"<span style='background:#00FF00;color:#000;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:8px;'>{CURRENT_SEASON}</span>" if comparison_season != CURRENT_SEASON else ""
+            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{selected_player_display}{season_badge_p1}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{selected_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{player_position} • Age {player_age}</p></div>", unsafe_allow_html=True)
         
         with col_vs:
             st.markdown(f"""
             <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;'>
-                <div style='font-size:48px;font-weight:900;color:rgba(255,255,255,0.5);text-shadow:2px 2px 6px rgba(0,0,0,0.5);'>VS</div>
+                <div style='font-size:48px;font-weight:900;color:rgba(255,255,255,0.5);text-shadow:2px 2px 6px rgba(0,0,0,0.5);'>{vs_label}</div>
                 <div style='background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%); 
                             border-radius: 12px; padding: 16px 20px; margin-top: 16px;
                             border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.3);text-align:center;'>
                     <div style='font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); 
                                 text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;'>
-                        Similarity
+                        {"Growth" if is_same_player and comparison_season != CURRENT_SEASON else "Similarity"}
                     </div>
                     <div style='font-size: 32px; font-weight: 900; color: #ffffff;'>
                         {player_similarity:.1f}%
                     </div>
                     <div style='font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px;'>
-                        {len(similarity_scores)} traits
+                        {comparison_type}
                     </div>
                 </div>
             </div>
@@ -11549,7 +11600,8 @@ elif page == "IDP":
             _, photo_col, _ = st.columns([0.5, 1, 0.5])
             with photo_col:
                 display_player_photo(comparison_player_display, st, size=200, team_name=comp_team_display)
-            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{comparison_player_display}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{comp_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{comp_position} • Age {comp_age}</p></div>", unsafe_allow_html=True)
+            season_badge_p2 = f"<span style='background:#FF6B6B;color:#FFF;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:8px;'>{comparison_season}</span>" if comparison_season != CURRENT_SEASON else ""
+            st.markdown(f"<div style='text-align:center;margin-top:12px;'><h4 style='color:#FFFFFF;margin:0;font-size:20px;font-weight:900;'>{comparison_player_display}{season_badge_p2}</h4><p style='color:rgba(255,255,255,0.7);margin:4px 0;font-size:14px;font-weight:600;'>{comp_team_display}</p><p style='color:rgba(255,255,255,0.6);margin:4px 0;font-size:13px;'>{comp_position} • Age {comp_age}</p></div>", unsafe_allow_html=True)
         
         st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
         
@@ -11574,22 +11626,24 @@ elif page == "IDP":
         # Create spider chart
         fig_comp = go.Figure()
         
-        # Add player 1 trace
+        # Add player 1 trace (current season)
+        p1_legend_name = f"{selected_player_display.split()[0]} ({CURRENT_SEASON})" if comparison_season != CURRENT_SEASON else selected_player_display.split()[0]
         fig_comp.add_trace(go.Scatterpolar(
             r=player1_values + [player1_values[0]],
             theta=trait_categories + [trait_categories[0]],
             fill='toself',
-            name=selected_player_display.split()[0],
+            name=p1_legend_name,
             line=dict(color='#00FF00', width=3),
             fillcolor='rgba(0, 255, 0, 0.2)'
         ))
         
-        # Add player 2 trace
+        # Add player 2 trace (comparison season)
+        p2_legend_name = f"{comparison_player_display.split()[0]} ({comparison_season})" if comparison_season != CURRENT_SEASON else comparison_player_display.split()[0]
         fig_comp.add_trace(go.Scatterpolar(
             r=player2_values + [player2_values[0]],
             theta=trait_categories + [trait_categories[0]],
             fill='toself',
-            name=comparison_player_display.split()[0],
+            name=p2_legend_name,
             line=dict(color='#FF6B6B', width=3),
             fillcolor='rgba(255, 107, 107, 0.2)'
         ))
