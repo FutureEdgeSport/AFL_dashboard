@@ -59,7 +59,7 @@ def load_all_season_data(seasons: list[int] = None) -> dict[int, pd.DataFrame]:
     return season_data
 
 
-def load_squads_data(season: int = 2025) -> pd.DataFrame:
+def load_squads_data(season: int = 2026) -> pd.DataFrame:
     """Load squad/roster data for a season."""
     csv_path = DATA_DIR / "raw" / "player" / f"squads_{season}.csv"
     if csv_path.exists():
@@ -182,7 +182,7 @@ def compute_last_n_years_average(
 
 
 def compute_player_summary(
-    current_season: int = 2025,
+    current_season: int = 2026,
     rating_col: str = "RatingPoints_Avg"
 ) -> pd.DataFrame:
     """
@@ -378,8 +378,8 @@ def compute_rankings(df: pd.DataFrame, current_season: int = 2025) -> pd.DataFra
 
 def compute_cap_values(
     df: pd.DataFrame,
-    current_season: int = 2025,
-    salary_cap: float = 18_500_000,  # 2025 AFL salary cap estimate
+    current_season: int = 2026,
+    salary_cap: float = 19_000_000,  # 2026 AFL salary cap estimate
     min_cap_pct: float = 1.0,  # Minimum cap % (floor value)
 ) -> pd.DataFrame:
     """

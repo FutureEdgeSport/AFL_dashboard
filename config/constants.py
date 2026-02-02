@@ -10,9 +10,9 @@ from typing import Dict, List, Tuple
 # ============================================================================
 # SEASON CONFIGURATION
 # ============================================================================
-CURRENT_SEASON: int = 2025
-AVAILABLE_SEASONS: List[int] = [2025, 2024, 2023, 2022]
-DEFAULT_SEASON: int = 2025
+CURRENT_SEASON: int = 2026
+AVAILABLE_SEASONS: List[int] = [2026, 2025, 2024, 2023]
+DEFAULT_SEASON: int = 2026
 
 # ============================================================================
 # FILE PATHS

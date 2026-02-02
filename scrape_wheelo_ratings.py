@@ -86,12 +86,12 @@ URLS = {
 
 # Season button texts and corresponding sheet names
 # NOTE: Sheet names must NOT conflict with existing sheets in the Excel files!
-# The app uses: "2025 Summary", "2025 Team Summary", "2025 Ladders", etc.
+# The app uses: "2026 Summary", "2026 Team Summary", "2026 Ladders", etc.
 # We use "Wheelo" prefix to keep scraped data separate.
 SEASONS = {
-    "2025": {"team_sheet": "Wheelo 2025 Season", "player_sheet": "Wheelo 2025 Season"},
-    "Last 10 games": {"team_sheet": "Wheelo 2025 L10", "player_sheet": "Wheelo 2025 L10"},
-    "Last 5 games": {"team_sheet": "Wheelo 2025 L5", "player_sheet": "Wheelo 2025 L5"}
+    "2026": {"team_sheet": "Wheelo 2026 Season", "player_sheet": "Wheelo 2026 Season"},
+    "Last 10 games": {"team_sheet": "Wheelo 2026 L10", "player_sheet": "Wheelo 2026 L10"},
+    "Last 5 games": {"team_sheet": "Wheelo 2026 L5", "player_sheet": "Wheelo 2026 L5"}
 }
 
 

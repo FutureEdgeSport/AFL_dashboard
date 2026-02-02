@@ -224,7 +224,7 @@ def compute_category_ranking(
 
 def compute_team_summary(
     raw_df: pd.DataFrame,
-    season: int = 2025
+    season: int = 2026
 ) -> pd.DataFrame:
     """
     Compute complete team summary from raw data.
@@ -292,7 +292,7 @@ def compute_team_ladders(
 
 def load_and_compute_summary(
     data_dir: Path,
-    season: int = 2025
+    season: int = 2026
 ) -> pd.DataFrame:
     """Load raw data and compute summary."""
     raw_path = data_dir / "raw" / "team" / f"team_stats_{season}.csv"
@@ -321,8 +321,8 @@ if __name__ == "__main__":
     data_dir = Path(__file__).parent.parent / "data"
     
     try:
-        print("\nLoading raw team data for 2025...")
-        summary_df = load_and_compute_summary(data_dir, 2025)
+        print("\nLoading raw team data for 2026...")
+        summary_df = load_and_compute_summary(data_dir, 2026)
         
         print(f"\n✅ Computed summary for {len(summary_df)} teams")
         print(f"Columns: {list(summary_df.columns)}")
@@ -343,8 +343,8 @@ if __name__ == "__main__":
         output_dir = data_dir / "computed"
         output_dir.mkdir(exist_ok=True)
         
-        summary_df.to_csv(output_dir / "team_summary_2025.csv", index=False)
-        ladder_df.to_csv(output_dir / "team_ladders_2025.csv", index=False)
+        summary_df.to_csv(output_dir / "team_summary_2026.csv", index=False)
+        ladder_df.to_csv(output_dir / "team_ladders_2026.csv", index=False)
         print(f"\n✅ Saved to {output_dir}/")
         
     except Exception as e:

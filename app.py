@@ -1016,7 +1016,7 @@ def _load_player_summary_computed() -> pd.DataFrame:
             return df
         else:
             # Fall back to computing on-the-fly
-            df = dp_compute_player_summary(current_season=2025)
+            df = dp_compute_player_summary(current_season=CURRENT_SEASON)
             return df
             
     except Exception as e:
@@ -6142,7 +6142,7 @@ elif page == "Player Profile":
             current_rating=latest_rating_val,
             historical_ratings=historical_ratings,
             all_players_df=players_full,
-            current_season=2025,
+            current_season=CURRENT_SEASON,
             projection_years=5,
             confidence_band=0.15,
         )
