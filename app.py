@@ -904,13 +904,32 @@ def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.
         block = "L10" if last10 else "Season"
         df = load_team_ladders_computed(xl, season, block)
         
-        # Map column names to match Excel format (app expects "Team Rating", computed uses "Overall Rating")
-        column_mapping = {
-            "Overall Rating": "Team Rating",
-            "Overall Rating Rank": "Team Rating Rank",
-            "Overall Rank": "Team Rating Rank",
-        }
-        df = df.rename(columns=column_mapping)
+        # Calculate Team Rating from the 5 pillars (average of rankings, then ranked)
+        # Pillars: Ball Winning, Ball Movement, Scoring, Defence, Pressure
+        pillar_cols = [
+            "Ball Winning Ranking",
+            "Ball Movement Ranking", 
+            "Scoring Ranking",
+            "Defence Ranking",
+            "Pressure Ranking"
+        ]
+        
+        # Check which pillar columns exist
+        available_pillars = [col for col in pillar_cols if col in df.columns]
+        
+        if available_pillars:
+            # Calculate Team Rating as average of the 5 pillar rankings
+            df["Team Rating"] = df[available_pillars].mean(axis=1).round(1)
+            # Rank teams (higher rating = better = rank 1)
+            df["Team Rating Rank"] = df["Team Rating"].rank(ascending=False, method='min').astype(int)
+        else:
+            # Fallback to Overall Rating if pillars not available
+            column_mapping = {
+                "Overall Rating": "Team Rating",
+                "Overall Rating Rank": "Team Rating Rank",
+                "Overall Rank": "Team Rating Rank",
+            }
+            df = df.rename(columns=column_mapping)
         
         return df
     except FileNotFoundError:
