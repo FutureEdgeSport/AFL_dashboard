@@ -310,12 +310,16 @@ def compute_player_summary(
     # Add squads data (jumper number, etc) if available
     if not squads_df.empty and "Player" in squads_df.columns:
         squad_cols = ["Player"]
-        for col in ["Jumper", "Jersey", "Number"]:
+        for col in ["Jumper", "JumperNumber", "Jersey", "Number"]:
             if col in squads_df.columns:
                 squad_cols.append(col)
         if len(squad_cols) > 1:
+            squads_merge = squads_df[squad_cols].drop_duplicates("Player")
+            # Standardize column name to "Jumper"
+            if "JumperNumber" in squads_merge.columns and "Jumper" not in squads_merge.columns:
+                squads_merge = squads_merge.rename(columns={"JumperNumber": "Jumper"})
             summary_df = summary_df.merge(
-                squads_df[squad_cols].drop_duplicates("Player"),
+                squads_merge,
                 on="Player",
                 how="left"
             )
