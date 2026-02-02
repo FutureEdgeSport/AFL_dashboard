@@ -1235,6 +1235,8 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     Assumes ENRICHED is the source of truth:
     - does NOT use player_registry / player_uid
     - guarantees: Player_Full, Team_Full, Position_Full, Season exist
+    
+    Falls back to 2025 if requested season (e.g., 2026) doesn't exist yet.
     """
     TEAM_CODE_TO_NAME = {
         "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
@@ -1255,7 +1257,22 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     }
 
     try:
-        df = pd.read_excel("2025 Traits ENRICHED.xlsx", sheet_name=str(season))
+        # Check available sheets and fall back if needed
+        xl = pd.ExcelFile("2025 Traits ENRICHED.xlsx")
+        available_sheets = xl.sheet_names
+        actual_season = season
+        
+        # If requested season doesn't exist, fall back to most recent available
+        if str(season) not in available_sheets:
+            # Find most recent season available
+            numeric_sheets = [int(s) for s in available_sheets if s.isdigit()]
+            if numeric_sheets:
+                actual_season = max(numeric_sheets)
+            else:
+                st.error(f"No valid season sheets found in traits file")
+                return pd.DataFrame()
+        
+        df = pd.read_excel(xl, sheet_name=str(actual_season))
         df.columns = [str(c).strip() for c in df.columns]
 
         # Season
@@ -1263,16 +1280,24 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             df["Season"] = season
         df["Season"] = pd.to_numeric(df["Season"], errors="coerce").fillna(season).astype(int)
 
-        # Team_Full
-        if "Team_Full" not in df.columns:
-            if "Team" in df.columns:
-                df["Team_Full"] = (
-                    df["Team"].astype(str).str.strip()
-                    .map(TEAM_CODE_TO_NAME)
-                    .fillna(df["Team"].astype(str).str.strip())
+        # Team_Full - ALWAYS apply mapping to fix any team codes (e.g., SYFC -> Sydney)
+        if "Team" in df.columns:
+            team_mapped = (
+                df["Team"].astype(str).str.strip()
+                .map(TEAM_CODE_TO_NAME)
+                .fillna(df["Team"].astype(str).str.strip())
+            )
+            # If Team_Full exists, also check and fix any codes there
+            if "Team_Full" in df.columns:
+                existing_full = df["Team_Full"].astype(str).str.strip()
+                # Replace any values that are still codes (in the mapping keys)
+                df["Team_Full"] = existing_full.apply(
+                    lambda x: TEAM_CODE_TO_NAME.get(x, x) if x in TEAM_CODE_TO_NAME else x
                 )
             else:
-                df["Team_Full"] = ""
+                df["Team_Full"] = team_mapped
+        elif "Team_Full" not in df.columns:
+            df["Team_Full"] = ""
         df["Team_Full"] = df["Team_Full"].astype(str).str.strip()
 
         # Player_Full
