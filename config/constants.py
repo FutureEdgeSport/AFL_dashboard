@@ -22,6 +22,9 @@ PLAYER_FILE: str = "AFL Player Ratings.xlsx"
 TRAITS_FILE: str = "2025 Traits ENRICHED.xlsx"
 LADDERS_FILE: str = "afl_ladders_2011_2025.xlsx"
 
+# Consolidated Historical Data (2012-2025) - Single source of truth
+HISTORICAL_FILE: str = "data/AFL_Historical_2012_2025.xlsx"
+
 LOGO_FOLDER: str = "team_logos"
 PLAYER_PHOTO_FOLDER: str = "player_photos"
 
@@ -188,23 +191,26 @@ class UIConfig:
     # Font stack
     FONT_FAMILY: str = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     
-    # Color thresholds (percentile-based)
-    PERCENTILE_ELITE: float = 0.85      # Top 15%
-    PERCENTILE_GOOD: float = 0.60       # 60-85%
-    PERCENTILE_AVERAGE: float = 0.35    # 35-60%
-    # Below 35% = below average
+    # Color thresholds (percentile-based) - 5 equal tiers of 20% each
+    PERCENTILE_ELITE: float = 0.80          # Top 20% (80-100%)
+    PERCENTILE_GOOD: float = 0.60           # 60-80%
+    PERCENTILE_AVERAGE: float = 0.40        # 40-60%
+    PERCENTILE_BELOW_AVERAGE: float = 0.20  # 20-40%
+    # Below 20% = Poor
     
-    # Rank thresholds (for 18 teams)
-    RANK_ELITE: int = 4       # 1st-4th
-    RANK_GOOD: int = 9        # 5th-9th
-    RANK_AVERAGE: int = 14    # 10th-14th
+    # Rank thresholds (for 18 teams) - 5 tiers
+    RANK_ELITE: int = 4           # 1st-4th (Top 20%)
+    RANK_GOOD: int = 7            # 5th-7th 
+    RANK_AVERAGE: int = 11        # 8th-11th
+    RANK_BELOW_AVERAGE: int = 15  # 12th-15th
     # 15th-18th = below average
     
-    # Standard colors
-    COLOR_ELITE: str = "#008000"          # Dark Green
-    COLOR_GOOD: str = "#90EE90"           # Light Green
-    COLOR_AVERAGE: str = "#FFA500"        # Orange
-    COLOR_BELOW_AVERAGE: str = "#FF0000"  # Red
+    # Standard colors - 5 tiers
+    COLOR_ELITE: str = "#008000"          # Dark Green (Top 20%)
+    COLOR_GOOD: str = "#90EE90"           # Light Green (20-40%)
+    COLOR_AVERAGE: str = "#FFD700"        # Gold/Yellow (40-60%)
+    COLOR_BELOW_AVERAGE: str = "#FFA500"  # Orange (60-80%)
+    COLOR_POOR: str = "#FF0000"           # Red (Bottom 20%)
     
     # Text colors for backgrounds
     TEXT_ON_DARK: str = "#FFFFFF"
@@ -488,12 +494,18 @@ UNIFIED_TABLE_CSS = """
 }
 
 .fe-table .cell-average {
-    background: #FFA500 !important;
+    background: #FFD700 !important;
     color: #000000 !important;
     font-weight: 800;
 }
 
 .fe-table .cell-below {
+    background: #FFA500 !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+}
+
+.fe-table .cell-poor {
     background: #FF0000 !important;
     color: #FFFFFF !important;
     font-weight: 800;
@@ -1261,9 +1273,11 @@ def get_rating_color(
             elif percentile >= UIConfig.PERCENTILE_GOOD:
                 return UIConfig.COLOR_GOOD, UIConfig.TEXT_ON_LIGHT
             elif percentile >= UIConfig.PERCENTILE_AVERAGE:
-                return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_DARK
-            else:
+                return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_LIGHT
+            elif percentile >= UIConfig.PERCENTILE_BELOW_AVERAGE:
                 return UIConfig.COLOR_BELOW_AVERAGE, UIConfig.TEXT_ON_DARK
+            else:
+                return UIConfig.COLOR_POOR, UIConfig.TEXT_ON_DARK
         
         elif scheme == "rank":
             # Convert percentile to rank (1-18)
@@ -1273,9 +1287,11 @@ def get_rating_color(
             elif rank <= UIConfig.RANK_GOOD:
                 return UIConfig.COLOR_GOOD, UIConfig.TEXT_ON_LIGHT
             elif rank <= UIConfig.RANK_AVERAGE:
-                return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_DARK
-            else:
+                return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_LIGHT
+            elif rank <= UIConfig.RANK_BELOW_AVERAGE:
                 return UIConfig.COLOR_BELOW_AVERAGE, UIConfig.TEXT_ON_DARK
+            else:
+                return UIConfig.COLOR_POOR, UIConfig.TEXT_ON_DARK
         
         # Default fallback
         return "#666666", "#FFFFFF"
@@ -1294,19 +1310,28 @@ def get_rank_color(rank: int, total: int = 18) -> Tuple[str, str]:
         
     Returns:
         Tuple of (background_color, text_color)
+        
+    5-Tier System (equal 20% bands):
+        - Elite: 1-4 (Top 20%)
+        - Good: 5-7 (20-40%)
+        - Average: 8-11 (40-60%)
+        - Below Average: 12-15 (60-80%)
+        - Poor: 16-18 (Bottom 20%)
     """
     if rank is None or total is None or total == 0:
         return "#666666", "#FFFFFF"
     
-    # Calculate which quartile
-    if rank <= 4:
+    # 5-tier system based on rank thresholds
+    if rank <= UIConfig.RANK_ELITE:  # 1-4
         return UIConfig.COLOR_ELITE, UIConfig.TEXT_ON_DARK
-    elif rank <= 9:
+    elif rank <= UIConfig.RANK_GOOD:  # 5-7
         return UIConfig.COLOR_GOOD, UIConfig.TEXT_ON_LIGHT
-    elif rank <= 14:
-        return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_DARK
-    else:
+    elif rank <= UIConfig.RANK_AVERAGE:  # 8-11
+        return UIConfig.COLOR_AVERAGE, UIConfig.TEXT_ON_LIGHT
+    elif rank <= UIConfig.RANK_BELOW_AVERAGE:  # 12-15
         return UIConfig.COLOR_BELOW_AVERAGE, UIConfig.TEXT_ON_DARK
+    else:  # 16-18
+        return UIConfig.COLOR_POOR, UIConfig.TEXT_ON_DARK
 
 
 # ============================================================================

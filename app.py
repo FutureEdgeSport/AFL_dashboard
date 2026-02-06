@@ -48,6 +48,47 @@ from data_pipeline.compute_list_ladder import (
     compute_age_profile_1yr,
 )
 
+# Import Historical Data Module (consolidated 2012-2025 data)
+try:
+    from data_pipeline.historical_data import (
+        load_player_stats_historical,
+        load_traits_historical,
+        load_team_stats_historical,
+        load_player_registry,
+        load_all_player_stats_historical,
+        load_all_traits_historical,
+        load_all_team_stats_historical,
+        get_player_dob,
+        get_player_draft_info,
+        get_player_contract_expiry,
+        get_player_career_stats,
+        get_player_career_traits,
+        get_team_history,
+        get_available_seasons as historical_get_available_seasons,
+        historical_workbook_available,
+        is_historical_season,
+        clear_historical_cache,
+    )
+    HISTORICAL_DATA_AVAILABLE = True
+except ImportError:
+    HISTORICAL_DATA_AVAILABLE = False
+    # Create stub functions so code doesn't break
+    def historical_workbook_available(): return False
+    def is_historical_season(s): return False
+    def load_player_registry(): return pd.DataFrame()
+    def get_player_dob(n): return None
+    def get_player_draft_info(n): return {}
+    def get_player_contract_expiry(n): return None
+
+# Import Traits API integration (with graceful fallback if not available)
+try:
+    from traits_api import load_traits_cache, load_dob_cache
+    TRAITS_API_AVAILABLE = True
+except ImportError:
+    TRAITS_API_AVAILABLE = False
+    load_traits_cache = None
+    load_dob_cache = None
+
 # ---------------- STREAMLIT CONFIG ----------------
 st.set_page_config(
     page_title="FutureEdge AFL Dashboard",
@@ -716,11 +757,17 @@ def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_na
 # Set to True to use computed ratings (future default), False to use Excel
 USE_COMPUTED_RATINGS = True  # ✅ ENABLED - Using Python-computed data from CSV files
 
+# Feature flag for using consolidated historical workbook
+# Set to True to read historical data (<=2025) from AFL_Historical_2012_2025.xlsx
+# Set to False to use original Excel files (legacy behavior)
+USE_HISTORICAL_WORKBOOK = True  # ✅ ENABLED - Using consolidated historical data
+
 def get_data_source_info() -> dict:
     """Return information about current data source configuration."""
     return {
         "mode": "computed" if USE_COMPUTED_RATINGS else "excel",
         "description": "Python-computed from raw data" if USE_COMPUTED_RATINGS else "Excel formulas (legacy)",
+        "historical_mode": "consolidated" if (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()) else "individual_files",
         "team_file": TEAM_FILE,
         "player_file": PLAYER_FILE,
         "traits_file": TRAITS_FILE,
@@ -783,17 +830,25 @@ def convert_df_traits_to_fc(df, trait_columns=None):
 
 
 def get_fc_rating_label(value):
-    """Get tier label for FC-style rating (50-99 scale)."""
+    """Get tier label for FC-style rating (50-99 scale) - 5 tier system."""
     try:
         val = int(value) if value is not None else 0
     except (ValueError, TypeError):
         return ""
     
-    if val >= 85:
+    # 5-tier system with equal 20% bands (50-99 scale = 49 point range)
+    # Elite: 90-99 (top 20%)
+    # Good: 80-89 (20-40%)
+    # Average: 70-79 (40-60%)
+    # Below Average: 60-69 (60-80%)
+    # Poor: 50-59 (bottom 20%)
+    if val >= 90:
         return "Elite"
-    elif val >= 75:
-        return "Above Average"
-    elif val >= 65:
+    elif val >= 80:
+        return "Good"
+    elif val >= 70:
+        return "Average"
+    elif val >= 60:
         return "Below Average"
     else:
         return "Poor"
@@ -1095,49 +1150,67 @@ def load_players(season: int) -> pd.DataFrame:
     """
     Player Ratings loader (AFL Player Ratings.xlsx per-season sheets).
     This should NOT enforce traits columns.
+    Falls back to previous season if requested season is empty/missing.
     """
-    try:
-        xl = pd.ExcelFile(PLAYER_FILE)
-        df = xl.parse(str(season))
-        df.columns = df.columns.astype(str).str.strip()
-        df = _normalise_rating_column(df)
+    def _load_season(s: int) -> pd.DataFrame:
+        try:
+            xl = pd.ExcelFile(PLAYER_FILE)
+            if str(s) not in xl.sheet_names:
+                return pd.DataFrame()
+            df = xl.parse(str(s))
+            df.columns = df.columns.astype(str).str.strip()
+            df = _normalise_rating_column(df)
 
-        cols = [
-            "Player",
-            "Team",
-            "Age",
-            "Age_Decimal",
-            "Position",
-            "Matches",
-            "RatingPoints_Avg",
-            "CoachesVotes_Avg",
-            "TimeOnGround",
-            "Height",
-            "Height_cm",
-            "Jumper",
-            "Jersey",
-            "Number",
-            "Guernsey",
-            "No",
-        ]
-        existing = [c for c in cols if c in df.columns]
-        df = df[existing].copy()
+            cols = [
+                "Player",
+                "Team",
+                "Age",
+                "Age_Decimal",
+                "Position",
+                "Matches",
+                "RatingPoints_Avg",
+                "CoachesVotes_Avg",
+                "TimeOnGround",
+                "Height",
+                "Height_cm",
+                "Jumper",
+                "Jersey",
+                "Number",
+                "Guernsey",
+                "No",
+            ]
+            existing = [c for c in cols if c in df.columns]
+            if not existing or "Player" not in existing:
+                return pd.DataFrame()
+            df = df[existing].copy()
 
-        # clean key columns
-        if "Player" in df.columns:
-            df["Player"] = df["Player"].astype(str).str.strip()
-        if "Team" in df.columns:
-            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
-        if "Position" in df.columns:
-            df["Position"] = df["Position"].astype(str).str.strip()
+            # clean key columns
+            if "Player" in df.columns:
+                df["Player"] = df["Player"].astype(str).str.strip()
+            if "Team" in df.columns:
+                df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+            if "Position" in df.columns:
+                df["Position"] = df["Position"].astype(str).str.strip()
 
-        return df
-    except FileNotFoundError:
-        st.error(f"❌ Player ratings file not found: {PLAYER_FILE}")
-        return pd.DataFrame()
-    except Exception as e:
-        st.warning(f"⚠️ Could not load player data for {season}: {e}")
-        return pd.DataFrame()
+            return df
+        except FileNotFoundError:
+            return pd.DataFrame()
+        except Exception:
+            return pd.DataFrame()
+    
+    # Try requested season first
+    df = _load_season(season)
+    
+    # If empty and season is 2026, fall back to 2025
+    if df.empty and season == 2026:
+        df = _load_season(2025)
+        if not df.empty:
+            st.info("ℹ️ 2026 data not yet available. Showing 2025 season data.")
+    
+    if df.empty:
+        st.warning(f"⚠️ Could not load player data for {season}")
+    
+    return df
 
 
 @st.cache_data(show_spinner=False)
@@ -1227,10 +1300,93 @@ def load_full_squad(season: int) -> pd.DataFrame:
 
 
 # ---------------- DATA LOADERS – TRAITS (ENRICHED source of truth) ----------------
+
+def _load_traits_api_cache() -> dict:
+    """
+    Load cached Traits API data. Returns empty dict if not available.
+    """
+    if not TRAITS_API_AVAILABLE:
+        return {}
+    try:
+        cache = load_traits_cache()
+        return cache.get('players', {})
+    except Exception:
+        return {}
+
+
+def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
+    """
+    Enhance Excel traits data with API data where available.
+    API data is considered more current/accurate when available.
+    Falls back to Excel data for any missing values.
+    
+    Args:
+        df: DataFrame from Excel with traits data
+        api_cache: Dict of player_name -> traits dict from API
+        
+    Returns:
+        Enhanced DataFrame with API data merged in
+    """
+    if not api_cache:
+        return df
+    
+    # Map API trait column names to Excel column names
+    API_TO_EXCEL = {
+        'Overall_Rating': 'Rating',
+        'Ball Winning_Rating': 'Ball Winning',
+        'Ball Use_Rating': 'Ball Use',
+        'Aerial_Rating': 'Aerial',
+        'Defence_Rating': 'Defence',
+        # Sub-metrics
+        'Ball Winning_Stoppage': 'Stoppage',
+        'Ball Winning_Contest': 'Contest',
+        'Ball Winning_Power': 'Power',
+        'Ball Winning_Receives': 'Receives',
+        'Ball Use_Handballing': 'Handballing',
+        'Ball Use_Kicking': 'Kicking',
+        'Ball Use_Goal Kicking': 'Goal Kicking',
+        'Ball Use_Connecting': 'Connecting',
+        'Aerial_Marking': 'Marking',
+        'Aerial_Contested': 'Contested',
+        'Aerial_Moks': 'Moks',
+        'Aerial_Ruck': 'Ruck',
+        'Defence_Pressure': 'Pressure',
+        'Defence_Tackling': 'Tackling',
+        'Defence_Intercepting': 'Intercepting',
+        'Defence_Neutralise': 'Neutralise',
+    }
+    
+    updated_count = 0
+    
+    for idx, row in df.iterrows():
+        player_name = row.get('Player_Full') or row.get('Player', '')
+        
+        # Try to find in API cache
+        api_data = api_cache.get(player_name)
+        if not api_data:
+            continue
+        
+        # Update each trait column from API if available
+        for api_col, excel_col in API_TO_EXCEL.items():
+            if excel_col in df.columns and api_col in api_data:
+                api_val = api_data[api_col]
+                if api_val is not None and not pd.isna(api_val):
+                    df.at[idx, excel_col] = api_val
+        
+        updated_count += 1
+    
+    return df
+
+
 @st.cache_data(show_spinner=False)
 def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """
     Load ENRICHED traits for a season.
+    
+    Enhanced with Traits API data where available:
+    - Loads Excel as baseline (source of truth for structure/all players)
+    - Overlays API data for players where available (more current ratings)
+    - Falls back to Excel for any players not in API cache
 
     Assumes ENRICHED is the source of truth:
     - does NOT use player_registry / player_uid
@@ -1337,24 +1493,107 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         except Exception:
             pass  # If name fixing fails, continue with original names
 
-        # Position_Full
-        if "Position_Full" not in df.columns:
-            if "Position" in df.columns:
-                pos_abbrev = df["Position"].astype(str).str.strip()
-                df["Position_Full"] = pos_abbrev.map(POSITION_ABBREV_TO_FULL).fillna(pos_abbrev)
-            else:
-                df["Position_Full"] = ""
+        # Position_Full - ALWAYS remap from Position column to ensure consistency
+        # The source data may have Position_Full but with incomplete mappings
+        if "Position" in df.columns:
+            pos_abbrev = df["Position"].astype(str).str.strip()
+            df["Position_Full"] = pos_abbrev.map(POSITION_ABBREV_TO_FULL).fillna(pos_abbrev)
+        elif "Position_Full" not in df.columns:
+            df["Position_Full"] = ""
         df["Position_Full"] = df["Position_Full"].astype(str).str.strip()
 
         # clean obvious junk strings
         for c in ["Player_Full", "Team_Full", "Position_Full"]:
             df[c] = df[c].replace({"nan": "", "None": ""})
 
+        # Enhance with Traits API data where available
+        # ONLY for current/recent seasons - API returns latest ratings only,
+        # so applying to historical seasons would overwrite correct historical data
+        # Apply to 2025+ since that's when we have API data
+        if actual_season >= 2025:
+            api_cache = _load_traits_api_cache()
+            if api_cache:
+                df = _enhance_traits_with_api(df, api_cache)
+
         return df
 
     except Exception as e:
         st.error(f"Error loading ENRICHED traits for {season}: {e}")
         return pd.DataFrame()
+
+
+# ============================================================================
+# HISTORICAL DATA ACCESS HELPERS
+# ============================================================================
+# These functions provide access to consolidated historical data (2012-2025)
+# from the single source of truth workbook, while falling back to original
+# data sources if the workbook is unavailable or the feature is disabled.
+
+def get_enriched_player_data(player_name: str) -> dict:
+    """
+    Get enriched player data including DOB, draft info, and contract expiry.
+    Uses historical workbook if available, otherwise returns empty dict.
+    
+    This function ADDS data - it doesn't change any existing functionality.
+    """
+    if not (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()):
+        return {}
+    
+    result = {}
+    
+    # Get DOB
+    dob = get_player_dob(player_name)
+    if dob:
+        result['DOB'] = dob
+    
+    # Get draft info
+    draft_info = get_player_draft_info(player_name)
+    if draft_info:
+        result.update(draft_info)
+    
+    # Get contract expiry
+    contract_expiry = get_player_contract_expiry(player_name)
+    if contract_expiry:
+        result['Contract_Expiry'] = contract_expiry
+    
+    return result
+
+
+def get_enriched_player_career(player_name: str) -> pd.DataFrame:
+    """
+    Get full career history for a player from historical workbook.
+    Includes all seasons from 2012-2025 where the player has stats.
+    
+    Returns empty DataFrame if workbook unavailable or player not found.
+    """
+    if not (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()):
+        return pd.DataFrame()
+    
+    return get_player_career_stats(player_name)
+
+
+def get_team_historical_data(team_name: str) -> pd.DataFrame:
+    """
+    Get all historical team stats from consolidated workbook.
+    
+    Returns empty DataFrame if workbook unavailable.
+    """
+    if not (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()):
+        return pd.DataFrame()
+    
+    return get_team_history(team_name)
+
+
+def get_all_player_registry_data() -> pd.DataFrame:
+    """
+    Get the full player registry with DOB, draft, contract info.
+    
+    Returns empty DataFrame if workbook unavailable.
+    """
+    if not (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()):
+        return pd.DataFrame()
+    
+    return load_player_registry()
 
 
 # ---------------- ATTRIBUTE STRUCTURE HELPERS (TEAM SUMMARY) ----------------
@@ -1502,9 +1741,12 @@ def load_player_name_mapping():
             name_map[full_name.lower()] = full_name
             
             # Create initial + surname mapping (e.g., "J. Dawson" -> "Jordan Dawson")
+            # Also handles multi-part surnames like "Tom De Koning" -> "T. De Koning"
             parts = full_name.split()
             if len(parts) >= 2:
-                initial_surname = f"{parts[0][0]}. {parts[-1]}"
+                first_name = parts[0]
+                surname = " ".join(parts[1:])  # Handle multi-part surnames
+                initial_surname = f"{first_name[0]}. {surname}"
                 name_map[initial_surname] = full_name
                 name_map[initial_surname.lower()] = full_name
                 
@@ -1517,6 +1759,37 @@ def load_player_name_mapping():
         return name_map
     except Exception:
         return {}
+
+
+def resolve_player_full_name(abbreviated_name: str, team_name: str | None = None) -> str:
+    """Resolve abbreviated player names (e.g., 'T. De Koning') to full names (e.g., 'Tom De Koning')."""
+    if not isinstance(abbreviated_name, str):
+        return abbreviated_name
+    
+    name_map = load_player_name_mapping()
+    team_player_map = name_map.get('__team_player_map__', {})
+    
+    # Normalize team name for lookup
+    def normalize_team(team):
+        team = str(team).strip().lower()
+        if 'sydney' in team or team in ['syfc', 'sfc']:
+            return 'sydney'
+        if 'gws' in team or 'giants' in team:
+            return 'gws'
+        if 'bulldogs' in team or team in ['wbfc']:
+            return 'western bulldogs'
+        return team.replace(' ', '').replace('fc', '')
+    
+    # Try team-aware lookup first
+    if team_name and team_player_map:
+        norm_team = normalize_team(team_name)
+        team_key = f"{norm_team}_{abbreviated_name.strip().lower()}"
+        if team_key in team_player_map:
+            return team_player_map[team_key]
+    
+    # Fall back to regular name mapping
+    resolved = name_map.get(abbreviated_name.strip(), name_map.get(abbreviated_name.strip().lower(), abbreviated_name.strip()))
+    return resolved
 
 
 def get_player_photo_path(player_name: str, team_name: str | None = None) -> str | None:
@@ -1604,32 +1877,46 @@ def display_player_photo(player_name: str, container, size: int = 160, use_conta
 
 # ---------------- RATING COLOUR HELPERS ----------------
 def rating_colour_for_value(v: float, values: pd.Series) -> tuple[str, str]:
+    """Return colour based on percentile - 5 tier system.
+    
+    5-Tier System (equal 20% bands):
+        - Elite: Top 20% (80-100%) - Dark Green
+        - Good: 60-80% - Light Green
+        - Average: 40-60% - Gold
+        - Below Average: 20-40% - Orange
+        - Poor: Bottom 20% (0-20%) - Red
+    """
     vals = pd.to_numeric(values, errors="coerce").dropna()
     if len(vals) == 0 or pd.isna(v):
         return "#333333", "white"
 
     perc = (vals <= v).mean()
-    if perc >= 0.85:
-        return "#008000", "white"
+    if perc >= 0.80:
+        return "#008000", "white"   # Elite - Dark Green
     elif perc >= 0.60:
-        return "#90EE90", "black"
-    elif perc >= 0.35:
-        return "#FFA500", "white"
+        return "#90EE90", "black"   # Good - Light Green
+    elif perc >= 0.40:
+        return "#FFD700", "black"   # Average - Gold
+    elif perc >= 0.20:
+        return "#FFA500", "white"   # Below Average - Orange
     else:
-        return "#FF0000", "white"
+        return "#FF0000", "white"   # Poor - Red
 
 
 # ---------------- PLAYER TRAITS HISTORY TABLE HELPERS ----------------
 def _opacity_from_pct(pct: float) -> float:
+    """Map percentile to opacity for visual intensity - 5 tier system."""
     if pd.isna(pct):
-        return 0.25
-    if pct >= 0.85:
+        return 0.20
+    if pct >= 0.80:  # Elite
         return 1.0
-    if pct >= 0.65:
-        return 0.75
-    if pct >= 0.45:
-        return 0.50
-    return 0.25
+    if pct >= 0.60:  # Good
+        return 0.80
+    if pct >= 0.40:  # Average
+        return 0.60
+    if pct >= 0.20:  # Below Average
+        return 0.40
+    return 0.20      # Poor
 
 
 def build_player_traits_history_table(
@@ -1766,14 +2053,17 @@ def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, s
     position = team_data["Position"].iloc[0]
     try:
         pos_int = int(position)
+        # 5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)
         if pos_int <= 4:
-            color = "#006400"   # dark green
-        elif pos_int <= 9:
-            color = "#90EE90"   # light green
-        elif pos_int <= 14:
-            color = "#FFA500"   # orange
+            color = "#008000"   # Elite - Dark Green
+        elif pos_int <= 7:
+            color = "#90EE90"   # Good - Light Green
+        elif pos_int <= 11:
+            color = "#FFD700"   # Average - Gold
+        elif pos_int <= 15:
+            color = "#FFA500"   # Below Average - Orange
         else:
-            color = "#FF0000"   # red
+            color = "#FF0000"   # Poor - Red
         return get_ordinal_suffix(pos_int), pos_int, color
     except (ValueError, TypeError):
         return str(position), None, "#888888"
@@ -1814,14 +2104,17 @@ def get_ladder_percentage(team_name: str, season: int) -> tuple[str, int | None,
             break
 
     if pct_rank is not None:
+        # 5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)
         if pct_rank <= 4:
-            color = "#006400"
-        elif pct_rank <= 9:
-            color = "#90EE90"
-        elif pct_rank <= 14:
-            color = "#FFA500"
+            color = "#008000"   # Elite - Dark Green
+        elif pct_rank <= 7:
+            color = "#90EE90"   # Good - Light Green
+        elif pct_rank <= 11:
+            color = "#FFD700"   # Average - Gold
+        elif pct_rank <= 15:
+            color = "#FFA500"   # Below Average - Orange
         else:
-            color = "#FF0000"
+            color = "#FF0000"   # Poor - Red
     else:
         color = "#888888"
 
@@ -1885,7 +2178,15 @@ def map_age_to_band(age_val) -> str:
 
 
 def get_rating_color_team_context(rating_value, df_team, rating_col):
-    """Return colour based on percentile of rating_value within df_team[rating_col]."""
+    """Return colour based on percentile of rating_value within df_team[rating_col].
+    
+    5-Tier System (equal 20% bands):
+        - Elite: Top 20% (80-100%)
+        - Good: 60-80%
+        - Average: 40-60%
+        - Below Average: 20-40%
+        - Poor: Bottom 20% (0-20%)
+    """
     try:
         ratings = pd.to_numeric(df_team[rating_col], errors="coerce").dropna()
         if len(ratings) == 0 or pd.isna(rating_value):
@@ -1893,14 +2194,16 @@ def get_rating_color_team_context(rating_value, df_team, rating_col):
 
         percentile = (ratings <= rating_value).mean()
 
-        if percentile >= 0.85:
-            return "#008000", "white"
+        if percentile >= 0.80:
+            return "#008000", "white"   # Elite - Dark Green
         elif percentile >= 0.60:
-            return "#90EE90", "black"
-        elif percentile >= 0.35:
-            return "#FFA500", "white"
+            return "#90EE90", "black"   # Good - Light Green
+        elif percentile >= 0.40:
+            return "#FFD700", "black"   # Average - Gold
+        elif percentile >= 0.20:
+            return "#FFA500", "white"   # Below Average - Orange
         else:
-            return "#FF0000", "white"
+            return "#FF0000", "white"   # Poor - Red
     except Exception:
         return "#333333", "white"
 
@@ -2030,20 +2333,30 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         all_ratings = pd.to_numeric(all_teams_df[rating_col], errors="coerce").dropna()
         
         def get_rating_points(rating_val, all_ratings_clean):
-            """Convert rating to points based on percentile (same as List Ladder)."""
+            """Convert rating to points based on percentile - 5 tier system.
+            
+            5-Tier System (equal 20% bands):
+                - Elite: Top 20% = 4 points
+                - Good: 60-80% = 3 points
+                - Average: 40-60% = 2 points
+                - Below Average: 20-40% = 1 point
+                - Poor: Bottom 20% = 0 points
+            """
             if pd.isna(rating_val):
                 return 0
             
             percentile = (all_ratings_clean <= rating_val).mean()
             
-            if percentile >= 0.85:
-                return 3  # dark green - top 15%
+            if percentile >= 0.80:
+                return 4    # Elite - top 20%
             elif percentile >= 0.60:
-                return 1  # light green - top 40%
-            elif percentile >= 0.35:
-                return 0.5  # orange - top 65%
+                return 3    # Good - 60-80%
+            elif percentile >= 0.40:
+                return 2    # Average - 40-60%
+            elif percentile >= 0.20:
+                return 1    # Below Average - 20-40%
             else:
-                return 0  # red - bottom group
+                return 0    # Poor - bottom 20%
         
         # Get unique teams
         teams = all_teams_df["Team"].dropna().unique()
@@ -2118,16 +2431,19 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
         return f"{n}{suffix}"
     
-    # Helper function to get ranking color (same as Team Breakdown)
+    # Helper function to get ranking color - 5 tier system
     def get_ranking_color(rank, total=18):
+        """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank <= 4:
-            return "#006400"  # dark green
-        elif rank <= 9:
-            return "#90EE90"  # light green
-        elif rank <= 14:
-            return "#FFA500"  # orange
+            return "#008000"   # Elite - Dark Green
+        elif rank <= 7:
+            return "#90EE90"   # Good - Light Green
+        elif rank <= 11:
+            return "#FFD700"   # Average - Gold
+        elif rank <= 15:
+            return "#FFA500"   # Below Average - Orange
         else:
-            return "#FF0000"  # red
+            return "#FF0000"   # Poor - Red
 
     # build HTML table with rankings - PROFESSIONAL BROADCAST STYLE
     html = []
@@ -2144,7 +2460,8 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             rank, total, avg = age_band_rankings[band]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
-            text_color = "black" if color == "#90EE90" else "white"
+            # Use black text on light backgrounds (Light Green and Gold)
+            text_color = "black" if color in ("#90EE90", "#FFD700") else "white"
             ranking_html = f"<div style='margin-top:10px;'><span style='display:inline-block;background-color:{color};color:{text_color};padding:10px 20px;border-radius:10px;font-weight:900;font-size:1.3em;box-shadow:0 4px 12px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);'>{ordinal}</span></div>"
         
         html.append(f"<th style='background:linear-gradient(135deg,#7CB342 0%,#9CCC65 100%);color:#1a1a1a;padding:16px 12px;border-right:2px solid #5a8f2f;text-align:center;vertical-align:top;font-weight:900;font-size:1.05em;letter-spacing:0.05em;text-transform:uppercase;text-shadow:1px 1px 2px rgba(255,255,255,0.3);'><div>{band}</div>{ranking_html}</th>")
@@ -2160,7 +2477,8 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             rank, total, avg = position_rankings[pos]
             ordinal = get_ordinal(rank)
             color = get_ranking_color(rank, total)
-            text_color = "black" if color == "#90EE90" else "white"
+            # Use black text on light backgrounds (Light Green and Gold)
+            text_color = "black" if color in ("#90EE90", "#FFD700") else "white"
             pos_cell_html += f"<div style='margin-top:10px;'><span style='display:inline-block;background-color:{color};color:{text_color};padding:10px 20px;border-radius:10px;font-weight:900;font-size:1.3em;box-shadow:0 4px 12px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);'>{ordinal}</span></div>"
         
         html.append(f"<td style='background:{bg};color:{fg};padding:16px 12px;border-right:2px solid #444;border-top:2px solid #444;font-weight:900;vertical-align:top;text-align:center;'>{pos_cell_html}</td>")
@@ -2389,8 +2707,8 @@ def predict_player_trajectory(
 PAGE_GROUPS = {
     "Home": ["Home"],
     "Team": ["Overview", "Team Breakdown", "Team Compare", "Game Day Playground", "Game Model Scorecard"],
-    "Player": ["Player Profile", "Player Traits", "IDP", "Club List"],
-    "List Management": ["Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits"],
+    "Player": ["Player Profile", "Player Traits", "IDP", "Club List", "Custom Player Comparison"],
+    "List Management": ["Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "Best 23", "List Breakdown - Traits", "Contract Status"],
 }
 
 # Flat list of all pages for compatibility
@@ -2510,12 +2828,14 @@ def render_grouped_navigation():
                 "Player Profile": "👤",
                 "Player Traits": "🎯",
                 "IDP": "🏈",
+                "Custom Player Comparison": "🧬",
                 "Depth Chart": "📋",
                 "Team Age Breakdown": "📅",
                 "List Ladder": "🪜",
                 "Team List Summary": "📝",
                 "Best 23": "🏆",
                 "List Breakdown - Traits": "📊",
+                "Contract Status": "📝",
             }
             icon = icons.get(page_name, "📄")
             
@@ -3034,11 +3354,13 @@ def render_game_day_playground(teams: list[str]):
     """, unsafe_allow_html=True)
 
     def _gdp_colour(score: float) -> str:
-        # Dark green, light green, orange, red
-        if score >= 85: return "#0B6E4F"
-        if score >= 70: return "#3FB984"
-        if score >= 55: return "#F4A261"
-        return "#C44536"
+        """Get color for GDP score - 5 tier system (0-100 scale)."""
+        # 5-tier: Elite (80+), Good (60-80), Average (40-60), Below Avg (20-40), Poor (<20)
+        if score >= 80: return "#008000"   # Elite - Dark Green
+        if score >= 60: return "#90EE90"   # Good - Light Green
+        if score >= 40: return "#FFD700"   # Average - Gold
+        if score >= 20: return "#FFA500"   # Below Average - Orange
+        return "#FF0000"                    # Poor - Red
 
     def _gdp_zone_tile(label: str, rating: int, subtitle: str = "") -> str:
         col = _gdp_colour(rating)
@@ -4276,12 +4598,13 @@ elif page == "Team Breakdown":
     ladder_position_str, ladder_position_rank, position_color = get_ladder_position(team_name, selected_year)
     ladder_percentage_str, percentage_rank, percentage_color = get_ladder_percentage(team_name, selected_year)
     
-    # Determine text color based on background color
+    # Determine text color based on background color (5-tier system)
     def get_text_color(bg_color):
-        if bg_color in ["#006400", "#FF0000"]:  # dark colors
-            return "white"
-        else:  # light colors
+        # Light backgrounds need dark text
+        if bg_color in ["#90EE90", "#FFD700"]:  # Light Green, Gold
             return "black"
+        else:  # Dark colors: Dark Green, Orange, Red
+            return "white"
     
     position_text_color = get_text_color(position_color)
     percentage_text_color = get_text_color(percentage_color)
@@ -4446,20 +4769,25 @@ elif page == "Team Breakdown":
             rank_int = 1
 
         if isinstance(rank_int, int):
+            # 5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)
             if rank_int <= 4:
-                color = "#006400"
-                bg_gradient = "linear-gradient(135deg, rgba(0,100,0,0.2) 0%, rgba(0,100,0,0.1) 100%)"
+                color = "#008000"  # Elite - Dark Green
+                bg_gradient = "linear-gradient(135deg, rgba(0,128,0,0.2) 0%, rgba(0,128,0,0.1) 100%)"
                 border_color = "#00AA00"
-            elif rank_int <= 9:
-                color = "#90EE90"
+            elif rank_int <= 7:
+                color = "#90EE90"  # Good - Light Green
                 bg_gradient = "linear-gradient(135deg, rgba(144,238,144,0.2) 0%, rgba(144,238,144,0.1) 100%)"
                 border_color = "#90EE90"
-            elif rank_int <= 14:
-                color = "#FFA500"
+            elif rank_int <= 11:
+                color = "#FFD700"  # Average - Gold
+                bg_gradient = "linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.1) 100%)"
+                border_color = "#FFD700"
+            elif rank_int <= 15:
+                color = "#FFA500"  # Below Average - Orange
                 bg_gradient = "linear-gradient(135deg, rgba(255,165,0,0.2) 0%, rgba(255,165,0,0.1) 100%)"
                 border_color = "#FFA500"
             else:
-                color = "#FF0000"
+                color = "#FF0000"  # Poor - Red
                 bg_gradient = "linear-gradient(135deg, rgba(255,0,0,0.2) 0%, rgba(255,0,0,0.1) 100%)"
                 border_color = "#DD0000"
         else:
@@ -4596,19 +4924,23 @@ elif page == "Team Breakdown":
                     except Exception:
                         val_str = str(val)
                     if rank <= 4:
-                        main_color = "#006400"
-                        bg_gradient = "linear-gradient(135deg, rgba(0,100,0,0.3) 0%, rgba(0,100,0,0.1) 100%)"
+                        main_color = "#008000"  # Elite - Dark Green
+                        bg_gradient = "linear-gradient(135deg, rgba(0,128,0,0.3) 0%, rgba(0,128,0,0.1) 100%)"
                         border_color = "#00AA00"
-                    elif rank <= 9:
-                        main_color = "#90EE90"
+                    elif rank <= 7:
+                        main_color = "#90EE90"  # Good - Light Green
                         bg_gradient = "linear-gradient(135deg, rgba(144,238,144,0.3) 0%, rgba(144,238,144,0.1) 100%)"
                         border_color = "#90EE90"
-                    elif rank <= 14:
-                        main_color = "#FFA500"
+                    elif rank <= 11:
+                        main_color = "#FFD700"  # Average - Gold
+                        bg_gradient = "linear-gradient(135deg, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0.1) 100%)"
+                        border_color = "#FFD700"
+                    elif rank <= 15:
+                        main_color = "#FFA500"  # Below Average - Orange
                         bg_gradient = "linear-gradient(135deg, rgba(255,165,0,0.3) 0%, rgba(255,165,0,0.1) 100%)"
                         border_color = "#FFA500"
                     else:
-                        main_color = "#FF0000"
+                        main_color = "#FF0000"  # Poor - Red
                         bg_gradient = "linear-gradient(135deg, rgba(255,0,0,0.3) 0%, rgba(255,0,0,0.1) 100%)"
                         border_color = "#DD0000"
                     # compute ordinal (1st, 2nd, 3rd, 4th...)
@@ -5962,9 +6294,24 @@ elif page == "Player Profile":
     draft_no = summary_row.get("Draft #") if summary_row is not None else None
     height_summary = summary_row.get("Height") if summary_row is not None else None
     total_matches = summary_row.get("Total Matches") if summary_row is not None else None
-    contract_expiry = summary_row.get("Contract Expiry") if summary_row is not None else None
     rating_pct_2025 = summary_row.get("2025 Rating %") if summary_row is not None else None
     cap_value_2025 = summary_row.get("2025 Cap Value") if summary_row is not None else None
+
+    # Load Contract Expiry and FA Status from Footywire data
+    contract_expiry = None
+    fa_status = None
+    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    if footywire_path.exists():
+        try:
+            fw_df = pd.read_csv(footywire_path)
+            fw_df["Player"] = fw_df["Player"].astype(str).str.strip()
+            fw_df["Team"] = fw_df["Team"].astype(str).str.strip()
+            fw_match = fw_df[(fw_df["Player"] == selected_player) & (fw_df["Team"] == latest_team)]
+            if not fw_match.empty:
+                contract_expiry = fw_match.iloc[0].get("Contract_Expiry")
+                fa_status = fw_match.iloc[0].get("FA_Status")
+        except Exception:
+            pass
 
     # Header
     header_html = f"""
@@ -6161,6 +6508,35 @@ elif page == "Player Profile":
                     border: 1px solid rgba(255,255,255,0.2);'>
             <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
             <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{contract_expiry}</div>
+        </div>
+        """)
+
+    # FA STATUS
+    if fa_status not in [None, ""] and pd.notna(fa_status):
+        # Color coding for FA status
+        fa_colors = {
+            "Unrestricted Free Agent": ("rgba(255,68,68,0.3)", "#FF4444"),
+            "Restricted Free Agent": ("rgba(255,165,0,0.3)", "#FFA500"),
+            "Non-Free Agent": ("rgba(76,175,80,0.3)", "#4CAF50"),
+            "Delisted Free Agent": ("rgba(255,102,102,0.3)", "#FF6666"),
+        }
+        fa_bg, fa_border = fa_colors.get(str(fa_status), ("rgba(136,136,136,0.3)", "#888888"))
+        # Shorten label for display
+        if "Unrestricted" in str(fa_status):
+            fa_short = "UFA"
+        elif "Restricted" in str(fa_status) and "Unrestricted" not in str(fa_status):
+            fa_short = "RFA"
+        elif "Non-Free" in str(fa_status):
+            fa_short = "Non-FA"
+        elif "Delisted" in str(fa_status):
+            fa_short = "DFA"
+        else:
+            fa_short = str(fa_status)[:12]
+        stats_grid.append(f"""
+        <div style='background: {fa_bg}; padding: 10px; border-radius: 6px; text-align: center;
+                    border: 1px solid {fa_border};'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>FA STATUS</div>
+            <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{fa_short}</div>
         </div>
         """)
 
@@ -7106,6 +7482,21 @@ elif page == "Player Traits":
         if info_cards:
             render_html(col_info, "".join(info_cards))
 
+    # Load Contract Expiry and FA Status from Footywire data
+    contract_expiry_traits = None
+    fa_status_traits = None
+    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    if footywire_path.exists():
+        try:
+            fw_df = pd.read_csv(footywire_path)
+            fw_df["Player"] = fw_df["Player"].astype(str).str.strip()
+            fw_df["Team"] = fw_df["Team"].astype(str).str.strip()
+            fw_match = fw_df[(fw_df["Player"] == selected_player_full) & (fw_df["Team"] == team_name_full)]
+            if not fw_match.empty:
+                contract_expiry_traits = fw_match.iloc[0].get("Contract_Expiry")
+                fa_status_traits = fw_match.iloc[0].get("FA_Status")
+        except Exception:
+            pass
 
     # Small stats grid
     stats_grid = []
@@ -7130,6 +7521,49 @@ elif page == "Player Traits":
         <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
             <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>GAMES</div>
             <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{int(matches_val)}</div>
+        </div>""")
+
+    # CONTRACT EXPIRY
+    if contract_expiry_traits not in [None, ""] and pd.notna(contract_expiry_traits):
+        try:
+            ce_val = int(float(contract_expiry_traits))
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{ce_val}</div>
+            </div>""")
+        except Exception:
+            stats_grid.append(f"""
+            <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.2);'>
+                <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>CONTRACT EXPIRY</div>
+                <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{contract_expiry_traits}</div>
+            </div>""")
+
+    # FA STATUS
+    if fa_status_traits not in [None, ""] and pd.notna(fa_status_traits):
+        # Color coding for FA status
+        fa_colors = {
+            "Unrestricted Free Agent": ("rgba(255,68,68,0.3)", "#FF4444"),
+            "Restricted Free Agent": ("rgba(255,165,0,0.3)", "#FFA500"),
+            "Non-Free Agent": ("rgba(76,175,80,0.3)", "#4CAF50"),
+            "Delisted Free Agent": ("rgba(255,102,102,0.3)", "#FF6666"),
+        }
+        fa_bg, fa_border = fa_colors.get(str(fa_status_traits), ("rgba(136,136,136,0.3)", "#888888"))
+        # Shorten label for display
+        if "Unrestricted" in str(fa_status_traits):
+            fa_short = "UFA"
+        elif "Restricted" in str(fa_status_traits) and "Unrestricted" not in str(fa_status_traits):
+            fa_short = "RFA"
+        elif "Non-Free" in str(fa_status_traits):
+            fa_short = "Non-FA"
+        elif "Delisted" in str(fa_status_traits):
+            fa_short = "DFA"
+        else:
+            fa_short = str(fa_status_traits)[:12]
+        stats_grid.append(f"""
+        <div style='background: {fa_bg}; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid {fa_border};'>
+            <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.75em; margin-bottom: 4px;'>FA STATUS</div>
+            <div style='color: #FFFFFF; font-size: 1.4em; font-weight: 700;'>{fa_short}</div>
         </div>""")
 
     if stats_grid:
@@ -7525,16 +7959,19 @@ elif page == "Team Age Breakdown":
     # Display the age breakdown table
     st.markdown("<h3 style='color: #CCCCCC; margin: 20px 0;'>📊 Team Age Breakdown Table</h3>", unsafe_allow_html=True)
     
-    # Helper function to get rank color
+    # Helper function to get rank color - 5 tier system
     def get_rank_color_age(rank_val):
+        """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank_val <= 4:
-            return "#006400", "white"  # dark green
-        elif rank_val <= 9:
-            return "#90EE90", "black"  # light green
-        elif rank_val <= 14:
-            return "#FFA500", "white"  # orange
+            return "#008000", "white"   # Elite - Dark Green
+        elif rank_val <= 7:
+            return "#90EE90", "black"   # Good - Light Green
+        elif rank_val <= 11:
+            return "#FFD700", "black"   # Average - Gold
+        elif rank_val <= 15:
+            return "#FFA500", "white"   # Below Average - Orange
         else:
-            return "#FF0000", "white"  # red
+            return "#FF0000", "white"   # Poor - Red
     
     # Create HTML table using unified table system with custom league-avg row styling
     html_table = """<style>
@@ -7712,8 +8149,8 @@ elif page == "List Ladder":
     ladder_df = ladder_df.sort_values("Total Points", ascending=False).reset_index(drop=True)
     ladder_df["Rank"] = range(1, len(ladder_df) + 1)
     
-    # Professional explanation
-    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide</h4><div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;'><div style='text-align: center; padding: 15px; background: #006400; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.9em;'>Elite</span></div><div style='text-align: center; padding: 15px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1.1em;'>5th - 9th</strong><br><span style='color: #333333; font-size: 0.9em;'>Strong</span></div><div style='text-align: center; padding: 15px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>10th - 14th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Average</span></div><div style='text-align: center; padding: 15px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1.1em;'>15th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.9em;'>Needs Work</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
+    # Professional explanation with 5-tier ranking guide
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide (5-Tier System)</h4><div style='display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;'><div style='text-align: center; padding: 12px; background: #008000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.85em;'>Elite</span></div><div style='text-align: center; padding: 12px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>5th - 7th</strong><br><span style='color: #333333; font-size: 0.85em;'>Good</span></div><div style='text-align: center; padding: 12px; background: #FFD700; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>8th - 11th</strong><br><span style='color: #333333; font-size: 0.85em;'>Average</span></div><div style='text-align: center; padding: 12px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>12th - 15th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Below Avg</span></div><div style='text-align: center; padding: 12px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>16th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Poor</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
     
     # Helper function to get ordinal suffix
     def get_ordinal_suffix(n):
@@ -7723,16 +8160,19 @@ elif page == "List Ladder":
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
         return f"{n}{suffix}"
     
-    # Helper function to get color based on rank
+    # Helper function to get color based on rank - 5 tier system
     def get_rank_color(rank):
+        """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank <= 4:
-            return "#006400"  # Dark green
-        elif rank <= 9:
-            return "#90EE90"  # Light green
-        elif rank <= 14:
-            return "#FFA500"  # Orange
+            return "#008000"   # Elite - Dark Green
+        elif rank <= 7:
+            return "#90EE90"   # Good - Light Green
+        elif rank <= 11:
+            return "#FFD700"   # Average - Gold
+        elif rank <= 15:
+            return "#FFA500"   # Below Average - Orange
         else:
-            return "#FF0000"  # Red
+            return "#FF0000"   # Poor - Red
     
     # Create display table with formatted cells
     display_data = []
@@ -7914,6 +8354,11 @@ elif page == "Team List Summary":
         players_df = load_players(CURRENT_SEASON)
     except Exception as e:
         st.error(f"Error loading player data: {e}")
+        st.stop()
+    
+    # Check if data loaded properly
+    if players_df.empty or "Team" not in players_df.columns:
+        st.error("❌ No player data available. Please check that player data exists for the current season.")
         st.stop()
     
     teams = sorted(players_df["Team"].dropna().unique())
@@ -8115,16 +8560,19 @@ elif page == "Team List Summary":
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
         return f"{n}{suffix}"
     
-    # Helper function for rank color
+    # Helper function for rank color - 5 tier system
     def get_rank_color_age(rank):
+        """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank <= 4:
-            return "#006400", "white"
-        elif rank <= 9:
-            return "#90EE90", "black"
-        elif rank <= 14:
-            return "#FFA500", "white"
+            return "#008000", "white"   # Elite - Dark Green
+        elif rank <= 7:
+            return "#90EE90", "black"   # Good - Light Green
+        elif rank <= 11:
+            return "#FFD700", "black"   # Average - Gold
+        elif rank <= 15:
+            return "#FFA500", "white"   # Below Average - Orange
         else:
-            return "#FF0000", "white"
+            return "#FF0000", "white"   # Poor - Red
     
     # Create HTML table for age breakdown (uses unified .fe-table CSS)
     html_age_table = """<table class='fe-table fe-table-striped fe-sortable'>
@@ -8338,19 +8786,21 @@ elif page == "Team List Summary":
         elite_pos_names = ", ".join([row["Position"] for row in elite_positions])
         pos_analysis_points.append(f"⭐ <strong>Elite Depth:</strong> {elite_pos_names} - exceeding Top 4 teams")
     
-    # Overall ladder position
+    # Overall ladder position - 5 tier system
     team_overall_rank = position_ladder_df[position_ladder_df["Team"] == selected_team].index[0] + 1
     total_points = team_pos_data["Total Points"]
     league_avg_points = position_ladder_df["Total Points"].mean()
     
     if team_overall_rank <= 4:
         pos_analysis_points.append(f"🏆 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Elite list depth ({total_points:.1f} total points)")
-    elif team_overall_rank <= 9:
-        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Strong list depth ({total_points:.1f} total points)")
-    elif team_overall_rank <= 14:
+    elif team_overall_rank <= 7:
+        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Good list depth ({total_points:.1f} total points)")
+    elif team_overall_rank <= 11:
         pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Average list depth ({total_points:.1f} total points)")
-    else:
+    elif team_overall_rank <= 15:
         pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Below average list depth ({total_points:.1f} total points)")
+    else:
+        pos_analysis_points.append(f"📊 <strong>Overall List Ranking:</strong> {get_ordinal_suffix(team_overall_rank)} - Poor list depth ({total_points:.1f} total points)")
     
     if pos_analysis_points:
         pos_analysis_html = "<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2);'>"
@@ -10008,16 +10458,19 @@ elif page == "List Breakdown - Traits":
     for col in ["Overall", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
         ladder_df[f"{col}_Rank"] = ladder_df[col].rank(ascending=False, method="min").astype(int)
     
-    # Helper function to get color based on rank
+    # Helper function to get color based on rank - 5 tier system
     def get_ladder_rank_color(rank, total=18):
+        """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank <= 4:
-            return "#006400", "white"  # Dark green
-        elif rank <= 9:
-            return "#90EE90", "black"  # Light green
-        elif rank <= 14:
-            return "#FFA500", "white"  # Orange
+            return "#008000", "white"   # Elite - Dark Green
+        elif rank <= 7:
+            return "#90EE90", "black"   # Good - Light Green
+        elif rank <= 11:
+            return "#FFD700", "black"   # Average - Gold
+        elif rank <= 15:
+            return "#FFA500", "white"   # Below Average - Orange
         else:
-            return "#FF0000", "white"  # Red
+            return "#FF0000", "white"   # Poor - Red
     
     # Build HTML table
     ladder_html = ["<table style='width:100%;border-collapse:separate;border-spacing:0;font-size:0.9em;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-radius:12px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;'>"]
@@ -10722,6 +11175,593 @@ elif page == "List Breakdown - Traits":
                     
                     # Render card with rank badge
                     st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{rank_badge}{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;margin-left: 12px;white-space: nowrap;">{formatted_value}</div></div>', unsafe_allow_html=True)
+
+
+# ================= CONTRACT STATUS =================
+elif page == "Contract Status":
+    render_page_header("Contract Status", "Player Contract & Free Agency Overview", "📝")
+
+    # ---------- Season selector ----------
+    seasons = sorted(get_player_seasons(), reverse=True)
+    if not seasons:
+        st.error("No player seasons found.")
+        st.stop()
+
+    default_season_idx = seasons.index(2025) if 2025 in seasons else 0
+    season = st.selectbox(
+        "Select Season",
+        seasons,
+        index=default_season_idx,
+        key="contract_status_season",
+    )
+
+    # ---------- Load player data ----------
+    try:
+        df = load_full_squad(int(season))
+    except Exception as e:
+        st.error(f"Failed to load player data for {season}: {e}")
+        st.stop()
+
+    if df is None or df.empty:
+        st.warning(f"No player data available for {season}.")
+        st.stop()
+
+    df = df.copy()
+
+    # ---------- Validate required columns ----------
+    required = ["Player", "Team", "RatingPoints_Avg"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        st.error(f"Contract Status can't run for {season}. Missing column(s): {', '.join(missing)}")
+        st.stop()
+
+    # ---------- Clean + numeric ----------
+    df["Player"] = df["Player"].astype(str).str.strip()
+    df["Team"] = df["Team"].astype(str).str.strip()
+    df["RatingPoints_Avg"] = pd.to_numeric(df["RatingPoints_Avg"], errors="coerce").fillna(0)
+
+    if "Age" in df.columns:
+        df["Age"] = pd.to_numeric(df["Age"], errors="coerce")
+    else:
+        df["Age"] = np.nan
+
+    # ---------- Load Contract & FA Status from Footywire data ----------
+    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    has_footywire = footywire_path.exists()
+    
+    if has_footywire:
+        try:
+            fw_df = pd.read_csv(footywire_path)
+            fw_df["Player"] = fw_df["Player"].astype(str).str.strip()
+            fw_df["Team"] = fw_df["Team"].astype(str).str.strip()
+            # Merge contract data and FA status from footywire
+            fw_cols = ["Player", "Team", "Contract_Expiry", "FA_Status"]
+            fw_merge = fw_df[[c for c in fw_cols if c in fw_df.columns]].copy()
+            df = df.merge(fw_merge, on=["Player", "Team"], how="left")
+        except Exception as e:
+            st.warning(f"⚠️ Could not load Footywire data: {e}")
+            df["Contract_Expiry"] = np.nan
+            df["FA_Status"] = "Unknown"
+    else:
+        # Fallback to registry if footywire not available
+        registry_df = get_all_player_registry_data()
+        if not registry_df.empty:
+            registry_cols = ["Player", "Team", "Contract_Expiry"]
+            registry_merge = registry_df[registry_cols].copy()
+            registry_merge["Player"] = registry_merge["Player"].astype(str).str.strip()
+            registry_merge["Team"] = registry_merge["Team"].astype(str).str.strip()
+            df = df.merge(registry_merge, on=["Player", "Team"], how="left")
+            df["FA_Status"] = "Unknown"  # Registry doesn't have FA status
+        else:
+            df["Contract_Expiry"] = np.nan
+            df["FA_Status"] = "Unknown"
+            st.warning("⚠️ Contract data not available.")
+
+    # ---------- Team selector ----------
+    teams = sorted([t for t in df["Team"].dropna().unique().tolist() if str(t).strip() != ""])
+    if not teams:
+        st.warning(f"No teams found in data for {season}.")
+        st.stop()
+
+    default_team = st.session_state.get("default_team")
+    default_selection = [default_team] if default_team in teams else [teams[0]]
+
+    selected_teams = st.multiselect(
+        "Select Team(s)",
+        teams,
+        default=default_selection,
+        key="contract_status_teams",
+    )
+
+    if selected_teams:
+        st.session_state.default_team = selected_teams[0]
+    else:
+        st.session_state.default_team = default_selection[0]
+
+    # ---------- TPP Input ----------
+    tpp_col1, tpp_col2 = st.columns([2, 6])
+    with tpp_col1:
+        tpp_value = st.number_input(
+            "TPP (Total Player Payments $)",
+            min_value=0,
+            max_value=50_000_000,
+            value=18_000_000,
+            step=100_000,
+            format="%d",
+            key="contract_status_tpp",
+            help="Enter the Total Player Payments cap for the selected season"
+        )
+
+    # ---------- Contract Expiry Filter ----------
+    filter_col1, filter_col2 = st.columns([2, 6])
+    with filter_col1:
+        expiry_years = sorted([int(y) for y in df["Contract_Expiry"].dropna().unique() if pd.notna(y)])
+        if expiry_years:
+            contract_filter = st.multiselect(
+                "Filter by Contract Expiry",
+                options=["All"] + expiry_years,
+                default=["All"],
+                key="contract_status_expiry_filter",
+            )
+        else:
+            contract_filter = ["All"]
+
+    # ---------- Filter data ----------
+    if not selected_teams:
+        st.info("Select at least one team to display.")
+        st.stop()
+
+    team_df = df[df["Team"].isin(selected_teams)].copy()
+
+    if team_df.empty:
+        st.info("No players found for this team.")
+        st.stop()
+
+    # Apply contract expiry filter
+    if "All" not in contract_filter and contract_filter:
+        team_df = team_df[team_df["Contract_Expiry"].isin(contract_filter)]
+
+    # Use standard rating column
+    display_rating_col = "RatingPoints_Avg"
+
+    team_df = team_df.sort_values(display_rating_col, ascending=False).reset_index(drop=True)
+
+    # Calculate Cap Value (% of Team's Ratings * TPP)
+    if "Matches" in team_df.columns:
+        team_df["Matches"] = pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0)
+    else:
+        team_df["Matches"] = 0
+    
+    team_df["RatingsTotal"] = team_df["Matches"] * team_df[display_rating_col]
+    team_ratings_sum = team_df.groupby("Team")["RatingsTotal"].transform("sum")
+    team_df["PctOfTeamRatings"] = (team_df["RatingsTotal"] / team_ratings_sum * 100).round(1)
+    
+    MIN_PLAYER_PAYMENT = 92_000
+    team_df["CapValue"] = (team_df["PctOfTeamRatings"] / 100 * tpp_value).clip(lower=MIN_PLAYER_PAYMENT).round(0)
+    team_df["PctOfCap"] = (team_df["CapValue"] / tpp_value * 100).round(2)
+
+    # ---------- Build output dataframe ----------
+    age_col = "Age_Decimal" if "Age_Decimal" in team_df.columns else "Age"
+    
+    rating_values = team_df[display_rating_col]
+    rating_decimals = 1
+    
+    # Get position - use DepthPos mapping if available, otherwise use raw Position
+    if "Position" in team_df.columns:
+        team_df["DepthPos"] = team_df["Position"].apply(
+            lambda x: map_position_to_depth(x) if pd.notna(x) and str(x).strip() != "" else "—"
+        )
+    else:
+        team_df["DepthPos"] = "—"
+    
+    out = pd.DataFrame({
+        "PLAYER": team_df["Player"].fillna("—"),
+        "TEAM": team_df["Team"].fillna("—"),
+        "POSITION": team_df["DepthPos"].fillna("—"),
+        "AGE": pd.to_numeric(team_df[age_col], errors="coerce").round(1),
+        "GAMES": pd.to_numeric(team_df["Matches"], errors="coerce").fillna(0).astype(int),
+        "RATING": pd.to_numeric(team_df[display_rating_col], errors="coerce").round(1),
+        "CAP VALUE": team_df["CapValue"],
+        "% OF CAP": team_df["PctOfCap"],
+        "CONTRACT EXPIRY": team_df["Contract_Expiry"],
+        "FA STATUS": team_df["FA_Status"].fillna("Unknown"),
+    })
+
+    # ---------- Get league ratings for color scaling ----------
+    league_ratings = df[display_rating_col].dropna()
+
+    # Rating column header
+    rating_header = "RATING"
+
+    # ---------- Build HTML table ----------
+    html = f"""
+<table class="fe-table fe-sortable">
+<thead>
+<tr>
+<th>PLAYER</th>
+<th>TEAM</th>
+<th>POSITION</th>
+<th>AGE</th>
+<th>GAMES</th>
+<th>RATING</th>
+<th>CAP VALUE</th>
+<th>% OF CAP</th>
+<th>CONTRACT EXPIRY</th>
+<th>FA STATUS</th>
+</tr>
+</thead>
+<tbody>
+"""
+
+    # FA Status color coding (matching Footywire values)
+    FA_COLORS = {
+        "Unrestricted Free Agent": ("#FF4444", "#FFFFFF"),
+        "Restricted Free Agent": ("#FFA500", "#000000"),
+        "Non-Free Agent": ("#4CAF50", "#FFFFFF"),
+        "Delisted Free Agent": ("#FF6666", "#FFFFFF"),
+        "Out of Contract": ("#FF8800", "#000000"),
+        "Unknown": ("#888888", "#FFFFFF"),
+    }
+
+    # Contract expiry color coding (red for soon, green for long-term)
+    def get_expiry_color(expiry, current_year):
+        if pd.isna(expiry):
+            return "#888888", "#FFFFFF"
+        years_left = int(expiry) - int(current_year)
+        if years_left <= 0:
+            return "#FF4444", "#FFFFFF"  # Expired/expiring
+        elif years_left == 1:
+            return "#FF8800", "#000000"  # 1 year
+        elif years_left == 2:
+            return "#FFCC00", "#000000"  # 2 years
+        elif years_left <= 4:
+            return "#88CC44", "#000000"  # 3-4 years
+        else:
+            return "#4CAF50", "#FFFFFF"  # 5+ years
+
+    for _, r in out.iterrows():
+        # Rating colors
+        rating_val = r["RATING"]
+        bg_rating, fg_rating = rating_colour_for_value(rating_val, df[display_rating_col].dropna())
+
+        age_val = r["AGE"]
+        age_str = "—" if pd.isna(age_val) else f"{float(age_val):.1f}"
+
+        games_val = r["GAMES"]
+        games_str = "—" if pd.isna(games_val) else str(int(games_val))
+
+        rating_str = "—" if pd.isna(rating_val) else f"{float(rating_val):.1f}"
+
+        cap_val = r["CAP VALUE"]
+        cap_str = "—" if pd.isna(cap_val) else f"${int(cap_val):,}"
+
+        pct_cap_val = r["% OF CAP"]
+        pct_cap_str = "—" if pd.isna(pct_cap_val) else f"{float(pct_cap_val):.2f}%"
+
+        expiry_val = r["CONTRACT EXPIRY"]
+        expiry_str = "—" if pd.isna(expiry_val) else str(int(expiry_val))
+        bg_expiry, fg_expiry = get_expiry_color(expiry_val, season)
+
+        fa_status = r["FA STATUS"]
+        bg_fa, fg_fa = FA_COLORS.get(fa_status, ("#888888", "#FFFFFF"))
+
+        position_str = r["POSITION"] if pd.notna(r["POSITION"]) else "—"
+
+        html += f"""
+<tr>
+<td>{r['PLAYER']}</td>
+<td>{r['TEAM']}</td>
+<td>{position_str}</td>
+<td>{age_str}</td>
+<td>{games_str}</td>
+<td style="background-color:{bg_rating}; color:{fg_rating}; font-weight:700;">{rating_str}</td>
+<td style="font-weight:600;">{cap_str}</td>
+<td>{pct_cap_str}</td>
+<td style="background-color:{bg_expiry}; color:{fg_expiry}; font-weight:700; text-align:center;">{expiry_str}</td>
+<td style="background-color:{bg_fa}; color:{fg_fa}; font-weight:700; text-align:center;">{fa_status}</td>
+</tr>
+"""
+
+    html += "</tbody></table>"
+
+    render_sortable_table(html)
+
+    # ---------- Contract Summary Section ----------
+    import plotly.graph_objects as go
+    
+    st.markdown("---")
+    
+    # Professional header for summary section
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 24px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        margin-bottom: 24px;
+        text-align: center;
+    ">
+        <h2 style="
+            color: #FFFFFF;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            margin: 0;
+            letter-spacing: 0.02em;
+        ">📊 Contract Summary</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Count by expiry year and FA status
+    expiry_counts = team_df["Contract_Expiry"].value_counts().sort_index()
+    fa_counts = team_df["FA_Status"].value_counts()
+    
+    # Calculate key metrics
+    expiring_this_year = len(team_df[team_df["Contract_Expiry"] <= int(season)])
+    expiring_next_year = len(team_df[team_df["Contract_Expiry"] == int(season) + 1])
+    ufas = len(team_df[team_df["FA_Status"].str.contains("Unrestricted", na=False)])
+    rfas = len(team_df[team_df["FA_Status"].str.contains("Restricted", na=False) & ~team_df["FA_Status"].str.contains("Unrestricted", na=False)])
+    total_players = len(team_df)
+    
+    # Key Metrics Cards
+    st.markdown("""
+    <style>
+    .contract-metric-card {
+        background: linear-gradient(145deg, rgba(30,30,45,0.95), rgba(40,40,60,0.95));
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .contract-metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    .contract-metric-value {
+        font-size: 36px;
+        font-weight: 900;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    .contract-metric-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.7);
+        margin-top: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    metric_cols = st.columns(5)
+    
+    with metric_cols[0]:
+        st.markdown(f"""
+        <div class="contract-metric-card">
+            <p class="contract-metric-value" style="color: #4ECDC4;">{total_players}</p>
+            <p class="contract-metric-label">Total Players</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with metric_cols[1]:
+        st.markdown(f"""
+        <div class="contract-metric-card">
+            <p class="contract-metric-value" style="color: #FF6B6B;">{expiring_this_year}</p>
+            <p class="contract-metric-label">Expiring {season}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with metric_cols[2]:
+        st.markdown(f"""
+        <div class="contract-metric-card">
+            <p class="contract-metric-value" style="color: #FFE66D;">{expiring_next_year}</p>
+            <p class="contract-metric-label">Expiring {int(season)+1}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with metric_cols[3]:
+        st.markdown(f"""
+        <div class="contract-metric-card">
+            <p class="contract-metric-value" style="color: #FF8C42;">{ufas}</p>
+            <p class="contract-metric-label">Unrestricted FAs</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with metric_cols[4]:
+        st.markdown(f"""
+        <div class="contract-metric-card">
+            <p class="contract-metric-value" style="color: #98D8C8;">{rfas}</p>
+            <p class="contract-metric-label">Restricted FAs</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Pie Charts Section
+    chart_cols = st.columns(2)
+    
+    # Contract Expiry Pie Chart
+    with chart_cols[0]:
+        st.markdown("""
+        <div style="
+            background: linear-gradient(145deg, rgba(25,25,40,0.95), rgba(35,35,55,0.95));
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        ">
+            <h3 style="
+                color: #FFFFFF;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                font-weight: 700;
+                font-size: 18px;
+                margin: 0 0 16px 0;
+                text-align: center;
+            ">📅 Contract Expiry Distribution</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if not expiry_counts.empty:
+            # Color palette for expiry years
+            expiry_colors = ['#FF6B6B', '#FFE66D', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']
+            
+            fig_expiry = go.Figure(data=[go.Pie(
+                labels=[str(int(y)) for y in expiry_counts.index],
+                values=expiry_counts.values,
+                hole=0.45,
+                marker=dict(
+                    colors=expiry_colors[:len(expiry_counts)],
+                    line=dict(color='rgba(0,0,0,0.3)', width=2)
+                ),
+                textinfo='label+percent',
+                textfont=dict(size=13, color='white', family='-apple-system, BlinkMacSystemFont, Segoe UI, Roboto'),
+                hovertemplate='<b>%{label}</b><br>Players: %{value}<br>%{percent}<extra></extra>',
+                pull=[0.02] * len(expiry_counts)
+            )])
+            
+            fig_expiry.update_layout(
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=12, color='white')
+                ),
+                margin=dict(t=20, b=60, l=20, r=20),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=350,
+                annotations=[dict(
+                    text=f'<b>{total_players}</b><br>Players',
+                    x=0.5, y=0.5,
+                    font=dict(size=16, color='white', family='-apple-system, BlinkMacSystemFont, Segoe UI, Roboto'),
+                    showarrow=False
+                )]
+            )
+            
+            st.plotly_chart(fig_expiry, use_container_width=True, key="contract_expiry_pie")
+        else:
+            st.info("No contract expiry data available.")
+    
+    # Free Agency Status Pie Chart
+    with chart_cols[1]:
+        st.markdown("""
+        <div style="
+            background: linear-gradient(145deg, rgba(25,25,40,0.95), rgba(35,35,55,0.95));
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        ">
+            <h3 style="
+                color: #FFFFFF;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                font-weight: 700;
+                font-size: 18px;
+                margin: 0 0 16px 0;
+                text-align: center;
+            ">🏷️ Free Agency Status</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if not fa_counts.empty:
+            # Color mapping for FA status
+            fa_color_map = {
+                "Unrestricted Free Agent": "#FF8C42",
+                "Restricted Free Agent": "#98D8C8",
+                "Non-Free Agent": "#4ECDC4",
+                "Delisted Free Agent": "#FF6B6B",
+                "Unknown": "#888888"
+            }
+            fa_colors = [fa_color_map.get(status, "#666666") for status in fa_counts.index]
+            
+            # Shorten labels for display
+            short_labels = []
+            for status in fa_counts.index:
+                if "Unrestricted" in str(status):
+                    short_labels.append("UFA")
+                elif "Restricted" in str(status) and "Unrestricted" not in str(status):
+                    short_labels.append("RFA")
+                elif "Non-Free" in str(status):
+                    short_labels.append("Non-FA")
+                elif "Delisted" in str(status):
+                    short_labels.append("DFA")
+                else:
+                    short_labels.append(str(status)[:10])
+            
+            fig_fa = go.Figure(data=[go.Pie(
+                labels=short_labels,
+                values=fa_counts.values,
+                hole=0.45,
+                marker=dict(
+                    colors=fa_colors,
+                    line=dict(color='rgba(0,0,0,0.3)', width=2)
+                ),
+                textinfo='label+percent',
+                textfont=dict(size=13, color='white', family='-apple-system, BlinkMacSystemFont, Segoe UI, Roboto'),
+                hovertemplate='<b>%{label}</b><br>Players: %{value}<br>%{percent}<extra></extra>',
+                customdata=list(fa_counts.index),
+                pull=[0.02] * len(fa_counts)
+            )])
+            
+            fig_fa.update_layout(
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=12, color='white')
+                ),
+                margin=dict(t=20, b=60, l=20, r=20),
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=350,
+                annotations=[dict(
+                    text=f'<b>{total_players}</b><br>Players',
+                    x=0.5, y=0.5,
+                    font=dict(size=16, color='white', family='-apple-system, BlinkMacSystemFont, Segoe UI, Roboto'),
+                    showarrow=False
+                )]
+            )
+            
+            st.plotly_chart(fig_fa, use_container_width=True, key="fa_status_pie")
+        else:
+            st.info("No free agency status data available.")
+    
+    # Detailed breakdown tables in expandable sections
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    detail_cols = st.columns(2)
+    
+    with detail_cols[0]:
+        with st.expander("📋 Contract Expiry Details", expanded=False):
+            if not expiry_counts.empty:
+                expiry_df = pd.DataFrame({
+                    "Year": [int(y) for y in expiry_counts.index],
+                    "Players": expiry_counts.values,
+                    "% of Squad": [f"{v/total_players*100:.1f}%" for v in expiry_counts.values]
+                })
+                st.dataframe(expiry_df, hide_index=True, use_container_width=True)
+    
+    with detail_cols[1]:
+        with st.expander("📋 Free Agency Status Details", expanded=False):
+            if not fa_counts.empty:
+                fa_df = pd.DataFrame({
+                    "Status": fa_counts.index,
+                    "Players": fa_counts.values,
+                    "% of Squad": [f"{v/total_players*100:.1f}%" for v in fa_counts.values]
+                })
+                st.dataframe(fa_df, hide_index=True, use_container_width=True)
+
+    render_footer()
+
 
 #### GAME DAY PLAYEGROUND
 
@@ -12167,6 +13207,790 @@ elif page == "IDP":
                             """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Professional footer
+    render_footer()
+
+# ================= CUSTOM PLAYER COMPARISON =================
+elif page == "Custom Player Comparison":
+    render_page_header("Custom Player Comparison", "Build & Compare Custom Player Profiles", "🧬")
+    
+    # Custom CSS for player card containers - style all bordered containers
+    st.markdown("""
+    <style>
+    /* Make all bordered containers in this page have consistent styling */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        border-width: 3px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # -------------------------
+    # Imports and Constants
+    # -------------------------
+    from sklearn.metrics.pairwise import cosine_similarity  # type: ignore
+    import numpy as np
+    
+    # Rating scale mapping
+    RATING_OPTIONS = ["Elite", "Good", "Average", "Below Average", "Poor"]
+    RATING_TO_NUMERIC = {
+        "Elite": 5,
+        "Good": 4,
+        "Average": 3,
+        "Below Average": 2,
+        "Poor": 1
+    }
+    NUMERIC_TO_RATING = {v: k for k, v in RATING_TO_NUMERIC.items()}
+    
+    # Core traits and their subcategories (dynamically detected from data)
+    CORE_TRAITS = ["Ball Winning", "Ball Use", "Aerial", "Defence"]
+    
+    TRAIT_SUBCATEGORIES = {
+        "Ball Winning": ["Stoppage", "Contest", "Power", "Receives"],
+        "Ball Use": ["Handballing", "Kicking", "Goal Kicking", "Connecting"],
+        "Aerial": ["Marking", "Contested", "Moks", "Ruck"],
+        "Defence": ["Pressure", "Tackling", "Intercepting", "Neutralise"]
+    }
+    
+    # Trait colors for visual consistency
+    TRAIT_COLORS = {
+        "Ball Winning": "#0066CC",
+        "Ball Use": "#009933",
+        "Aerial": "#FFEB3B",
+        "Defence": "#CC0000"
+    }
+    
+    # -------------------------
+    # Helper Functions
+    # -------------------------
+    def get_tier_color(rating_label: str) -> tuple[str, str]:
+        """Get background and text color for a rating tier."""
+        colors = {
+            "Elite": ("#008000", "#FFFFFF"),
+            "Good": ("#90EE90", "#000000"),
+            "Average": ("#FFD700", "#000000"),
+            "Below Average": ("#FFA500", "#FFFFFF"),
+            "Poor": ("#FF0000", "#FFFFFF")
+        }
+        return colors.get(rating_label, ("#666666", "#FFFFFF"))
+    
+    def numeric_to_rating_label(value: float) -> str:
+        """Convert numeric value (1-5 scale or 1-4 trait scale) to rating label."""
+        if value >= 4.5:
+            return "Elite"
+        elif value >= 3.5:
+            return "Good"
+        elif value >= 2.5:
+            return "Average"
+        elif value >= 1.5:
+            return "Below Average"
+        else:
+            return "Poor"
+    
+    def trait_value_to_rating_label(value: float) -> str:
+        """Convert trait value (1-4 scale) to rating label."""
+        if value >= 3.0:
+            return "Elite"
+        elif value >= 2.5:
+            return "Good"
+        elif value >= 2.0:
+            return "Average"
+        elif value >= 1.5:
+            return "Below Average"
+        else:
+            return "Poor"
+    
+    def rating_label_to_trait_value(label: str) -> float:
+        """Convert rating label to trait value (1-4 scale)."""
+        mapping = {
+            "Elite": 3.5,
+            "Good": 2.75,
+            "Average": 2.25,
+            "Below Average": 1.75,
+            "Poor": 1.25
+        }
+        return mapping.get(label, 2.25)
+    
+    @st.cache_data(show_spinner=False)
+    def load_traits_for_comparison(season: int) -> pd.DataFrame:
+        """Load and prepare traits data for comparison."""
+        traits_df = load_traits(season)
+        if traits_df is None or traits_df.empty:
+            return pd.DataFrame()
+        
+        # Ensure required columns exist
+        required_cols = ["Player_Full", "Team_Full", "Position_Full"]
+        if not all(col in traits_df.columns for col in required_cols):
+            return pd.DataFrame()
+        
+        return traits_df.copy()
+    
+    def get_available_trait_columns(traits_df: pd.DataFrame) -> dict[str, list[str]]:
+        """Dynamically detect available trait columns and subcategories."""
+        available = {}
+        for trait, subcats in TRAIT_SUBCATEGORIES.items():
+            if trait in traits_df.columns:
+                available_subcats = [s for s in subcats if s in traits_df.columns]
+                available[trait] = available_subcats
+        return available
+    
+    def build_custom_player_vector(
+        core_ratings: dict[str, str],
+        subcategory_ratings: dict[str, dict[str, str]],
+        available_traits: dict[str, list[str]]
+    ) -> np.ndarray:
+        """Build a numeric vector from custom player ratings."""
+        vector = []
+        
+        for trait in CORE_TRAITS:
+            if trait not in available_traits:
+                continue
+            
+            # Add core trait value
+            core_value = rating_label_to_trait_value(core_ratings.get(trait, "Average"))
+            vector.append(core_value)
+            
+            # Add subcategory values
+            for subcat in available_traits[trait]:
+                subcat_rating = subcategory_ratings.get(trait, {}).get(subcat)
+                if subcat_rating is None:
+                    # Inherit from parent
+                    subcat_value = core_value
+                else:
+                    subcat_value = rating_label_to_trait_value(subcat_rating)
+                vector.append(subcat_value)
+        
+        return np.array(vector)
+    
+    def build_player_vector(
+        player_row: pd.Series,
+        available_traits: dict[str, list[str]]
+    ) -> np.ndarray:
+        """Build a numeric vector from an AFL player's data."""
+        vector = []
+        
+        for trait in CORE_TRAITS:
+            if trait not in available_traits:
+                continue
+            
+            # Add core trait value
+            core_value = pd.to_numeric(player_row.get(trait), errors="coerce")
+            if pd.isna(core_value):
+                core_value = 2.0  # Default to average
+            vector.append(core_value)
+            
+            # Add subcategory values
+            for subcat in available_traits[trait]:
+                subcat_value = pd.to_numeric(player_row.get(subcat), errors="coerce")
+                if pd.isna(subcat_value):
+                    subcat_value = core_value  # Inherit from parent
+                vector.append(subcat_value)
+        
+        return np.array(vector)
+    
+    @st.cache_data(show_spinner=False)
+    def calculate_all_similarities(
+        custom_vector: tuple,  # Use tuple for caching
+        traits_data: str,  # Serialized data for caching
+        available_traits_keys: tuple,
+        filter_position: str = None  # Filter by position
+    ) -> pd.DataFrame:
+        """Calculate cosine similarity between custom player and all AFL players."""
+        import json
+        
+        # Deserialize
+        custom_vec = np.array(custom_vector)
+        traits_df = pd.read_json(traits_data)
+        available_traits = {k: TRAIT_SUBCATEGORIES.get(k, []) for k in available_traits_keys}
+        
+        # Filter by position if specified
+        if filter_position:
+            traits_df = traits_df[traits_df["Position_Full"] == filter_position].copy()
+        
+        results = []
+        
+        for idx, row in traits_df.iterrows():
+            try:
+                player_vec = build_player_vector(row, available_traits)
+                
+                if len(player_vec) != len(custom_vec):
+                    continue
+                
+                # Calculate cosine similarity
+                similarity = cosine_similarity(
+                    custom_vec.reshape(1, -1),
+                    player_vec.reshape(1, -1)
+                )[0][0]
+                
+                # Convert to percentage
+                similarity_pct = similarity * 100
+                
+                results.append({
+                    "Player": row.get("Player_Full", "Unknown"),
+                    "Team": row.get("Team_Full", "Unknown"),
+                    "Position": row.get("Position_Full", "Unknown"),
+                    "Age": row.get("Age"),
+                    "Similarity": similarity_pct,
+                    "Ball Winning": row.get("Ball Winning"),
+                    "Ball Use": row.get("Ball Use"),
+                    "Aerial": row.get("Aerial"),
+                    "Defence": row.get("Defence"),
+                    "Rating": row.get("Rating"),
+                    **{subcat: row.get(subcat) for trait_subcats in available_traits.values() for subcat in trait_subcats}
+                })
+            except Exception:
+                continue
+        
+        if not results:
+            return pd.DataFrame()
+        
+        results_df = pd.DataFrame(results)
+        results_df = results_df.sort_values("Similarity", ascending=False).reset_index(drop=True)
+        
+        return results_df
+    
+    def render_player_card(
+        player_data: dict,
+        is_primary: bool = False,
+        fc_mode: bool = False,
+        show_subcategories: bool = False,
+        available_traits: dict = None,
+        card_key: str = ""
+    ):
+        """Render a premium player card."""
+        player_name_raw = player_data.get("Player", "Unknown")
+        team = player_data.get("Team", "Unknown")
+        # Resolve abbreviated name to full name
+        player_name = resolve_player_full_name(player_name_raw, team)
+        position = player_data.get("Position", "Unknown")
+        similarity = player_data.get("Similarity", 0)
+        age = player_data.get("Age")
+        age_str = f"{int(age)} years old" if pd.notna(age) else ""
+        
+        # Get similarity color
+        if similarity >= 90:
+            sim_color = "#008000"
+        elif similarity >= 80:
+            sim_color = "#90EE90"
+        elif similarity >= 70:
+            sim_color = "#FFD700"
+        elif similarity >= 60:
+            sim_color = "#FFA500"
+        else:
+            sim_color = "#FF6666"
+        
+        # Card size based on primary or secondary
+        if is_primary:
+            # Professional layout: Photo with logo overlay, then details
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                        border-radius: 16px; padding: 0; overflow: hidden;
+                        border: 2px solid {sim_color}; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col_visual, col_details = st.columns([1, 2])
+            
+            with col_visual:
+                # Photo with logo in corner
+                st.markdown("<div style='position: relative; padding: 15px;'>", unsafe_allow_html=True)
+                display_player_photo(player_name, st, size=160, team_name=team)
+                logo_path = get_team_logo_path(team)
+                if logo_path:
+                    st.image(logo_path, width=45)
+                st.markdown("</div>", unsafe_allow_html=True)
+            
+            with col_details:
+                st.markdown(f"""
+                <div style='padding: 20px 20px 20px 0;'>
+                    <div style='display: flex; justify-content: space-between; align-items: flex-start;'>
+                        <div>
+                            <h2 style='color: #FFFFFF; margin: 0 0 8px 0; font-size: 1.6em; font-weight: 900;'>{player_name}</h2>
+                            <p style='color: rgba(255,255,255,0.7); margin: 0; font-size: 1em;'>{team} • {position}</p>
+                            <p style='color: rgba(255,255,255,0.5); margin: 8px 0 0 0; font-size: 0.85em;'>{age_str}</p>
+                        </div>
+                        <div style='text-align: right;'>
+                            <div style='font-size: 2.5em; font-weight: 900; color: {sim_color}; line-height: 1;'>{similarity:.1f}%</div>
+                            <div style='color: rgba(255,255,255,0.6); font-size: 0.85em; margin-top: 5px;'>MATCH</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Trait bars
+                st.markdown("<div style='margin-top: 15px;'>", unsafe_allow_html=True)
+                
+                trait_cols = st.columns(4)
+                for i, trait in enumerate(CORE_TRAITS):
+                    trait_val = player_data.get(trait)
+                    if trait_val is not None:
+                        trait_val = float(trait_val)
+                        if fc_mode:
+                            display_val = convert_trait_to_fc_rating(trait_val)
+                            label = get_fc_rating_label(display_val)
+                        else:
+                            display_val = f"{trait_val:.2f}"
+                            label = trait_value_to_rating_label(trait_val)
+                        
+                        bg_color, text_color = get_tier_color(label)
+                        trait_color = TRAIT_COLORS.get(trait, "#666666")
+                        
+                        with trait_cols[i]:
+                            st.markdown(f"""
+                            <div style='background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+                                        border-radius: 10px; padding: 12px; text-align: center;
+                                        border-left: 3px solid {trait_color};'>
+                                <div style='color: rgba(255,255,255,0.6); font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.5px;'>{trait}</div>
+                                <div style='color: #FFFFFF; font-size: 1.5em; font-weight: 900; margin: 5px 0;'>{display_val}</div>
+                                <div style='background: {bg_color}; color: {text_color}; padding: 3px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 700;'>{label}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Subcategories expander
+                if show_subcategories and available_traits:
+                    with st.expander("📊 View Subcategories", expanded=False):
+                        for trait in CORE_TRAITS:
+                            if trait in available_traits:
+                                st.markdown(f"**{trait}**")
+                                subcat_cols = st.columns(len(available_traits[trait]))
+                                for j, subcat in enumerate(available_traits[trait]):
+                                    subcat_val = player_data.get(subcat)
+                                    if subcat_val is not None:
+                                        subcat_val = float(subcat_val)
+                                        if fc_mode:
+                                            sub_display = convert_trait_to_fc_rating(subcat_val)
+                                        else:
+                                            sub_display = f"{subcat_val:.2f}"
+                                        label = trait_value_to_rating_label(subcat_val)
+                                        bg, fg = get_tier_color(label)
+                                        
+                                        with subcat_cols[j]:
+                                            st.markdown(f"""
+                                            <div style='background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; text-align: center;'>
+                                                <div style='color: rgba(255,255,255,0.5); font-size: 0.65em;'>{subcat}</div>
+                                                <div style='color: #FFF; font-weight: 800;'>{sub_display}</div>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                st.markdown("---")
+        else:
+            # Compact card for grid
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                        border-radius: 12px; padding: 15px; height: 100%;
+                        border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 16px rgba(0,0,0,0.3);'>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;'>
+                    <div>
+                        <div style='color: #FFFFFF; font-weight: 800; font-size: 1em;'>{player_name}</div>
+                        <div style='color: rgba(255,255,255,0.5); font-size: 0.75em;'>{team} • {position}</div>
+                    </div>
+                    <div style='background: {sim_color}; color: {"#000" if sim_color in ["#90EE90", "#FFD700"] else "#FFF"};
+                                padding: 5px 10px; border-radius: 6px; font-weight: 900; font-size: 0.9em;'>
+                        {similarity:.1f}%
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Mini trait bars
+            traits_html = "<div style='display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;'>"
+            for trait in CORE_TRAITS:
+                trait_val = player_data.get(trait)
+                if trait_val is not None:
+                    trait_val = float(trait_val)
+                    if fc_mode:
+                        display_val = convert_trait_to_fc_rating(trait_val)
+                    else:
+                        display_val = f"{trait_val:.1f}"
+                    label = trait_value_to_rating_label(trait_val)
+                    bg_color, text_color = get_tier_color(label)
+                    
+                    traits_html += f"""
+                    <div style='text-align: center;'>
+                        <div style='color: rgba(255,255,255,0.4); font-size: 0.55em; text-transform: uppercase;'>{trait[:4]}</div>
+                        <div style='background: {bg_color}; color: {text_color}; padding: 2px 4px; border-radius: 3px;
+                                    font-size: 0.7em; font-weight: 800;'>{display_val}</div>
+                    </div>
+                    """
+            traits_html += "</div></div>"
+            st.markdown(traits_html, unsafe_allow_html=True)
+            
+            # Display photo
+            display_player_photo(player_name, st, size=80, team_name=team)
+    
+    # -------------------------
+    # Load Data
+    # -------------------------
+    seasons_available = sorted(get_player_seasons(), reverse=True)
+    if not seasons_available:
+        seasons_available = [CURRENT_SEASON, 2025, 2024, 2023]
+    
+    selected_season = st.selectbox("Select Season", seasons_available, index=0, key="cpc_season")
+    
+    traits_df = load_traits_for_comparison(int(selected_season))
+    
+    if traits_df.empty:
+        st.error("Could not load traits data for comparison. Please check your data files.")
+        st.stop()
+    
+    available_traits = get_available_trait_columns(traits_df)
+    
+    if not available_traits:
+        st.error("No trait columns found in the data.")
+        st.stop()
+    
+    # Get unique positions
+    positions = sorted(traits_df["Position_Full"].dropna().unique().tolist())
+    if not positions:
+        positions = ["Midfielder", "Key Forward", "Key Defender", "Gen. Forward", "Gen. Defender", "Ruck", "Wing"]
+    
+    # FC Mode toggle (consistent with other pages)
+    fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="cpc_fc_mode", 
+                        help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
+    
+    st.divider()
+    
+    # -------------------------
+    # Build Your Player Section
+    # -------------------------
+    st.markdown("""
+    <div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                border-radius: 16px; padding: 25px; margin-bottom: 25px;
+                border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
+        <h3 style='color: #FFFFFF; margin: 0 0 5px 0; font-size: 1.4em;'>🧬 Build Your Player</h3>
+        <p style='color: rgba(255,255,255,0.6); margin: 0; font-size: 0.9em;'>Create a custom player profile to find similar AFL players</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Basic info inputs
+    info_col1, info_col2, info_col3 = st.columns(3)
+    
+    with info_col1:
+        custom_player_name = st.text_input("Player Name", value="Custom Player", key="cpc_player_name",
+                                            placeholder="Enter a name for your player")
+    
+    with info_col2:
+        custom_position = st.selectbox("Position", positions, key="cpc_position")
+    
+    with info_col3:
+        custom_age = st.number_input("Age", min_value=17, max_value=45, value=25, key="cpc_age")
+    
+    st.markdown("---")
+    st.markdown("### Core Trait Ratings")
+    
+    # Store ratings
+    core_ratings = {}
+    subcategory_ratings = {}
+    
+    # Create columns for core traits
+    trait_cols = st.columns(len(CORE_TRAITS))
+    
+    for i, trait in enumerate(CORE_TRAITS):
+        if trait not in available_traits:
+            continue
+        
+        trait_color = TRAIT_COLORS.get(trait, "#666666")
+        
+        with trait_cols[i]:
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+                        border-radius: 10px; padding: 15px; border-left: 4px solid {trait_color};'>
+                <div style='color: #FFFFFF; font-weight: 800; font-size: 0.95em; margin-bottom: 10px;'>{trait}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            core_ratings[trait] = st.selectbox(
+                f"{trait} Rating",
+                RATING_OPTIONS,
+                index=2,  # Default to "Average"
+                key=f"cpc_core_{trait}",
+                label_visibility="collapsed"
+            )
+            
+            # Subcategory expander
+            with st.expander(f"⚙️ Adjust Subcategories", expanded=False):
+                subcategory_ratings[trait] = {}
+                
+                for subcat in available_traits[trait]:
+                    # Default is None (inherit from parent)
+                    subcat_rating = st.selectbox(
+                        subcat,
+                        ["(Inherit from parent)"] + RATING_OPTIONS,
+                        index=0,
+                        key=f"cpc_sub_{trait}_{subcat}"
+                    )
+                    
+                    if subcat_rating != "(Inherit from parent)":
+                        subcategory_ratings[trait][subcat] = subcat_rating
+    
+    # -------------------------
+    # Calculate Similarities
+    # -------------------------
+    st.divider()
+    
+    if st.button("🔍 Find Similar Players", type="primary", use_container_width=True):
+        with st.spinner("Analyzing player database..."):
+            # Build custom player vector
+            custom_vector = build_custom_player_vector(core_ratings, subcategory_ratings, available_traits)
+            
+            # Calculate similarities
+            results_df = calculate_all_similarities(
+                tuple(custom_vector),
+                traits_df.to_json(),
+                tuple(available_traits.keys()),
+                filter_position=custom_position  # Filter by selected position
+            )
+            
+            if results_df.empty:
+                st.error("Could not calculate similarities. Please check your data.")
+                st.stop()
+            
+            # Store in session state
+            st.session_state.cpc_results = results_df
+            st.session_state.cpc_custom_name = custom_player_name
+            st.session_state.cpc_custom_position = custom_position
+            st.session_state.cpc_custom_age = custom_age
+            st.session_state.cpc_core_ratings = core_ratings
+    
+    # -------------------------
+    # Display Results
+    # -------------------------
+    if "cpc_results" in st.session_state and not st.session_state.cpc_results.empty:
+        results_df = st.session_state.cpc_results
+        custom_name = st.session_state.get("cpc_custom_name", "Custom Player")
+        custom_pos = st.session_state.get("cpc_custom_position", "Unknown")
+        custom_age = st.session_state.get("cpc_custom_age", 25)
+        stored_ratings = st.session_state.get("cpc_core_ratings", {})
+        
+        st.divider()
+        
+        # Helper function to render a player card
+        def render_comparison_card(
+            player_name: str,
+            team: str,
+            position: str,
+            age_str: str,
+            similarity: float,
+            trait_ratings: dict,  # trait_name -> (display_val, label)
+            border_color: str,
+            is_custom: bool = False
+        ):
+            """Render a professional player comparison card with Photo | Name | Logo layout."""
+            # Use st.container with border - global CSS handles background styling
+            card_container = st.container(border=True)
+            
+            with card_container:
+                # ROW 1: Photo | Name Card | Logo (3 columns: 2-3-2 ratio)
+                col_photo, col_info, col_logo = st.columns([2, 3, 2])
+                
+                with col_photo:
+                    if is_custom:
+                        st.markdown("""<div style='width: 180px; height: 180px; background: linear-gradient(135deg, #9333EA 0%, #6B21A8 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 16px rgba(147,51,234,0.4);'><span style='font-size: 5em;'>👤</span></div>""", unsafe_allow_html=True)
+                    else:
+                        display_player_photo(player_name, st, size=180, team_name=team)
+                
+                with col_info:
+                    # Compact info card in center
+                    pos_color = "#9333EA" if is_custom else "rgba(255,255,255,0.7)"
+                    team_text = "Custom Build" if is_custom else team
+                    
+                    if is_custom:
+                        st.markdown(f"""<div style='background: rgba(147,51,234,0.15); border-radius: 12px; padding: 15px; text-align: center; border: 1px solid rgba(147,51,234,0.3);'><h3 style='color: #FFFFFF; margin: 0 0 8px 0; font-size: 1.3em; font-weight: 900;'>{player_name}</h3><p style='color: {pos_color}; margin: 0 0 4px 0; font-size: 0.85em; font-weight: 600;'>{position}</p><p style='color: rgba(255,255,255,0.5); margin: 0 0 8px 0; font-size: 0.75em;'>{team_text}</p><p style='color: rgba(255,255,255,0.4); margin: 0 0 10px 0; font-size: 0.7em;'>{age_str}</p><div style='font-size: 1.5em;'>🧬</div><div style='color: rgba(255,255,255,0.5); font-size: 0.65em; margin-top: 4px;'>CUSTOM BUILD</div></div>""", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""<div style='background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1);'><h3 style='color: #FFFFFF; margin: 0 0 8px 0; font-size: 1.3em; font-weight: 900;'>{player_name}</h3><p style='color: {pos_color}; margin: 0 0 4px 0; font-size: 0.85em; font-weight: 500;'>{position}</p><p style='color: rgba(255,255,255,0.5); margin: 0 0 4px 0; font-size: 0.75em;'>{team_text}</p><p style='color: rgba(255,255,255,0.4); margin: 0 0 10px 0; font-size: 0.7em;'>{age_str}</p><div style='font-size: 2em; font-weight: 900; color: {border_color}; line-height: 1;'>{similarity:.1f}%</div><div style='color: rgba(255,255,255,0.5); font-size: 0.65em; margin-top: 4px;'>MATCH</div></div>""", unsafe_allow_html=True)
+                
+                with col_logo:
+                    if is_custom:
+                        st.markdown("""<div style='width: 180px; height: 180px; background: rgba(147, 51, 234, 0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(147, 51, 234, 0.3); margin: 0 auto;'><span style='font-size: 5em;'>🎯</span></div>""", unsafe_allow_html=True)
+                    else:
+                        logo_path = get_team_logo_path(team)
+                        if logo_path:
+                            st.image(logo_path, width=180)
+                        else:
+                            st.markdown(f"""<div style='width: 180px; height: 180px; background: rgba(255,255,255,0.05); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto;'><span style='color: rgba(255,255,255,0.5); font-size: 1em;'>{team}</span></div>""", unsafe_allow_html=True)
+                
+                # ROW 2: Trait ratings below
+                st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+                trait_cols = st.columns(4)
+                for i, trait in enumerate(CORE_TRAITS):
+                    if trait in trait_ratings:
+                        display_val, label = trait_ratings[trait]
+                        bg_color, text_color = get_tier_color(label)
+                        
+                        with trait_cols[i]:
+                            st.markdown(f"""<div style='text-align: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;'><div style='color: rgba(255,255,255,0.5); font-size: 0.65em; text-transform: uppercase; margin-bottom: 6px;'>{trait}</div><div style='color: #FFFFFF; font-size: 1.4em; font-weight: 900; margin-bottom: 6px;'>{display_val}</div><div style='background: {bg_color}; color: {text_color}; padding: 5px 10px; border-radius: 4px; font-size: 0.65em; font-weight: 700; display: inline-block;'>{label}</div></div>""", unsafe_allow_html=True)
+        
+        # =====================================================
+        # ROW 1: Custom Player vs Most Similar Player
+        # =====================================================
+        st.markdown("### 🎯 Comparison")
+        
+        col_custom, col_match = st.columns(2)
+        
+        # --- Custom Player Card (Left) ---
+        with col_custom:
+            # Build trait ratings dict for custom player
+            custom_trait_ratings = {}
+            for trait in CORE_TRAITS:
+                if trait in stored_ratings:
+                    rating = stored_ratings[trait]
+                    custom_trait_ratings[trait] = (rating, rating)  # display_val = label for custom
+            
+            custom_age_str = f"{custom_age} years old"
+            
+            render_comparison_card(
+                player_name=custom_name,
+                team="",
+                position=custom_pos,
+                age_str=custom_age_str,
+                similarity=0,
+                trait_ratings=custom_trait_ratings,
+                border_color="#9333EA",
+                is_custom=True
+            )
+        
+        # --- Most Similar Player Card (Right) ---
+        with col_match:
+            top_player = results_df.iloc[0].to_dict()
+            player_name_raw = top_player.get("Player", "Unknown")
+            team = top_player.get("Team", "Unknown")
+            player_name = resolve_player_full_name(player_name_raw, team)
+            position = top_player.get("Position", "Unknown")
+            similarity = top_player.get("Similarity", 0)
+            age = top_player.get("Age")
+            age_str = f"{int(age)} years old" if pd.notna(age) else ""
+            
+            # Similarity color
+            if similarity >= 90:
+                sim_color = "#008000"
+            elif similarity >= 80:
+                sim_color = "#90EE90"
+            elif similarity >= 70:
+                sim_color = "#FFD700"
+            elif similarity >= 60:
+                sim_color = "#FFA500"
+            else:
+                sim_color = "#FF6666"
+            
+            # Build trait ratings dict
+            match_trait_ratings = {}
+            for trait in CORE_TRAITS:
+                trait_val = top_player.get(trait)
+                if trait_val is not None:
+                    trait_val = float(trait_val)
+                    if fc_mode:
+                        display_val = str(convert_trait_to_fc_rating(trait_val))
+                        label = get_fc_rating_label(convert_trait_to_fc_rating(trait_val))
+                    else:
+                        display_val = f"{trait_val:.2f}"
+                        label = trait_value_to_rating_label(trait_val)
+                    match_trait_ratings[trait] = (display_val, label)
+            
+            render_comparison_card(
+                player_name=player_name,
+                team=team,
+                position=position,
+                age_str=age_str,
+                similarity=similarity,
+                trait_ratings=match_trait_ratings,
+                border_color=sim_color,
+                is_custom=False
+            )
+        
+        st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+        
+        # =====================================================
+        # ROW 2: Next 2 Similar Players (aligned under row 1)
+        # =====================================================
+        if len(results_df) > 1:
+            next_players = results_df.iloc[1:3]  # Get players 2-3 (2 players)
+            cols = st.columns(2)
+            
+            for i, (idx, player_row) in enumerate(next_players.iterrows()):
+                with cols[i]:
+                    player_data = player_row.to_dict()
+                    
+                    # Extract and resolve player info
+                    similarity = player_data.get("Similarity", 0)
+                    player_name_raw = player_data.get("Player", "Unknown")
+                    team = player_data.get("Team", "Unknown")
+                    player_name = resolve_player_full_name(player_name_raw, team)
+                    position = player_data.get("Position", "Unknown")
+                    age = player_data.get("Age")
+                    age_str = f"{int(age)} yrs" if pd.notna(age) else ""
+                    
+                    # Similarity color
+                    if similarity >= 90:
+                        sim_color = "#008000"
+                    elif similarity >= 80:
+                        sim_color = "#90EE90"
+                    elif similarity >= 70:
+                        sim_color = "#FFD700"
+                    elif similarity >= 60:
+                        sim_color = "#FFA500"
+                    else:
+                        sim_color = "#FF6666"
+                    
+                    # Build trait ratings dict
+                    player_trait_ratings = {}
+                    for trait in CORE_TRAITS:
+                        trait_val = player_data.get(trait)
+                        if trait_val is not None:
+                            try:
+                                trait_val = float(trait_val)
+                                if fc_mode:
+                                    display_val = str(convert_trait_to_fc_rating(trait_val))
+                                    label = get_fc_rating_label(convert_trait_to_fc_rating(trait_val))
+                                else:
+                                    display_val = f"{trait_val:.2f}"
+                                    label = trait_value_to_rating_label(trait_val)
+                                player_trait_ratings[trait] = (display_val, label)
+                            except (ValueError, TypeError):
+                                pass
+                    
+                    render_comparison_card(
+                        player_name=player_name,
+                        team=team,
+                        position=position,
+                        age_str=age_str,
+                        similarity=similarity,
+                        trait_ratings=player_trait_ratings,
+                        border_color=sim_color,
+                        is_custom=False
+                    )
+        
+        st.divider()
+        
+        # =====================================================
+        # RESULTS TABLE
+        # =====================================================
+        with st.expander("📋 View All Results", expanded=False):
+            cols_to_show = ["Player", "Team", "Position", "Age", "Similarity", "Ball Winning", "Ball Use", "Aerial", "Defence"]
+            cols_available = [c for c in cols_to_show if c in results_df.columns]
+            display_df = results_df.head(20)[cols_available].copy()
+            
+            # Resolve abbreviated player names
+            if "Player" in display_df.columns and "Team" in display_df.columns:
+                display_df["Player"] = display_df.apply(
+                    lambda row: resolve_player_full_name(row["Player"], row["Team"]), axis=1
+                )
+            
+            display_df["Similarity"] = display_df["Similarity"].apply(lambda x: f"{x:.1f}%")
+            
+            if "Age" in display_df.columns:
+                display_df["Age"] = display_df["Age"].apply(lambda x: int(x) if pd.notna(x) else "—")
+            
+            for col in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
+                if col in display_df.columns:
+                    if fc_mode:
+                        display_df[col] = display_df[col].apply(lambda x: str(convert_trait_to_fc_rating(float(x))) if pd.notna(x) else "—")
+                    else:
+                        display_df[col] = display_df[col].apply(lambda x: f"{float(x):.2f}" if pd.notna(x) else "—")
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
     
     # Professional footer
     render_footer()
