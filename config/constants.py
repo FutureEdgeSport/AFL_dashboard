@@ -17,6 +17,10 @@ DEFAULT_SEASON: int = 2026
 # ============================================================================
 # FILE PATHS
 # ============================================================================
+# Master Workbook - Single Source of Truth (preferred)
+MASTER_FILE: str = "AFL_Master_2012_2025.xlsx"
+
+# Legacy files (used as fallback if master workbook not available)
 TEAM_FILE: str = "AFL Team Ratings.xlsx"
 PLAYER_FILE: str = "AFL Player Ratings.xlsx"
 TRAITS_FILE: str = "2025 Traits ENRICHED.xlsx"
@@ -27,6 +31,43 @@ HISTORICAL_FILE: str = "data/AFL_Historical_2012_2025.xlsx"
 
 LOGO_FOLDER: str = "team_logos"
 PLAYER_PHOTO_FOLDER: str = "player_photos"
+
+# ============================================================================
+# MASTER WORKBOOK SHEET MAPPING
+# ============================================================================
+# Maps master workbook sheet names to their purposes
+MASTER_SHEET_MAP: Dict[str, str] = {
+    # Player Data
+    "Players_2025_Squad": "Full 2025 squad (808 players)",
+    "Players_2025_Stats": "2025 season stats",
+    "Players_2024_Stats": "2024 season stats",
+    "Players_2023_Stats": "2023 season stats",
+    "Players_2022_Stats": "2022 season stats",
+    "Players_2021_Stats": "2021 season stats",
+    "Players_2012_2020": "Historical stats 2012-2020",
+    "Player_Summary": "Career summary with ratings",
+    "Player_Contracts": "Contract expiry data",
+    "Player_Draft": "Draft history",
+    "Player_Traits_2025": "2025 player traits",
+    "Player_Traits_2024": "2024 player traits",
+    "Player_Traits_2023": "2023 player traits",
+    "Player_Traits_Historical": "2021-2022 traits",
+    "Player_Registry": "Master player ID mapping",
+    "Wings": "Wing position players",
+    # Team Data
+    "Teams_2025_Summary": "2025 team summary",
+    "Teams_2025_Full": "Full 2025 team stats",
+    "Teams_2024_Summary": "2024 team summary",
+    "Teams_2023_Summary": "2023 team summary",
+    "Teams_Historical": "2021-2022 team data",
+    "Team_Ladders_All": "Ladder positions 2011-2025",
+    "Team_Reference": "Team ID mapping",
+    # Reference Data
+    "Champion_Data_IDs": "Champion Data player IDs",
+    "Wheelo_Player_Data": "Wheelo player metrics",
+    "Wheelo_Team_Data": "Wheelo team metrics",
+    "Metadata": "Workbook metadata",
+}
 
 # ============================================================================
 # TEAM MAPPINGS

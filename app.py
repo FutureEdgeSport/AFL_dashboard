@@ -18,7 +18,7 @@ from PIL import Image
 # Import centralized configuration
 from config.constants import (
     CURRENT_SEASON, AVAILABLE_SEASONS, DEFAULT_SEASON,
-    TEAM_FILE, PLAYER_FILE, TRAITS_FILE, LADDERS_FILE,
+    TEAM_FILE, PLAYER_FILE, TRAITS_FILE, LADDERS_FILE, MASTER_FILE,
     LOGO_FOLDER, PLAYER_PHOTO_FOLDER,
     TEAM_CODE_MAP, TEAM_CODE_TO_NAME, TEAM_COLOURS, ALL_TEAMS,
     DEPTH_POSITIONS, POSITION_ABBREV_TO_FULL, POSITION_COLOURS,
@@ -47,6 +47,34 @@ from data_pipeline.compute_list_ladder import (
     compute_age_profile_2yr,
     compute_age_profile_1yr,
 )
+
+# Import unified data loader (master workbook with fallback)
+try:
+    from data_loader import (
+        master_workbook_available,
+        load_player_summary_data,
+        load_player_stats_for_season,
+        load_full_squad_data,
+        load_wings_data,
+        load_player_contracts_data,
+        load_player_draft_data,
+        load_team_summary_for_season as dl_load_team_summary,
+        load_team_full_stats,
+        load_ladder_positions,
+        load_traits_for_season,
+        load_player_registry as dl_load_player_registry,
+        load_champion_data_ids,
+        load_wheelo_player_data,
+        load_wheelo_team_data,
+        get_data_source_info,
+        get_player_excel_file,
+        get_team_excel_file,
+        get_traits_excel_file,
+    )
+    DATA_LOADER_AVAILABLE = True
+except ImportError:
+    DATA_LOADER_AVAILABLE = False
+    def master_workbook_available(): return False
 
 # Import Historical Data Module (consolidated 2012-2025 data)
 try:
@@ -764,10 +792,13 @@ USE_HISTORICAL_WORKBOOK = True  # ✅ ENABLED - Using consolidated historical da
 
 def get_data_source_info() -> dict:
     """Return information about current data source configuration."""
+    using_master = DATA_LOADER_AVAILABLE and master_workbook_available()
     return {
         "mode": "computed" if USE_COMPUTED_RATINGS else "excel",
         "description": "Python-computed from raw data" if USE_COMPUTED_RATINGS else "Excel formulas (legacy)",
         "historical_mode": "consolidated" if (USE_HISTORICAL_WORKBOOK and HISTORICAL_DATA_AVAILABLE and historical_workbook_available()) else "individual_files",
+        "using_master_workbook": using_master,
+        "master_file": MASTER_FILE if using_master else None,
         "team_file": TEAM_FILE,
         "player_file": PLAYER_FILE,
         "traits_file": TRAITS_FILE,
@@ -1010,6 +1041,14 @@ def load_team_ladders(season: int, last10: bool = False) -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_afl_ladder_positions() -> pd.DataFrame:
+    """Load historical AFL ladder positions - uses master workbook with fallback."""
+    # Try master workbook first
+    if DATA_LOADER_AVAILABLE and master_workbook_available():
+        df = load_ladder_positions()
+        if not df.empty:
+            return df
+    
+    # Fallback to legacy method
     try:
         df = pd.read_excel("afl_ladders_2011_2025.xlsx")
         team_name_mapping = {
@@ -1052,6 +1091,14 @@ def get_ordinal_suffix(n: int) -> str:
 # ---------------- DATA LOADERS – TEAM SUMMARY ----------------
 @st.cache_data(show_spinner=False)
 def load_team_summary_for_year(season: int) -> pd.DataFrame:
+    """Load team summary for a season - uses master workbook with fallback."""
+    # Try new data loader first (master workbook)
+    if DATA_LOADER_AVAILABLE and master_workbook_available():
+        df = dl_load_team_summary(season)
+        if not df.empty:
+            return df
+    
+    # Fallback to legacy method
     try:
         xl = pd.ExcelFile(TEAM_FILE)
         year_sheet = f"{season} Summary"
@@ -1065,7 +1112,14 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
 # ---------------- DATA LOADERS – PLAYERS ----------------
 @st.cache_data(show_spinner=False)
 def _load_player_summary_excel() -> pd.DataFrame:
-    """Load player summary data from Excel (legacy method)."""
+    """Load player summary data - uses master workbook with fallback to legacy Excel."""
+    # Try new data loader first (master workbook)
+    if DATA_LOADER_AVAILABLE and master_workbook_available():
+        df = load_player_summary_data()
+        if not df.empty:
+            return df
+    
+    # Fallback to legacy method
     try:
         xl = pd.ExcelFile(PLAYER_FILE)
         df = xl.parse("Summary")
@@ -1114,7 +1168,7 @@ def load_player_summary() -> pd.DataFrame:
     Load player summary data - uses computed or Excel based on feature flag.
     
     When USE_COMPUTED_RATINGS=True: Loads from data/computed/player_summary.csv
-    When USE_COMPUTED_RATINGS=False: Loads from AFL Player Ratings.xlsx Summary sheet
+    When USE_COMPUTED_RATINGS=False: Loads from AFL Player Ratings.xlsx Summary sheet (or master workbook)
     """
     if USE_COMPUTED_RATINGS:
         return _load_player_summary_computed()
@@ -1148,11 +1202,41 @@ def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def load_players(season: int) -> pd.DataFrame:
     """
-    Player Ratings loader (AFL Player Ratings.xlsx per-season sheets).
+    Player Ratings loader - uses master workbook with fallback to legacy files.
     This should NOT enforce traits columns.
     Falls back to previous season if requested season is empty/missing.
     """
-    def _load_season(s: int) -> pd.DataFrame:
+    def _load_season_from_master(s: int) -> pd.DataFrame:
+        """Try loading from master workbook first."""
+        if not DATA_LOADER_AVAILABLE or not master_workbook_available():
+            return pd.DataFrame()
+        
+        df = load_player_stats_for_season(s)
+        if df.empty:
+            return df
+        
+        df = _normalise_rating_column(df)
+        cols = [
+            "Player", "Team", "Age", "Age_Decimal", "Position", "Matches",
+            "RatingPoints_Avg", "CoachesVotes_Avg", "TimeOnGround",
+            "Height", "Height_cm", "Jumper", "Jersey", "Number", "Guernsey", "No",
+        ]
+        existing = [c for c in cols if c in df.columns]
+        if not existing or "Player" not in existing:
+            return pd.DataFrame()
+        df = df[existing].copy()
+        
+        if "Player" in df.columns:
+            df["Player"] = df["Player"].astype(str).str.strip()
+        if "Team" in df.columns:
+            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+        if "Position" in df.columns:
+            df["Position"] = df["Position"].astype(str).str.strip()
+        
+        return df
+    
+    def _load_season_legacy(s: int) -> pd.DataFrame:
+        """Fallback to legacy Excel file."""
         try:
             xl = pd.ExcelFile(PLAYER_FILE)
             if str(s) not in xl.sheet_names:
@@ -1162,29 +1246,15 @@ def load_players(season: int) -> pd.DataFrame:
             df = _normalise_rating_column(df)
 
             cols = [
-                "Player",
-                "Team",
-                "Age",
-                "Age_Decimal",
-                "Position",
-                "Matches",
-                "RatingPoints_Avg",
-                "CoachesVotes_Avg",
-                "TimeOnGround",
-                "Height",
-                "Height_cm",
-                "Jumper",
-                "Jersey",
-                "Number",
-                "Guernsey",
-                "No",
+                "Player", "Team", "Age", "Age_Decimal", "Position", "Matches",
+                "RatingPoints_Avg", "CoachesVotes_Avg", "TimeOnGround",
+                "Height", "Height_cm", "Jumper", "Jersey", "Number", "Guernsey", "No",
             ]
             existing = [c for c in cols if c in df.columns]
             if not existing or "Player" not in existing:
                 return pd.DataFrame()
             df = df[existing].copy()
 
-            # clean key columns
             if "Player" in df.columns:
                 df["Player"] = df["Player"].astype(str).str.strip()
             if "Team" in df.columns:
@@ -1197,6 +1267,13 @@ def load_players(season: int) -> pd.DataFrame:
             return pd.DataFrame()
         except Exception:
             return pd.DataFrame()
+    
+    def _load_season(s: int) -> pd.DataFrame:
+        """Load season data - try master first, then fallback."""
+        df = _load_season_from_master(s)
+        if not df.empty:
+            return df
+        return _load_season_legacy(s)
     
     # Try requested season first
     df = _load_season(season)
@@ -1217,8 +1294,51 @@ def load_players(season: int) -> pd.DataFrame:
 def load_full_squad(season: int) -> pd.DataFrame:
     """
     Load full squad list including players who didn't play.
-    Uses '2025 AFL Squads' sheet for 2025, falls back to regular season sheet for other years.
+    Uses master workbook with fallback to legacy files.
     """
+    # Try master workbook first
+    if DATA_LOADER_AVAILABLE and master_workbook_available():
+        df = load_full_squad_data(season)
+        if not df.empty:
+            df = _normalise_rating_column(df)
+            # Map column names
+            col_map = {"Matches_Current": "Matches", "JumperNumber": "Jumper"}
+            df = df.rename(columns=col_map)
+            
+            # If missing RatingPoints_Avg, merge from stats
+            if "RatingPoints_Avg" not in df.columns:
+                stats_df = load_player_stats_for_season(season)
+                if not stats_df.empty:
+                    stats_df = _normalise_rating_column(stats_df)
+                    if "Player" in stats_df.columns and "RatingPoints_Avg" in stats_df.columns:
+                        ratings_cols = ["Player", "RatingPoints_Avg"]
+                        if "CoachesVotes_Avg" in stats_df.columns:
+                            ratings_cols.append("CoachesVotes_Avg")
+                        if "TimeOnGround" in stats_df.columns:
+                            ratings_cols.append("TimeOnGround")
+                        ratings_df = stats_df[ratings_cols].copy()
+                        ratings_df["Player"] = ratings_df["Player"].astype(str).str.strip()
+                        df["Player"] = df["Player"].astype(str).str.strip()
+                        df = df.merge(ratings_df, on="Player", how="left")
+            
+            cols = [
+                "Player", "Team", "Age", "Age_Decimal", "Position", "Matches",
+                "RatingPoints_Avg", "CoachesVotes_Avg", "TimeOnGround",
+                "Height", "Height_cm", "Jumper", "Jersey", "Number", "Guernsey", "No",
+            ]
+            existing = [c for c in cols if c in df.columns]
+            df = df[existing].copy()
+            
+            if "Player" in df.columns:
+                df["Player"] = df["Player"].astype(str).str.strip()
+            if "Team" in df.columns:
+                df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+            if "Position" in df.columns:
+                df["Position"] = df["Position"].astype(str).str.strip()
+            
+            return df
+    
+    # Fallback to legacy method
     try:
         xl = pd.ExcelFile(PLAYER_FILE)
         
@@ -1229,11 +1349,7 @@ def load_full_squad(season: int) -> pd.DataFrame:
             df.columns = df.columns.astype(str).str.strip()
             
             # Map columns from squad sheet to expected columns
-            # Squad sheet uses Matches_Current instead of Matches, etc.
-            col_map = {
-                "Matches_Current": "Matches",
-                "JumperNumber": "Jumper",
-            }
+            col_map = {"Matches_Current": "Matches", "JumperNumber": "Jumper"}
             df = df.rename(columns=col_map)
             
             # The squad sheet doesn't have RatingPoints_Avg, so we need to merge with the season data
@@ -1262,22 +1378,9 @@ def load_full_squad(season: int) -> pd.DataFrame:
             df = _normalise_rating_column(df)
         
         cols = [
-            "Player",
-            "Team",
-            "Age",
-            "Age_Decimal",
-            "Position",
-            "Matches",
-            "RatingPoints_Avg",
-            "CoachesVotes_Avg",
-            "TimeOnGround",
-            "Height",
-            "Height_cm",
-            "Jumper",
-            "Jersey",
-            "Number",
-            "Guernsey",
-            "No",
+            "Player", "Team", "Age", "Age_Decimal", "Position", "Matches",
+            "RatingPoints_Avg", "CoachesVotes_Avg", "TimeOnGround",
+            "Height", "Height_cm", "Jumper", "Jersey", "Number", "Guernsey", "No",
         ]
         existing = [c for c in cols if c in df.columns]
         df = df[existing].copy()
@@ -1412,25 +1515,10 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         "KD": "Key Defender",
     }
 
-    try:
-        # Check available sheets and fall back if needed
-        xl = pd.ExcelFile("2025 Traits ENRICHED.xlsx")
-        available_sheets = xl.sheet_names
-        actual_season = season
-        
-        # If requested season doesn't exist, fall back to most recent available
-        if str(season) not in available_sheets:
-            # Find most recent season available
-            numeric_sheets = [int(s) for s in available_sheets if s.isdigit()]
-            if numeric_sheets:
-                actual_season = max(numeric_sheets)
-            else:
-                st.error(f"No valid season sheets found in traits file")
-                return pd.DataFrame()
-        
-        df = pd.read_excel(xl, sheet_name=str(actual_season))
+    def _process_traits_df(df: pd.DataFrame, actual_season: int) -> pd.DataFrame:
+        """Process and normalize traits dataframe."""
         df.columns = [str(c).strip() for c in df.columns]
-
+        
         # Season
         if "Season" not in df.columns:
             df["Season"] = season
@@ -1443,10 +1531,8 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
                 .map(TEAM_CODE_TO_NAME)
                 .fillna(df["Team"].astype(str).str.strip())
             )
-            # If Team_Full exists, also check and fix any codes there
             if "Team_Full" in df.columns:
                 existing_full = df["Team_Full"].astype(str).str.strip()
-                # Replace any values that are still codes (in the mapping keys)
                 df["Team_Full"] = existing_full.apply(
                     lambda x: TEAM_CODE_TO_NAME.get(x, x) if x in TEAM_CODE_TO_NAME else x
                 )
@@ -1456,12 +1542,11 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             df["Team_Full"] = ""
         df["Team_Full"] = df["Team_Full"].astype(str).str.strip()
 
-        # Player_Full - Fix Sydney abbreviated names (e.g., "E. Gulden" -> "Errol Gulden")
+        # Player_Full
         if "Player_Full" not in df.columns:
             if "Player" in df.columns:
                 df["Player_Full"] = df["Player"].astype(str).str.strip()
             else:
-                st.error(f"ENRICHED traits sheet '{season}' is missing Player/Player_Full.")
                 return pd.DataFrame()
         df["Player_Full"] = df["Player_Full"].astype(str).str.strip()
         
@@ -1469,20 +1554,17 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         try:
             sydney_mask = df["Team_Full"] == "Sydney"
             if sydney_mask.any():
-                # Load player summary to get full names
                 player_summary_path = "data/computed/player_summary.csv"
                 if os.path.exists(player_summary_path):
                     player_summary = pd.read_csv(player_summary_path)
                     sydney_players = player_summary[player_summary["Team"] == "Sydney"]["Player"].tolist()
                     
-                    # Create surname -> full name mapping
                     def extract_surname(name):
                         parts = str(name).strip().split()
                         return parts[-1] if len(parts) >= 2 else name
                     
                     surname_to_full = {extract_surname(n): n for n in sydney_players}
                     
-                    # Apply mapping to Sydney players
                     def fix_sydney_name(row):
                         if row["Team_Full"] == "Sydney":
                             surname = extract_surname(row["Player_Full"])
@@ -1491,10 +1573,9 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
                     
                     df["Player_Full"] = df.apply(fix_sydney_name, axis=1)
         except Exception:
-            pass  # If name fixing fails, continue with original names
+            pass
 
-        # Position_Full - ALWAYS remap from Position column to ensure consistency
-        # The source data may have Position_Full but with incomplete mappings
+        # Position_Full
         if "Position" in df.columns:
             pos_abbrev = df["Position"].astype(str).str.strip()
             df["Position_Full"] = pos_abbrev.map(POSITION_ABBREV_TO_FULL).fillna(pos_abbrev)
@@ -1506,16 +1587,37 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         for c in ["Player_Full", "Team_Full", "Position_Full"]:
             df[c] = df[c].replace({"nan": "", "None": ""})
 
-        # Enhance with Traits API data where available
-        # ONLY for current/recent seasons - API returns latest ratings only,
-        # so applying to historical seasons would overwrite correct historical data
-        # Apply to 2025+ since that's when we have API data
+        # Enhance with Traits API data for recent seasons
         if actual_season >= 2025:
             api_cache = _load_traits_api_cache()
             if api_cache:
                 df = _enhance_traits_with_api(df, api_cache)
 
         return df
+
+    try:
+        # Try master workbook first
+        if DATA_LOADER_AVAILABLE and master_workbook_available():
+            df = load_traits_for_season(season)
+            if not df.empty:
+                return _process_traits_df(df, season)
+        
+        # Fallback to legacy method
+        xl = pd.ExcelFile("2025 Traits ENRICHED.xlsx")
+        available_sheets = xl.sheet_names
+        actual_season = season
+        
+        # If requested season doesn't exist, fall back to most recent available
+        if str(season) not in available_sheets:
+            numeric_sheets = [int(s) for s in available_sheets if s.isdigit()]
+            if numeric_sheets:
+                actual_season = max(numeric_sheets)
+            else:
+                st.error(f"No valid season sheets found in traits file")
+                return pd.DataFrame()
+        
+        df = pd.read_excel(xl, sheet_name=str(actual_season))
+        return _process_traits_df(df, actual_season)
 
     except Exception as e:
         st.error(f"Error loading ENRICHED traits for {season}: {e}")
@@ -2231,8 +2333,20 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
     # Track ratings for each cell to calculate averages
     ratings_grid = {pos: {band: [] for band in AGE_BANDS} for pos in DEPTH_POSITIONS}
 
-    if rating_col in df_team.columns:
-        df_sorted = df_team.sort_values(rating_col, ascending=False)
+    # Calculate weighted rating for sorting (Rating × Matches) - same as List Ladder
+    # Look for matches column in df_team or fall back to raw rating
+    matches_col_display = None
+    for col_name in ['Matches', '2025 Matches', 'Total Matches']:
+        if col_name in df_team.columns:
+            matches_col_display = col_name
+            break
+    
+    if matches_col_display:
+        df_team = df_team.copy()
+        df_team["_Weighted_Sort"] = pd.to_numeric(df_team[rating_col], errors="coerce").fillna(0) * pd.to_numeric(df_team[matches_col_display], errors="coerce").fillna(0)
+        df_sorted = df_team.sort_values("_Weighted_Sort", ascending=False, na_position='last')
+    elif rating_col in df_team.columns:
+        df_sorted = df_team.sort_values(rating_col, ascending=False, na_position='last')
     else:
         df_sorted = df_team.copy()
 
@@ -2284,9 +2398,12 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         
         left_html = "".join(left_parts)
         
-        # Right side: rating box (if exists)
+        # Right side: rating box
+        # Show rating if available, or "N/A" badge for players who didn't play (no 2025 games)
         rating_box_html = ""
-        if rating_col in df_team.columns and pd.notna(rating) and str(rating).strip() != "":
+        has_valid_rating = rating_col in df_team.columns and pd.notna(rating) and str(rating).strip() not in ("", "nan")
+        
+        if has_valid_rating:
             try:
                 rating_float = float(rating)
                 bg_color, text_color = get_rating_color_team_context(
@@ -2303,6 +2420,9 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 rating_box_html = f"<span style='display:inline-block;padding:8px 16px;border-radius:10px;background:{bg_color};color:{text_color};font-weight:900;font-size:1.5em;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.2);min-width:50px;text-align:center;'>{rating_display}</span>"
             except Exception:
                 rating_box_html = f"<span>{rating}</span>"
+        else:
+            # Player didn't play - show N/A badge in grey
+            rating_box_html = f"<span style='display:inline-block;padding:8px 16px;border-radius:10px;background:#666666;color:#ffffff;font-weight:900;font-size:1.2em;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid #444444;min-width:50px;text-align:center;'>N/A</span>"
         
         # Combine left and right with flexbox, top-aligned - ENHANCED PLAYER CARD
         if rating_box_html:
@@ -2329,99 +2449,160 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             # Remove duplicate columns
             all_teams_df = all_teams_df.loc[:, ~all_teams_df.columns.duplicated()]
         
-        # Get all ratings for percentile calculation (same as List Ladder)
-        all_ratings = pd.to_numeric(all_teams_df[rating_col], errors="coerce").dropna()
+        # Load Wing players mapping (same as List Ladder) - critical for accurate position rankings
+        wing_players_by_lastname_team = {}
+        try:
+            wings_file_path = BASE_DIR / "data" / "AFL_Historical_2012_2025.xlsx"
+            wings_df = pd.read_excel(wings_file_path, sheet_name="Wings")
+            for _, wrow in wings_df.iterrows():
+                wplayer_name = wrow.get("Player", "")
+                wteam = wrow.get("Team", "")
+                if pd.notna(wplayer_name) and pd.notna(wteam):
+                    name_parts = str(wplayer_name).strip().split()
+                    if len(name_parts) >= 1:
+                        last_name = name_parts[-1].lower()
+                        team_str = str(wteam).strip().lower()
+                        wing_players_by_lastname_team[(last_name, team_str)] = "Wing"
+        except Exception:
+            pass  # Continue without Wing mapping if file not available
         
-        def get_rating_points(rating_val, all_ratings_clean):
-            """Convert rating to points based on percentile - 5 tier system.
+        # Load Summary positions mapping (same as List Ladder) - for accurate position lookup
+        summary_positions = {}
+        try:
+            summary_xl = pd.ExcelFile(PLAYER_FILE)
+            summary_for_pos = summary_xl.parse("Summary")
+            summary_for_pos.columns = summary_for_pos.columns.astype(str).str.strip()
+            for _, srow in summary_for_pos.iterrows():
+                sp_name = srow.get("Player", "")
+                sp_position = srow.get("Position", "")
+                if pd.notna(sp_name) and pd.notna(sp_position):
+                    summary_positions[str(sp_name).strip()] = str(sp_position).strip()
+        except Exception:
+            pass  # Continue without Summary positions if loading fails
+        
+        # Function to get corrected depth position (matches List Ladder logic EXACTLY)
+        def get_corrected_depth_position(player_name, team_name, fallback_position):
+            player_key = str(player_name).strip() if pd.notna(player_name) else ""
+            team_key = str(team_name).strip().lower() if pd.notna(team_name) else ""
             
-            5-Tier System (equal 20% bands):
-                - Elite: Top 20% = 4 points
-                - Good: 60-80% = 3 points
-                - Average: 40-60% = 2 points
-                - Below Average: 20-40% = 1 point
-                - Poor: Bottom 20% = 0 points
+            # First check if player is a Wing (by last name + team match)
+            if player_key:
+                name_parts = player_key.split()
+                if len(name_parts) >= 2:
+                    last_name = name_parts[-1].lower()
+                    if (last_name, team_key) in wing_players_by_lastname_team:
+                        return "Wing"
+            
+            # Then check Summary tab positions (same as List Ladder)
+            if player_key in summary_positions:
+                summary_pos = summary_positions[player_key]
+                return map_position_to_depth(summary_pos)
+            
+            # Otherwise use the position from player data
+            return map_position_to_depth(fallback_position)
+        
+        # Find matches column (could be 'Total Matches', '2025 Matches', or 'Matches')
+        matches_col = None
+        for col_name in ['2025 Matches', 'Total Matches', 'Matches']:
+            if col_name in all_teams_df.columns:
+                matches_col = col_name
+                break
+        
+        # Calculate weighted rating: Rating × Matches (rewards sustained performance)
+        if matches_col and matches_col in all_teams_df.columns:
+            all_teams_df = all_teams_df.copy()
+            all_teams_df["_Matches"] = pd.to_numeric(all_teams_df[matches_col], errors="coerce").fillna(0)
+            all_teams_df["_Weighted_Rating"] = pd.to_numeric(all_teams_df[rating_col], errors="coerce").fillna(0) * all_teams_df["_Matches"]
+            all_weighted = all_teams_df["_Weighted_Rating"].dropna()
+        else:
+            # Fallback to raw ratings if no matches column
+            all_teams_df = all_teams_df.copy()
+            all_teams_df["_Weighted_Rating"] = pd.to_numeric(all_teams_df[rating_col], errors="coerce").fillna(0)
+            all_weighted = all_teams_df["_Weighted_Rating"].dropna()
+        
+        def get_rating_points(weighted_val, all_weighted_clean):
+            """Convert weighted rating (Rating × Matches) to points based on percentile.
+            
+            4-Tier System (matches List Ladder):
+                - Elite: Top 15% = 3 points
+                - Good: Top 40% = 1 point
+                - Average: Top 65% = 0.5 points
+                - Poor: Bottom 35% = 0 points
             """
-            if pd.isna(rating_val):
+            if pd.isna(weighted_val) or weighted_val == 0:
                 return 0
             
-            percentile = (all_ratings_clean <= rating_val).mean()
+            percentile = (all_weighted_clean <= weighted_val).mean()
             
-            if percentile >= 0.80:
-                return 4    # Elite - top 20%
+            if percentile >= 0.85:
+                return 3    # Elite - top 15%
             elif percentile >= 0.60:
-                return 3    # Good - 60-80%
-            elif percentile >= 0.40:
-                return 2    # Average - 40-60%
-            elif percentile >= 0.20:
-                return 1    # Below Average - 20-40%
+                return 1    # Good - top 40%
+            elif percentile >= 0.35:
+                return 0.5  # Average - top 65%
             else:
-                return 0    # Poor - bottom 20%
+                return 0    # Poor - bottom 35%
         
         # Get unique teams
         teams = all_teams_df["Team"].dropna().unique()
         
-        # Calculate age band rankings (column rankings) - TOTAL POINTS not average
+        # Calculate age band rankings (column rankings) - TOTAL POINTS using weighted rating
         age_band_points = {team: {band: 0 for band in AGE_BANDS} for team in teams}
         
         for team in teams:
             team_df = all_teams_df[all_teams_df["Team"] == team]
             for _, row in team_df.iterrows():
                 player_age = row.get(age_col, None)
-                player_rating = row.get(rating_col, None)
+                weighted_rating = row.get("_Weighted_Rating", None)
                 
-                if pd.notna(player_age) and pd.notna(player_rating):
+                if pd.notna(player_age) and pd.notna(weighted_rating):
                     age_band = map_age_to_band(player_age)
                     try:
-                        points = get_rating_points(float(player_rating), all_ratings)
+                        points = get_rating_points(float(weighted_rating), all_weighted)
                         age_band_points[team][age_band] += points
                     except Exception:
                         pass
         
         # Rank teams for each age band based on TOTAL POINTS
+        # Use pandas rank with method='min' for consistency (tied teams get same rank)
         for band in AGE_BANDS:
-            team_totals = []
-            for team in teams:
-                total_pts = age_band_points[team][band]
-                team_totals.append((team, total_pts))
+            pts_series = pd.Series({team: age_band_points[team][band] for team in teams})
+            ranks = pts_series.rank(ascending=False, method='min').astype(int)
             
-            # Sort by total points (descending) and assign ranks
-            team_totals.sort(key=lambda x: x[1], reverse=True)
-            for rank, (team, pts) in enumerate(team_totals, 1):
-                if team == df_team["Team"].iloc[0]:
-                    age_band_rankings[band] = (rank, len(teams), pts)
-                    break
+            selected_team_name = df_team["Team"].iloc[0]
+            if selected_team_name in ranks.index:
+                age_band_rankings[band] = (ranks[selected_team_name], len(teams), pts_series[selected_team_name])
         
-        # Calculate position rankings (row rankings) - TOTAL POINTS not average
+        # Calculate position rankings (row rankings) - TOTAL POINTS using weighted rating
         position_points = {team: {pos: 0 for pos in DEPTH_POSITIONS} for team in teams}
         
         for team in teams:
             team_df = all_teams_df[all_teams_df["Team"] == team]
             for _, row in team_df.iterrows():
                 player_pos_raw = row.get(pos_col, None)
-                player_rating = row.get(rating_col, None)
+                player_name = row.get(player_col, None)
+                weighted_rating = row.get("_Weighted_Rating", None)
                 
-                if pd.notna(player_pos_raw) and pd.notna(player_rating):
-                    depth_pos = map_position_to_depth(player_pos_raw)
+                if pd.notna(player_pos_raw) and pd.notna(weighted_rating):
+                    # Use corrected depth position (with Wing mapping) - matches List Ladder
+                    depth_pos = get_corrected_depth_position(player_name, team, player_pos_raw)
                     try:
-                        points = get_rating_points(float(player_rating), all_ratings)
+                        points = get_rating_points(float(weighted_rating), all_weighted)
                         position_points[team][depth_pos] += points
                     except Exception:
                         pass
         
         # Rank teams for each position based on TOTAL POINTS
+        # Use pandas rank with method='min' to match List Ladder exactly (tied teams get same rank)
         for pos in DEPTH_POSITIONS:
-            team_totals = []
-            for team in teams:
-                total_pts = position_points[team][pos]
-                team_totals.append((team, total_pts))
+            # Build a Series of points for all teams
+            pts_series = pd.Series({team: position_points[team][pos] for team in teams})
+            # Use rank with method='min' - same as List Ladder
+            ranks = pts_series.rank(ascending=False, method='min').astype(int)
             
-            # Sort by total points (descending) and assign ranks
-            team_totals.sort(key=lambda x: x[1], reverse=True)
-            for rank, (team, pts) in enumerate(team_totals, 1):
-                if team == df_team["Team"].iloc[0]:
-                    position_rankings[pos] = (rank, len(teams), pts)
-                    break
+            selected_team_name = df_team["Team"].iloc[0]
+            if selected_team_name in ranks.index:
+                position_rankings[pos] = (ranks[selected_team_name], len(teams), pts_series[selected_team_name])
 
     # Helper function to get ordinal suffix
     def get_ordinal(n):
@@ -2725,6 +2906,56 @@ if "page_override" not in st.session_state:
 def render_grouped_navigation():
     """Render grouped sidebar navigation with styled sections."""
     selected = st.session_state.selected_page
+    
+    # CSS to make the logo sticky at top of sidebar with proper masking
+    st.markdown("""
+    <style>
+    /* Fixed logo container at top of sidebar - solid background to hide scrolling content */
+    .fixed-logo-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 300px;
+        z-index: 9999;
+        background: rgb(14, 17, 23);
+        padding: 70px 15px 15px 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .fixed-logo-container img {
+        width: 100%;
+        max-width: 250px;
+        display: block;
+        margin: 0 auto;
+    }
+    .fixed-logo-container hr {
+        margin: 12px 0 0 0;
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    /* Add padding to sidebar content to account for fixed logo */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        padding-top: 160px !important;
+    }
+    /* Ensure sidebar scrolls properly and content is clipped */
+    [data-testid="stSidebar"] > div:first-child {
+        overflow-y: auto;
+        padding-top: 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Future Edge Logo - fixed at top of sidebar using HTML
+    logo_path = os.path.join(os.path.dirname(__file__), "team_logos", "Logo Transparent.png")
+    if os.path.exists(logo_path):
+        import base64
+        with open(logo_path, "rb") as f:
+            logo_base64 = base64.b64encode(f.read()).decode()
+        st.sidebar.markdown(f"""
+        <div class="fixed-logo-container">
+            <img src="data:image/png;base64,{logo_base64}" alt="FutureEdge Logo">
+            <hr>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Custom CSS for navigation groups
     st.sidebar.markdown("""
@@ -5228,6 +5459,313 @@ elif page == "Team Compare":
         </div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # ========== TEAM FAVOURED INDICATOR ==========
+    st.markdown("---")
+    
+    # Define the 6 key pillars with their data columns
+    # Note: Columns are named "Ranking" in the data but values are actually ratings (higher = better)
+    pillar_config = {
+        "Ball Winning": "Ball Winning Ranking",
+        "Ball Movement": "Ball Movement Ranking",
+        "Scoring": "Scoring Ranking",
+        "Defence": "Defence Ranking",
+        "Pressure": "Pressure Ranking",
+        "Health Check": "Health Check Ranking"
+    }
+    
+    # Check which pillars have data
+    available_pillars = {}
+    for pillar_name, col_name in pillar_config.items():
+        if col_name in ladders.columns:
+            try:
+                t1_val = float(team1_row.get(col_name, 0))
+                t2_val = float(team2_row.get(col_name, 0))
+                if not pd.isna(t1_val) and not pd.isna(t2_val):
+                    available_pillars[pillar_name] = col_name
+            except:
+                pass
+    
+    if available_pillars:
+        st.markdown("""
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <div style='font-size: 24px; font-weight: 900; color: #FFFFFF;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        letter-spacing: 0.02em;'>
+                ⚖️ Team Favoured Indicator
+            </div>
+            <div style='font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px;'>
+                Adjust pillar weightings to see which team is favoured (must sum to 100%)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Initialize session state for pillar weights if not exists
+        if "pillar_weights" not in st.session_state:
+            # Default equal weights across available pillars
+            num_pillars = len(available_pillars)
+            default_weight = 100 // num_pillars
+            remainder = 100 - (default_weight * num_pillars)
+            st.session_state.pillar_weights = {}
+            for i, pillar in enumerate(available_pillars.keys()):
+                # Add remainder to first pillar to ensure sum is exactly 100
+                st.session_state.pillar_weights[pillar] = default_weight + (remainder if i == 0 else 0)
+        
+        # Ensure all available pillars have weights
+        for pillar in available_pillars.keys():
+            if pillar not in st.session_state.pillar_weights:
+                st.session_state.pillar_weights[pillar] = 0
+        
+        # Pillar weight sliders in an expander
+        with st.expander("⚙️ Adjust Pillar Weightings", expanded=False):
+            st.markdown("""
+            <div style='font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 16px; padding: 12px;
+                        background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid #FFD700;'>
+                <strong>How it works:</strong> Each pillar's rating is compared between teams. Higher ratings are better. 
+                Adjust the weights to prioritize what matters most to you. Weights must sum to 100%.
+            </div>
+            """, unsafe_allow_html=True)
+            
+            pillar_list = list(available_pillars.keys())
+            
+            # Quick preset buttons with tooltips showing values
+            st.markdown("**Quick Presets:**")
+            
+            # Define presets with descriptions
+            preset_definitions = {
+                "equal": {"Ball Winning": 17, "Ball Movement": 17, "Scoring": 17, "Defence": 17, "Pressure": 16, "Health Check": 16},
+                "offensive": {"Ball Winning": 15, "Ball Movement": 30, "Scoring": 35, "Defence": 5, "Pressure": 10, "Health Check": 5},
+                "defensive": {"Ball Winning": 20, "Ball Movement": 10, "Scoring": 10, "Defence": 35, "Pressure": 20, "Health Check": 5},
+                "balanced": {"Ball Winning": 20, "Ball Movement": 20, "Scoring": 20, "Defence": 20, "Pressure": 15, "Health Check": 5}
+            }
+            
+            # Show preset descriptions
+            st.caption("**Equal:** 17% each | **Offensive:** Scoring 35%, Movement 30% | **Defensive:** Defence 35%, Pressure 20% | **Balanced:** 20% on core pillars")
+            
+            preset_cols = st.columns(4)
+            preset_clicked = None
+            with preset_cols[0]:
+                if st.button("Equal", key="preset_equal", use_container_width=True, help="17% Ball Win, 17% Movement, 17% Scoring, 17% Defence, 16% Pressure, 16% Health"):
+                    preset_clicked = "equal"
+            with preset_cols[1]:
+                if st.button("Offensive", key="preset_offense", use_container_width=True, help="15% Ball Win, 30% Movement, 35% Scoring, 5% Defence, 10% Pressure, 5% Health"):
+                    preset_clicked = "offensive"
+            with preset_cols[2]:
+                if st.button("Defensive", key="preset_defense", use_container_width=True, help="20% Ball Win, 10% Movement, 10% Scoring, 35% Defence, 20% Pressure, 5% Health"):
+                    preset_clicked = "defensive"
+            with preset_cols[3]:
+                if st.button("Balanced", key="preset_balanced", use_container_width=True, help="20% Ball Win, 20% Movement, 20% Scoring, 20% Defence, 15% Pressure, 5% Health"):
+                    preset_clicked = "balanced"
+            
+            # Apply preset BEFORE creating widgets
+            if preset_clicked:
+                presets = preset_definitions[preset_clicked]
+                for p in pillar_list:
+                    st.session_state.pillar_weights[p] = presets.get(p, 0)
+                st.rerun()
+            
+            st.markdown("---")
+            st.markdown("**Pillar Weights:**")
+            
+            # Create columns for number inputs (3 per row)
+            weights = {}
+            
+            # First row of inputs
+            cols1 = st.columns(3)
+            for i, pillar in enumerate(pillar_list[:3]):
+                with cols1[i]:
+                    weights[pillar] = st.number_input(
+                        f"{pillar}",
+                        min_value=0,
+                        max_value=100,
+                        value=st.session_state.pillar_weights.get(pillar, 0),
+                        step=1,
+                        key=f"weight_{pillar}",
+                        help=f"Weight for {pillar} ranking (0-100%)"
+                    )
+            
+            # Second row of inputs (if more than 3 pillars)
+            if len(pillar_list) > 3:
+                cols2 = st.columns(3)
+                for i, pillar in enumerate(pillar_list[3:6]):
+                    with cols2[i]:
+                        weights[pillar] = st.number_input(
+                            f"{pillar}",
+                            min_value=0,
+                            max_value=100,
+                            value=st.session_state.pillar_weights.get(pillar, 0),
+                            step=1,
+                            key=f"weight_{pillar}",
+                            help=f"Weight for {pillar} ranking (0-100%)"
+                        )
+            
+            # Update session state from current widget values
+            st.session_state.pillar_weights = weights
+            
+            # Show current sum and validation
+            total_weight = sum(weights.values())
+            if total_weight == 100:
+                st.success(f"✅ Weights sum to 100% - Ready!")
+            elif total_weight < 100:
+                st.warning(f"⚠️ Weights sum to {total_weight}% - Add {100 - total_weight}% more")
+            else:
+                st.error(f"❌ Weights sum to {total_weight}% - Remove {total_weight - 100}%")
+        
+        # Calculate weighted score for each team
+        weights = st.session_state.pillar_weights
+        total_weight = sum(weights.values())
+        
+        if total_weight == 100:
+            # Calculate weighted ratings (higher rating = better)
+            team1_weighted_score = 0
+            team2_weighted_score = 0
+            pillar_breakdown = []
+            
+            for pillar_name, col_name in available_pillars.items():
+                weight = weights.get(pillar_name, 0)
+                if weight == 0:
+                    continue
+                    
+                try:
+                    # Get ratings (higher = better, typically 0-100 scale)
+                    t1_rating = float(team1_row.get(col_name, 50))
+                    t2_rating = float(team2_row.get(col_name, 50))
+                    
+                    # Apply weight directly (ratings are already on a scale where higher = better)
+                    # Normalize to 0-100 scale if not already
+                    t1_weighted = (t1_rating / 100) * weight
+                    t2_weighted = (t2_rating / 100) * weight
+                    
+                    team1_weighted_score += t1_weighted
+                    team2_weighted_score += t2_weighted
+                    
+                    # Track breakdown (higher rating wins)
+                    pillar_breakdown.append({
+                        "pillar": pillar_name,
+                        "weight": weight,
+                        "t1_rating": t1_rating,
+                        "t2_rating": t2_rating,
+                        "t1_contribution": t1_weighted,
+                        "t2_contribution": t2_weighted,
+                        "winner": team1 if t1_rating > t2_rating else (team2 if t2_rating > t1_rating else "Tie")
+                    })
+                except:
+                    continue
+            
+            # Calculate favour percentage (how much one team is favoured over another)
+            total_possible = 100  # Maximum possible weighted score
+            team1_pct = (team1_weighted_score / total_possible) * 100 if total_possible > 0 else 50
+            team2_pct = (team2_weighted_score / total_possible) * 100 if total_possible > 0 else 50
+            
+            # Calculate relative favour on a -100 to +100 scale (negative = team1, positive = team2)
+            # Then convert to 0-100 scale where 50 = even, 0 = team1 fully favoured, 100 = team2 fully favoured
+            score_diff = team2_weighted_score - team1_weighted_score
+            max_diff = total_possible  # Maximum possible difference
+            
+            # Normalize to 0-100 scale centered at 50
+            favour_position = 50 + (score_diff / max_diff) * 50 if max_diff > 0 else 50
+            favour_position = max(0, min(100, favour_position))  # Clamp to 0-100
+            
+            # Determine which team is favoured and by how much
+            if favour_position < 45:
+                favoured_team = team1
+                favour_strength = 50 - favour_position
+                favour_desc = "Strongly" if favour_strength > 15 else "Moderately" if favour_strength > 8 else "Slightly"
+            elif favour_position > 55:
+                favoured_team = team2
+                favour_strength = favour_position - 50
+                favour_desc = "Strongly" if favour_strength > 15 else "Moderately" if favour_strength > 8 else "Slightly"
+            else:
+                favoured_team = None
+                favour_strength = abs(50 - favour_position)
+                favour_desc = "Even"
+            
+            # Get team colors for the gradient
+            team1_color = "#6496FF"  # Blue
+            team2_color = "#FF6464"  # Red
+            
+            # Build verdict text
+            if favoured_team:
+                verdict_text = f"{favour_desc} Favours {favoured_team}"
+            else:
+                verdict_text = "Too Close to Call"
+            
+            # Create the continuum display using separate st.markdown calls for reliability
+            st.markdown(f"""
+            <div style="margin: 20px 0; padding: 24px; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+                        border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                    <div style="font-size: 18px; font-weight: 700; color: {team1_color};">{team1}</div>
+                    <div style="font-size: 18px; font-weight: 700; color: {team2_color};">{team2}</div>
+                </div>
+                <div style="position: relative; height: 40px; background: linear-gradient(to right, {team1_color}, #333333 50%, {team2_color});
+                            border-radius: 20px; margin-bottom: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
+                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; 
+                                background: rgba(255,255,255,0.3); transform: translateX(-50%);"></div>
+                    <div style="position: absolute; left: {favour_position:.1f}%; top: 50%; transform: translate(-50%, -50%);
+                                width: 24px; height: 24px; background: #FFD700; border-radius: 50%; 
+                                border: 3px solid #FFFFFF; box-shadow: 0 0 12px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.4);"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5);">
+                    <span>← Favours {team1}</span>
+                    <span>EVEN</span>
+                    <span>Favours {team2} →</span>
+                </div>
+                <div style="text-align: center; margin-top: 20px; padding: 16px; 
+                            background: rgba(255,215,0,0.1); border-radius: 12px; border: 1px solid rgba(255,215,0,0.3);">
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                        Weighted Verdict
+                    </div>
+                    <div style="font-size: 24px; font-weight: 900; color: #FFD700;">
+                        {verdict_text}
+                    </div>
+                    <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 8px;">
+                        Based on weighted pillar ratings
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Pillar breakdown table in expander
+            with st.expander("📊 View Pillar Breakdown", expanded=False):
+                if pillar_breakdown:
+                    breakdown_data = []
+                    for pb in pillar_breakdown:
+                        winner_icon = "🏆" if pb["winner"] != "Tie" else "🤝"
+                        breakdown_data.append({
+                            "Pillar": pb["pillar"],
+                            "Weight": f"{pb['weight']}%",
+                            f"{team1} Rating": f"{pb['t1_rating']:.1f}",
+                            f"{team2} Rating": f"{pb['t2_rating']:.1f}",
+                            "Pillar Winner": f"{winner_icon} {pb['winner']}"
+                        })
+                    
+                    breakdown_df = pd.DataFrame(breakdown_data)
+                    st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+                    
+                    # Summary stats
+                    team1_wins = sum(1 for pb in pillar_breakdown if pb["winner"] == team1)
+                    team2_wins = sum(1 for pb in pillar_breakdown if pb["winner"] == team2)
+                    ties = sum(1 for pb in pillar_breakdown if pb["winner"] == "Tie")
+                    
+                    st.markdown(f"""
+                    <div style="display: flex; justify-content: center; gap: 40px; margin-top: 16px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 28px; font-weight: 900; color: {team1_color};">{team1_wins}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.6);">{team1} Pillar Wins</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.5);">{ties}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.6);">Ties</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 28px; font-weight: 900; color: {team2_color};">{team2_wins}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.6);">{team2} Pillar Wins</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        else:
+            st.info("⚠️ Adjust the pillar weights above to sum to exactly 100% to see the Team Favoured indicator.")
     
     # ========== RADAR CHARTS AND COLUMN CHART SECTION ==========
     st.markdown("---")
@@ -7778,10 +8316,15 @@ elif page == "Player Traits":
 elif page == "Depth Chart":
     render_page_header("Depth Chart", "Positional Player Rankings", "📋")
 
-    summary_df = load_player_summary()
+    # Depth Chart needs FULL roster data including Wings and players who didn't play
+    # Always load from Excel Summary sheet (not computed CSV which only has players who played)
+    summary_df = _load_player_summary_excel()
     if summary_df.empty:
         st.error("Could not load Summary sheet from AFL Player Ratings.")
         st.stop()
+    
+    # Load 2025 players data (same source as List Ladder) for ranking calculations
+    players_2025_df = load_players(CURRENT_SEASON)
 
     # Normalize team names in dropdown to match logic
     teams = sorted([
@@ -7822,18 +8365,41 @@ elif page == "Depth Chart":
         df_team[rating_col_name], errors="coerce"
     )
     
-    # Also add RatingPoints_Avg to the full summary_df for ranking calculations
-    summary_df_with_ratings = summary_df.copy()
-    summary_df_with_ratings["RatingPoints_Avg"] = pd.to_numeric(
-        summary_df_with_ratings[rating_col_name], errors="coerce"
-    )
+    # IMPORTANT: df_team (from Summary) is used for DISPLAY - shows ALL squad players
+    # This includes players who didn't play in 2025 (they'll have NaN ratings but still appear)
+    # Ensure all players appear even without ratings
+    
+    # For RANKING calculations: use 2025 players data (same as List Ladder) when "2025 (current)" selected
+    # Players who didn't play (not in 2025 data) don't affect rankings
+    if rating_col_name == "2025" and not players_2025_df.empty:
+        # Use 2025 players data for ranking (same data source as List Ladder)
+        # Only players who actually played in 2025 will affect rankings
+        ranking_df = players_2025_df.copy()
+        # Ensure it has RatingPoints_Avg and Matches
+        if "RatingPoints_Avg" not in ranking_df.columns:
+            ranking_df["RatingPoints_Avg"] = 0
+        if "Matches" not in ranking_df.columns:
+            ranking_df["Matches"] = 0
+    else:
+        # Use Summary data for other rating types (Last 2 Average, Career)
+        ranking_df = summary_df.copy()
+        ranking_df["RatingPoints_Avg"] = pd.to_numeric(
+            ranking_df[rating_col_name], errors="coerce"
+        )
+        # Get matches from Summary - use '2025 Matches' or 'Total Matches'
+        if '2025 Matches' in ranking_df.columns:
+            ranking_df["Matches"] = pd.to_numeric(ranking_df['2025 Matches'], errors="coerce").fillna(0)
+        elif 'Total Matches' in ranking_df.columns:
+            ranking_df["Matches"] = pd.to_numeric(ranking_df['Total Matches'], errors="coerce").fillna(0)
+        else:
+            ranking_df["Matches"] = 0
 
     st.markdown(
         f"#### Squad Depth Grid – {selected_team} "
         f"({rating_label}, coloured by team percentile)"
     )
 
-    html = build_depth_chart_html(df_team, summary_df_with_ratings)
+    html = build_depth_chart_html(df_team, ranking_df)
     st.markdown(html, unsafe_allow_html=True)
     
     # Professional footer
@@ -8062,22 +8628,34 @@ elif page == "List Ladder":
         st.stop()
 
     # Ensure required columns exist
-    required_cols = ["Player", "Team", "Position", "RatingPoints_Avg"]
+    required_cols = ["Player", "Team", "Position", "RatingPoints_Avg", "Matches"]
     missing_cols = [c for c in required_cols if c not in players_df.columns]
     if missing_cols:
         st.error(f"Missing required columns: {', '.join(missing_cols)}")
         st.stop()
 
-    # Get all ratings for percentile calculation
-    all_ratings = players_df["RatingPoints_Avg"].dropna()
+    # Fill missing Matches with 0
+    if "Matches" in players_df.columns:
+        players_df["Matches"] = players_df["Matches"].fillna(0)
+    else:
+        players_df["Matches"] = 0
+
+    # Calculate weighted score: RatingPoints_Avg × Matches
+    # This rewards players who maintain high ratings over many games
+    # A player with 100 rating over 22 games = 2200 weighted score
+    # A player with 100 rating over 1 game = 100 weighted score
+    players_df["Weighted_Rating"] = players_df["RatingPoints_Avg"].fillna(0) * players_df["Matches"]
     
-    # Define get_rating_points function
-    def get_rating_points(rating_val, all_ratings_clean):
-        """Convert rating to points based on percentile."""
-        if pd.isna(rating_val):
+    # Get all weighted ratings for percentile calculation
+    all_weighted = players_df["Weighted_Rating"].dropna()
+    
+    # Define get_rating_points function using weighted score
+    def get_rating_points(weighted_val, all_weighted_clean):
+        """Convert weighted rating (Rating × Matches) to points based on percentile."""
+        if pd.isna(weighted_val) or weighted_val == 0:
             return 0
         
-        percentile = (all_ratings_clean <= rating_val).mean()
+        percentile = (all_weighted_clean <= weighted_val).mean()
         
         if percentile >= 0.85:
             return 3  # dark green - top 15%
@@ -8103,23 +8681,56 @@ elif page == "List Ladder":
             if pd.notna(player_name) and pd.notna(position):
                 summary_positions[str(player_name).strip()] = str(position).strip()
     
-    # Map players to depth positions, using Summary tab positions when available
-    def get_depth_position(player_name, fallback_position):
-        # First check if player has position in Summary tab
-        if pd.notna(player_name) and str(player_name).strip() in summary_positions:
-            summary_pos = summary_positions[str(player_name).strip()]
+    # Load Wing players from AFL_Historical Wings sheet (65 wing players across all teams)
+    wing_players_by_lastname_team = {}
+    try:
+        wings_df = pd.read_excel("data/AFL_Historical_2012_2025.xlsx", sheet_name="Wings")
+        for _, row in wings_df.iterrows():
+            player_name = row.get("Player", "")
+            team = row.get("Team", "")
+            if pd.notna(player_name) and pd.notna(team):
+                # Extract last name for matching (handles full names like "Errol Gulden")
+                name_parts = str(player_name).strip().split()
+                if len(name_parts) >= 1:
+                    last_name = name_parts[-1].lower()
+                    team_str = str(team).strip().lower()
+                    key = (last_name, team_str)
+                    wing_players_by_lastname_team[key] = "Wing"
+    except Exception:
+        pass  # If Wings sheet not available, continue without it
+    
+    # Map players to depth positions, using Traits for Wings, then Summary, then fallback
+    def get_depth_position(player_name, team_name, fallback_position):
+        player_key = str(player_name).strip() if pd.notna(player_name) else ""
+        team_key = str(team_name).strip().lower() if pd.notna(team_name) else ""
+        
+        # First check if player is a Wing (by last name + team match from Traits)
+        if player_key:
+            name_parts = player_key.split()
+            if len(name_parts) >= 2:
+                last_name = name_parts[-1].lower()
+                if (last_name, team_key) in wing_players_by_lastname_team:
+                    return "Wing"
+        
+        # Then check Summary tab positions
+        if player_key in summary_positions:
+            summary_pos = summary_positions[player_key]
             return map_position_to_depth(summary_pos)
+        
         # Otherwise use the position from player data
         return map_position_to_depth(fallback_position) if pd.notna(fallback_position) else "Midfielder"
     
     players_df["Depth_Position"] = players_df.apply(
-        lambda row: get_depth_position(row.get("Player"), row.get("Position")), axis=1
+        lambda row: get_depth_position(row.get("Player"), row.get("Team"), row.get("Position")), axis=1
     )
     
-    # Calculate points for each player
-    players_df["Points"] = players_df["RatingPoints_Avg"].apply(
-        lambda r: get_rating_points(r, all_ratings)
+    # Calculate points for each player using weighted rating (Rating × Matches)
+    players_df["Points"] = players_df["Weighted_Rating"].apply(
+        lambda r: get_rating_points(r, all_weighted)
     )
+    
+    # Also keep all_ratings for color coding individual players (raw rating for display)
+    all_ratings = players_df["RatingPoints_Avg"].dropna()
     
     # Build ladder table
     ladder_data = []
@@ -8150,7 +8761,7 @@ elif page == "List Ladder":
     ladder_df["Rank"] = range(1, len(ladder_df) + 1)
     
     # Professional explanation with 5-tier ranking guide
-    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide (5-Tier System)</h4><div style='display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;'><div style='text-align: center; padding: 12px; background: #008000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.85em;'>Elite</span></div><div style='text-align: center; padding: 12px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>5th - 7th</strong><br><span style='color: #333333; font-size: 0.85em;'>Good</span></div><div style='text-align: center; padding: 12px; background: #FFD700; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>8th - 11th</strong><br><span style='color: #333333; font-size: 0.85em;'>Average</span></div><div style='text-align: center; padding: 12px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>12th - 15th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Below Avg</span></div><div style='text-align: center; padding: 12px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>16th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Poor</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each position shows the team's rank (1st-18th) and total points accumulated by players in that position. Higher ranks and points indicate stronger depth. <strong style='color: #90EE90;'>Total Points</strong> column shows overall list strength.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide (5-Tier System)</h4><div style='display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;'><div style='text-align: center; padding: 12px; background: #008000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.85em;'>Elite</span></div><div style='text-align: center; padding: 12px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>5th - 7th</strong><br><span style='color: #333333; font-size: 0.85em;'>Good</span></div><div style='text-align: center; padding: 12px; background: #FFD700; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>8th - 11th</strong><br><span style='color: #333333; font-size: 0.85em;'>Average</span></div><div style='text-align: center; padding: 12px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>12th - 15th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Below Avg</span></div><div style='text-align: center; padding: 12px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>16th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Poor</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>Scoring Formula:</strong> Rating Points × Matches Played. This rewards players who maintain high ratings over many games—a player with 100 rating over 22 games contributes significantly more than a 1-game wonder with the same rating. <strong style='color: #90EE90;'>Total Points</strong> shows overall list strength.</p></div>""", unsafe_allow_html=True)
     
     # Helper function to get ordinal suffix
     def get_ordinal_suffix(n):
@@ -8456,13 +9067,23 @@ elif page == "Team List Summary":
         team_rankings[band].sort(key=lambda x: x[1], reverse=True)
     
     # Get Top 4 teams based on total points (from List Ladder logic)
+    # Using weighted formula: Rating × Matches
     ladder_data = []
-    all_ratings = players_filtered["RatingPoints_Avg"].dropna()
     
-    def get_rating_points(rating_val, all_ratings_clean):
-        if pd.isna(rating_val):
+    # Fill missing Matches with 0
+    if "Matches" in players_filtered.columns:
+        players_filtered["Matches"] = players_filtered["Matches"].fillna(0)
+    else:
+        players_filtered["Matches"] = 0
+    
+    # Calculate weighted rating
+    players_filtered["Weighted_Rating"] = players_filtered["RatingPoints_Avg"].fillna(0) * players_filtered["Matches"]
+    all_weighted = players_filtered["Weighted_Rating"].dropna()
+    
+    def get_rating_points(weighted_val, all_weighted_clean):
+        if pd.isna(weighted_val) or weighted_val == 0:
             return 0
-        percentile = (all_ratings_clean <= rating_val).mean()
+        percentile = (all_weighted_clean <= weighted_val).mean()
         if percentile >= 0.85:
             return 3
         elif percentile >= 0.60:
@@ -8484,20 +9105,49 @@ elif page == "Team List Summary":
             if pd.notna(player_name) and pd.notna(position):
                 summary_positions[str(player_name).strip()] = str(position).strip()
     
-    # Map players to depth positions, using Summary tab positions when available
-    def get_depth_position(player_name, fallback_position):
-        # First check if player has position in Summary tab
-        if pd.notna(player_name) and str(player_name).strip() in summary_positions:
-            summary_pos = summary_positions[str(player_name).strip()]
+    # Load Wing players from AFL_Historical Wings sheet (65 wing players across all teams)
+    wing_players_by_lastname_team_2 = {}
+    try:
+        wings_df_2 = pd.read_excel("data/AFL_Historical_2012_2025.xlsx", sheet_name="Wings")
+        for _, row in wings_df_2.iterrows():
+            player_name = row.get("Player", "")
+            team = row.get("Team", "")
+            if pd.notna(player_name) and pd.notna(team):
+                name_parts = str(player_name).strip().split()
+                if len(name_parts) >= 1:
+                    last_name = name_parts[-1].lower()
+                    team_str = str(team).strip().lower()
+                    key = (last_name, team_str)
+                    wing_players_by_lastname_team_2[key] = "Wing"
+    except Exception:
+        pass
+    
+    # Map players to depth positions, using Traits for Wings, then Summary, then fallback
+    def get_depth_position(player_name, team_name, fallback_position):
+        player_key = str(player_name).strip() if pd.notna(player_name) else ""
+        team_key = str(team_name).strip().lower() if pd.notna(team_name) else ""
+        
+        # First check if player is a Wing (by last name + team match from Traits)
+        if player_key:
+            name_parts = player_key.split()
+            if len(name_parts) >= 2:
+                last_name = name_parts[-1].lower()
+                if (last_name, team_key) in wing_players_by_lastname_team_2:
+                    return "Wing"
+        
+        # Then check Summary tab positions
+        if player_key in summary_positions:
+            summary_pos = summary_positions[player_key]
             return map_position_to_depth(summary_pos)
+        
         # Otherwise use the position from player data
         return map_position_to_depth(fallback_position) if pd.notna(fallback_position) else "Midfielder"
     
     players_filtered["Depth_Position"] = players_filtered.apply(
-        lambda row: get_depth_position(row.get("Player"), row.get("Position")), axis=1
+        lambda row: get_depth_position(row.get("Player"), row.get("Team"), row.get("Position")), axis=1
     )
-    players_filtered["Points"] = players_filtered["RatingPoints_Avg"].apply(
-        lambda r: get_rating_points(r, all_ratings)
+    players_filtered["Points"] = players_filtered["Weighted_Rating"].apply(
+        lambda r: get_rating_points(r, all_weighted)
     )
     
     for team in all_teams:
