@@ -984,14 +984,42 @@ def load_team_ladders_from_excel(season: int, last10: bool = False) -> pd.DataFr
 
 @st.cache_data(show_spinner=False)
 def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.DataFrame:
-    """Load team ladder data computed from raw data (Python calculations)."""
+    """
+    Load team ladder data from computed CSV files (sophisticated Z-score based ratings).
+    
+    NEW METHODOLOGY (v2.0):
+    - Uses Z-score normalization for proper metric standardization
+    - Applies weighted metrics for each pillar
+    - Maps to 50-99 scale (like FC ratings) using sigmoid transformation
+    - Ratings: 50-59 = Poor, 60-69 = Below Avg, 70-79 = Average, 80-89 = Good, 90-99 = Elite
+    """
     try:
-        xl = pd.ExcelFile(TEAM_FILE)
+        # Determine the data file based on season and block
         block = "L10" if last10 else "Season"
+        
+        # First try to load from computed CSV files (new sophisticated system)
+        computed_path = Path(__file__).parent / "data" / "computed" / f"team_summary_{season}.csv"
+        
+        if computed_path.exists():
+            df = pd.read_csv(computed_path)
+            
+            # Normalize team names using standard function
+            if "Team" in df.columns:
+                df["Team"] = df["Team"].apply(lambda x: normalize_team_name(str(x)) if pd.notna(x) else x)
+            
+            # Create Team Rating from Overall Rating
+            if "Overall Rating" in df.columns:
+                df["Team Rating"] = df["Overall Rating"]
+                df["Team Rating Rank"] = df["Overall Rank"] if "Overall Rank" in df.columns else \
+                                         df["Overall Rating"].rank(ascending=False, method='min').astype(int)
+            
+            return df
+        
+        # Fallback to Excel if no computed CSV
+        xl = pd.ExcelFile(TEAM_FILE)
         df = load_team_ladders_computed(xl, season, block)
         
         # Calculate Team Rating from the 5 pillars (average of rankings, then ranked)
-        # Pillars: Ball Winning, Ball Movement, Scoring, Defence, Pressure
         pillar_cols = [
             "Ball Winning Ranking",
             "Ball Movement Ranking", 
@@ -1000,16 +1028,12 @@ def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.
             "Pressure Ranking"
         ]
         
-        # Check which pillar columns exist
         available_pillars = [col for col in pillar_cols if col in df.columns]
         
         if available_pillars:
-            # Calculate Team Rating as average of the 5 pillar rankings
             df["Team Rating"] = df[available_pillars].mean(axis=1).round(1)
-            # Rank teams (higher rating = better = rank 1)
             df["Team Rating Rank"] = df["Team Rating"].rank(ascending=False, method='min').astype(int)
         else:
-            # Fallback to Overall Rating if pillars not available
             column_mapping = {
                 "Overall Rating": "Team Rating",
                 "Overall Rating Rank": "Team Rating Rank",
@@ -2341,9 +2365,12 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             matches_col_display = col_name
             break
     
+    # Cap matches at 23 (regular season) to avoid over-rating players who played finals
+    MAX_MATCHES_FOR_RATING = 23
     if matches_col_display:
         df_team = df_team.copy()
-        df_team["_Weighted_Sort"] = pd.to_numeric(df_team[rating_col], errors="coerce").fillna(0) * pd.to_numeric(df_team[matches_col_display], errors="coerce").fillna(0)
+        capped_matches = pd.to_numeric(df_team[matches_col_display], errors="coerce").fillna(0).clip(upper=MAX_MATCHES_FOR_RATING)
+        df_team["_Weighted_Sort"] = pd.to_numeric(df_team[rating_col], errors="coerce").fillna(0) * capped_matches
         df_sorted = df_team.sort_values("_Weighted_Sort", ascending=False, na_position='last')
     elif rating_col in df_team.columns:
         df_sorted = df_team.sort_values(rating_col, ascending=False, na_position='last')
@@ -2509,9 +2536,11 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 break
         
         # Calculate weighted rating: Rating × Matches (rewards sustained performance)
+        # Cap matches at 23 (regular season) to avoid over-rating players who played finals
+        MAX_MATCHES_FOR_RATING = 23
         if matches_col and matches_col in all_teams_df.columns:
             all_teams_df = all_teams_df.copy()
-            all_teams_df["_Matches"] = pd.to_numeric(all_teams_df[matches_col], errors="coerce").fillna(0)
+            all_teams_df["_Matches"] = pd.to_numeric(all_teams_df[matches_col], errors="coerce").fillna(0).clip(upper=MAX_MATCHES_FOR_RATING)
             all_teams_df["_Weighted_Rating"] = pd.to_numeric(all_teams_df[rating_col], errors="coerce").fillna(0) * all_teams_df["_Matches"]
             all_weighted = all_teams_df["_Weighted_Rating"].dropna()
         else:
@@ -8438,7 +8467,10 @@ elif page == "Team Age Breakdown":
     players_df["RatingPoints_Avg"] = pd.to_numeric(players_df["RatingPoints_Avg"], errors="coerce").fillna(0)
 
     # Calculate Total Rating Points (RatingPoints_Avg * Matches)
-    players_df["Total_Rating_Points"] = players_df["RatingPoints_Avg"] * players_df["Matches"]
+    # Cap matches at 23 (regular season) to avoid over-rating players who played finals
+    MAX_MATCHES_FOR_RATING = 23
+    capped_matches = players_df["Matches"].clip(upper=MAX_MATCHES_FOR_RATING)
+    players_df["Total_Rating_Points"] = players_df["RatingPoints_Avg"] * capped_matches
 
     # Map each player to an age band
     players_df["Age_Band"] = players_df["Age"].apply(map_age_to_band)
@@ -8642,9 +8674,11 @@ elif page == "List Ladder":
 
     # Calculate weighted score: RatingPoints_Avg × Matches
     # This rewards players who maintain high ratings over many games
-    # A player with 100 rating over 22 games = 2200 weighted score
-    # A player with 100 rating over 1 game = 100 weighted score
-    players_df["Weighted_Rating"] = players_df["RatingPoints_Avg"].fillna(0) * players_df["Matches"]
+    # Cap matches at 23 (regular season) to avoid over-rating players who played finals
+    # A player with 100 rating over 23 games = 2300 weighted score (max)
+    MAX_MATCHES_FOR_RATING = 23
+    capped_matches = players_df["Matches"].clip(upper=MAX_MATCHES_FOR_RATING)
+    players_df["Weighted_Rating"] = players_df["RatingPoints_Avg"].fillna(0) * capped_matches
     
     # Get all weighted ratings for percentile calculation
     all_weighted = players_df["Weighted_Rating"].dropna()
@@ -9077,7 +9111,10 @@ elif page == "Team List Summary":
         players_filtered["Matches"] = 0
     
     # Calculate weighted rating
-    players_filtered["Weighted_Rating"] = players_filtered["RatingPoints_Avg"].fillna(0) * players_filtered["Matches"]
+    # Cap matches at 23 (regular season) to avoid over-rating players who played finals
+    MAX_MATCHES_FOR_RATING = 23
+    capped_matches = players_filtered["Matches"].clip(upper=MAX_MATCHES_FOR_RATING)
+    players_filtered["Weighted_Rating"] = players_filtered["RatingPoints_Avg"].fillna(0) * capped_matches
     all_weighted = players_filtered["Weighted_Rating"].dropna()
     
     def get_rating_points(weighted_val, all_weighted_clean):

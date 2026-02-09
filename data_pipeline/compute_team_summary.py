@@ -33,90 +33,127 @@ TEAM_NAME_MAP = {
 }
 
 # Category definitions - maps category to raw column names
-# These are the metrics used to compute each category ranking
+# These are the metrics used to compute each category rating
+# 
+# NEW SOPHISTICATED RATING SYSTEM (v2.0):
+# - Uses Z-scores to standardize metrics across different scales
+# - Applies weights based on metric importance (sum to 1.0 within category)
+# - Maps to 50-99 scale using sigmoid transformation for better distribution
+# - Considers both raw performance and differential metrics where relevant
 
 CATEGORY_METRICS = {
     "Ball Winning": {
         "description": "Ability to win the contested ball",
         "metrics": {
-            "Post Clear CP Diff": {
-                "compute": lambda df: df["PostClearanceContestedPossessions"] - df.get("PostClearanceContestedPossessions_Opp", 0),
-                "higher_is_better": True
+            "Contested Possessions Diff": {
+                "compute": lambda df: df["ContestedPossessions"] - df.get("ContestedPossessions_Opposition", df.get("ContestedPossessions_Opp", 0)),
+                "higher_is_better": True,
+                "weight": 0.25
             },
-            "Ground Ball Diff": {
-                "compute": lambda df: df["GroundBallGets"] - df.get("GroundBallGets_Opp", 0),
-                "higher_is_better": True
+            "Ground Ball Gets": {
+                "compute": lambda df: df["GroundBallGets"],
+                "higher_is_better": True,
+                "weight": 0.20
+            },
+            "Clearance Diff": {
+                "compute": lambda df: df["TotalClearances"] - df.get("TotalClearances_Opposition", df.get("TotalClearances_Opp", 0)),
+                "higher_is_better": True,
+                "weight": 0.25
             },
             "1st Poss to Clear %": {
                 "compute": lambda df: df["FirstPossessionToClearance"],
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.15
             },
-            "Clearance Diff": {
-                "compute": lambda df: df["TotalClearances"] - df.get("TotalClearances_Opp", 0),
-                "higher_is_better": True
+            "Hitouts to Advantage": {
+                "compute": lambda df: df.get("HitoutsToAdvantage", 0),
+                "higher_is_better": True,
+                "weight": 0.15
             },
         }
     },
     "Ball Movement": {
         "description": "Efficiency in moving the ball forward",
         "metrics": {
-            "Def Half to Score %": {
-                "compute": lambda df: df.get("DefensiveHalfToScore", 0),
-                "higher_is_better": True
-            },
-            "Chain to Score %": {
-                "compute": lambda df: df.get("ChainToScore", 0),
-                "higher_is_better": True
-            },
-            "Metres Gained": {
-                "compute": lambda df: df["MetresGained"],
-                "higher_is_better": True
+            "Metres Gained Diff": {
+                "compute": lambda df: df["MetresGained"] - df.get("MetresGained_Opposition", df.get("MetresGained_Opp", 0)),
+                "higher_is_better": True,
+                "weight": 0.25
             },
             "Disposal Efficiency": {
                 "compute": lambda df: df["DisposalEfficiency"],
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.25
+            },
+            "Def Half to Score %": {
+                "compute": lambda df: df.get("DefHalfToScore", df.get("DefensiveHalfToScore", 0)),
+                "higher_is_better": True,
+                "weight": 0.20
+            },
+            "Inside 50s Diff": {
+                "compute": lambda df: df["Inside50s"] - df.get("Inside50s_Opposition", df.get("Inside50s_Opp", 0)),
+                "higher_is_better": True,
+                "weight": 0.15
+            },
+            "Retention Rating": {
+                "compute": lambda df: df.get("RetentionRating", 0),
+                "higher_is_better": True,
+                "weight": 0.15
             },
         }
     },
     "Scoring": {
         "description": "Ability to convert opportunities to scores",
         "metrics": {
-            "Points Per Inside 50": {
-                "compute": lambda df: df.get("PointsPerInside50", df.get("Goals", 0) * 6 / df["Inside50s"].clip(lower=1)),
-                "higher_is_better": True
-            },
             "Goals": {
                 "compute": lambda df: df.get("Goals", 0),
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.30
             },
             "Goal Accuracy": {
                 "compute": lambda df: df.get("GoalAccuracy", 0),
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.25
             },
-            "Score per Entry": {
-                "compute": lambda df: df.get("ScorePerForward50Entry", 0),
-                "higher_is_better": True
+            "Goals Per Inside 50": {
+                "compute": lambda df: df.get("GoalsPerInside50", df.get("Goals", 0) / df["Inside50s"].clip(lower=1) * 100),
+                "higher_is_better": True,
+                "weight": 0.25
+            },
+            "xScore Rating": {
+                "compute": lambda df: df.get("xScoreRating", 0),
+                "higher_is_better": True,
+                "weight": 0.20
             },
         }
     },
     "Defence": {
         "description": "Defensive capabilities",
         "metrics": {
-            "Points Against": {
-                "compute": lambda df: df.get("PointsAgainst", 0),
-                "higher_is_better": False  # Lower is better
+            "Goals Against (Opp)": {
+                "compute": lambda df: df.get("Goals_Opposition", df.get("Goals_Opp", 0)),
+                "higher_is_better": False,  # Lower is better
+                "weight": 0.30
             },
             "Intercepts": {
                 "compute": lambda df: df["Intercepts"],
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.25
             },
-            "Tackles": {
-                "compute": lambda df: df.get("Tackles", 0),
-                "higher_is_better": True
+            "Rebound 50s": {
+                "compute": lambda df: df.get("Rebound50s", 0),
+                "higher_is_better": True,
+                "weight": 0.20
             },
             "Spoils": {
                 "compute": lambda df: df.get("Spoils", 0),
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.15
+            },
+            "Contest Def Win %": {
+                "compute": lambda df: 100 - df.get("ContestDefensiveLossPercentage", 50),
+                "higher_is_better": True,
+                "weight": 0.10
             },
         }
     },
@@ -125,32 +162,43 @@ CATEGORY_METRICS = {
         "metrics": {
             "Pressure Acts": {
                 "compute": lambda df: df.get("PressureActs", 0),
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.35
             },
             "Tackles": {
                 "compute": lambda df: df.get("Tackles", 0),
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.30
             },
-            "Forward Pressure": {
-                "compute": lambda df: df.get("PressureActsForward50", 0),
-                "higher_is_better": True
+            "Tackles Inside 50": {
+                "compute": lambda df: df.get("TacklesInside50", 0),
+                "higher_is_better": True,
+                "weight": 0.20
+            },
+            "Turnovers Forced (Opp)": {
+                "compute": lambda df: df.get("Turnovers_Opposition", df.get("Turnovers_Opp", 0)),
+                "higher_is_better": True,
+                "weight": 0.15
             },
         }
     },
     "Health Check": {
         "description": "List quality and depth indicators",
         "metrics": {
-            "Average Age": {
-                "compute": lambda df: df["Age"],
-                "higher_is_better": False  # Younger is generally better for list health
+            "Rating Points": {
+                "compute": lambda df: df["RatingPoints"],
+                "higher_is_better": True,
+                "weight": 0.40
             },
             "Experience": {
                 "compute": lambda df: df["Experience"],
-                "higher_is_better": True
+                "higher_is_better": True,
+                "weight": 0.30
             },
-            "Rating Points": {
-                "compute": lambda df: df["RatingPoints"],
-                "higher_is_better": True
+            "Average Age (Optimal ~25)": {
+                "compute": lambda df: -abs(df["Age"] - 25),  # Closer to 25 is better
+                "higher_is_better": True,
+                "weight": 0.30
             },
         }
     },
@@ -172,6 +220,103 @@ def compute_metric_rank(series: pd.Series, higher_is_better: bool = True) -> pd.
         return series.rank(ascending=True, method='min')
 
 
+def zscore_to_rating(z_score: float, min_rating: int = 50, max_rating: int = 99) -> int:
+    """
+    Convert a Z-score to a rating using sigmoid transformation.
+    
+    This maps the continuous Z-score to a bounded 50-99 scale where:
+    - Z = 0 (average) maps to ~75
+    - Z = +2 (excellent) maps to ~95
+    - Z = -2 (poor) maps to ~55
+    
+    Uses a modified sigmoid for smooth distribution with scale factor of 1.0
+    for better spread across the rating range.
+    """
+    # Sigmoid transformation: maps (-inf, +inf) to (0, 1)
+    # Scale factor of 1.0 gives good spread for typical Z-score ranges (-2 to +2)
+    sigmoid = 1 / (1 + np.exp(-z_score * 1.0))
+    
+    # Map sigmoid (0-1) to rating scale (min_rating to max_rating)
+    rating = min_rating + sigmoid * (max_rating - min_rating)
+    
+    return int(round(np.clip(rating, min_rating, max_rating)))
+
+
+def compute_category_rating(
+    df: pd.DataFrame, 
+    category: str,
+    min_rating: int = 50,
+    max_rating: int = 99
+) -> tuple[pd.Series, pd.Series]:
+    """
+    Compute a category rating using sophisticated Z-score methodology.
+    
+    NEW METHODOLOGY (v2.0):
+    1. For each metric, compute Z-scores (standardized to mean=0, std=1)
+    2. Flip Z-scores for metrics where lower is better
+    3. Apply weighted average using metric weights
+    4. Transform combined Z-score to 50-99 scale using sigmoid
+    
+    Returns:
+        Tuple of (rating_score, rank) where rating_score is 50-99
+    """
+    if category not in CATEGORY_METRICS:
+        return pd.Series(dtype=float), pd.Series(dtype=float)
+    
+    category_def = CATEGORY_METRICS[category]
+    weighted_zscores = pd.Series(0.0, index=df.index)
+    total_weight = 0.0
+    
+    for metric_name, metric_def in category_def["metrics"].items():
+        try:
+            # Compute the metric value
+            metric_values = metric_def["compute"](df)
+            
+            # Skip if all NaN or constant (can't compute Z-score)
+            if metric_values.isna().all() or metric_values.std() == 0:
+                continue
+            
+            # Fill NaN with mean for this metric
+            metric_values = metric_values.fillna(metric_values.mean())
+            
+            # Compute Z-score (mean=0, std=1)
+            mean_val = metric_values.mean()
+            std_val = metric_values.std()
+            if std_val > 0:
+                z_scores = (metric_values - mean_val) / std_val
+            else:
+                z_scores = pd.Series(0.0, index=df.index)
+            
+            # Flip Z-score if lower is better (so positive Z always = good)
+            if not metric_def["higher_is_better"]:
+                z_scores = -z_scores
+            
+            # Apply weight
+            weight = metric_def.get("weight", 1.0 / len(category_def["metrics"]))
+            weighted_zscores += z_scores * weight
+            total_weight += weight
+            
+        except Exception as e:
+            print(f"  Warning: Could not compute {metric_name}: {e}")
+            continue
+    
+    # Normalize by total weight
+    if total_weight > 0:
+        weighted_zscores = weighted_zscores / total_weight
+    else:
+        # Fallback: return average rating for all teams
+        return pd.Series([75] * len(df), index=df.index), pd.Series(range(1, len(df) + 1), index=df.index)
+    
+    # Convert Z-scores to 50-99 rating scale
+    rating_score = weighted_zscores.apply(lambda z: zscore_to_rating(z, min_rating, max_rating))
+    
+    # Compute rank (1 = best = highest rating)
+    rank = rating_score.rank(ascending=False, method='min').astype(int)
+    
+    return rating_score, rank
+
+
+# Keep old function name for backwards compatibility
 def compute_category_ranking(
     df: pd.DataFrame, 
     category: str
@@ -179,47 +324,12 @@ def compute_category_ranking(
     """
     Compute a category ranking from raw team data.
     
+    DEPRECATED: This now calls compute_category_rating() with 50-99 scale.
+    
     Returns:
-        Tuple of (ranking_score, rank) where ranking_score is 0-100
+        Tuple of (ranking_score, rank) where ranking_score is 50-99
     """
-    if category not in CATEGORY_METRICS:
-        return pd.Series(dtype=float), pd.Series(dtype=float)
-    
-    category_def = CATEGORY_METRICS[category]
-    metric_ranks = []
-    
-    for metric_name, metric_def in category_def["metrics"].items():
-        try:
-            # Compute the metric value
-            metric_values = metric_def["compute"](df)
-            
-            # Skip if all NaN
-            if metric_values.isna().all():
-                continue
-            
-            # Compute percentile rank (0-100, higher is better)
-            if metric_def["higher_is_better"]:
-                pct_rank = metric_values.rank(pct=True) * 100
-            else:
-                pct_rank = (1 - metric_values.rank(pct=True)) * 100
-            
-            metric_ranks.append(pct_rank)
-            
-        except Exception as e:
-            print(f"  Warning: Could not compute {metric_name}: {e}")
-            continue
-    
-    if not metric_ranks:
-        return pd.Series([50] * len(df)), pd.Series(range(1, len(df) + 1))
-    
-    # Average the percentile ranks
-    combined = pd.concat(metric_ranks, axis=1).mean(axis=1)
-    
-    # Convert to 1-100 scale and compute rank
-    ranking_score = combined.round(0).astype(int)
-    rank = ranking_score.rank(ascending=False, method='min').astype(int)
-    
-    return ranking_score, rank
+    return compute_category_rating(df, category, min_rating=50, max_rating=99)
 
 
 def compute_team_summary(
@@ -302,9 +412,10 @@ def load_and_compute_summary(
     
     raw_df = pd.read_csv(raw_path)
     
-    # Remove any non-team rows
+    # Remove any non-team rows (Average, Total, nan, numeric IDs, etc.)
     raw_df = raw_df[raw_df["Team"].notna()]
-    raw_df = raw_df[~raw_df["Team"].astype(str).str.contains("Total|Average", case=False, na=False)]
+    raw_df = raw_df[~raw_df["Team"].astype(str).str.contains("Total|Average|nan", case=False, na=False)]
+    raw_df = raw_df[~raw_df["Team"].astype(str).str.match(r'^\d+$')]  # Remove numeric-only team names
     
     return compute_team_summary(raw_df, season)
 

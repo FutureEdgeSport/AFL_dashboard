@@ -21,6 +21,10 @@ from pathlib import Path
 from typing import Optional
 
 
+# Maximum matches to use in Rating × Matches calculations
+# Capped at 23 (regular season) to avoid over-rating players who played finals
+MAX_REGULAR_SEASON_MATCHES = 23
+
 # Path to data directory
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -363,14 +367,17 @@ def compute_rankings(df: pd.DataFrame, current_season: int = 2025) -> pd.DataFra
         df["L2 Pos Rank"] = df.groupby("Position")["Last 2 Average"].rank(ascending=False)
     
     # Compute impact (difference from median rating)
+    # Cap matches at MAX_REGULAR_SEASON_MATCHES (23) to avoid over-rating players who played finals
     current_col = str(current_season)
     if current_col in df.columns:
         median_rating = df[current_col].median()
-        df["2025 Impact"] = (df[current_col] - median_rating) * df["2025 Matches"]
+        capped_matches = df["2025 Matches"].clip(upper=MAX_REGULAR_SEASON_MATCHES)
+        df["2025 Impact"] = (df[current_col] - median_rating) * capped_matches
     
     if "Last 2 Average" in df.columns:
         median_l2 = df["Last 2 Average"].median()
-        l2_matches = df["Total Matches"].clip(upper=40)  # Cap at ~2 seasons
+        # Cap at 2 regular seasons (23 × 2 = 46 matches) to avoid over-rating players who played finals
+        l2_matches = df["Total Matches"].clip(upper=MAX_REGULAR_SEASON_MATCHES * 2)
         df["Last 2 Impact"] = (df["Last 2 Average"] - median_l2) * l2_matches
     
     return df
@@ -408,6 +415,8 @@ def compute_cap_values(
                 break
         
         if matches is not None:
+            # NOTE: Do NOT cap matches for Cap % calculations - players who play more games
+            # should have higher cap percentages as they contribute more to their team's output
             # Calculate Rating × Matches for each player
             df["_rating_x_matches"] = df[current_col].fillna(0) * matches
             

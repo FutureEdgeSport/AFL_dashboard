@@ -14,6 +14,10 @@ CURRENT_SEASON: int = 2026
 AVAILABLE_SEASONS: List[int] = [2026, 2025, 2024, 2023]
 DEFAULT_SEASON: int = 2026
 
+# Maximum matches to use in Rating × Matches calculations
+# Capped at 23 (regular season) to avoid over-rating teams that play finals
+MAX_REGULAR_SEASON_MATCHES: int = 23
+
 # ============================================================================
 # FILE PATHS
 # ============================================================================
