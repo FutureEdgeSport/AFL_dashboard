@@ -5904,18 +5904,31 @@ elif page == "Team Compare":
                 except:
                     continue
             
-            # Calculate favour percentage (how much one team is favoured over another)
-            total_possible = 100  # Maximum possible weighted score
-            team1_pct = (team1_weighted_score / total_possible) * 100 if total_possible > 0 else 50
-            team2_pct = (team2_weighted_score / total_possible) * 100 if total_possible > 0 else 50
+            # Calculate favour percentage with AMPLIFIED differences
+            # FIFA-style ratings range from ~62-82, so typical score differences are small
+            # We amplify the differences to create more extreme results on the continuum
             
-            # Calculate relative favour on a -100 to +100 scale (negative = team1, positive = team2)
-            # Then convert to 0-100 scale where 50 = even, 0 = team1 fully favoured, 100 = team2 fully favoured
+            # Calculate the raw difference in weighted scores
             score_diff = team2_weighted_score - team1_weighted_score
-            max_diff = total_possible  # Maximum possible difference
             
-            # Normalize to 0-100 scale centered at 50
-            favour_position = 50 + (score_diff / max_diff) * 50 if max_diff > 0 else 50
+            # In practice, with ratings in 62-82 range and weights summing to 100:
+            # - Team scores range roughly from 62 to 82 (if all pillars equal)
+            # - Max realistic difference between teams is about 15-20 points total
+            # We want small differences (2-5 points) to still show meaningful separation
+            
+            # Use a steeper amplification factor (3x) to spread out results
+            # A 5-point difference should push the marker significantly off center
+            amplification_factor = 3.0
+            
+            # Expected max realistic difference is ~20 points, amplified = ~60
+            # This maps to 0-100 scale where 50 is center
+            max_realistic_diff = 25.0  # Realistic max diff between best and worst teams
+            
+            # Apply amplification and normalize to -50 to +50 range, then shift to 0-100
+            amplified_diff = score_diff * amplification_factor
+            normalized_diff = amplified_diff / max_realistic_diff * 50  # Scale to ±50
+            
+            favour_position = 50 + normalized_diff
             favour_position = max(0, min(100, favour_position))  # Clamp to 0-100
             
             # Determine which team is favoured and by how much
