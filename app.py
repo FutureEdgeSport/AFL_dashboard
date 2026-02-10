@@ -1113,6 +1113,20 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
         return pd.DataFrame()
 
 
+@st.cache_data(show_spinner=False)
+def load_team_summary_for_year_l10(season: int) -> pd.DataFrame:
+    """Load team Last 10 summary for a season."""
+    try:
+        xl = pd.ExcelFile(TEAM_FILE)
+        year_sheet = f"{season} Last 10 Summary"
+        df = xl.parse(year_sheet)
+        df.columns = df.columns.astype(str)
+        return df
+    except Exception:
+        # Fall back to regular summary if L10 not available
+        return load_team_summary_for_year(season)
+
+
 # ---------------- DATA LOADERS – PLAYERS ----------------
 @st.cache_data(show_spinner=False)
 def _load_player_summary_excel() -> pd.DataFrame:
@@ -6239,7 +6253,14 @@ elif page == "Team Compare":
     
     # ========== STRENGTH/WEAKNESS ANALYSIS (Team 1 vs Team 2) ==========
     st.markdown("---")
-    st.subheader(f"Strengths & Weaknesses Analysis: {team1} vs {team2}")
+    
+    # Determine if this is a same-team cross-period comparison
+    is_same_team_comparison = (team1 == team2)
+    
+    if is_same_team_comparison:
+        st.subheader(f"📈 Period Comparison: {team1} ({period_label1} vs {period_label2})")
+    else:
+        st.subheader(f"Strengths & Weaknesses Analysis: {team1} vs {team2}")
     
     # Helper function for ordinal rank format
     def format_rank(rank_val):
@@ -6294,31 +6315,52 @@ elif page == "Team Compare":
             "team2_rank": team2_rank,
         })
     
-    # Separate strengths and weaknesses based on rankings
+    # Separate strengths and weaknesses
     metric_df = pd.DataFrame(metric_analysis)
     
-    # Strengths: Team 1 has BETTER ranking (lower number) than Team 2
-    team1_strengths = metric_df[
-        (metric_df["team1_rank"].notna()) & 
-        (metric_df["team2_rank"].notna()) & 
-        (metric_df["team1_rank"] < metric_df["team2_rank"])
-    ].sort_values("team1_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
+    if is_same_team_comparison:
+        # For same-team cross-period comparison, compare VALUES (higher = better for ratings)
+        # "Improved" = period1 value > period2 value (higher rating in first period)
+        # "Declined" = period1 value < period2 value (lower rating in first period)
+        team1_strengths = metric_df[
+            (metric_df["team1_val"].notna()) & 
+            (metric_df["team2_val"].notna()) & 
+            (metric_df["team1_val"] > metric_df["team2_val"])
+        ].sort_values("team1_val", ascending=False)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
+        
+        team1_weaknesses = metric_df[
+            (metric_df["team1_val"].notna()) & 
+            (metric_df["team2_val"].notna()) & 
+            (metric_df["team1_val"] < metric_df["team2_val"])
+        ].sort_values("team2_val", ascending=False)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
+    else:
+        # For different teams, compare RANKINGS (lower rank = better)
+        team1_strengths = metric_df[
+            (metric_df["team1_rank"].notna()) & 
+            (metric_df["team2_rank"].notna()) & 
+            (metric_df["team1_rank"] < metric_df["team2_rank"])
+        ].sort_values("team1_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
+        
+        team1_weaknesses = metric_df[
+            (metric_df["team1_rank"].notna()) & 
+            (metric_df["team2_rank"].notna()) & 
+            (metric_df["team1_rank"] > metric_df["team2_rank"])
+        ].sort_values("team2_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
     
-    # Weaknesses: Team 2 has BETTER ranking (lower number) than Team 1
-    team1_weaknesses = metric_df[
-        (metric_df["team1_rank"].notna()) & 
-        (metric_df["team2_rank"].notna()) & 
-        (metric_df["team1_rank"] > metric_df["team2_rank"])
-    ].sort_values("team2_rank", ascending=True)[["metric", "team1_val", "team2_val", "team1_rank", "team2_rank"]].reset_index(drop=True)
-    
-    # Display Team 1 analysis with enhanced styling
+    # Display analysis with enhanced styling
     st.markdown("---")
-    st.subheader(f"📊 Strengths & Weaknesses Analysis: {team1} vs {team2}")
+    if is_same_team_comparison:
+        st.subheader(f"📊 Performance Changes: {team1}")
+    else:
+        st.subheader(f"📊 Strengths & Weaknesses Analysis: {team1} vs {team2}")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown(f"<h3 style='color: #00CC00;'>🟢 {team1} – Strengths</h3>", unsafe_allow_html=True)
+        if is_same_team_comparison:
+            st.markdown(f"<h3 style='color: #00CC00;'>📈 Higher in {period_label1}</h3>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h3 style='color: #00CC00;'>🟢 {team1} – Strengths</h3>", unsafe_allow_html=True)
         if len(team1_strengths) > 0:
             for idx, row in team1_strengths.iterrows():
                 metric = row["metric"]
@@ -6329,31 +6371,57 @@ elif page == "Team Compare":
                 t1_rank_str = format_rank(t1_rank)
                 t2_rank_str = format_rank(t2_rank)
                 
-                # Calculate rank difference for visual indicator
-                rank_diff = int(t2_rank - t1_rank)
-                
-                st.markdown(
-                    f"""
-                    <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
-                                border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-                        <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {metric}</div>
-                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                            {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.1f}</span> {t1_rank_str} 
-                            <span style='color: #888;'>vs</span> 
-                            {team2}: <span style='font-weight: bold;'>{t2_val:.1f}</span> {t2_rank_str}
+                if is_same_team_comparison:
+                    # Calculate value difference for same-team comparison
+                    val_diff = t1_val - t2_val
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                    border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {period_label1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {period_label2}: <span style='font-weight: bold;'>{t2_val:.1f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
+                                +{val_diff:.1f} rating points higher
+                            </div>
                         </div>
-                        <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
-                            +{rank_diff} positions ahead
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    # Calculate rank difference for visual indicator
+                    rank_diff = int(t2_rank - t1_rank)
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                    border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {team2}: <span style='font-weight: bold;'>{t2_val:.1f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
+                                +{rank_diff} positions ahead
+                            </div>
                         </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                        """,
+                        unsafe_allow_html=True
+                    )
         else:
-            st.info("No statistics where Team 1 ranks higher")
+            if is_same_team_comparison:
+                st.info(f"No metrics higher in {period_label1}")
+            else:
+                st.info("No statistics where Team 1 ranks higher")
     
     with col2:
-        st.markdown(f"<h3 style='color: #FF4444;'>🔴 {team1} – Weaknesses</h3>", unsafe_allow_html=True)
+        if is_same_team_comparison:
+            st.markdown(f"<h3 style='color: #FF4444;'>📉 Higher in {period_label2}</h3>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h3 style='color: #FF4444;'>🔴 {team1} – Weaknesses</h3>", unsafe_allow_html=True)
         if len(team1_weaknesses) > 0:
             for idx, row in team1_weaknesses.iterrows():
                 metric = row["metric"]
@@ -6364,26 +6432,49 @@ elif page == "Team Compare":
                 t1_rank_str = format_rank(t1_rank)
                 t2_rank_str = format_rank(t2_rank)
                 
-                # Calculate rank difference for visual indicator
-                rank_diff = int(t1_rank - t2_rank)
-                
-                st.markdown(
-                    f"""
-                    <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
-                                border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-                        <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {metric}</div>
-                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                            {team1}: <span style='font-weight: bold;'>{t1_val:.1f}</span> {t1_rank_str} 
-                            <span style='color: #888;'>vs</span> 
-                            {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.1f}</span> {t2_rank_str}
+                if is_same_team_comparison:
+                    # Calculate value difference for same-team comparison
+                    val_diff = t2_val - t1_val
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                    border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {period_label1}: <span style='font-weight: bold;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {period_label2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.1f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>
+                                +{val_diff:.1f} rating points higher in {period_label2}
+                            </div>
                         </div>
-                        <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>{rank_diff} positions behind</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    # Calculate rank difference for visual indicator
+                    rank_diff = int(t1_rank - t2_rank)
+                    st.markdown(
+                        f"""
+                        <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                    border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                            <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {metric}</div>
+                            <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                {team1}: <span style='font-weight: bold;'>{t1_val:.1f}</span> {t1_rank_str} 
+                                <span style='color: #888;'>vs</span> 
+                                {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val:.1f}</span> {t2_rank_str}
+                            </div>
+                            <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>{rank_diff} positions behind</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
         else:
-            st.markdown("*No statistics where Team 2 ranks higher*")
+            if is_same_team_comparison:
+                st.info(f"No metrics higher in {period_label2}")
+            else:
+                st.markdown("*No statistics where Team 2 ranks higher*")
     
     if summary_year is not None:
         # Attribute groups to analyze
@@ -6401,11 +6492,27 @@ elif page == "Team Compare":
         
         # Collect all attribute stats (excluding main metrics)
         all_attribute_stats = []
-        which_block = "Last10" if window1 == "Last 10 Games" else "Season"
+        which_block1 = "Last10" if window1 == "Last 10 Games" else "Season"
+        which_block2 = "Last10" if window2 == "Last 10 Games" else "Season"
+        
+        # For same-team cross-period comparison, we need summary data from DIFFERENT sheets
+        # Load the correct summary sheet based on the window (Season vs L10)
+        if window1 == "Last 10 Games":
+            summary_year1 = load_team_summary_for_year_l10(year1)
+        else:
+            summary_year1 = load_team_summary_for_year(year1)
+        
+        summary_year2 = None
+        if is_same_team_comparison:
+            # Load from the appropriate sheet for period 2
+            if window2 == "Last 10 Games":
+                summary_year2 = load_team_summary_for_year_l10(year2)
+            else:
+                summary_year2 = load_team_summary_for_year(year2)
         
         for attribute_group in attribute_groups:
             try:
-                blocks = _extract_attribute_structure(summary_year, attribute_group)
+                blocks = _extract_attribute_structure(summary_year1, attribute_group)
                 if not blocks:
                     continue
             except Exception as e:
@@ -6422,9 +6529,15 @@ elif page == "Team Compare":
         if all_attribute_stats:
             # ========== ATTRIBUTE STATS BREAKDOWN (Team 1 vs Team 2) - SIDE BY SIDE ==========
             st.markdown("---")
-            st.subheader(f"📊 Detailed Attribute Stats Breakdown: {team1} vs {team2}")
+            if is_same_team_comparison:
+                st.subheader(f"📊 Detailed Attribute Stats: {team1} ({period_label1} vs {period_label2})")
+            else:
+                st.subheader(f"📊 Detailed Attribute Stats Breakdown: {team1} vs {team2}")
             
-            st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of specific attribute statistics across both teams. Stats are color-coded based on team rankings (green = elite, orange = average, red = needs work).</span></p></div>""", unsafe_allow_html=True)
+            if is_same_team_comparison:
+                st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of {team1}'s performance across two time periods. Stats are compared by VALUE (higher = better for most metrics).</span></p></div>""", unsafe_allow_html=True)
+            else:
+                st.markdown(f"""<div style='background: rgba(255,215,0,0.1); padding: 18px; border-radius: 10px; border-left: 5px solid #FFD700; margin-bottom: 25px;'><p style='color: #DDDDDD; margin: 0; font-size: 1.05em; line-height: 1.6;'><strong style='color: #FFFFFF; font-size: 1.2em;'>About This Section</strong><br><span style='color: #CCCCCC; font-size: 0.95em;'>Deep-dive comparison of specific attribute statistics across both teams. Stats are color-coded based on team rankings (green = elite, orange = average, red = needs work).</span></p></div>""", unsafe_allow_html=True)
             
             # Helper function for ordinal rank
             def get_ordinal_suffix(n):
@@ -6448,61 +6561,122 @@ elif page == "Team Compare":
                 team1_weaknesses_attr = []
                 
                 for grp, stat_name in group_stats:
-                    dist_df = get_attribute_stat_distribution(
-                        summary_year,
-                        attribute_group,
-                        stat_name,
-                        block=which_block,
-                    )
-                    
-                    if dist_df.empty:
-                        continue
-                    
-                    dist_df = dist_df.copy()
-                    dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
-                    dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
-                    dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
-                    
-                    if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
-                        dist_df = dist_df.sort_values("Value", ascending=False)
-                        dist_df["Rank"] = range(1, len(dist_df) + 1)
-                    else:
-                        dist_df = dist_df.sort_values("Rank", ascending=True)
-                    dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
-                    
-                    # Get Team 1 and Team 2 data
-                    team1_row_stat = dist_df[dist_df["Team"] == team1]
-                    team2_row_stat = dist_df[dist_df["Team"] == team2]
-                    
-                    if not team1_row_stat.empty and not team2_row_stat.empty:
-                        t1_val = team1_row_stat.iloc[0]["Value"]
-                        t1_rank = int(team1_row_stat.iloc[0]["Rank"])
-                        t2_val = team2_row_stat.iloc[0]["Value"]
-                        t2_rank = int(team2_row_stat.iloc[0]["Rank"])
+                    if is_same_team_comparison:
+                        # For same-team cross-period comparison, get data from BOTH periods
+                        dist_df1 = get_attribute_stat_distribution(
+                            summary_year1,
+                            attribute_group,
+                            stat_name,
+                            block=which_block1,
+
+                        )
+                        dist_df2 = get_attribute_stat_distribution(
+                            summary_year2 if summary_year2 is not None else summary_year1,
+                            attribute_group,
+                            stat_name,
+                            block=which_block2,
+                        )
                         
-                        # Determine if this is a strength or weakness for team1
-                        if t1_rank < t2_rank:
-                            team1_strengths_attr.append({
-                                "stat": stat_name,
-                                "t1_val": t1_val,
-                                "t1_rank": t1_rank,
-                                "t2_val": t2_val,
-                                "t2_rank": t2_rank
-                            })
-                        elif t1_rank > t2_rank:
-                            team1_weaknesses_attr.append({
-                                "stat": stat_name,
-                                "t1_val": t1_val,
-                                "t1_rank": t1_rank,
-                                "t2_val": t2_val,
-                                "t2_rank": t2_rank
-                            })
+                        if dist_df1.empty or dist_df2.empty:
+                            continue
+                        
+                        dist_df1 = dist_df1.copy()
+                        dist_df1["Value"] = pd.to_numeric(dist_df1["Value"], errors="coerce")
+                        dist_df1["Rank"] = pd.to_numeric(dist_df1["Rank"], errors="coerce")
+                        dist_df1 = dist_df1.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                        
+                        dist_df2 = dist_df2.copy()
+                        dist_df2["Value"] = pd.to_numeric(dist_df2["Value"], errors="coerce")
+                        dist_df2["Rank"] = pd.to_numeric(dist_df2["Rank"], errors="coerce")
+                        dist_df2 = dist_df2.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                        
+                        # Get team data from each period's distribution
+                        team1_row_stat = dist_df1[dist_df1["Team"] == team1]
+                        team2_row_stat = dist_df2[dist_df2["Team"] == team2]  # Same team, different period
+                        
+                        if not team1_row_stat.empty and not team2_row_stat.empty:
+                            t1_val = team1_row_stat.iloc[0]["Value"]
+                            t1_rank = int(team1_row_stat.iloc[0]["Rank"]) if pd.notna(team1_row_stat.iloc[0]["Rank"]) else 0
+                            t2_val = team2_row_stat.iloc[0]["Value"]
+                            t2_rank = int(team2_row_stat.iloc[0]["Rank"]) if pd.notna(team2_row_stat.iloc[0]["Rank"]) else 0
+                            
+                            # For same-team, compare VALUES (higher = better for most stats)
+                            if t1_val > t2_val:
+                                team1_strengths_attr.append({
+                                    "stat": stat_name,
+                                    "t1_val": t1_val,
+                                    "t1_rank": t1_rank,
+                                    "t2_val": t2_val,
+                                    "t2_rank": t2_rank
+                                })
+                            elif t1_val < t2_val:
+                                team1_weaknesses_attr.append({
+                                    "stat": stat_name,
+                                    "t1_val": t1_val,
+                                    "t1_rank": t1_rank,
+                                    "t2_val": t2_val,
+                                    "t2_rank": t2_rank
+                                })
+                    else:
+                        # Different teams - use original rank comparison logic
+                        dist_df = get_attribute_stat_distribution(
+                            summary_year,
+                            attribute_group,
+                            stat_name,
+                            block=which_block1,
+                        )
+                        
+                        if dist_df.empty:
+                            continue
+                        
+                        dist_df = dist_df.copy()
+                        dist_df["Value"] = pd.to_numeric(dist_df["Value"], errors="coerce")
+                        dist_df["Rank"] = pd.to_numeric(dist_df["Rank"], errors="coerce")
+                        dist_df = dist_df.dropna(subset=["Team", "Value"]).reset_index(drop=True)
+                        
+                        if "Rank" not in dist_df.columns or dist_df["Rank"].isna().all():
+                            dist_df = dist_df.sort_values("Value", ascending=False)
+                            dist_df["Rank"] = range(1, len(dist_df) + 1)
+                        else:
+                            dist_df = dist_df.sort_values("Rank", ascending=True)
+                        dist_df["Rank"] = dist_df["Rank"].round(0).astype("Int64")
+                        
+                        # Get Team 1 and Team 2 data
+                        team1_row_stat = dist_df[dist_df["Team"] == team1]
+                        team2_row_stat = dist_df[dist_df["Team"] == team2]
+                        
+                        if not team1_row_stat.empty and not team2_row_stat.empty:
+                            t1_val = team1_row_stat.iloc[0]["Value"]
+                            t1_rank = int(team1_row_stat.iloc[0]["Rank"])
+                            t2_val = team2_row_stat.iloc[0]["Value"]
+                            t2_rank = int(team2_row_stat.iloc[0]["Rank"])
+                            
+                            # Compare by RANK for different teams
+                            if t1_rank < t2_rank:
+                                team1_strengths_attr.append({
+                                    "stat": stat_name,
+                                    "t1_val": t1_val,
+                                    "t1_rank": t1_rank,
+                                    "t2_val": t2_val,
+                                    "t2_rank": t2_rank
+                                })
+                            elif t1_rank > t2_rank:
+                                team1_weaknesses_attr.append({
+                                    "stat": stat_name,
+                                    "t1_val": t1_val,
+                                    "t1_rank": t1_rank,
+                                    "t2_val": t2_val,
+                                    "t2_rank": t2_rank
+                                })
                 
                 # Display side-by-side: Strengths | Weaknesses
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.markdown(f"<h4 style='color: #00CC00;'>🟢 {team1} – Strengths</h4>", unsafe_allow_html=True)
+                    if is_same_team_comparison:
+                        st.markdown(f"<h4 style='color: #00CC00;'>📈 Higher in {period_label1}</h4>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"<h4 style='color: #00CC00;'>🟢 {team1} – Strengths</h4>", unsafe_allow_html=True)
                     if len(team1_strengths_attr) > 0:
                         for idx, item in enumerate(team1_strengths_attr):
                             stat = item["stat"]
@@ -6511,10 +6685,6 @@ elif page == "Team Compare":
                             t2_val = item["t2_val"]
                             t2_rank = item["t2_rank"]
                             
-                            rank_diff = int(t2_rank - t1_rank)
-                            t1_ord = f"{t1_rank}{get_ordinal_suffix(t1_rank)}"
-                            t2_ord = f"{t2_rank}{get_ordinal_suffix(t2_rank)}"
-                            
                             try:
                                 t1_val_str = f"{float(t1_val):.1f}"
                                 t2_val_str = f"{float(t2_val):.1f}"
@@ -6522,28 +6692,61 @@ elif page == "Team Compare":
                                 t1_val_str = str(t1_val)
                                 t2_val_str = str(t2_val)
                             
-                            st.markdown(
-                                f"""
-                                <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
-                                            border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-                                    <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {stat}</div>
-                                    <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                                        {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val_str}</span> ({t1_ord}) 
-                                        <span style='color: #888;'>vs</span> 
-                                        {team2}: <span style='font-weight: bold;'>{t2_val_str}</span> ({t2_ord})
+                            if is_same_team_comparison:
+                                # Show value difference for same-team comparison
+                                val_diff = float(t1_val) - float(t2_val)
+                                t1_ord = f"({t1_rank}{get_ordinal_suffix(t1_rank)})" if t1_rank > 0 else ""
+                                t2_ord = f"({t2_rank}{get_ordinal_suffix(t2_rank)})" if t2_rank > 0 else ""
+                                st.markdown(
+                                    f"""
+                                    <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                                border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                                        <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {stat}</div>
+                                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                            {period_label1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val_str}</span> {t1_ord}
+                                            <span style='color: #888;'>vs</span> 
+                                            {period_label2}: <span style='font-weight: bold;'>{t2_val_str}</span> {t2_ord}
+                                        </div>
+                                        <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
+                                            +{val_diff:.1f} higher
+                                        </div>
                                     </div>
-                                    <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
-                                        +{rank_diff} positions ahead
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                            else:
+                                # Show rank difference for different teams
+                                rank_diff = int(t2_rank - t1_rank)
+                                t1_ord = f"{t1_rank}{get_ordinal_suffix(t1_rank)}"
+                                t2_ord = f"{t2_rank}{get_ordinal_suffix(t2_rank)}"
+                                st.markdown(
+                                    f"""
+                                    <div style='background: linear-gradient(90deg, rgba(0,204,0,0.1) 0%, rgba(0,204,0,0.05) 100%); 
+                                                border-left: 4px solid #00CC00; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                                        <div style='font-weight: bold; color: #00CC00;'>{idx + 1}. {stat}</div>
+                                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                            {team1}: <span style='font-weight: bold; color: #00FF00;'>{t1_val_str}</span> ({t1_ord}) 
+                                            <span style='color: #888;'>vs</span> 
+                                            {team2}: <span style='font-weight: bold;'>{t2_val_str}</span> ({t2_ord})
+                                        </div>
+                                        <div style='font-size: 0.85em; color: #00DD00; margin-top: 4px;'>
+                                            +{rank_diff} positions ahead
+                                        </div>
                                     </div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
+                                    """,
+                                    unsafe_allow_html=True
+                                )
                     else:
-                        st.info(f"No {attribute_group} stats where {team1} ranks higher")
+                        if is_same_team_comparison:
+                            st.info(f"No {attribute_group} stats higher in {period_label1}")
+                        else:
+                            st.info(f"No {attribute_group} stats where {team1} ranks higher")
                 
                 with col2:
-                    st.markdown(f"<h4 style='color: #FF4444;'>🔴 {team1} – Weaknesses</h4>", unsafe_allow_html=True)
+                    if is_same_team_comparison:
+                        st.markdown(f"<h4 style='color: #FF4444;'>📉 Higher in {period_label2}</h4>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"<h4 style='color: #FF4444;'>🔴 {team1} – Weaknesses</h4>", unsafe_allow_html=True)
                     if len(team1_weaknesses_attr) > 0:
                         for idx, item in enumerate(team1_weaknesses_attr):
                             stat = item["stat"]
@@ -6552,38 +6755,64 @@ elif page == "Team Compare":
                             t2_val = item["t2_val"]
                             t2_rank = item["t2_rank"]
                             
-                            rank_diff = int(t1_rank - t2_rank)
-                            t1_ord = f"{t1_rank}{get_ordinal_suffix(t1_rank)}"
-                            t2_ord = f"{t2_rank}{get_ordinal_suffix(t2_rank)}"
-                            
                             try:
                                 t1_val_str = f"{float(t1_val):.1f}"
                                 t2_val_str = f"{float(t2_val):.1f}"
+
                             except:
                                 t1_val_str = str(t1_val)
                                 t2_val_str = str(t2_val)
                             
-                            st.markdown(
-                                f"""
-                                <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
-                                            border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
-                                    <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {stat}</div>
-                                    <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
-                                        {team1}: <span style='font-weight: bold;'>{t1_val_str}</span> ({t1_ord}) 
-                                        <span style='color: #888;'>vs</span> 
-                                        {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val_str}</span> ({t2_ord})
+                            if is_same_team_comparison:
+                                # Show value difference for same-team comparison
+                                val_diff = float(t2_val) - float(t1_val)
+                                t1_ord = f"({t1_rank}{get_ordinal_suffix(t1_rank)})" if t1_rank > 0 else ""
+                                t2_ord = f"({t2_rank}{get_ordinal_suffix(t2_rank)})" if t2_rank > 0 else ""
+                                st.markdown(
+                                    f"""
+                                    <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                                border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                                        <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {stat}</div>
+                                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                            {period_label1}: <span style='font-weight: bold;'>{t1_val_str}</span> {t1_ord}
+                                            <span style='color: #888;'>vs</span> 
+                                            {period_label2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val_str}</span> {t2_ord}
+                                        </div>
+                                        <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>+{val_diff:.1f} higher in {period_label2}</div>
                                     </div>
-                                    <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>{rank_diff} positions behind</div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                            else:
+                                # Show rank difference for different teams
+                                rank_diff = int(t1_rank - t2_rank)
+                                t1_ord = f"{t1_rank}{get_ordinal_suffix(t1_rank)}"
+                                t2_ord = f"{t2_rank}{get_ordinal_suffix(t2_rank)}"
+                                st.markdown(
+                                    f"""
+                                    <div style='background: linear-gradient(90deg, rgba(255,68,68,0.1) 0%, rgba(255,68,68,0.05) 100%); 
+                                                border-left: 4px solid #FF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;'>
+                                        <div style='font-weight: bold; color: #FF4444;'>{idx + 1}. {stat}</div>
+                                        <div style='font-size: 0.9em; color: #CCCCCC; margin-top: 6px;'>
+                                            {team1}: <span style='font-weight: bold;'>{t1_val_str}</span> ({t1_ord}) 
+                                            <span style='color: #888;'>vs</span> 
+                                            {team2}: <span style='font-weight: bold; color: #FF6666;'>{t2_val_str}</span> ({t2_ord})
+                                        </div>
+                                        <div style='font-size: 0.85em; color: #FF6666; margin-top: 4px;'>{rank_diff} positions behind</div>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
                     else:
-                        st.info(f"No {attribute_group} stats where {team2} ranks higher")
+                        if is_same_team_comparison:
+                            st.info(f"No {attribute_group} stats higher in {period_label2}")
+                        else:
+                            st.info(f"No {attribute_group} stats where {team2} ranks higher")
     
     # Export section
     st.markdown("---")
     render_export_button("team-compare", f"TeamCompare_{team1}_vs_{team2}")
+
 
 # ================= CLUB LIST =================
 elif page == "Club List":
@@ -15079,9 +15308,20 @@ elif page == "Game Model Scorecard":
         st.info("Please select at least one KPI to display.")
         st.stop()
     
+    # Define which metrics should use the computed FIFA-style ratings (50-99 scale)
+    COMPUTED_METRICS = {
+        "Ball Winning Ranking", "Ball Movement Ranking", "Scoring Ranking", 
+        "Defence Ranking", "Pressure Ranking", "Health Check Ranking",
+        "Attack Rating", "Defence Rating", "Overall Rating", "Team Rating"
+    }
+    
     # Load data
     try:
-        # Load season data
+        # Load computed FIFA-style ratings for pillar metrics
+        computed_ladders_season = load_team_ladders(selected_year, last10=False)
+        computed_ladders_l10 = load_team_ladders(selected_year, last10=True) if selected_year == 2025 else None
+        
+        # Also load raw Excel data for individual KPIs (not pillar-level)
         xl = pd.ExcelFile(TEAM_FILE)
         sheet_name = f"{selected_year} Summary"
         raw_df = xl.parse(sheet_name, header=None)
@@ -15097,8 +15337,8 @@ elif page == "Game Model Scorecard":
             if pd.notna(metric) and str(metric).strip() != 'Rank':
                 metric_to_col[str(metric).strip()] = col_idx
         
-        # Build data dictionary by reading team rows
-        team_data = {}
+        # Build data dictionary by reading team rows (raw data)
+        team_data_raw = {}
         for row_idx in range(first_team_row_idx, len(raw_df)):
             team_name = raw_df.iloc[row_idx, 0]
             if pd.notna(team_name):
@@ -15107,17 +15347,34 @@ elif page == "Game Model Scorecard":
                     team_name = "GWS Giants"
                 
                 if team_name in all_teams:
-                    team_data[team_name] = {}
+                    team_data_raw[team_name] = {}
                     for metric_name, col_idx in metric_to_col.items():
                         value = raw_df.iloc[row_idx, col_idx]
                         if pd.notna(value):
                             try:
-                                team_data[team_name][metric_name] = float(value)
+                                team_data_raw[team_name][metric_name] = float(value)
                             except:
                                 pass
         
+        # Merge computed ratings with raw data (computed takes priority for pillar metrics)
+        team_data = {}
+        for team_name in all_teams:
+            team_data[team_name] = team_data_raw.get(team_name, {}).copy()
+            # Override pillar metrics with computed FIFA-style ratings
+            if not computed_ladders_season.empty:
+                team_row = computed_ladders_season[computed_ladders_season["Team"] == team_name]
+                if not team_row.empty:
+                    for metric in COMPUTED_METRICS:
+                        if metric in team_row.columns:
+                            val = team_row[metric].iloc[0]
+                            if pd.notna(val):
+                                try:
+                                    team_data[team_name][metric] = float(val)
+                                except:
+                                    pass
+        
         # Load Last 10 if needed
-        last10_data = {}
+        last10_data_raw = {}
         if selected_year == 2025:
             try:
                 sheet_name_l10 = f"{selected_year} Last 10 Summary"
@@ -15137,17 +15394,35 @@ elif page == "Game Model Scorecard":
                             team_name = "GWS Giants"
                         
                         if team_name in all_teams:
-                            last10_data[team_name] = {}
+                            last10_data_raw[team_name] = {}
                             for metric_name, col_idx in metric_to_col_l10.items():
                                 value = raw_df_l10.iloc[row_idx, col_idx]
                                 if pd.notna(value):
                                     try:
-                                        last10_data[team_name][metric_name] = float(value)
+                                        last10_data_raw[team_name][metric_name] = float(value)
                                     except:
                                         pass
             except Exception as e:
                 st.warning(f"Last 10 Games data not available: {e}")
-                last10_data = {}
+                last10_data_raw = {}
+        
+        # Merge computed ratings with L10 raw data
+        last10_data = {}
+        if selected_year == 2025:
+            for team_name in all_teams:
+                last10_data[team_name] = last10_data_raw.get(team_name, {}).copy()
+                # Override pillar metrics with computed FIFA-style ratings
+                if computed_ladders_l10 is not None and not computed_ladders_l10.empty:
+                    team_row = computed_ladders_l10[computed_ladders_l10["Team"] == team_name]
+                    if not team_row.empty:
+                        for metric in COMPUTED_METRICS:
+                            if metric in team_row.columns:
+                                val = team_row[metric].iloc[0]
+                                if pd.notna(val):
+                                    try:
+                                        last10_data[team_name][metric] = float(val)
+                                    except:
+                                        pass
         
         # Helper functions
         def calculate_ranking(kpi_name, team_name, dataset):
