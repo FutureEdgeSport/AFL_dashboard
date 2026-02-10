@@ -6037,24 +6037,27 @@ elif page == "Team Compare":
     st.subheader("Visual Comparison")
     
     # Prepare data for charts
+    # Use ladders1 as the base dataset for radar chart metrics
     spider_metrics = []
     team1_values = []
     team2_values = []
     top4_averages = []
     
     for metric_col in METRIC_ORDER:
-        if metric_col not in ladders.columns:
+        if metric_col not in ladders1.columns:
             continue
         
         # Get team values
         try:
             team1_val = float(team1_row[metric_col])
-            team2_val = float(team2_row[metric_col])
+            team2_val = float(team2_row[metric_col]) if metric_col in ladders2.columns else None
+            if team2_val is None:
+                continue
         except Exception:
             continue
         
-        # Calculate Top 4 average
-        top4_vals = ladders.nlargest(4, metric_col)[metric_col]
+        # Calculate Top 4 average from ladders1 (base dataset)
+        top4_vals = ladders1.nlargest(4, metric_col)[metric_col]
         top4_avg = top4_vals.mean()
         
         spider_metrics.append(metric_col)
