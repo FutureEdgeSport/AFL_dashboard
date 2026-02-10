@@ -6207,9 +6207,15 @@ elif page == "Team Compare":
             fig.update_xaxes(title_text="", tickfont=dict(color='white', size=10), row=1, col=3)
             fig.update_yaxes(title_text="Rating", tickfont=dict(color='white', size=10), row=1, col=3)
             
+            # Build title with period info
+            if period_label1 == period_label2:
+                chart_period = period_label1
+            else:
+                chart_period = f"{period_label1} vs {period_label2}"
+            
             # Update layout
             fig.update_layout(
-                title_text=f"<b>{team1} vs {team2}</b> – Radar Charts & Comparison ({period_label})",
+                title_text=f"<b>{team1} vs {team2}</b> – Radar Charts & Comparison ({chart_period})",
                 title_font_size=18,
                 showlegend=True,
                 legend=dict(
