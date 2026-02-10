@@ -6256,9 +6256,9 @@ elif page == "Team Compare":
         except:
             return str(rank_val)
     
-    # Load summary data for attributes
+    # Load summary data for attributes (use team1's year)
     try:
-        summary_year = load_team_summary_for_year(selected_year)
+        summary_year = load_team_summary_for_year(year1)
     except Exception:
         summary_year = None
     
@@ -6401,7 +6401,7 @@ elif page == "Team Compare":
         
         # Collect all attribute stats (excluding main metrics)
         all_attribute_stats = []
-        which_block = "Last10" if window == "Last 10 Games" else "Season"
+        which_block = "Last10" if window1 == "Last 10 Games" else "Season"
         
         for attribute_group in attribute_groups:
             try:
