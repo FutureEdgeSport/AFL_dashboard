@@ -998,7 +998,11 @@ def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.
         block = "L10" if last10 else "Season"
         
         # First try to load from computed CSV files (new sophisticated system)
-        computed_path = Path(__file__).parent / "data" / "computed" / f"team_summary_{season}.csv"
+        # Use block-specific file if available
+        if last10:
+            computed_path = Path(__file__).parent / "data" / "computed" / f"team_summary_{season}_L10.csv"
+        else:
+            computed_path = Path(__file__).parent / "data" / "computed" / f"team_summary_{season}.csv"
         
         if computed_path.exists():
             df = pd.read_csv(computed_path)
@@ -1015,33 +1019,9 @@ def load_team_ladders_computed_wrapper(season: int, last10: bool = False) -> pd.
             
             return df
         
-        # Fallback to Excel if no computed CSV
-        xl = pd.ExcelFile(TEAM_FILE)
-        df = load_team_ladders_computed(xl, season, block)
-        
-        # Calculate Team Rating from the 5 pillars (average of rankings, then ranked)
-        pillar_cols = [
-            "Ball Winning Ranking",
-            "Ball Movement Ranking", 
-            "Scoring Ranking",
-            "Defence Ranking",
-            "Pressure Ranking"
-        ]
-        
-        available_pillars = [col for col in pillar_cols if col in df.columns]
-        
-        if available_pillars:
-            df["Team Rating"] = df[available_pillars].mean(axis=1).round(1)
-            df["Team Rating Rank"] = df["Team Rating"].rank(ascending=False, method='min').astype(int)
-        else:
-            column_mapping = {
-                "Overall Rating": "Team Rating",
-                "Overall Rating Rank": "Team Rating Rank",
-                "Overall Rank": "Team Rating Rank",
-            }
-            df = df.rename(columns=column_mapping)
-        
-        return df
+        # Fallback to Excel Ladders sheets (which have the ranking data formatted correctly)
+        # Use load_team_ladders_from_excel which handles the Ladders sheets properly
+        return load_team_ladders_from_excel(season, last10)
     except FileNotFoundError:
         st.error(f"❌ Team ratings file not found: {TEAM_FILE}")
         return pd.DataFrame()
@@ -1212,6 +1192,20 @@ def get_player_seasons() -> list[int]:
         return sorted(seasons, reverse=True)
     except Exception:
         return AVAILABLE_SEASONS  # Fall back to config default
+
+
+@st.cache_data(show_spinner=False)
+def get_traits_seasons() -> list[int]:
+    """Get available trait seasons from the traits Excel file (2021-2025)."""
+    try:
+        xl = pd.ExcelFile(TRAITS_FILE)
+        seasons = []
+        for s in xl.sheet_names:
+            if str(s).isdigit():
+                seasons.append(int(s))
+        return sorted(seasons, reverse=True)
+    except Exception:
+        return [2025, 2024, 2023, 2022, 2021]  # Known available seasons
 
 
 def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
@@ -2963,7 +2957,7 @@ def render_grouped_navigation():
     }
     /* Add padding to sidebar content to account for fixed logo */
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        padding-top: 160px !important;
+        padding-top: 200px !important;
     }
     /* Ensure sidebar scrolls properly and content is clipped */
     [data-testid="stSidebar"] > div:first-child {
@@ -3008,20 +3002,7 @@ def render_grouped_navigation():
     
     new_page = selected
     
-    # Render Home button first
-    home_selected = "Home" == selected
-    if st.sidebar.button(
-        "🏠 Home",
-        key="nav_Home",
-        use_container_width=True,
-        type="primary" if home_selected else "secondary"
-    ):
-        new_page = "Home"
-        st.session_state.selected_page = "Home"
-        st.rerun()
-    
-    # --- Player Search (right after Home) ---
-    st.sidebar.markdown("---")
+    # --- Player Search (at top of sidebar, after logo) ---
     st.sidebar.markdown("🔍 **Player Search**")
     
     @st.cache_data(show_spinner=False)
@@ -3068,6 +3049,20 @@ def render_grouped_navigation():
                         st.rerun()
         else:
             st.sidebar.caption("No players found")
+    
+    st.sidebar.markdown("---")
+    
+    # Render Home button after Player Search
+    home_selected = "Home" == selected
+    if st.sidebar.button(
+        "🏠 Home",
+        key="nav_Home",
+        use_container_width=True,
+        type="primary" if home_selected else "secondary"
+    ):
+        new_page = "Home"
+        st.session_state.selected_page = "Home"
+        st.rerun()
     
     # Render remaining groups (skip Home since we already rendered it)
     for group_name, pages in PAGE_GROUPS.items():
@@ -4429,12 +4424,18 @@ if page == "Overview":
         if int(y) == 2025:
             year_options.append("2025 - Last 10 Games")
 
-    selected_option = st.selectbox(
-        "Select Year & Data Window",
-        year_options,
-        index=0,
-        help="Choose which year to view. Last 10 Games only available for 2025.",
-    )
+    # Primary period selector
+    col_primary, col_compare_toggle = st.columns([3, 1])
+    with col_primary:
+        selected_option = st.selectbox(
+            "Select Year & Data Window",
+            year_options,
+            index=0,
+            help="Choose which year to view. Last 10 Games only available for 2025.",
+        )
+    with col_compare_toggle:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)  # Spacer to align
+        compare_mode = st.checkbox("📊 Compare Periods", value=False, help="Compare two time periods side by side")
 
     if " - Last 10 Games" in selected_option:
         selected_season = 2025
@@ -4445,6 +4446,38 @@ if page == "Overview":
 
     last10 = window == "Last 10 Games"
     period_label = f"{window} ({selected_season})"
+
+    # Comparison period selector (if enabled)
+    ladders2 = None
+    period_label2 = None
+    if compare_mode:
+        # Filter out the primary selection from comparison options
+        compare_options = [opt for opt in year_options if opt != selected_option]
+        if compare_options:
+            compare_option = st.selectbox(
+                "Compare To",
+                compare_options,
+                index=0,
+                help="Select the second period to compare against",
+                key="overview_compare_period"
+            )
+            
+            if " - Last 10 Games" in compare_option:
+                compare_season = 2025
+                compare_window = "Last 10 Games"
+            else:
+                compare_season = int(compare_option.split(" - ")[0])
+                compare_window = "Season"
+            
+            compare_last10 = compare_window == "Last 10 Games"
+            period_label2 = f"{compare_window} ({compare_season})"
+            
+            # Load comparison data
+            try:
+                ladders2 = load_team_ladders(compare_season, last10=compare_last10)
+            except Exception as e:
+                st.warning(f"Could not load comparison data for {period_label2}: {e}")
+                ladders2 = None
 
     # ----------------------------
     # Load ladder
@@ -4749,6 +4782,146 @@ if page == "Overview":
     render_sortable_table("\n".join(html))
 
     st.caption(f"Teams shown: {ladder_view['Team'].nunique()} (should be 18)")
+
+    # ----------------------------
+    # Period Comparison Table (if compare mode enabled)
+    # ----------------------------
+    if compare_mode and ladders2 is not None and not ladders2.empty:
+        render_html(st, f"<hr><h2 style='text-align:center;color:#FFFFFF;margin-top:40px;margin-bottom:25px;'>📈 Period Comparison – {period_label} vs {period_label2}</h2>")
+        render_html(st, f"<p style='text-align:center;color:#888;margin-bottom:20px;'>Changes shown as: {period_label} minus {period_label2}. Ranked by biggest positive change (1st) to biggest negative change (18th).</p>")
+        
+        # Make sure ladders2 has consistent team names
+        ladders2 = ladders2.copy()
+        ladders2["Team"] = ladders2["Team"].astype(str)
+        
+        # Metrics to compare (value columns only, not rank columns)
+        compare_metrics = ["Team Rating", "Ball Winning Ranking", "Ball Movement Ranking", "Scoring Ranking", "Defence Ranking", "Pressure Ranking"]
+        
+        # Build comparison dataframe
+        comparison_data = []
+        for team in ladders["Team"].unique():
+            team_data = {"Team": team}
+            team_row1 = ladders[ladders["Team"] == team]
+            team_row2 = ladders2[ladders2["Team"] == team]
+            
+            if team_row1.empty or team_row2.empty:
+                continue
+            
+            for metric in compare_metrics:
+                if metric in ladders.columns and metric in ladders2.columns:
+                    val1 = pd.to_numeric(team_row1[metric].iloc[0], errors="coerce")
+                    val2 = pd.to_numeric(team_row2[metric].iloc[0], errors="coerce")
+                    if pd.notna(val1) and pd.notna(val2):
+                        change = val1 - val2
+                        team_data[f"{metric}"] = round(change, 1)
+                    else:
+                        team_data[f"{metric}"] = None
+            comparison_data.append(team_data)
+        
+        if comparison_data:
+            comparison_df = pd.DataFrame(comparison_data)
+            
+            # Calculate change rankings for each metric (biggest positive = rank 1)
+            change_rankings = {}
+            for metric in compare_metrics:
+                if metric in comparison_df.columns:
+                    change_rankings[metric] = comparison_df[metric].rank(ascending=False, method="min", na_option="bottom")
+            
+            # Build HTML comparison table
+            comp_html = []
+            comp_html.append("<table class='fe-table fe-table-light fe-sortable'><thead><tr>")
+            
+            # Headers
+            comp_html.append("<th style='background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);color:#FFFFFF;'>Team</th>")
+            
+            metric_colors_comp = {
+                "Team Rating": ("#000000", "white"),
+                "Ball Winning Ranking": ("#0066CC", "white"),
+                "Ball Movement Ranking": ("#009933", "white"),
+                "Scoring Ranking": ("#FFEB3B", "black"),
+                "Defence Ranking": ("#CC0000", "white"),
+                "Pressure Ranking": ("#800080", "white"),
+            }
+            
+            pretty_headers = {
+                "Team Rating": "Team Rating\nΔ",
+                "Ball Winning Ranking": "Ball Winning\nΔ",
+                "Ball Movement Ranking": "Ball Movement\nΔ",
+                "Scoring Ranking": "Scoring\nΔ",
+                "Defence Ranking": "Defence\nΔ",
+                "Pressure Ranking": "Pressure\nΔ",
+            }
+            
+            for metric in compare_metrics:
+                if metric in comparison_df.columns:
+                    bg, fg = metric_colors_comp.get(metric, ("#404040", "white"))
+                    grad = f"linear-gradient(135deg,{bg} 0%,{darken_color(bg, 0.6)} 100%)"
+                    header_text = pretty_headers.get(metric, metric + "\nΔ")
+                    comp_html.append(f"<th style='background:{grad};color:{fg};'>{header_text}</th>")
+                    # Add rank column header
+                    rank_bg = darken_color(bg, 0.75) if bg != "#000000" else "#404040"
+                    rank_grad = f"linear-gradient(135deg,{rank_bg} 0%,{darken_color(rank_bg, 0.6)} 100%)"
+                    comp_html.append(f"<th style='background:{rank_grad};color:white;'>Rank</th>")
+            
+            comp_html.append("</tr></thead><tbody>")
+            
+            # Sort by Team Rating change (descending) if available
+            if "Team Rating" in comparison_df.columns:
+                comparison_df = comparison_df.sort_values("Team Rating", ascending=False, na_position="last")
+            
+            # Data rows
+            n_teams_comp = max(1, len(comparison_df))
+            denom_comp = max(1, n_teams_comp - 1)
+            
+            for ridx, row in comparison_df.iterrows():
+                comp_html.append("<tr>")
+                comp_html.append(f"<td>{row['Team']}</td>")
+                
+                for metric in compare_metrics:
+                    if metric in comparison_df.columns:
+                        val = row[metric]
+                        bg, fg = metric_colors_comp.get(metric, ("#404040", "white"))
+                        
+                        # Color based on positive/negative change
+                        if pd.notna(val):
+                            if val > 0:
+                                # Positive change: green tint with dark green text
+                                cell_bg = "rgba(0, 153, 51, 0.3)"
+                                cell_color = "#006622"  # Dark green for readability
+                                display_val = f"+{val:.0f}"
+                            elif val < 0:
+                                # Negative change: red tint with dark red text
+                                cell_bg = "rgba(204, 0, 0, 0.3)"
+                                cell_color = "#990000"  # Dark red for readability
+                                display_val = f"{val:.0f}"
+                            else:
+                                cell_bg = "rgba(128, 128, 128, 0.2)"
+                                cell_color = "#555555"
+                                display_val = "0"
+                            
+                            comp_html.append(f"<td style='background:{cell_bg};color:{cell_color};font-weight:bold;'>{display_val}</td>")
+                            
+                            # Rank cell
+                            rank_val = change_rankings[metric].loc[ridx]
+                            rank_bg = darken_color(bg, 0.75) if bg != "#000000" else "#404040"
+                            
+                            # Opacity based on rank
+                            opacity = 1.0 - (float(rank_val) - 1.0) / denom_comp * 0.7 if pd.notna(rank_val) else 0.3
+                            r_, g_, b_ = int(rank_bg[1:3], 16), int(rank_bg[3:5], 16), int(rank_bg[5:7], 16)
+                            comp_html.append(f"<td style='background:rgba({r_},{g_},{b_},{opacity:.3f});color:white;'>{get_ordinal(int(rank_val))}</td>")
+                        else:
+                            comp_html.append("<td style='color:#666;'>N/A</td>")
+                            comp_html.append("<td style='color:#666;'>—</td>")
+                
+                comp_html.append("</tr>")
+            
+            comp_html.append("</tbody></table>")
+            
+            render_sortable_table("\n".join(comp_html))
+            
+            st.caption(f"Comparison showing {len(comparison_df)} teams")
+        else:
+            st.info("No matching teams found between the two periods for comparison.")
 
 
 
@@ -5332,73 +5505,114 @@ elif page == "Team Compare":
         if year == 2025:
             year_options.append("2025 - Last 10 Games")
     
-    # Year and data window selection combined
-    selected_option = st.selectbox(
-        "Select Year & Data Window",
-        year_options,
-        index=0 if year_options else None,
-        help="Choose which year to view. Last 10 Games only available for 2025.",
-        key="team_compare_period"
-    )
+    # Helper function to parse year/window selection and load data
+    def load_team_data_for_selection(selected_option):
+        """Parse selection and load ladder data."""
+        if " - Last 10 Games" in selected_option:
+            sel_year = 2025
+            sel_window = "Last 10 Games"
+        else:
+            sel_year = int(selected_option.split(" - ")[0])
+            sel_window = "Season"
+        
+        sel_last10 = sel_window == "Last 10 Games"
+        sel_label = f"{sel_window} ({sel_year})"
+        
+        try:
+            sel_ladders = load_team_ladders(sel_year, last10=sel_last10)
+            # Normalize team names
+            sel_ladders["Team"] = sel_ladders["Team"].replace({
+                "GWS": "GWS Giants",
+                "Greater Western Sydney": "GWS Giants"
+            })
+            return sel_ladders, sel_label, sel_year, sel_window
+        except Exception as e:
+            return None, sel_label, sel_year, sel_window
     
-    # Parse the selection
-    if " - Last 10 Games" in selected_option:
-        selected_year = 2025
-        window = "Last 10 Games"
-    else:
-        selected_year = int(selected_option.split(" - ")[0])
-        window = "Season"
+    # Team selection with individual time filters
+    st.markdown("### Select Teams to Compare")
     
-    last10 = window == "Last 10 Games"
-    period_label = f"{window} ({selected_year})"
-
-    try:
-        ladders = load_team_ladders(selected_year, last10=last10)
-    except Exception as e:
-        st.error(f"Error loading team data for {selected_year} – {window}: {e}")
-        st.stop()
-
-    if ladders.empty:
-        st.warning(f"No ladder data found for {period_label}.")
-        st.stop()
-
-    st.caption(f"Comparing: {period_label}")
-
-    # Normalize team names in ladders DataFrame
-    ladders["Team"] = ladders["Team"].replace({
-        "GWS": "GWS Giants",
-        "Greater Western Sydney": "GWS Giants"
-    })
-    
-    team_list = sorted(ladders["Team"].unique())
-    
-    # Team selection columns
     col1, col2 = st.columns(2)
+    
     with col1:
-        # Set default index for team1 based on session state
+        st.markdown("#### Team 1 (Base)")
+        # Time filter for Team 1
+        selected_option1 = st.selectbox(
+            "Year & Data Window",
+            year_options,
+            index=0 if year_options else None,
+            help="Choose which year/window for Team 1",
+            key="team_compare_period1"
+        )
+        
+        # Load data for Team 1's selection
+        ladders1, period_label1, year1, window1 = load_team_data_for_selection(selected_option1)
+        
+        if ladders1 is None or ladders1.empty:
+            st.error(f"No data for {period_label1}")
+            st.stop()
+        
+        team_list1 = sorted(ladders1["Team"].unique())
+        
+        # Team selector for Team 1
         default_idx1 = 0
-        if "default_team" in st.session_state and st.session_state.default_team in team_list:
-            default_idx1 = team_list.index(st.session_state.default_team)
-        team1 = st.selectbox("Team 1 (Base)", team_list, index=default_idx1, key="team_compare_team1")
+        if "default_team" in st.session_state and st.session_state.default_team in team_list1:
+            default_idx1 = team_list1.index(st.session_state.default_team)
+        team1 = st.selectbox("Select Team", team_list1, index=default_idx1, key="team_compare_team1")
+        
+        st.caption(f"📅 {period_label1}")
+    
     with col2:
-        # Default to different team if available
-        default_idx = 1 if len(team_list) > 1 else 0
-        team2 = st.selectbox("Team 2 (Comparison)", team_list, index=default_idx, key="team_compare_team2")
+        st.markdown("#### Team 2 (Comparison)")
+        # Time filter for Team 2
+        selected_option2 = st.selectbox(
+            "Year & Data Window",
+            year_options,
+            index=0 if year_options else None,
+            help="Choose which year/window for Team 2",
+            key="team_compare_period2"
+        )
+        
+        # Load data for Team 2's selection
+        ladders2, period_label2, year2, window2 = load_team_data_for_selection(selected_option2)
+        
+        if ladders2 is None or ladders2.empty:
+            st.error(f"No data for {period_label2}")
+            st.stop()
+        
+        team_list2 = sorted(ladders2["Team"].unique())
+        
+        # Team selector for Team 2
+        default_idx2 = 1 if len(team_list2) > 1 else 0
+        team2 = st.selectbox("Select Team", team_list2, index=default_idx2, key="team_compare_team2")
+        
+        st.caption(f"📅 {period_label2}")
     
-    # Track comparison in history
-    if team1 != team2:
-        add_to_comparison_history("team", team1, team2)
+    # Track comparison in history (only if different teams or different periods)
+    if team1 != team2 or period_label1 != period_label2:
+        add_to_comparison_history("team", f"{team1} ({period_label1})", f"{team2} ({period_label2})")
     
-    if team1 == team2:
-        st.warning("Please select two different teams to compare.")
+    # Check if same team AND same period (invalid comparison)
+    if team1 == team2 and period_label1 == period_label2:
+        st.warning("Please select different teams or different time periods to compare.")
         st.stop()
+    
+    # Build comparison description
+    if period_label1 == period_label2:
+        comparison_desc = f"Comparing: {period_label1}"
+    else:
+        comparison_desc = f"Comparing: {team1} ({period_label1}) vs {team2} ({period_label2})"
     
     # Display team logos with reflection effect
     st.markdown("---")
     logo_col1, logo_col2 = st.columns(2)
     
     with logo_col1:
-        st.markdown(f"<h3 style='text-align: center;'>{team1}</h3>", unsafe_allow_html=True)
+        # Show team name with period if different periods
+        if period_label1 != period_label2:
+            st.markdown(f"<h3 style='text-align: center;'>{team1}<br><span style='font-size: 14px; color: rgba(255,255,255,0.6);'>{period_label1}</span></h3>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h3 style='text-align: center;'>{team1}</h3>", unsafe_allow_html=True)
         team1_code = TEAM_CODE_MAP.get(team1, team1.lower().replace(" ", ""))
         team1_logo_path = f"{LOGO_FOLDER}/{team1_code}.png"
         if os.path.exists(team1_logo_path):
@@ -5414,7 +5628,11 @@ elif page == "Team Compare":
             st.info(f"Logo not found for {team1}")
     
     with logo_col2:
-        st.markdown(f"<h3 style='text-align: center;'>{team2}</h3>", unsafe_allow_html=True)
+        # Show team name with period if different periods
+        if period_label1 != period_label2:
+            st.markdown(f"<h3 style='text-align: center;'>{team2}<br><span style='font-size: 14px; color: rgba(255,255,255,0.6);'>{period_label2}</span></h3>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h3 style='text-align: center;'>{team2}</h3>", unsafe_allow_html=True)
         team2_code = TEAM_CODE_MAP.get(team2, team2.lower().replace(" ", ""))
         team2_logo_path = f"{LOGO_FOLDER}/{team2_code}.png"
         if os.path.exists(team2_logo_path):
@@ -5429,14 +5647,18 @@ elif page == "Team Compare":
         else:
             st.info(f"Logo not found for {team2}")
     
-    # Get team rows
-    team1_row = ladders[ladders["Team"] == team1].iloc[0]
-    team2_row = ladders[ladders["Team"] == team2].iloc[0]
+    # Get team rows from their respective ladder data
+    team1_row = ladders1[ladders1["Team"] == team1].iloc[0]
+    team2_row = ladders2[ladders2["Team"] == team2].iloc[0]
+    
+    # For similarity calculation, we need to use the combined/intersecting columns
+    # Find common columns between both ladder datasets
+    common_cols = set(ladders1.columns) & set(ladders2.columns)
     
     # ========== SIMILARITY SCORE CALCULATION ==========
     # Calculate similarity score between the two teams based on all available metrics
     similarity_metrics = []
-    for col in ladders.columns:
+    for col in common_cols:
         if col == "Team" or col not in team1_row.index or col not in team2_row.index:
             continue
         try:
@@ -5445,9 +5667,10 @@ elif page == "Team Compare":
             # Skip if either value is NaN
             if pd.isna(val1) or pd.isna(val2):
                 continue
-            # Get column range for normalization
-            col_min = ladders[col].min()
-            col_max = ladders[col].max()
+            # For cross-period comparison, use a combined range for normalization
+            # Get min/max from both datasets
+            col_min = min(ladders1[col].min(), ladders2[col].min())
+            col_max = max(ladders1[col].max(), ladders2[col].max())
             if col_max == col_min:
                 continue
             # Normalize both values to 0-100 scale
@@ -5503,10 +5726,10 @@ elif page == "Team Compare":
         "Health Check": "Health Check Ranking"
     }
     
-    # Check which pillars have data
+    # Check which pillars have data in BOTH ladder datasets (for cross-period comparison)
     available_pillars = {}
     for pillar_name, col_name in pillar_config.items():
-        if col_name in ladders.columns:
+        if col_name in ladders1.columns and col_name in ladders2.columns:
             try:
                 t1_val = float(team1_row.get(col_name, 0))
                 t2_val = float(team2_row.get(col_name, 0))
@@ -7794,11 +8017,11 @@ elif page == "Player Traits":
     # (render_html is imported from top of file)
 
     # -------------------------
-    # Season selection
+    # Season selection - use traits-specific seasons (2021-2025)
     # -------------------------
-    seasons_available = sorted(get_player_seasons(), reverse=True)
+    seasons_available = sorted(get_traits_seasons(), reverse=True)
     if not seasons_available:
-        seasons_available = [2025, 2024, 2023]
+        seasons_available = [2025, 2024, 2023, 2022, 2021]
 
     # Season and FC Mode controls in columns
     ctrl_col1, ctrl_col2 = st.columns([2, 1])
@@ -7807,7 +8030,8 @@ elif page == "Player Traits":
     with ctrl_col2:
         fc_mode = st.toggle("⚽ FC Rating Mode (50-99)", key="traits_fc_mode", help="Convert trait ratings from 1-4 scale to FIFA/FC style 50-99 scale")
 
-    default_history = [s for s in seasons_available if s >= (int(primary_season) - 2)]
+    # Default to all available seasons (2021-2025)
+    default_history = seasons_available.copy()
     history_seasons = st.multiselect(
         "History Seasons (for table)",
         options=seasons_available,
