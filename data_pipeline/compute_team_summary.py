@@ -10,27 +10,31 @@ import numpy as np
 from pathlib import Path
 from typing import Optional
 
-# Team name normalization
-TEAM_NAME_MAP = {
-    "GWS": "GWS Giants",
-    "Greater Western Sydney": "GWS Giants",
-    "Adelaide Crows": "Adelaide",
-    "Brisbane Lions": "Brisbane",
-    "Carlton Blues": "Carlton",
-    "Collingwood Magpies": "Collingwood",
-    "Essendon Bombers": "Essendon",
-    "Fremantle Dockers": "Fremantle",
-    "Geelong Cats": "Geelong",
-    "Gold Coast Suns": "Gold Coast",
-    "Hawthorn Hawks": "Hawthorn",
-    "Melbourne Demons": "Melbourne",
-    "North Melbourne Kangaroos": "North Melbourne",
-    "Port Adelaide Power": "Port Adelaide",
-    "Richmond Tigers": "Richmond",
-    "St Kilda Saints": "St Kilda",
-    "Sydney Swans": "Sydney",
-    "West Coast Eagles": "West Coast",
-}
+# Team name normalization - imported from centralized config
+try:
+    from config.constants import TEAM_NAME_NORMALIZE_MAP as TEAM_NAME_MAP
+except ImportError:
+    # Fallback if config not available (e.g. running standalone)
+    TEAM_NAME_MAP = {
+        "GWS": "GWS Giants",
+        "Greater Western Sydney": "GWS Giants",
+        "Adelaide Crows": "Adelaide",
+        "Brisbane Lions": "Brisbane",
+        "Carlton Blues": "Carlton",
+        "Collingwood Magpies": "Collingwood",
+        "Essendon Bombers": "Essendon",
+        "Fremantle Dockers": "Fremantle",
+        "Geelong Cats": "Geelong",
+        "Gold Coast Suns": "Gold Coast",
+        "Hawthorn Hawks": "Hawthorn",
+        "Melbourne Demons": "Melbourne",
+        "North Melbourne Kangaroos": "North Melbourne",
+        "Port Adelaide Power": "Port Adelaide",
+        "Richmond Tigers": "Richmond",
+        "St Kilda Saints": "St Kilda",
+        "Sydney Swans": "Sydney",
+        "West Coast Eagles": "West Coast",
+    }
 
 # Category definitions - maps category to raw column names
 # These are the metrics used to compute each category rating
@@ -324,7 +328,7 @@ def compute_category_ranking(
     """
     Compute a category ranking from raw team data.
     
-    DEPRECATED: This now calls compute_category_rating() with 50-99 scale.
+    Legacy wrapper: delegates to compute_category_rating() with 50-99 scale.
     
     Returns:
         Tuple of (ranking_score, rank) where ranking_score is 50-99

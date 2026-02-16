@@ -3033,7 +3033,7 @@ def render_grouped_navigation():
                 if player and team:
                     player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
             return player_list
-        except:
+        except Exception:
             return []
 
     all_players_search = get_all_players_for_search(CURRENT_SEASON)
@@ -4217,7 +4217,7 @@ def render_game_day_playground(teams: list[str]):
         try:
             with open(path, "rb") as f:
                 return base64.b64encode(f.read()).decode()
-        except:
+        except Exception:
             return ""
     
     logo_a_b64 = get_logo_b64(team_a_logo)
@@ -5695,7 +5695,7 @@ elif page == "Team Compare":
             # Convert to similarity (100 - difference)
             similarity = 100 - diff
             similarity_metrics.append(similarity)
-        except:
+        except Exception:
             continue
     
     # Calculate overall similarity score
@@ -5749,7 +5749,7 @@ elif page == "Team Compare":
                 t2_val = float(team2_row.get(col_name, 0))
                 if not pd.isna(t1_val) and not pd.isna(t2_val):
                     available_pillars[pillar_name] = col_name
-            except:
+            except Exception:
                 pass
     
     if available_pillars:
@@ -5915,7 +5915,7 @@ elif page == "Team Compare":
                         "t2_contribution": t2_weighted,
                         "winner": team1 if t1_rating > t2_rating else (team2 if t2_rating > t1_rating else "Tie")
                     })
-                except:
+                except Exception:
                     continue
             
             # Calculate favour percentage with AMPLIFIED differences
@@ -6274,7 +6274,7 @@ elif page == "Team Compare":
             else:
                 suffix = {1: "st", 2: "nd", 3: "rd"}.get(r % 10, "th")
             return f"({r}{suffix})"
-        except:
+        except Exception:
             return str(rank_val)
     
     # Load summary data for attributes (use team1's year)
@@ -6688,7 +6688,7 @@ elif page == "Team Compare":
                             try:
                                 t1_val_str = f"{float(t1_val):.1f}"
                                 t2_val_str = f"{float(t2_val):.1f}"
-                            except:
+                            except Exception:
                                 t1_val_str = str(t1_val)
                                 t2_val_str = str(t2_val)
                             
@@ -6759,7 +6759,7 @@ elif page == "Team Compare":
                                 t1_val_str = f"{float(t1_val):.1f}"
                                 t2_val_str = f"{float(t2_val):.1f}"
 
-                            except:
+                            except Exception:
                                 t1_val_str = str(t1_val)
                                 t2_val_str = str(t2_val)
                             
@@ -7823,7 +7823,7 @@ elif page == "Player Profile":
                             return "#FF9800", "Below Avg"
                         else:
                             return "#F44336", "Poor"
-                    except:
+                    except Exception:
                         return "#9E9E9E", "—"
                 
                 # Header
@@ -11904,7 +11904,7 @@ elif page == "List Breakdown - Traits":
                 else:
                     suffix = {1: "st", 2: "nd", 3: "rd"}.get(r % 10, "th")
                 return f"({r}{suffix})"
-            except:
+            except Exception:
                 return str(rank_val)
         
         # Analyze each trait
@@ -13003,7 +13003,7 @@ elif page == "IDP":
             return None
         try:
             return float(str(x).replace("%", "").strip())
-        except:
+        except Exception:
             return None
     
     def get_full_player_name(player_name, team_name=None):
@@ -13181,7 +13181,7 @@ elif page == "IDP":
                 return "Below Average", "#FFA500"
             else:
                 return "Poor", "#FF6B6B"
-        except:
+        except Exception:
             return "N/A", "#666666"
     
     # Display 4 trait pillars in 2x2 grid
@@ -15353,7 +15353,7 @@ elif page == "Game Model Scorecard":
                         if pd.notna(value):
                             try:
                                 team_data_raw[team_name][metric_name] = float(value)
-                            except:
+                            except Exception:
                                 pass
         
         # Merge computed ratings with raw data (computed takes priority for pillar metrics)
@@ -15370,7 +15370,7 @@ elif page == "Game Model Scorecard":
                             if pd.notna(val):
                                 try:
                                     team_data[team_name][metric] = float(val)
-                                except:
+                                except Exception:
                                     pass
         
         # Load Last 10 if needed
@@ -15400,7 +15400,7 @@ elif page == "Game Model Scorecard":
                                 if pd.notna(value):
                                     try:
                                         last10_data_raw[team_name][metric_name] = float(value)
-                                    except:
+                                    except Exception:
                                         pass
             except Exception as e:
                 st.warning(f"Last 10 Games data not available: {e}")
@@ -15421,7 +15421,7 @@ elif page == "Game Model Scorecard":
                                 if pd.notna(val):
                                     try:
                                         last10_data[team_name][metric] = float(val)
-                                    except:
+                                    except Exception:
                                         pass
         
         # Helper functions
@@ -15435,7 +15435,7 @@ elif page == "Game Model Scorecard":
                         val_num = float(val)
                         if not pd.isna(val_num):
                             values.append((team, val_num))
-                    except:
+                    except Exception:
                         pass
             
             if not values:
@@ -15517,7 +15517,7 @@ elif page == "Game Model Scorecard":
                     if l10_val is not None and season_val is not None:
                         try:
                             diff_val = float(l10_val) - float(season_val)
-                        except:
+                        except Exception:
                             pass
                     
                     card_data.append({
@@ -15710,7 +15710,7 @@ elif page == "Game Model Scorecard":
                                     advantage = "disadvantage"
                                 else:
                                     advantage = "neutral"
-                        except:
+                        except Exception:
                             pass
                     
                     comparison_data.append({

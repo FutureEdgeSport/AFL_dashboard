@@ -17,27 +17,31 @@ import numpy as np
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Team name normalization mapping
-TEAM_NAME_MAP = {
-    "GWS": "GWS Giants",
-    "Greater Western Sydney": "GWS Giants",
-    "Adelaide Crows": "Adelaide",
-    "Brisbane Lions": "Brisbane",
-    "Carlton Blues": "Carlton",
-    "Collingwood Magpies": "Collingwood",
-    "Essendon Bombers": "Essendon",
-    "Fremantle Dockers": "Fremantle",
-    "Geelong Cats": "Geelong",
-    "Gold Coast Suns": "Gold Coast",
-    "Hawthorn Hawks": "Hawthorn",
-    "Melbourne Demons": "Melbourne",
-    "North Melbourne Kangaroos": "North Melbourne",
-    "Port Adelaide Power": "Port Adelaide",
-    "Richmond Tigers": "Richmond",
-    "St Kilda Saints": "St Kilda",
-    "Sydney Swans": "Sydney",
-    "West Coast Eagles": "West Coast",
-}
+# Team name normalization mapping - imported from centralized config
+try:
+    from config.constants import TEAM_NAME_NORMALIZE_MAP as TEAM_NAME_MAP
+except ImportError:
+    # Fallback if config not available (e.g. running standalone)
+    TEAM_NAME_MAP = {
+        "GWS": "GWS Giants",
+        "Greater Western Sydney": "GWS Giants",
+        "Adelaide Crows": "Adelaide",
+        "Brisbane Lions": "Brisbane",
+        "Carlton Blues": "Carlton",
+        "Collingwood Magpies": "Collingwood",
+        "Essendon Bombers": "Essendon",
+        "Fremantle Dockers": "Fremantle",
+        "Geelong Cats": "Geelong",
+        "Gold Coast Suns": "Gold Coast",
+        "Hawthorn Hawks": "Hawthorn",
+        "Melbourne Demons": "Melbourne",
+        "North Melbourne Kangaroos": "North Melbourne",
+        "Port Adelaide Power": "Port Adelaide",
+        "Richmond Tigers": "Richmond",
+        "St Kilda Saints": "St Kilda",
+        "Sydney Swans": "Sydney",
+        "West Coast Eagles": "West Coast",
+    }
 
 # ============================================================================
 # SHEET DISCOVERY

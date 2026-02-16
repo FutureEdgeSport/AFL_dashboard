@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 
 # API Configuration
-API_KEY = "sk_4PCTg45wYI_udETo5kT6ad6lU7977L8DdqxZ2UFUl-c"
+API_KEY = os.environ.get("AFL_TRAITS_API_KEY", "sk_4PCTg45wYI_udETo5kT6ad6lU7977L8DdqxZ2UFUl-c")
 API_BASE = "https://partner-api.traitsinsights.app"
 
 # Cache file paths

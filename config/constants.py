@@ -1405,36 +1405,37 @@ def safe_float(x) -> float:
         return None
 
 
+# Canonical team name normalization map (long name -> short name)
+# Used by normalize_team_name() and importable by other modules
+TEAM_NAME_NORMALIZE_MAP: Dict[str, str] = {
+    "GWS": "GWS Giants",
+    "Greater Western Sydney": "GWS Giants",
+    "Sydney Swans": "Sydney",
+    "Brisbane Lions": "Brisbane",
+    "Adelaide Crows": "Adelaide",
+    "Carlton Blues": "Carlton",
+    "Collingwood Magpies": "Collingwood",
+    "Essendon Bombers": "Essendon",
+    "Fremantle Dockers": "Fremantle",
+    "Geelong Cats": "Geelong",
+    "Gold Coast Suns": "Gold Coast",
+    "Hawthorn Hawks": "Hawthorn",
+    "Melbourne Demons": "Melbourne",
+    "North Melbourne Kangaroos": "North Melbourne",
+    "Port Adelaide Power": "Port Adelaide",
+    "Richmond Tigers": "Richmond",
+    "St Kilda Saints": "St Kilda",
+    "West Coast Eagles": "West Coast",
+}
+
+
 def normalize_team_name(team: str) -> str:
     """Normalize team name to standard format."""
     if not team:
         return team
     
     team = str(team).strip()
-    
-    # Handle common variations
-    mappings = {
-        "GWS": "GWS Giants",
-        "Greater Western Sydney": "GWS Giants",
-        "Sydney Swans": "Sydney",
-        "Brisbane Lions": "Brisbane",
-        "Adelaide Crows": "Adelaide",
-        "Carlton Blues": "Carlton",
-        "Collingwood Magpies": "Collingwood",
-        "Essendon Bombers": "Essendon",
-        "Fremantle Dockers": "Fremantle",
-        "Geelong Cats": "Geelong",
-        "Gold Coast Suns": "Gold Coast",
-        "Hawthorn Hawks": "Hawthorn",
-        "Melbourne Demons": "Melbourne",
-        "North Melbourne Kangaroos": "North Melbourne",
-        "Port Adelaide Power": "Port Adelaide",
-        "Richmond Tigers": "Richmond",
-        "St Kilda Saints": "St Kilda",
-        "West Coast Eagles": "West Coast",
-    }
-    
-    return mappings.get(team, team)
+    return TEAM_NAME_NORMALIZE_MAP.get(team, team)
 
 
 def safe_int(x):
