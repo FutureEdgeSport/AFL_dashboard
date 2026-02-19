@@ -141,6 +141,29 @@ TEAM_COLOURS: Dict[str, str] = {
     "Western Bulldogs": "#0055A4",
 }
 
+# Rich colour palettes for team branding (primary, secondary, tertiary)
+# Based on official AFL club colours
+TEAM_COLOUR_PALETTES: Dict[str, Dict[str, str]] = {
+    "Adelaide": {"primary": "#002B5C", "secondary": "#E21937", "tertiary": "#FFD200"},
+    "Brisbane": {"primary": "#7C003E", "secondary": "#0054A4", "tertiary": "#FFBB00"},
+    "Carlton": {"primary": "#031A28", "secondary": "#FFFFFF", "tertiary": "#7C8B98"},
+    "Collingwood": {"primary": "#000000", "secondary": "#FFFFFF", "tertiary": "#4A4A4A"},
+    "Essendon": {"primary": "#D50032", "secondary": "#000000", "tertiary": "#CC9B1F"},
+    "Fremantle": {"primary": "#2F0055", "secondary": "#FFFFFF", "tertiary": "#00BB87"},
+    "Geelong": {"primary": "#001F3D", "secondary": "#FFFFFF", "tertiary": "#1C3C6C"},
+    "Gold Coast": {"primary": "#E2001A", "secondary": "#FFD200", "tertiary": "#003DA5"},
+    "GWS Giants": {"primary": "#F37A20", "secondary": "#4A4A4A", "tertiary": "#FFFFFF"},
+    "Hawthorn": {"primary": "#4D2004", "secondary": "#FFBB00", "tertiary": "#1B1B1B"},
+    "Melbourne": {"primary": "#0F1131", "secondary": "#DE0316", "tertiary": "#FFFFFF"},
+    "North Melbourne": {"primary": "#0055A4", "secondary": "#FFFFFF", "tertiary": "#003A70"},
+    "Port Adelaide": {"primary": "#01A0E1", "secondary": "#000000", "tertiary": "#AECDD5"},
+    "Richmond": {"primary": "#FFCC00", "secondary": "#000000", "tertiary": "#FFE066"},
+    "St Kilda": {"primary": "#E00034", "secondary": "#000000", "tertiary": "#FFFFFF"},
+    "Sydney": {"primary": "#E00034", "secondary": "#FFFFFF", "tertiary": "#000000"},
+    "West Coast": {"primary": "#003087", "secondary": "#FFD200", "tertiary": "#001E50"},
+    "Western Bulldogs": {"primary": "#0055A4", "secondary": "#E00034", "tertiary": "#FFFFFF"},
+}
+
 # All 18 AFL teams (normalized names)
 ALL_TEAMS: List[str] = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
