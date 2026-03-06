@@ -545,7 +545,7 @@ def render_sortable_table(html_table: str, height: int = None):
     {html_table}
     <script>
     (function() {{
-        const table = document.querySelector('.fe-table');
+        const table = document.querySelector('.fe-table') || document.querySelector('.ll-table');
         if (!table) return;
         
         const headers = table.querySelectorAll('thead th');
@@ -1312,6 +1312,9 @@ def get_player_seasons() -> list[int]:
         for s in xl.sheet_names:
             if str(s).isdigit():
                 seasons.append(int(s))
+        # Always include CURRENT_SEASON even if not in Excel yet
+        if CURRENT_SEASON not in seasons:
+            seasons.append(CURRENT_SEASON)
         return sorted(seasons, reverse=True)
     except Exception:
         return AVAILABLE_SEASONS  # Fall back to config default
@@ -1423,10 +1426,63 @@ def load_players(season: int) -> pd.DataFrame:
     if df.empty and season == 2026:
         df = _load_season(2025)
         if not df.empty:
-            st.info("ℹ️ 2026 data not yet available. Showing 2025 season data.")
+            st.info("ℹ️ 2026 game data not yet available. Showing 2025 season ratings.")
     
     if df.empty:
         st.warning(f"⚠️ Could not load player data for {season}")
+    
+    # Enrich generic positions (e.g. 2026 FootyWire data has "Forward" not "Key Forward")
+    # by looking up prior-season positions from player_summary.csv
+    if not df.empty and "Position" in df.columns:
+        _GENERIC_POSITIONS = {"Forward", "Defender", "Midfield", "Ruck",
+                              "DefenderForward", "MidfieldForward", "ForwardRuck",
+                              "DefenderMidfield", "DefenderRuck"}
+        has_generic = df["Position"].isin(_GENERIC_POSITIONS).any()
+        if has_generic:
+            try:
+                summary_path = Path(__file__).parent / "data" / "computed" / "player_summary.csv"
+                if summary_path.exists():
+                    sum_df = pd.read_csv(summary_path)
+                    # Build lookup: player name → position  (use last-name match as fallback)
+                    name_to_pos = {}
+                    lastname_to_pos = {}
+                    if "Player" in sum_df.columns and "Position" in sum_df.columns:
+                        for _, r in sum_df.iterrows():
+                            pname = str(r["Player"]).strip()
+                            pos = str(r["Position"]).strip()
+                            if pname and pos and pos not in ("nan", ""):
+                                name_to_pos[pname.lower()] = pos
+                                parts = pname.split()
+                                if len(parts) >= 2:
+                                    lastname_to_pos[parts[-1].lower()] = pos
+                    
+                    def _enrich_position(row):
+                        cur_pos = str(row.get("Position", "")).strip()
+                        if cur_pos not in _GENERIC_POSITIONS:
+                            return cur_pos
+                        player = str(row.get("Player", "")).strip()
+                        # Exact name match
+                        enriched = name_to_pos.get(player.lower())
+                        if enriched:
+                            return enriched
+                        # Last-name match (handles first-name variations)
+                        parts = player.split()
+                        if len(parts) >= 2:
+                            enriched = lastname_to_pos.get(parts[-1].lower())
+                            if enriched:
+                                return enriched
+                        # Map generic FootyWire positions to closest standard position
+                        _FW_MAP = {
+                            "Forward": "Gen. Forward", "Defender": "Gen. Defender",
+                            "Midfield": "Midfielder", "DefenderForward": "Gen. Defender",
+                            "MidfieldForward": "Mid-Forward", "ForwardRuck": "Ruck",
+                            "DefenderMidfield": "Gen. Defender", "DefenderRuck": "Gen. Defender",
+                        }
+                        return _FW_MAP.get(cur_pos, cur_pos)
+                    
+                    df["Position"] = df.apply(_enrich_position, axis=1)
+            except Exception:
+                pass
     
     return df
 
@@ -1743,7 +1799,18 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             if not df.empty:
                 return _process_traits_df(df, season)
         
-        # Fallback to legacy method
+        # Try CSV fallback (e.g. traits_2026.csv)
+        csv_path = Path(__file__).parent / "data" / "raw" / "traits" / f"traits_{season}.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                df.columns = [str(c).strip() for c in df.columns]
+                if not df.empty:
+                    return _process_traits_df(df, season)
+            except Exception:
+                pass
+        
+        # Fallback to legacy Excel method
         xl = pd.ExcelFile("2025 Traits ENRICHED.xlsx")
         available_sheets = xl.sheet_names
         actual_season = season
@@ -1839,12 +1906,82 @@ def get_all_player_registry_data() -> pd.DataFrame:
     return load_player_registry()
 
 
+# ---------------- WHEELO SUPPLEMENTARY STATS ----------------
+# New Equity + xChainScore metrics from Wheelo data – injected into
+# Team Breakdown / Team Compare attribute drill-downs alongside Excel sub-metrics.
+
+# Map: attribute_group → list of (display_name, wheelo_col, higher_is_better)
+WHEELO_EXTRA_STATS = {
+    "Ball Winning": [
+        ("Equity Pre-Clearance Diff", "Equity_PreClearance_Diff", True),
+        ("Equity Post-Clearance Diff", "Equity_PostClearance_Diff", True),
+    ],
+    "Ball Movement": [
+        ("Equity Ball Use Diff", "Equity_BallUse_Diff", True),
+    ],
+    "Defence": [
+        ("xScore Against", "xScore_Opposition", False),
+    ],
+    "Health Check": [
+        ("xChain Score Stoppage Diff", "xChainScoreFromStoppage_Diff", True),
+        ("xChain Score Turnover Diff", "xChainScoreFromTurnover_Diff", True),
+    ],
+}
+
+
+_WHEELO_NON_TEAMS = {"Average", "League Average", "Avg", "Total"}
+
+
+@st.cache_data(show_spinner=False)
+def _load_wheelo_team_stats() -> pd.DataFrame:
+    """Load Wheelo team data with new Equity/xChainScore columns."""
+    try:
+        wheelo_path = BASE_DIR / "Wheelo_Team_Data.xlsx"
+        if wheelo_path.exists():
+            # Try L10 sheet first (most comprehensive), then first sheet
+            xls = pd.ExcelFile(wheelo_path)
+            for sheet in xls.sheet_names:
+                if "L10" in sheet:
+                    df = pd.read_excel(wheelo_path, sheet_name=sheet)
+                    df.columns = df.columns.astype(str).str.strip()
+                    if "Team" in df.columns:
+                        df["Team"] = df["Team"].apply(lambda x: normalize_team_name(str(x)) if pd.notna(x) else x)
+                        df = df[~df["Team"].isin(_WHEELO_NON_TEAMS)]
+                    return df
+            # Fallback to first sheet
+            df = pd.read_excel(wheelo_path, sheet_name=0)
+            df.columns = df.columns.astype(str).str.strip()
+            if "Team" in df.columns:
+                df["Team"] = df["Team"].apply(lambda x: normalize_team_name(str(x)) if pd.notna(x) else x)
+                df = df[~df["Team"].isin(_WHEELO_NON_TEAMS)]
+            return df
+    except Exception:
+        pass
+    return pd.DataFrame()
+
+
+def _get_wheelo_stat_distribution(stat_display_name: str, wheelo_col: str, higher_is_better: bool = True) -> pd.DataFrame:
+    """Get stat distribution from Wheelo data for a supplementary metric."""
+    df = _load_wheelo_team_stats()
+    if df.empty or wheelo_col not in df.columns:
+        return pd.DataFrame(columns=["Team", "Value", "Rank"])
+
+    result = df[["Team", wheelo_col]].copy()
+    result.columns = ["Team", "Value"]
+    result["Value"] = pd.to_numeric(result["Value"], errors="coerce")
+    result = result.dropna(subset=["Value"]).reset_index(drop=True)
+    result["Rank"] = result["Value"].rank(ascending=not higher_is_better, method="min").astype(int)
+    return result
+
+
 # ---------------- ATTRIBUTE STRUCTURE HELPERS (TEAM SUMMARY) ----------------
 def _extract_attribute_structure(summary_df: pd.DataFrame, attribute_name: str):
     """
     Reads group header row and stat row to find columns for one attribute group.
     Returns list of dicts:
       { "stat_name": ..., "value_col": int, "rank_col": int | None }
+    Also appends Wheelo supplementary stats (Equity, xChainScore) if available
+    for the requested attribute group.
     """
     if summary_df is None or summary_df.empty:
         return []
@@ -1884,6 +2021,26 @@ def _extract_attribute_structure(summary_df: pd.DataFrame, attribute_name: str):
 
         blocks.append({"stat_name": label_str, "value_col": value_col, "rank_col": rank_col})
 
+    # ---- Move the pillar Ranking stat to the front (e.g. "Ball Winning Ranking") ----
+    ranking_idx = next(
+        (i for i, b in enumerate(blocks) if b["stat_name"].endswith("Ranking")),
+        None,
+    )
+    if ranking_idx is not None and ranking_idx > 0:
+        blocks.insert(0, blocks.pop(ranking_idx))
+
+    # ---- Append Wheelo supplementary stats for this attribute group ----
+    wheelo_extras = WHEELO_EXTRA_STATS.get(attribute_name, [])
+    wheelo_df = _load_wheelo_team_stats() if wheelo_extras else pd.DataFrame()
+    for display_name, wheelo_col, higher_is_better in wheelo_extras:
+        if not wheelo_df.empty and wheelo_col in wheelo_df.columns:
+            blocks.append({
+                "stat_name": display_name,
+                "source": "wheelo",
+                "wheelo_col": wheelo_col,
+                "higher_is_better": higher_is_better,
+            })
+
     return blocks
 
 
@@ -1900,6 +2057,14 @@ def get_attribute_stat_distribution(
     block_info = next((b for b in blocks if b["stat_name"] == stat_name), None)
     if block_info is None:
         return pd.DataFrame(columns=["Team", "Value", "Rank"])
+
+    # ---- Wheelo-sourced supplementary stat ----
+    if block_info.get("source") == "wheelo":
+        return _get_wheelo_stat_distribution(
+            block_info["stat_name"],
+            block_info["wheelo_col"],
+            block_info.get("higher_is_better", True),
+        )
 
     value_col = block_info["value_col"]
     rank_col = block_info["rank_col"]
@@ -5770,15 +5935,8 @@ elif page == "Team Breakdown":
         stat_names = [b["stat_name"] for b in blocks]
         which_block = "Last10" if window == "Last 10 Games" else "Season"
         
-        # Health Check shows 6 stats in 2 rows of 3, others show 4 stats in 1 row
-        if selected_attribute == "Health Check":
-            num_stats = min(6, len(stat_names))
-            num_cols = 3  # 3 columns per row for Health Check
-            stats_per_row = 3
-        else:
-            num_stats = min(4, len(stat_names))
-            num_cols = 4
-            stats_per_row = 4
+        # Dynamic layout: 3 columns per row, as many rows as needed
+        num_cols = 3
         
         # Helper function to render a stat column
         def render_stat_column(stat_name, col_idx, total_cols):
@@ -5953,19 +6111,15 @@ elif page == "Team Breakdown":
             # close the bordered div
             st.markdown("</div>", unsafe_allow_html=True)
         
-        # First row of stats
-        stat_cols = st.columns(num_cols)
-        for idx in range(min(stats_per_row, len(stat_names))):
-            with stat_cols[idx]:
-                render_stat_column(stat_names[idx], idx, num_cols)
-        
-        # Second row for Health Check (stats 4-6)
-        if selected_attribute == "Health Check" and len(stat_names) > 3:
-            st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-            stat_cols_row2 = st.columns(num_cols)
-            for idx in range(3, min(6, len(stat_names))):
-                with stat_cols_row2[idx - 3]:
-                    render_stat_column(stat_names[idx], idx - 3, num_cols)
+        # Render stats in rows of 3
+        for row_start in range(0, len(stat_names), num_cols):
+            if row_start > 0:
+                st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
+            row_stats = stat_names[row_start:row_start + num_cols]
+            stat_cols = st.columns(num_cols)
+            for idx, sn in enumerate(row_stats):
+                with stat_cols[idx]:
+                    render_stat_column(sn, idx, num_cols)
 
 
 # ================= TEAM COMPARE =================
@@ -7848,7 +8002,13 @@ elif page == "Player Profile":
     latest_position = latest_record.get("Position", "")
     latest_matches = latest_record.get("Matches", None)
 
-    age_summary = summary_row.get("Age") if summary_row is not None else None
+    # Age: prefer season data (more current), fall back to summary
+    age_summary = None
+    _season_age = latest_record.get("Age", None)
+    if _season_age is not None and not (isinstance(_season_age, float) and pd.isna(_season_age)):
+        age_summary = _season_age
+    if age_summary is None and summary_row is not None:
+        age_summary = summary_row.get("Age")
 
     draft_year = None
     if summary_row is not None:
@@ -9349,6 +9509,150 @@ elif page == "Depth Chart":
         st.error("Could not load Summary sheet from AFL Player Ratings.")
         st.stop()
     
+    # ------------------------------------------------------------------
+    # 2026+ SQUAD OVERLAY: Use current-season squad list, merge 2025 ratings
+    # ------------------------------------------------------------------
+    _depth_using_2026_squad = False
+    if CURRENT_SEASON >= 2026:
+        try:
+            from pathlib import Path as _P
+            _squad_csv = _P(__file__).parent / "data" / "raw" / "player" / f"squads_{CURRENT_SEASON}.csv"
+            if _squad_csv.exists():
+                _sq = pd.read_csv(_squad_csv)
+                _sq.columns = _sq.columns.astype(str).str.strip()
+                # Rename columns to match Summary schema
+                _rn = {"Matches_Career": "Total Matches", "Age_Decimal": "Age_Dec",
+                       "Matches_Current": "2025 Matches"}
+                _sq = _sq.rename(columns={k: v for k, v in _rn.items() if k in _sq.columns})
+                if "Jumper" not in _sq.columns and "JumperNumber" in _sq.columns:
+                    _sq = _sq.rename(columns={"JumperNumber": "Jumper"})
+                # Convert string Age like "24yr, 152d" to numeric
+                if "Age_Dec" in _sq.columns:
+                    _sq["Age"] = pd.to_numeric(_sq["Age_Dec"], errors="coerce")
+                elif "Age" in _sq.columns:
+                    _sq["Age"] = _sq["Age"].apply(
+                        lambda x: float(str(x).split("yr")[0].strip())
+                        if pd.notna(x) and "yr" in str(x)
+                        else pd.to_numeric(x, errors="coerce")
+                    )
+                # Normalise team names
+                _sq["Team"] = _sq["Team"].astype(str).str.strip().replace({
+                    "GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"
+                })
+                _sq["Player"] = _sq["Player"].astype(str).str.strip()
+                
+                # Merge rating columns AND detailed Position from Summary (2025 ratings as fallback)
+                _rating_cols_to_merge = []
+                for _rc in ["2025", 2025, "Last 2 Average", "Career", "2025 Matches", "Total Matches"]:
+                    if _rc in summary_df.columns and _rc not in _rating_cols_to_merge:
+                        _rating_cols_to_merge.append(_rc)
+                
+                # Also grab detailed Position from Summary (Key Defender, Wing, etc.)
+                _merge_cols = list(_rating_cols_to_merge)
+                if "Position" in summary_df.columns:
+                    _merge_cols.append("Position")
+                
+                if _merge_cols:
+                    _sum_subset = summary_df[["Player", "Team"] + _merge_cols].copy()
+                    _sum_subset["Player"] = _sum_subset["Player"].astype(str).str.strip()
+                    _sum_subset["Team"] = _sum_subset["Team"].astype(str).str.strip().replace({
+                        "GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"
+                    })
+                    # Rename Position to avoid collision during merge
+                    if "Position" in _sum_subset.columns:
+                        _sum_subset = _sum_subset.rename(columns={"Position": "Position_Detail"})
+                        _merge_cols = [c if c != "Position" else "Position_Detail" for c in _merge_cols]
+                    
+                    # First try matching by Player+Team, then by Player only (for traded players)
+                    _sq = _sq.merge(_sum_subset, on=["Player", "Team"], how="left", suffixes=("", "_sum"))
+                    # For players who moved teams, try matching by name only
+                    _first_rating = _rating_cols_to_merge[0] if _rating_cols_to_merge else None
+                    _unmatched = _sq[_sq[_first_rating].isna()]["Player"].tolist() if _first_rating else []
+                    if _unmatched:
+                        _sum_name_only = _sum_subset.drop_duplicates(subset=["Player"], keep="first")
+                        _sum_name_only = _sum_name_only.set_index("Player")[_merge_cols]
+                        for _um_player in _unmatched:
+                            if _um_player in _sum_name_only.index:
+                                for _col in _merge_cols:
+                                    _sq.loc[_sq["Player"] == _um_player, _col] = _sum_name_only.loc[_um_player, _col]
+                    
+                    # ── Fuzzy name matching for remaining unmatched ──
+                    # Catches case differences (Van Rooyen vs van Rooyen)
+                    # and nickname variants (Lachlan ↔ Lachie, Matt ↔ Matthew, etc.)
+                    _still_na = _sq[_sq[_first_rating].isna()]["Player"].tolist() if _first_rating else []
+                    if _still_na:
+                        # Common AFL name abbreviation mappings (both directions)
+                        _NICK = {
+                            "lachlan": "lachie", "lachie": "lachlan",
+                            "matthew": "matt", "matt": "matthew",
+                            "nicholas": "nick", "nick": "nicholas",
+                            "nic": "nicholas", "nicholas": "nic",
+                            "william": "will", "will": "william",
+                            "timothy": "tim", "tim": "timothy",
+                            "thomas": "tom", "tom": "thomas",
+                            "cameron": "cam", "cam": "cameron",
+                            "daniel": "dan", "dan": "daniel",
+                            "joshua": "josh", "josh": "joshua",
+                            "joseph": "joe", "joe": "joseph",
+                            "mitchell": "mitch", "mitch": "mitchell",
+                            "mitchito": "mitch",
+                            "samuel": "sam", "sam": "samuel",
+                            "bradley": "brad", "brad": "bradley",
+                            "harrison": "harry", "harry": "harrison",
+                            "oliver": "ollie", "ollie": "oliver",
+                            "benjamin": "ben", "ben": "benjamin",
+                            "zachary": "zach", "zach": "zachary",
+                            "zac": "zachary", "zachary": "zac",
+                            "nikolas": "nik",
+                            "archie": "archer", "archer": "archie",
+                            "leonardo": "leo", "leo": "leonardo",
+                            "alixzander": "alix", "alix": "alixzander",
+                        }
+                        # Build case-insensitive + nickname lookup from summary
+                        # Key: (normalised_name, team_lower) → row index in _sum_subset
+                        _fuzzy_lookup = {}
+                        for _si, _sr in _sum_subset.iterrows():
+                            _sp = str(_sr["Player"]).strip()
+                            _st = str(_sr["Team"]).strip().lower()
+                            # Exact name (case-insensitive)
+                            _fuzzy_lookup[(_sp.lower(), _st)] = _si
+                            # Also register with nickname variant of first name
+                            _parts = _sp.split()
+                            if len(_parts) >= 2:
+                                _first_low = _parts[0].lower()
+                                _alt = _NICK.get(_first_low)
+                                if _alt:
+                                    _alt_name = _alt + " " + " ".join(_parts[1:])
+                                    _fuzzy_lookup[(_alt_name.lower(), _st)] = _si
+
+                        for _um_player in _still_na:
+                            _um_team = _sq.loc[_sq["Player"] == _um_player, "Team"]
+                            if _um_team.empty:
+                                continue
+                            _um_team_val = str(_um_team.iloc[0]).strip().lower()
+                            _key = (_um_player.strip().lower(), _um_team_val)
+                            if _key in _fuzzy_lookup:
+                                _match_idx = _fuzzy_lookup[_key]
+                                for _col in _merge_cols:
+                                    _sq.loc[_sq["Player"] == _um_player, _col] = _sum_subset.loc[_match_idx, _col]
+                    # ─────────────────────────────────────────────
+                    
+                    # Use detailed position from Summary where available
+                    if "Position_Detail" in _sq.columns:
+                        _has_detail = _sq["Position_Detail"].notna()
+                        _sq.loc[_has_detail, "Position"] = _sq.loc[_has_detail, "Position_Detail"]
+                        _sq.drop(columns=["Position_Detail"], inplace=True)
+                
+                # Clean up any suffix columns
+                for _c in list(_sq.columns):
+                    if _c.endswith("_sum"):
+                        _sq.drop(columns=[_c], inplace=True)
+                
+                summary_df = _sq
+                _depth_using_2026_squad = True
+        except Exception as _e:
+            pass  # Fall back to regular Summary sheet
+    
     # Load 2025 players data (same source as List Ladder) for ranking calculations
     players_2025_df = load_players(CURRENT_SEASON)
 
@@ -9364,7 +9668,15 @@ elif page == "Depth Chart":
     selected_team = st.selectbox("Team", teams, index=default_idx)
 
     rating_options = {
-        "2025 (current)": "2025",
+        "2025 (latest)": "2025",
+        "Last 2 Seasons Average": "Last 2 Average",
+        "Career": "Career",
+    }
+    # For 2026+, the int column '2025' is actually column key 2025 (integer)
+    # Check if Summary has the int key or string key
+    _rating_key_2025 = 2025 if 2025 in summary_df.columns else "2025"
+    rating_options_internal = {
+        "2025 (latest)": _rating_key_2025,
         "Last 2 Seasons Average": "Last 2 Average",
         "Career": "Career",
     }
@@ -9373,7 +9685,7 @@ elif page == "Depth Chart":
         list(rating_options.keys()),
         index=0,
     )
-    rating_col_name = rating_options[rating_label]
+    rating_col_name = rating_options_internal[rating_label]
 
     df_team = summary_df[summary_df["Team"] == selected_team].copy()
     if df_team.empty:
@@ -9381,11 +9693,19 @@ elif page == "Depth Chart":
         st.stop()
 
     if rating_col_name not in df_team.columns:
-        st.error(
-            f"Column '{rating_col_name}' not found in Summary sheet. "
-            "Check the exact header names in the Excel file."
-        )
-        st.stop()
+        # Try alternative key format (int vs str for year columns)
+        _alt_key = str(rating_col_name) if isinstance(rating_col_name, int) else rating_col_name
+        if _alt_key in df_team.columns:
+            rating_col_name = _alt_key
+        elif "Career" in df_team.columns:
+            st.info(f"Rating column '{rating_col_name}' not found. Using Career ratings.")
+            rating_col_name = "Career"
+        else:
+            st.error(
+                f"Column '{rating_col_name}' not found in Summary sheet. "
+                "Check the exact header names in the Excel file."
+            )
+            st.stop()
 
     df_team["RatingPoints_Avg"] = pd.to_numeric(
         df_team[rating_col_name], errors="coerce"
@@ -9395,9 +9715,9 @@ elif page == "Depth Chart":
     # This includes players who didn't play in 2025 (they'll have NaN ratings but still appear)
     # Ensure all players appear even without ratings
     
-    # For RANKING calculations: use 2025 players data (same as List Ladder) when "2025 (current)" selected
+    # For RANKING calculations: use 2025 players data (same as List Ladder) when "2025 (latest)" selected
     # Players who didn't play (not in 2025 data) don't affect rankings
-    if rating_col_name == "2025" and not players_2025_df.empty:
+    if rating_col_name in (2025, "2025") and not players_2025_df.empty:
         # Use 2025 players data for ranking (same data source as List Ladder)
         # Only players who actually played in 2025 will affect rankings
         ranking_df = players_2025_df.copy()
@@ -9435,10 +9755,13 @@ elif page == "Depth Chart":
 # ================= TEAM AGE BREAKDOWN =================
 
 elif page == "Team Age Breakdown":
-    # Professional header
-    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>{_svg_inline('chart_bar', 24)} AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{CURRENT_SEASON} Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
 
-    selected_season = CURRENT_SEASON
+    # Season filter (same pattern as List Ladder)
+    _tab_seasons = sorted(get_player_seasons(), reverse=True)
+    selected_season = st.selectbox("Season", _tab_seasons, index=0, key="team_age_breakdown_season")
+
+    # Professional header
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>{_svg_inline('chart_bar', 24)} AFL TEAM AGE BREAKDOWN</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{selected_season} Season | Age Group Performance Analysis</p></div>""", unsafe_allow_html=True)
 
     # Load player data for the selected season
     try:
@@ -9525,111 +9848,144 @@ elif page == "Team Age Breakdown":
     
     # Calculate rankings for each age band (highest % = best = rank 1)
     for band in AGE_BANDS:
-        # Rank teams by percentage (descending - highest is best)
         age_breakdown_table[f"{band}_Rank"] = age_breakdown_table[band].rank(ascending=False, method='min').astype(int)
-        # Format as "X.X% (Yth)"
-        age_breakdown_table[f"{band}_Display"] = age_breakdown_table.apply(
-            lambda row: f"{row[band]:.1f}% ({get_ordinal_suffix(row[f'{band}_Rank'])})", 
-            axis=1
-        )
     
-    # Create display table with formatted values
-    display_table = age_breakdown_table[["Team"] + [f"{band}_Display" for band in AGE_BANDS]].copy()
-    # Rename columns to remove _Display suffix
-    display_table.columns = ["Team"] + AGE_BANDS
-
-    # Calculate league averages for each age band (from original numeric values)
-    league_averages = {"Team": "League Average"}
-    for band in AGE_BANDS:
-        avg_val = age_breakdown_table[band].mean()
-        league_averages[band] = f"{avg_val:.1f}%"
-    
-    # Add league averages row to the display table
-    league_avg_df = pd.DataFrame([league_averages])
-    age_breakdown_with_avg = pd.concat([display_table, league_avg_df], ignore_index=True)
+    # Sort by team name
+    age_breakdown_table = age_breakdown_table.sort_values("Team").reset_index(drop=True)
 
     # Professional subtitle
-    st.markdown("""<div style='background: rgba(50,50,50,0.3); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Understanding the Table</h4><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each age band column shows the percentage of total rating points contributed by players in that age group, along with the team's rank (1st-18th). Higher percentages in prime age bands (23-25, 26-28) typically indicate stronger current performance, while higher percentages in younger bands suggest future potential.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='background: rgba(255,215,0,0.1); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.2); margin-bottom: 25px;'><h4 style='color: #FFFFFF; margin-top: 0; font-size: 1.3em;'>Ranking Guide (5-Tier System)</h4><div style='display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;'><div style='text-align: center; padding: 12px; background: #008000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>1st - 4th</strong><br><span style='color: #CCCCCC; font-size: 0.85em;'>Elite</span></div><div style='text-align: center; padding: 12px; background: #90EE90; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>5th - 7th</strong><br><span style='color: #333333; font-size: 0.85em;'>Good</span></div><div style='text-align: center; padding: 12px; background: #FFD700; border-radius: 8px;'><strong style='color: black; font-size: 1em;'>8th - 11th</strong><br><span style='color: #333333; font-size: 0.85em;'>Average</span></div><div style='text-align: center; padding: 12px; background: #FFA500; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>12th - 15th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Below Avg</span></div><div style='text-align: center; padding: 12px; background: #FF0000; border-radius: 8px;'><strong style='color: white; font-size: 1em;'>16th - 18th</strong><br><span style='color: #EEEEEE; font-size: 0.85em;'>Poor</span></div></div><p style='color: #DDDDDD; line-height: 1.8; margin: 0;'><strong style='color: #FFFFFF;'>How to Read:</strong> Each age band column shows the percentage of total rating points contributed by players in that age group, along with the team's rank (1st-18th). Higher percentages in prime age bands (23-25, 26-28) typically indicate stronger current performance, while higher percentages in younger bands suggest future potential.</p></div>""", unsafe_allow_html=True)
     
     # Display the age breakdown table
-    st.markdown(f"<h3 style='color: #CCCCCC; margin: 20px 0;'>{_svg_inline('chart_bar', 24)} Team Age Breakdown Table</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #FFFFFF; margin: 20px 0;'>{_svg_inline('chart_bar', 24)} Team Age Breakdown Table</h3>", unsafe_allow_html=True)
     
-    # Helper function to get rank color - 5 tier system
+    # Helper function to get rank color - 5 tier system (returns single color string)
     def get_rank_color_age(rank_val):
         """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank_val <= 4:
-            return "#008000", "white"   # Elite - Dark Green
+            return "#008000"   # Elite - Dark Green
         elif rank_val <= 7:
-            return "#90EE90", "black"   # Good - Light Green
+            return "#90EE90"   # Good - Light Green
         elif rank_val <= 11:
-            return "#FFD700", "black"   # Average - Gold
+            return "#FFD700"   # Average - Gold
         elif rank_val <= 15:
-            return "#FFA500", "white"   # Below Average - Orange
+            return "#FFA500"   # Below Average - Orange
         else:
-            return "#FF0000", "white"   # Poor - Red
+            return "#FF0000"   # Poor - Red
     
-    # Create HTML table using unified table system with custom league-avg row styling
+    # Build display columns: Team + age bands
+    display_cols = ["Team"] + AGE_BANDS
+    
+    # Create HTML table using List Ladder style (.ll-table) with stacked values + ranking badges
     html_table = """<style>
-.fe-table .league-avg-row {
-    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
-    border-top: 3px solid #CCCCCC !important;
-}
-.fe-table .league-avg-row td {
-    font-weight: 800 !important;
-    color: #FFFFFF !important;
-    font-size: 1.05em !important;
-}
-.fe-table .league-avg-row:hover {
-    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%) !important;
-}
-.rank-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 800;
+.ll-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.85em;
-    margin-left: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.ll-table th {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #FFFFFF;
+    padding: 14px 10px;
+    font-weight: 900;
+    font-size: 0.95em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    border-right: 1px solid #444;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+.ll-table th:hover {
+    background: linear-gradient(135deg, #2a2a3a 0%, #3d3d4d 100%);
+    color: #FFD700;
+}
+.ll-table th::after {
+    content: ' ⇅';
+    opacity: 0.4;
+    font-size: 0.8em;
+}
+.ll-table th.sort-asc::after {
+    content: ' ▲';
+    opacity: 1;
+    color: #FFD700;
+}
+.ll-table th.sort-desc::after {
+    content: ' ▼';
+    opacity: 1;
+    color: #FFD700;
+}
+.ll-table td {
+    padding: 10px 8px;
+    border-top: 1px solid #333;
+    border-right: 1px solid #333;
+    text-align: center;
+    vertical-align: middle;
+    color: #DDDDDD;
+}
+.ll-table td:first-child {
+    text-align: left;
+    padding-left: 16px;
+    font-weight: 900;
+    font-size: 2.1em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 160px;
+}
+.ll-pts {
+    display: block;
+    font-weight: 700;
+    font-size: 2.1em;
+    color: #CCCCCC;
+    margin-bottom: 10px;
+}
+.ll-rank {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 2.2em;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.2);
+    min-width: 60px;
+    text-align: center;
 }
 </style>
-<table class='fe-table fe-sortable'>
+<table class='ll-table fe-sortable'>
 <thead>
 <tr>
 """
     
     # Add column headers
-    for col in age_breakdown_with_avg.columns:
+    for col in display_cols:
         html_table += f"<th>{col}</th>"
     html_table += "</tr>\n</thead>\n<tbody>\n"
     
-    # Add data rows with color-coded rank badges
-    for idx, row in age_breakdown_with_avg.iterrows():
-        # Check if this is the league average row
-        is_league_avg = row["Team"] == "League Average"
-        row_class = " class='league-avg-row'" if is_league_avg else ""
-        html_table += f"<tr{row_class}>\n"
-        
-        for col_idx, col in enumerate(age_breakdown_with_avg.columns):
-            if col_idx == 0:  # Team column
-                html_table += f"<td>{row[col]}</td>\n"
+    # Add data rows with stacked percentage + ranking badge (List Ladder style)
+    for _, row in age_breakdown_table.iterrows():
+        html_table += "<tr>\n"
+        for col in display_cols:
+            if col == "Team":
+                html_table += f"<td>{row['Team']}</td>\n"
             else:
-                # Age band columns with color-coded rank badges
-                if is_league_avg:
-                    html_table += f"<td>{row[col]}</td>\n"
-                else:
-                    # Extract percentage and rank from display value
-                    val_str = row[col]
-                    if "(" in val_str and ")" in val_str:
-                        pct_part = val_str.split("(")[0].strip()
-                        rank_part = val_str.split("(")[1].split(")")[0]
-                        
-                        # Get corresponding rank value from original data
-                        band_name = AGE_BANDS[col_idx - 1]
-                        rank_val = int(age_breakdown_table.loc[age_breakdown_table["Team"] == row["Team"], f"{band_name}_Rank"].iloc[0])
-                        bg_color, text_color = get_rank_color_age(rank_val)
-                        
-                        html_table += f"<td>{pct_part} <span class='rank-badge' style='background: {bg_color}; color: {text_color};'>({rank_part})</span></td>\n"
-                    else:
-                        html_table += f"<td>{val_str}</td>\n"
+                # Age band columns — stacked percentage + ranking badge
+                band = col
+                pct = row[band]
+                rank_val = int(row[f"{band}_Rank"])
+                bg_color = get_rank_color_age(rank_val)
+                text_color = "black" if bg_color in ("#90EE90", "#FFD700") else "white"
+                html_table += (
+                    f"<td>"
+                    f"<span class='ll-pts'>{pct:.1f}%</span>"
+                    f"<span class='ll-rank' style='background-color:{bg_color};color:{text_color};'>{get_ordinal_suffix(rank_val)}</span>"
+                    f"</td>\n"
+                )
         html_table += "</tr>\n"
     
     html_table += "</tbody>\n</table>"
@@ -9642,18 +9998,22 @@ elif page == "Team Age Breakdown":
 # ================= LIST LADDER =================
 
 elif page == "List Ladder":
+    # Season filter
+    _ll_seasons = sorted(get_player_seasons(), reverse=True)
+    selected_season = st.selectbox("Season", _ll_seasons, index=0, key="list_ladder_season")
+
     # Professional header
-    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>{_svg_inline('chart_bar', 24)} AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{CURRENT_SEASON} Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 40px 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);'><h1 style='text-align: center; color: #FFFFFF; margin: 0; font-size: 2.8em; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>{_svg_inline('chart_bar', 24)} AFL LIST LADDER</h1><p style='text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;'>{selected_season} Season | Positional Depth Rankings</p></div>""", unsafe_allow_html=True)
 
     # Load player data
     try:
-        players_df = load_players(CURRENT_SEASON)
+        players_df = load_players(selected_season)
     except Exception as e:
         st.error(f"Error loading player data: {e}")
         st.stop()
 
     if players_df.empty:
-        st.warning(f"No player data found for {CURRENT_SEASON}.")
+        st.warning(f"No player data found for {selected_season}.")
         st.stop()
 
     # Ensure required columns exist
@@ -9838,63 +10198,120 @@ elif page == "List Ladder":
     # Display the main ladder table with professional HTML styling
     st.markdown(f"<h3 style='color: #FFFFFF; margin: 20px 0;'>{_svg_inline('list', 24)} Positional Depth Rankings</h3>", unsafe_allow_html=True)
     
-    # Create HTML table using unified table system with custom styling for total column
+    # Create HTML table using unified table system with Depth-Chart-style ranking badges
     html_table = """<style>
-.fe-table td:first-child {
-    text-align: center !important;
-    font-weight: 800;
-}
-.fe-table td:nth-child(2) {
-    text-align: left !important;
-    padding-left: 20px !important;
-}
-.fe-table td:last-child {
-    background: rgba(100,100,100,0.2);
-    font-weight: 800;
-    color: #FFFFFF;
-}
-.rank-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 800;
+.ll-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.85em;
-    margin-left: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.ll-table th {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #FFFFFF;
+    padding: 14px 10px;
+    font-weight: 900;
+    font-size: 0.95em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    border-right: 1px solid #444;
+    text-align: center;
+}
+.ll-table td {
+    padding: 10px 8px;
+    border-top: 1px solid #333;
+    border-right: 1px solid #333;
+    text-align: center;
+    vertical-align: middle;
+    color: #DDDDDD;
+}
+.ll-table td:first-child {
+    font-weight: 900;
+    font-size: 1.1em;
+}
+.ll-table td:nth-child(2) {
+    text-align: left;
+    padding-left: 16px;
+    font-weight: 900;
+    font-size: 2.1em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 160px;
+}
+.ll-table td:last-child {
+    font-weight: 900;
+}
+.ll-pts {
+    display: block;
+    font-weight: 700;
+    font-size: 2.1em;
+    color: #CCCCCC;
+    margin-bottom: 10px;
+}
+.ll-rank {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 2.2em;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.2);
+    min-width: 60px;
+    text-align: center;
 }
 </style>
-<table class='fe-table fe-sortable'>
+<table class='ll-table fe-sortable'>
 <thead>
 <tr>
 """
-    
+
     # Add column headers
     for col in display_df.columns:
         html_table += f"<th>{col}</th>"
     html_table += "</tr>\n</thead>\n<tbody>\n"
-    
-    # Add data rows with color-coded rank badges
+
+    # Add data rows with Depth-Chart-style ranking badges
     for row_idx, row in display_df.iterrows():
         html_table += "<tr>\n"
         for col_idx, col in enumerate(display_df.columns):
-            if col in ["Rank", "Team", "Total Points"]:
-                # No color coding for these columns
+            if col in ["Rank", "Team"]:
                 html_table += f"<td>{row[col]}</td>\n"
+            elif col == "Total Points":
+                overall_rank = int(row["Rank"])
+                tp_bg = get_rank_color(overall_rank)
+                tp_text = "black" if tp_bg in ("#90EE90", "#FFD700") else "white"
+                html_table += (
+                    f"<td>"
+                    f"<span class='ll-pts'>{row[col]}</span>"
+                    f"<span class='ll-rank' style='background-color:{tp_bg};color:{tp_text};'>{get_ordinal_suffix(overall_rank)}</span>"
+                    f"</td>\n"
+                )
             else:
-                # Position columns - extract rank and color code
+                # Position columns - stacked points + ranking badge
                 val_str = row[col]
                 if "(" in val_str and ")" in val_str:
                     pts_part = val_str.split("(")[0].strip()
                     rank_part = val_str.split("(")[1].split(")")[0]
-                    
-                    # Get rank value from ladder_df
+
                     rank_val = int(ladder_df.iloc[row_idx][f"{col}_Rank"])
                     bg_color = get_rank_color(rank_val)
-                    
-                    html_table += f"<td>{pts_part} <span class='rank-badge' style='background: {bg_color}; color: white;'>({rank_part})</span></td>\n"
+                    text_color = "black" if bg_color in ("#90EE90", "#FFD700") else "white"
+
+                    html_table += (
+                        f"<td>"
+                        f"<span class='ll-pts'>{pts_part}</span>"
+                        f"<span class='ll-rank' style='background-color:{bg_color};color:{text_color};'>{rank_part}</span>"
+                        f"</td>\n"
+                    )
                 else:
                     html_table += f"<td>{val_str}</td>\n"
         html_table += "</tr>\n"
-    
+
     html_table += "</tbody>\n</table>"
     render_sortable_table(html_table)
     
@@ -9988,12 +10405,16 @@ elif page == "List Ladder":
 # ================= TEAM LIST SUMMARY =================
 
 elif page == "Team List Summary":
-    render_page_header("Team List Summary", "Complete Team Overview", "document")
+    # Season filter
+    _tls_seasons = sorted(get_player_seasons(), reverse=True)
+    selected_season = st.selectbox("Season", _tls_seasons, index=0, key="team_list_summary_season")
+
+    render_page_header("Team List Summary", f"{selected_season} Complete Team Overview", "document")
     
     # Team selection
     # Get teams from player data
     try:
-        players_df = load_players(CURRENT_SEASON)
+        players_df = load_players(selected_season)
     except Exception as e:
         st.error(f"Error loading player data: {e}")
         st.stop()
@@ -10026,7 +10447,7 @@ elif page == "Team List Summary":
             st.markdown("</div>", unsafe_allow_html=True)
         with col_title:
             st.markdown(f"<h2 style='color: #FFFFFF; margin-top: 20px;'>{selected_team}</h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color: #CCCCCC; font-size: 1.1em;'>2025 Season List Analysis</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color: #CCCCCC; font-size: 1.1em;'>{selected_season} Season List Analysis</p>", unsafe_allow_html=True)
     else:
         st.markdown(f"<h2 style='text-align: center; color: #FFFFFF;'>{selected_team}</h2>", unsafe_allow_html=True)
     
@@ -10046,8 +10467,10 @@ elif page == "Team List Summary":
     players_df["Matches"] = pd.to_numeric(players_df["Matches"], errors="coerce")
     players_df["RatingPoints_Avg"] = pd.to_numeric(players_df["RatingPoints_Avg"], errors="coerce")
     
-    # Filter to players with at least 1 match
+    # Filter to players with at least 1 match (fall back to all players if none have matches yet)
     players_filtered = players_df[players_df["Matches"] >= 1].copy()
+    if players_filtered.empty:
+        players_filtered = players_df.copy()
     
     AGE_BANDS = ["<22", "22-25", "26-29", "30+"]
     
@@ -10189,7 +10612,10 @@ elif page == "Team List Summary":
         total_points = team_players_all["Points"].sum()
         ladder_data.append({"Team": team, "Total Points": total_points})
     
-    ladder_df = pd.DataFrame(ladder_data).sort_values("Total Points", ascending=False).reset_index(drop=True)
+    ladder_df = pd.DataFrame(ladder_data)
+    if ladder_df.empty or "Total Points" not in ladder_df.columns:
+        ladder_df = pd.DataFrame({"Team": all_teams if all_teams else [], "Total Points": [0]*len(all_teams)})
+    ladder_df = ladder_df.sort_values("Total Points", ascending=False).reset_index(drop=True)
     top_4_teams = ladder_df.head(4)["Team"].tolist()
     
     # Calculate Top 4 averages for age bands
@@ -10650,8 +11076,9 @@ elif page == "Best 23":
     # LOAD & MERGE DATA (ONCE)
     # =====================================================
     summary = load_player_summary()
-    seasons = get_player_seasons()
-    season = 2025 if 2025 in seasons else (seasons[0] if seasons else None)
+    seasons = sorted(get_player_seasons(), reverse=True)
+
+    season = st.selectbox("Season", seasons, index=0, key="best23_season")
 
     if season is None:
         st.error("No season data available.")
@@ -10689,6 +11116,35 @@ elif page == "Best 23":
     merged_all["Rating"] = pd.to_numeric(merged_all["Rating"], errors="coerce")
     merged_all = merged_all.dropna(subset=["Rating"])
 
+    # ── Reclassify Wing players ──────────────────────────
+    # The computed player_summary.csv has no "Wing" position —
+    # all Wing players are labelled "Midfielder".  Load the Wings
+    # sheet from AFL_Historical and patch the Position column so
+    # that build_best23() can fill Wing slots correctly.
+    try:
+        _wings_df = pd.read_excel(
+            "data/AFL_Historical_2012_2025.xlsx", sheet_name="Wings"
+        )
+        _wing_keys = set()
+        for _, _wr in _wings_df.iterrows():
+            _pn = _wr.get("Player", "")
+            _tm = _wr.get("Team", "")
+            if pd.notna(_pn) and pd.notna(_tm):
+                _wing_keys.add(
+                    (str(_pn).strip().lower(), str(_tm).strip().lower())
+                )
+
+        def _is_wing(row):
+            pn = str(row.get("Player", "")).strip().lower()
+            tm = str(row.get("Team", "")).strip().lower()
+            return (pn, tm) in _wing_keys
+
+        _mask = merged_all.apply(_is_wing, axis=1)
+        merged_all.loc[_mask, "Position"] = "Wing"
+    except Exception:
+        pass  # If Wings sheet unavailable, fall through
+    # ─────────────────────────────────────────────────────
+
     teams = sorted(merged_all["Team"].dropna().unique())
 
     # =====================================================
@@ -10699,75 +11155,72 @@ elif page == "Best 23":
         used = set()
         slots = []
 
+        # Position compatibility: ordered list of acceptable fallback positions
+        # for each slot type. First entry is exact match, rest are compatible alternatives.
+        POSITION_COMPAT = {
+            "Key Defender":  ["Key Defender"],
+            "Gen. Defender": ["Gen. Defender"],
+            "Wing":          ["Wing", "Midfielder"],
+            "Ruck":          ["Ruck"],
+            "Midfielder":    ["Midfielder", "Mid-Forward"],
+            "Key Forward":   ["Key Forward"],
+            "Gen. Forward":  ["Gen. Forward", "Mid-Forward"],
+            "Mid-Forward":   ["Mid-Forward", "Gen. Forward"],
+        }
+
         def pick(position):
-            # exact position first
-            for _, r in df[df["Position"] == position].iterrows():
-                if r["Player"] not in used:
-                    used.add(r["Player"])
-                    return r
-            # fallback: next best overall
-            for _, r in df.iterrows():
-                if r["Player"] not in used:
-                    used.add(r["Player"])
-                    return r
-            return None
-
-        def pick_best_of_positions(pos_list):
+            """Pick best available player for a position using compatibility list.
+            
+            1. Try exact position match first
+            2. Try compatible positions in order
+            3. Never fall back to a completely unrelated position
             """
-            Pick best available across multiple positions (highest Rating).
-            """
-            sub = df[df["Position"].isin(pos_list)].copy().sort_values("Rating", ascending=False)
-
-            for _, r in sub.iterrows():
-                if r["Player"] not in used:
-                    used.add(r["Player"])
-                    return r
-
-            # fallback: next best overall
-            for _, r in df.iterrows():
-                if r["Player"] not in used:
-                    used.add(r["Player"])
-                    return r
+            compat = POSITION_COMPAT.get(position, [position])
+            
+            # Try each compatible position in priority order
+            for compat_pos in compat:
+                candidates = df[df["Position"] == compat_pos].sort_values("Rating", ascending=False)
+                for _, r in candidates.iterrows():
+                    if r["Player"] not in used:
+                        used.add(r["Player"])
+                        return r
+            
             return None
 
         # ------------------------------
-        # On-field 18 (with 2 hybrid slots)
+        # On-field 18
         # ------------------------------
         for pos, x, y in ONFIELD_SLOTS:
-
-            # HYBRID 1: last midfield slot at (48,64)
-            if pos == "Midfielder" and (x, y) == (48, 64):
-                r = pick_best_of_positions(["Midfielder", "Mid-Forward"])
-                slots.append((x, y, pos, r, False))
-                continue
-
-            # HYBRID 2: Mid-Forward slot at (32,84)
-            if pos == "Mid-Forward" and (x, y) == (32, 84):
-                r = pick_best_of_positions(["Mid-Forward", "Midfielder"])
-                slots.append((x, y, pos, r, False))
-                continue
-
-            # Normal slots
             slots.append((x, y, pos, pick(pos), False))
+
+        # Fill any empty on-field slots with best remaining players
+        # (only if no position-matched player was available at all)
+        for i, (x, y, pos, r, bench) in enumerate(slots):
+            if r is None:
+                for _, candidate in df.iterrows():
+                    if candidate["Player"] not in used:
+                        used.add(candidate["Player"])
+                        slots[i] = (x, y, pos, candidate, False)
+                        break
 
         # ------------------------------
         # Bench: 1 defender, then best remaining 4 non-defenders
         # ------------------------------
-        bench = df[~df["Player"].isin(used)]
-        def_pick = bench[bench["Position"].str.contains("Defend", case=False, na=False)].head(1)
+        bench_df = df[~df["Player"].isin(used)]
+        def_pick_df = bench_df[bench_df["Position"].str.contains("Defend", case=False, na=False)].head(1)
 
-        if not def_pick.empty:
-            r = def_pick.iloc[0]
+        if not def_pick_df.empty:
+            r = def_pick_df.iloc[0]
             used.add(r["Player"])
             slots.append((BENCH_X, BENCH_YS[0], "Bench", r, True))
 
         # now next best 4 non-defenders
         for y in BENCH_YS[1:]:
-            bench = df[~df["Player"].isin(used)]
-            bench = bench[~bench["Position"].str.contains("Defend", case=False, na=False)]
-            if bench.empty:
+            bench_df = df[~df["Player"].isin(used)]
+            bench_df = bench_df[~bench_df["Position"].str.contains("Defend", case=False, na=False)]
+            if bench_df.empty:
                 break
-            r = bench.iloc[0]
+            r = bench_df.iloc[0]
             used.add(r["Player"])
             slots.append((BENCH_X, y, "Bench", r, True))
 
@@ -15720,7 +16173,14 @@ elif page == "Game Model Scorecard":
         "Health Check Ranking",
         "Attack Rating",
         "Defence Rating",
-        "Overall Rating"
+        "Overall Rating",
+        # Wheelo supplementary metrics
+        "Equity Pre-Clearance Diff",
+        "Equity Post-Clearance Diff",
+        "Equity Ball Use Diff",
+        "xChain Score Stoppage Diff",
+        "xChain Score Turnover Diff",
+        "xScore Against",
     ]
     
     # Define complementary stat pairs (For stat pairs with Against stat)
@@ -15896,6 +16356,29 @@ elif page == "Game Model Scorecard":
                                 except Exception:
                                     pass
         
+        # ---- Inject Wheelo supplementary metrics into team_data ----
+        WHEELO_SCORECARD_MAP = {
+            "Equity Pre-Clearance Diff": "Equity_PreClearance_Diff",
+            "Equity Post-Clearance Diff": "Equity_PostClearance_Diff",
+            "Equity Ball Use Diff": "Equity_BallUse_Diff",
+            "xChain Score Stoppage Diff": "xChainScoreFromStoppage_Diff",
+            "xChain Score Turnover Diff": "xChainScoreFromTurnover_Diff",
+            "xScore Against": "xScore_Opposition",
+        }
+        wheelo_df_sc = _load_wheelo_team_stats()
+        if not wheelo_df_sc.empty and "Team" in wheelo_df_sc.columns:
+            for team_name in all_teams:
+                wrow = wheelo_df_sc[wheelo_df_sc["Team"] == team_name]
+                if not wrow.empty:
+                    for display, col in WHEELO_SCORECARD_MAP.items():
+                        if col in wheelo_df_sc.columns:
+                            val = wrow[col].iloc[0]
+                            if pd.notna(val):
+                                try:
+                                    team_data.setdefault(team_name, {})[display] = float(val)
+                                except Exception:
+                                    pass
+        
         # Load Last 10 if needed
         last10_data_raw = {}
         if selected_year == 2025:
@@ -15944,6 +16427,20 @@ elif page == "Game Model Scorecard":
                                 if pd.notna(val):
                                     try:
                                         last10_data[team_name][metric] = float(val)
+                                    except Exception:
+                                        pass
+            
+            # ---- Inject Wheelo supplementary metrics into last10_data ----
+            if not wheelo_df_sc.empty and "Team" in wheelo_df_sc.columns:
+                for team_name in all_teams:
+                    wrow = wheelo_df_sc[wheelo_df_sc["Team"] == team_name]
+                    if not wrow.empty:
+                        for display, col in WHEELO_SCORECARD_MAP.items():
+                            if col in wheelo_df_sc.columns:
+                                val = wrow[col].iloc[0]
+                                if pd.notna(val):
+                                    try:
+                                        last10_data.setdefault(team_name, {})[display] = float(val)
                                     except Exception:
                                         pass
         

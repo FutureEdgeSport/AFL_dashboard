@@ -287,7 +287,29 @@ def construct_image_urls(provider_id):
 # MAIN PHOTO UPDATE LOGIC
 # ============================================================
 def get_players_from_excel():
-    """Load player list from Excel file."""
+    """Load player list from Excel file and/or CSV squad files."""
+    players = []
+    
+    # Try CSV squad file first (for 2026+ with latest roster)
+    try:
+        from pathlib import Path
+        csv_path = Path(__file__).parent / "data" / "raw" / "player" / "squads_2026.csv"
+        if csv_path.exists():
+            df = pd.read_csv(csv_path)
+            for _, row in df.iterrows():
+                player_name = row.get("Player")
+                team = row.get("Team")
+                if pd.notna(player_name) and pd.notna(team):
+                    players.append({
+                        'name': str(player_name).strip(),
+                        'team': str(team).strip(),
+                        'normalized': normalize_player_name(str(player_name))
+                    })
+            logging.info(f"Loaded {len(players)} players from squads_2026.csv")
+    except Exception as e:
+        logging.debug(f"Could not load CSV squad file: {e}")
+    
+    # Also load from Excel for completeness (catches older players not in 2026 squad)
     try:
         xl = pd.ExcelFile(PLAYER_FILE)
         
@@ -299,10 +321,11 @@ def get_players_from_excel():
             except:
                 continue
         else:
-            logging.error("Could not find valid player sheet")
-            return []
+            if not players:
+                logging.error("Could not find valid player sheet")
+                return []
+            return players  # Return CSV players if no Excel
         
-        players = []
         for _, row in df.iterrows():
             # Try different column names
             player_name = row.get("Player") or row.get("Player Name") or row.get("Name")
@@ -314,20 +337,21 @@ def get_players_from_excel():
                     'team': str(team).strip(),
                     'normalized': normalize_player_name(str(player_name))
                 })
-        
-        # Remove duplicates
-        seen = set()
-        unique = []
-        for p in players:
-            if p['normalized'] not in seen:
-                seen.add(p['normalized'])
-                unique.append(p)
-        
-        return unique
     
     except Exception as e:
         logging.error(f"Error loading Excel file: {e}")
-        return []
+        if not players:
+            return []
+    
+    # Remove duplicates (prefer CSV/2026 data which is first)
+    seen = set()
+    unique = []
+    for p in players:
+        if p['normalized'] not in seen:
+            seen.add(p['normalized'])
+            unique.append(p)
+    
+    return unique
 
 def get_missing_photos(players):
     """Get list of players who don't have photos."""

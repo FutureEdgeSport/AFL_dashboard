@@ -57,6 +57,7 @@ LEGACY_TO_MASTER_MAP = {
     ("team", "2021 Summary"): "Teams_Historical",  # Filtered by year
     
     # Traits by year
+    ("traits", "2026"): "Player_Traits_2026",
     ("traits", "2025"): "Player_Traits_2025",
     ("traits", "2024"): "Player_Traits_2024",
     ("traits", "2023"): "Player_Traits_2023",
@@ -189,8 +190,9 @@ def load_player_stats_for_season(season: int) -> pd.DataFrame:
     Load player stats for a specific season.
     Master: Players_{season}_Stats or Players_2012_2020 (with filter)
     Legacy: {season} sheet
+    CSV fallback: data/raw/player/player_stats_{season}.csv (for 2026+)
     """
-    # For years 2021-2025, use direct mapping
+    # For years 2021+, use direct mapping
     if season >= 2021:
         df = load_from_master_or_legacy("player", str(season))
     else:
@@ -204,6 +206,16 @@ def load_player_stats_for_season(season: int) -> pd.DataFrame:
         else:
             df = load_from_master_or_legacy("player", str(season))
     
+    # CSV fallback for seasons not yet in Excel (e.g. 2026)
+    if df.empty:
+        csv_path = _get_base_path() / "data" / "raw" / "player" / f"player_stats_{season}.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                df.columns = df.columns.astype(str).str.strip()
+            except Exception:
+                pass
+    
     return df
 
 
@@ -211,10 +223,20 @@ def load_player_stats_for_season(season: int) -> pd.DataFrame:
 def load_full_squad_data(season: int = 2025) -> pd.DataFrame:
     """
     Load full squad list including players who didn't play.
-    Master: Players_2025_Squad
-    Legacy: 2025 AFL Squads sheet
+    Master: Players_{season}_Squad
+    Legacy: {season} AFL Squads sheet
+    CSV fallback: data/raw/player/squads_{season}.csv (for 2026+)
     """
     df = load_from_master_or_legacy("player", f"{season} AFL Squads")
+    if df.empty:
+        # Try CSV fallback (for seasons not yet in Excel)
+        csv_path = _get_base_path() / "data" / "raw" / "player" / f"squads_{season}.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                df.columns = df.columns.astype(str).str.strip()
+            except Exception:
+                pass
     if df.empty:
         # Fall back to regular season sheet
         df = load_player_stats_for_season(season)
@@ -328,6 +350,7 @@ def load_traits_for_season(season: int) -> pd.DataFrame:
     Load player traits for a specific season.
     Master: Player_Traits_{season} or Player_Traits_Historical (with filter)
     Legacy: {season} sheet from 2025 Traits ENRICHED.xlsx
+    CSV fallback: data/raw/traits/traits_{season}.csv (for 2026+)
     """
     if season >= 2023:
         df = load_from_master_or_legacy("traits", str(season))
@@ -341,6 +364,16 @@ def load_traits_for_season(season: int) -> pd.DataFrame:
                 df = df[df["Season"] == season]
         else:
             df = load_from_master_or_legacy("traits", str(season))
+    
+    # CSV fallback for seasons not yet in Excel (e.g. 2026)
+    if df.empty:
+        csv_path = _get_base_path() / "data" / "raw" / "traits" / f"traits_{season}.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                df.columns = df.columns.astype(str).str.strip()
+            except Exception:
+                pass
     
     return df
 

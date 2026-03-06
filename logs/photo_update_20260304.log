@@ -1,0 +1,873 @@
+2026-03-04 11:11:50,975 [INFO] ============================================================
+2026-03-04 11:11:50,975 [INFO] AFL Player Photo Auto-Updater
+2026-03-04 11:11:50,975 [INFO] Started at: 2026-03-04 11:11:50
+2026-03-04 11:11:50,975 [INFO] ============================================================
+2026-03-04 11:11:50,986 [INFO] Loaded 784 players from squads_2026.csv
+2026-03-04 11:11:51,233 [INFO] Loaded 897 players from Excel
+2026-03-04 11:11:51,248 [INFO] Found 158 players without photos
+2026-03-04 11:11:51,250 [INFO] Found 60 players who changed teams:
+2026-03-04 11:11:51,250 [INFO]   • Callum Ah Chee: Brisbane → Adelaide
+2026-03-04 11:11:51,250 [INFO]   • Finnbar Maley: North Melbourne → Adelaide
+2026-03-04 11:11:51,250 [INFO]   • Oscar Allen: West Coast → Brisbane
+2026-03-04 11:11:51,250 [INFO]   • Sam Draper: Essendon → Brisbane
+2026-03-04 11:11:51,250 [INFO]   • Ben Ainsworth: Gold Coast → Carlton
+2026-03-04 11:11:51,250 [INFO]   • Campbell Chesser: West Coast → Carlton
+2026-03-04 11:11:51,250 [INFO]   • Oliver Florent: Sydney → Carlton
+2026-03-04 11:11:51,250 [INFO]   • Will Hayward: Sydney → Carlton
+2026-03-04 11:11:51,250 [INFO]   • Liam Reidy: Fremantle → Carlton
+2026-03-04 11:11:51,250 [INFO]   • Jack Buller: Sydney → Collingwood
+2026-03-04 11:11:51,250 [INFO]   • Brayden Fiorini: Gold Coast → Essendon
+2026-03-04 11:11:51,250 [INFO]   • Mason Cox: Collingwood → Fremantle
+2026-03-04 11:11:51,250 [INFO]   • Judd McVee: Melbourne → Fremantle
+2026-03-04 11:11:51,250 [INFO]   • James Worpel: Hawthorn → Geelong
+2026-03-04 11:11:51,250 [INFO]   • Christian Petracca: Melbourne → Gold Coast
+2026-03-04 11:11:51,250 [INFO]   • Leek Aleer: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Cody Angove: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Ryan Angwin: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Toby Bedford: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Kieren Briggs: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Callum Brown: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Jack Buckley: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Aaron Cadman: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Finn Callaghan: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Stephen Coniglio: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Brent Daniels: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Josaia Delana: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Tom Green: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Toby Greene: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Max Gruzewski: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Jesse Hogan: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Connor Idun: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Darcy Jones: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Jayden Laverde: Essendon → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • James Leake: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Toby McMullin: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Xavier O'Halloran: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Clayton Oliver: Melbourne → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Jake Riccardi: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Harry Rowston: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Conor Stone: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Jake Stringer: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Sam Taylor: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Harvey Thomas: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Lachie Whitfield: Greater Western Sydney → GWS Giants
+2026-03-04 11:11:51,250 [INFO]   • Changkuoth Jiath: Hawthorn → Melbourne
+2026-03-04 11:11:51,250 [INFO]   • Brody Mihocek: Collingwood → Melbourne
+2026-03-04 11:11:51,250 [INFO]   • Charlie Spargo: Melbourne → North Melbourne
+2026-03-04 11:11:51,250 [INFO]   • Corey Durdin: Carlton → Port Adelaide
+2026-03-04 11:11:51,250 [INFO]   • Jacob Wehr: Greater Western Sydney → Port Adelaide
+2026-03-04 11:11:51,251 [INFO]   • Tom De Koning: Carlton → St Kilda
+2026-03-04 11:11:51,251 [INFO]   • Sam Flanders: Gold Coast → St Kilda
+2026-03-04 11:11:51,251 [INFO]   • Liam Ryan: West Coast → St Kilda
+2026-03-04 11:11:51,251 [INFO]   • Jack Silvagni: Carlton → St Kilda
+2026-03-04 11:11:51,251 [INFO]   • Charlie Curnow: Carlton → Sydney
+2026-03-04 11:11:51,251 [INFO]   • Malcolm Rosas: Gold Coast → Sydney
+2026-03-04 11:11:51,251 [INFO]   • Deven Robertson: Brisbane → West Coast
+2026-03-04 11:11:51,251 [INFO]   • Brandon Starcevich: Brisbane → West Coast
+2026-03-04 11:11:51,251 [INFO]   • Tylar Young: Richmond → West Coast
+2026-03-04 11:11:51,251 [INFO]   • Connor Budarick: Gold Coast → Western Bulldogs
+2026-03-04 11:11:51,251 [INFO] Limited to 200 downloads this run
+2026-03-04 11:11:51,251 [INFO] [1/200] [TEAM CHANGE] Callum Ah Chee (Adelaide)
+2026-03-04 11:11:51,251 [DEBUG]   Fetching Adelaide player data...
+2026-03-04 11:11:51,257 [DEBUG] Starting new HTTPS connection (1): www.afc.com.au:443
+2026-03-04 11:11:52,482 [DEBUG] https://www.afc.com.au:443 "GET /players HTTP/1.1" 200 29463
+2026-03-04 11:11:53,993 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:11:55,218 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/298437.png HTTP/1.1" 200 1277612
+2026-03-04 11:11:55,850 [INFO]   ✓ Downloaded (team change: Brisbane → Adelaide)
+2026-03-04 11:11:57,355 [INFO] [2/200] [TEAM CHANGE] Finnbar Maley (Adelaide)
+2026-03-04 11:11:57,357 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:11:58,288 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1031792.png HTTP/1.1" 200 1355440
+2026-03-04 11:11:58,775 [INFO]   ✓ Downloaded (team change: North Melbourne → Adelaide)
+2026-03-04 11:12:00,277 [INFO] [3/200] [TEAM CHANGE] Oscar Allen (Brisbane)
+2026-03-04 11:12:00,277 [DEBUG]   Fetching Brisbane player data...
+2026-03-04 11:12:00,280 [DEBUG] Starting new HTTPS connection (1): www.lions.com.au:443
+2026-03-04 11:12:02,182 [DEBUG] https://www.lions.com.au:443 "GET /players HTTP/1.1" 200 33235
+2026-03-04 11:12:03,698 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:04,749 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1004385.png HTTP/1.1" 200 1328613
+2026-03-04 11:12:05,307 [INFO]   ✓ Downloaded (team change: West Coast → Brisbane)
+2026-03-04 11:12:06,813 [INFO] [4/200] [TEAM CHANGE] Sam Draper (Brisbane)
+2026-03-04 11:12:06,815 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:08,118 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1005577.png HTTP/1.1" 200 1607741
+2026-03-04 11:12:08,740 [INFO]   ✓ Downloaded (team change: Essendon → Brisbane)
+2026-03-04 11:12:10,242 [INFO] [5/200] [TEAM CHANGE] Ben Ainsworth (Carlton)
+2026-03-04 11:12:10,242 [DEBUG]   Fetching Carlton player data...
+2026-03-04 11:12:10,244 [DEBUG] Starting new HTTPS connection (1): www.carltonfc.com.au:443
+2026-03-04 11:12:11,501 [DEBUG] https://www.carltonfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:12:13,013 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:13,992 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/998130.png HTTP/1.1" 200 1376967
+2026-03-04 11:12:14,666 [INFO]   ✓ Downloaded (team change: Gold Coast → Carlton)
+2026-03-04 11:12:16,168 [INFO] [6/200] [TEAM CHANGE] Campbell Chesser (Carlton)
+2026-03-04 11:12:16,169 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:17,161 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1017057.png HTTP/1.1" 200 1537985
+2026-03-04 11:12:17,777 [INFO]   ✓ Downloaded (team change: West Coast → Carlton)
+2026-03-04 11:12:19,283 [INFO] [7/200] [TEAM CHANGE] Oliver Florent (Carlton)
+2026-03-04 11:12:19,285 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:21,025 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/998103.png HTTP/1.1" 200 1684664
+2026-03-04 11:12:21,692 [INFO]   ✓ Downloaded (team change: Sydney → Carlton)
+2026-03-04 11:12:23,196 [INFO] [8/200] [TEAM CHANGE] Will Hayward (Carlton)
+2026-03-04 11:12:23,198 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:24,401 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/997100.png HTTP/1.1" 200 1494773
+2026-03-04 11:12:25,062 [INFO]   ✓ Downloaded (team change: Sydney → Carlton)
+2026-03-04 11:12:26,562 [INFO] [9/200] [TEAM CHANGE] Liam Reidy (Carlton)
+2026-03-04 11:12:26,565 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:27,526 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1023346.png HTTP/1.1" 200 1477245
+2026-03-04 11:12:28,261 [INFO]   ✓ Downloaded (team change: Fremantle → Carlton)
+2026-03-04 11:12:29,766 [INFO] [10/200] [TEAM CHANGE] Jack Buller (Collingwood)
+2026-03-04 11:12:29,767 [DEBUG]   Fetching Collingwood player data...
+2026-03-04 11:12:29,768 [DEBUG] Starting new HTTPS connection (1): www.collingwoodfc.com.au:443
+2026-03-04 11:12:30,599 [DEBUG] https://www.collingwoodfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:12:32,112 [WARNING]   ✗ Could not download photo
+2026-03-04 11:12:33,615 [INFO] [11/200] [TEAM CHANGE] Brayden Fiorini (Essendon)
+2026-03-04 11:12:33,615 [DEBUG]   Fetching Essendon player data...
+2026-03-04 11:12:33,617 [DEBUG] Starting new HTTPS connection (1): www.essendonfc.com.au:443
+2026-03-04 11:12:35,461 [DEBUG] https://www.essendonfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:12:36,972 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:38,224 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/993799.png HTTP/1.1" 200 1287060
+2026-03-04 11:12:38,702 [INFO]   ✓ Downloaded (team change: Gold Coast → Essendon)
+2026-03-04 11:12:40,207 [INFO] [12/200] [TEAM CHANGE] Mason Cox (Fremantle)
+2026-03-04 11:12:40,207 [DEBUG]   Fetching Fremantle player data...
+2026-03-04 11:12:40,210 [DEBUG] Starting new HTTPS connection (1): www.fremantlefc.com.au:443
+2026-03-04 11:12:41,607 [DEBUG] https://www.fremantlefc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:12:43,119 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:43,757 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/998647.png HTTP/1.1" 404 48734
+2026-03-04 11:12:44,291 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:44,596 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/998647.png HTTP/1.1" 200 1194611
+2026-03-04 11:12:44,938 [INFO]   ✓ Downloaded (team change: Collingwood → Fremantle)
+2026-03-04 11:12:46,442 [INFO] [13/200] [TEAM CHANGE] Judd McVee (Fremantle)
+2026-03-04 11:12:46,443 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:47,336 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1017703.png HTTP/1.1" 200 1310652
+2026-03-04 11:12:47,851 [INFO]   ✓ Downloaded (team change: Melbourne → Fremantle)
+2026-03-04 11:12:49,356 [INFO] [14/200] [TEAM CHANGE] James Worpel (Geelong)
+2026-03-04 11:12:49,356 [DEBUG]   Fetching Geelong player data...
+2026-03-04 11:12:49,359 [DEBUG] Starting new HTTPS connection (1): www.geelongcats.com.au:443
+2026-03-04 11:12:50,596 [DEBUG] https://www.geelongcats.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:12:52,124 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:53,280 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1002222.png HTTP/1.1" 200 1440438
+2026-03-04 11:12:53,750 [INFO]   ✓ Downloaded (team change: Hawthorn → Geelong)
+2026-03-04 11:12:55,255 [INFO] [15/200] [TEAM CHANGE] Christian Petracca (Gold Coast)
+2026-03-04 11:12:55,256 [DEBUG]   Fetching Gold Coast player data...
+2026-03-04 11:12:55,258 [DEBUG] Starting new HTTPS connection (1): www.goldcoastfc.com.au:443
+2026-03-04 11:12:56,920 [DEBUG] https://www.goldcoastfc.com.au:443 "GET /players HTTP/1.1" 200 34152
+2026-03-04 11:12:58,436 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:12:58,679 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/298210.png HTTP/1.1" 200 1358934
+2026-03-04 11:12:59,789 [INFO]   ✓ Downloaded (team change: Melbourne → Gold Coast)
+2026-03-04 11:13:01,292 [INFO] [16/200] [TEAM CHANGE] Leek Aleer (GWS Giants)
+2026-03-04 11:13:01,292 [DEBUG]   Fetching GWS Giants player data...
+2026-03-04 11:13:01,294 [DEBUG] Starting new HTTPS connection (1): www.gwsgiants.com.au:443
+2026-03-04 11:13:02,267 [DEBUG] https://www.gwsgiants.com.au:443 "GET /players HTTP/1.1" 200 34123
+2026-03-04 11:13:03,780 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:04,676 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008691.png HTTP/1.1" 200 1649282
+2026-03-04 11:13:05,203 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:06,708 [INFO] [17/200] [TEAM CHANGE] Cody Angove (GWS Giants)
+2026-03-04 11:13:06,711 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:07,776 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032619.png HTTP/1.1" 200 1579761
+2026-03-04 11:13:08,324 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:09,825 [INFO] [18/200] [TEAM CHANGE] Ryan Angwin (GWS Giants)
+2026-03-04 11:13:09,828 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:10,787 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1015777.png HTTP/1.1" 200 1401858
+2026-03-04 11:13:17,258 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:18,763 [INFO] [19/200] [TEAM CHANGE] Toby Bedford (GWS Giants)
+2026-03-04 11:13:18,765 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:19,870 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008139.png HTTP/1.1" 200 1564122
+2026-03-04 11:13:20,277 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:21,778 [INFO] [20/200] [TEAM CHANGE] Kieren Briggs (GWS Giants)
+2026-03-04 11:13:21,781 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:22,816 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008436.png HTTP/1.1" 200 1526519
+2026-03-04 11:13:23,164 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:24,666 [INFO] [21/200] [TEAM CHANGE] Callum Brown (GWS Giants)
+2026-03-04 11:13:24,666 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:25,844 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1014038.png HTTP/1.1" 200 1427261
+2026-03-04 11:13:26,836 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:28,342 [INFO] [22/200] [TEAM CHANGE] Jack Buckley (GWS Giants)
+2026-03-04 11:13:28,343 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:29,537 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1009708.png HTTP/1.1" 200 1491673
+2026-03-04 11:13:30,001 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:31,506 [INFO] [23/200] [TEAM CHANGE] Aaron Cadman (GWS Giants)
+2026-03-04 11:13:31,508 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:32,619 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1019038.png HTTP/1.1" 200 1515326
+2026-03-04 11:13:33,086 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:34,590 [INFO] [24/200] [TEAM CHANGE] Finn Callaghan (GWS Giants)
+2026-03-04 11:13:34,592 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:35,550 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1023266.png HTTP/1.1" 200 1361172
+2026-03-04 11:13:35,997 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:37,502 [INFO] [25/200] [TEAM CHANGE] Stephen Coniglio (GWS Giants)
+2026-03-04 11:13:37,505 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:38,437 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/291969.png HTTP/1.1" 200 1442596
+2026-03-04 11:13:39,593 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:41,097 [INFO] [26/200] [TEAM CHANGE] Brent Daniels (GWS Giants)
+2026-03-04 11:13:41,100 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:42,431 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1002251.png HTTP/1.1" 200 1380496
+2026-03-04 11:13:42,899 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:44,400 [INFO] [27/200] [TEAM CHANGE] Josaia Delana (GWS Giants)
+2026-03-04 11:13:44,403 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:45,503 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1029030.png HTTP/1.1" 200 1425943
+2026-03-04 11:13:45,805 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:47,308 [INFO] [28/200] [TEAM CHANGE] Tom Green (GWS Giants)
+2026-03-04 11:13:47,311 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:48,638 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1009528.png HTTP/1.1" 200 1358313
+2026-03-04 11:13:48,987 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:50,491 [INFO] [29/200] [TEAM CHANGE] Toby Greene (GWS Giants)
+2026-03-04 11:13:50,494 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:51,950 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/295344.png HTTP/1.1" 200 1551500
+2026-03-04 11:13:52,292 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:53,796 [INFO] [30/200] [TEAM CHANGE] Max Gruzewski (GWS Giants)
+2026-03-04 11:13:53,798 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:54,884 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027921.png HTTP/1.1" 200 1550121
+2026-03-04 11:13:55,257 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:13:56,762 [INFO] [31/200] [TEAM CHANGE] Jesse Hogan (GWS Giants)
+2026-03-04 11:13:56,765 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:13:58,712 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/296324.png HTTP/1.1" 200 1544399
+2026-03-04 11:13:59,074 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:00,577 [INFO] [32/200] [TEAM CHANGE] Connor Idun (GWS Giants)
+2026-03-04 11:14:00,581 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:01,477 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008083.png HTTP/1.1" 200 1484211
+2026-03-04 11:14:01,803 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:03,304 [INFO] [33/200] [TEAM CHANGE] Darcy Jones (GWS Giants)
+2026-03-04 11:14:03,307 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:04,546 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1020650.png HTTP/1.1" 200 1457987
+2026-03-04 11:14:04,943 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:06,449 [INFO] [34/200] [TEAM CHANGE] Jayden Laverde (GWS Giants)
+2026-03-04 11:14:06,449 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:07,622 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/298280.png HTTP/1.1" 200 1627026
+2026-03-04 11:14:08,454 [INFO]   ✓ Downloaded (team change: Essendon → GWS Giants)
+2026-03-04 11:14:09,957 [INFO] [35/200] [TEAM CHANGE] James Leake (GWS Giants)
+2026-03-04 11:14:09,960 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:11,675 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032119.png HTTP/1.1" 200 1580285
+2026-03-04 11:14:14,930 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:16,435 [INFO] [36/200] [TEAM CHANGE] Toby McMullin (GWS Giants)
+2026-03-04 11:14:16,436 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:17,368 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027971.png HTTP/1.1" 200 1324919
+2026-03-04 11:14:18,785 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:20,291 [INFO] [37/200] [TEAM CHANGE] Xavier O'Halloran (GWS Giants)
+2026-03-04 11:14:20,294 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:21,471 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1006135.png HTTP/1.1" 200 1316215
+2026-03-04 11:14:21,907 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:23,413 [INFO] [38/200] [TEAM CHANGE] Clayton Oliver (GWS Giants)
+2026-03-04 11:14:23,414 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:25,435 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/996701.png HTTP/1.1" 200 1616230
+2026-03-04 11:14:28,027 [INFO]   ✓ Downloaded (team change: Melbourne → GWS Giants)
+2026-03-04 11:14:29,531 [INFO] [39/200] [TEAM CHANGE] Jake Riccardi (GWS Giants)
+2026-03-04 11:14:29,532 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:29,835 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008123.png HTTP/1.1" 200 1587737
+2026-03-04 11:14:31,004 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:32,509 [INFO] [40/200] [TEAM CHANGE] Harry Rowston (GWS Giants)
+2026-03-04 11:14:32,511 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:33,573 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1021122.png HTTP/1.1" 200 1387611
+2026-03-04 11:14:34,208 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:35,713 [INFO] [41/200] [TEAM CHANGE] Conor Stone (GWS Giants)
+2026-03-04 11:14:35,714 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:36,808 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1015862.png HTTP/1.1" 200 1502996
+2026-03-04 11:14:37,476 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:38,981 [INFO] [42/200] [TEAM CHANGE] Jake Stringer (GWS Giants)
+2026-03-04 11:14:38,983 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:40,488 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/293884.png HTTP/1.1" 200 1407531
+2026-03-04 11:14:41,080 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:42,585 [INFO] [43/200] [TEAM CHANGE] Sam Taylor (GWS Giants)
+2026-03-04 11:14:42,587 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:43,882 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1005247.png HTTP/1.1" 200 1519744
+2026-03-04 11:14:44,362 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:45,864 [INFO] [44/200] [TEAM CHANGE] Harvey Thomas (GWS Giants)
+2026-03-04 11:14:45,866 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:46,414 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027925.png HTTP/1.1" 200 1613931
+2026-03-04 11:14:47,699 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:49,205 [INFO] [45/200] [TEAM CHANGE] Lachie Whitfield (GWS Giants)
+2026-03-04 11:14:49,205 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:49,486 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/294305.png HTTP/1.1" 200 1458148
+2026-03-04 11:14:50,709 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → GWS Giants)
+2026-03-04 11:14:52,214 [INFO] [46/200] [TEAM CHANGE] Changkuoth Jiath (Melbourne)
+2026-03-04 11:14:52,214 [DEBUG]   Fetching Melbourne player data...
+2026-03-04 11:14:52,216 [DEBUG] Starting new HTTPS connection (1): www.melbournefc.com.au:443
+2026-03-04 11:14:54,291 [DEBUG] https://www.melbournefc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:14:55,808 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:14:56,643 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/998390.png HTTP/1.1" 200 1785270
+2026-03-04 11:14:58,144 [INFO]   ✓ Downloaded (team change: Hawthorn → Melbourne)
+2026-03-04 11:14:59,649 [INFO] [47/200] [TEAM CHANGE] Brody Mihocek (Melbourne)
+2026-03-04 11:14:59,652 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:00,407 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/291849.png HTTP/1.1" 200 1679144
+2026-03-04 11:15:01,393 [INFO]   ✓ Downloaded (team change: Collingwood → Melbourne)
+2026-03-04 11:15:02,898 [INFO] [48/200] [TEAM CHANGE] Charlie Spargo (North Melbourne)
+2026-03-04 11:15:02,898 [DEBUG]   Fetching North Melbourne player data...
+2026-03-04 11:15:02,900 [DEBUG] Starting new HTTPS connection (1): www.nmfc.com.au:443
+2026-03-04 11:15:04,479 [DEBUG] https://www.nmfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:15:05,990 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:07,522 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1002282.png HTTP/1.1" 200 1560269
+2026-03-04 11:15:09,052 [INFO]   ✓ Downloaded (team change: Melbourne → North Melbourne)
+2026-03-04 11:15:10,558 [INFO] [49/200] [TEAM CHANGE] Corey Durdin (Port Adelaide)
+2026-03-04 11:15:10,558 [DEBUG]   Fetching Port Adelaide player data...
+2026-03-04 11:15:10,561 [DEBUG] Starting new HTTPS connection (1): www.portadelaidefc.com.au:443
+2026-03-04 11:15:13,976 [DEBUG] https://www.portadelaidefc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:15:15,506 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:15,795 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008510.png HTTP/1.1" 200 1197015
+2026-03-04 11:15:16,932 [INFO]   ✓ Downloaded (team change: Carlton → Port Adelaide)
+2026-03-04 11:15:18,436 [INFO] [50/200] [TEAM CHANGE] Jacob Wehr (Port Adelaide)
+2026-03-04 11:15:18,439 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:18,795 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1004530.png HTTP/1.1" 200 1191843
+2026-03-04 11:15:19,148 [INFO]   ✓ Downloaded (team change: Greater Western Sydney → Port Adelaide)
+2026-03-04 11:15:20,653 [INFO] [51/200] [TEAM CHANGE] Tom De Koning (St Kilda)
+2026-03-04 11:15:20,653 [DEBUG]   Fetching St Kilda player data...
+2026-03-04 11:15:20,655 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:15:21,654 [DEBUG] https://www.saints.com.au:443 "GET /players HTTP/1.1" 200 27548
+2026-03-04 11:15:21,658 [DEBUG]   Using HTML link fallback for St Kilda (43 unique players)
+2026-03-04 11:15:23,165 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:15:23,168 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:15:23,463 [DEBUG] https://www.saints.com.au:443 "GET /players/1544/tom-de-koning HTTP/1.1" 200 33603
+2026-03-04 11:15:24,077 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:24,306 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1004912.png HTTP/1.1" 200 1269183
+2026-03-04 11:15:25,275 [INFO]   ✓ Downloaded (team change: Carlton → St Kilda)
+2026-03-04 11:15:26,778 [INFO] [52/200] [TEAM CHANGE] Sam Flanders (St Kilda)
+2026-03-04 11:15:26,778 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:15:26,781 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:15:27,493 [DEBUG] https://www.saints.com.au:443 "GET /players/2340/sam-flanders HTTP/1.1" 200 34102
+2026-03-04 11:15:28,004 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:28,350 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1009260.png HTTP/1.1" 200 1097609
+2026-03-04 11:15:29,347 [INFO]   ✓ Downloaded (team change: Gold Coast → St Kilda)
+2026-03-04 11:15:30,852 [INFO] [53/200] [TEAM CHANGE] Liam Ryan (St Kilda)
+2026-03-04 11:15:30,853 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:15:30,855 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:15:31,208 [DEBUG] https://www.saints.com.au:443 "GET /players/1787/liam-ryan HTTP/1.1" 200 33955
+2026-03-04 11:15:31,720 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:32,711 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1004364.png HTTP/1.1" 200 1121632
+2026-03-04 11:15:33,245 [INFO]   ✓ Downloaded (team change: West Coast → St Kilda)
+2026-03-04 11:15:34,750 [INFO] [54/200] [TEAM CHANGE] Jack Silvagni (St Kilda)
+2026-03-04 11:15:34,751 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:15:34,753 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:15:35,162 [DEBUG] https://www.saints.com.au:443 "GET /players/766/jack-silvagni HTTP/1.1" 200 33743
+2026-03-04 11:15:35,679 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:36,804 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1001028.png HTTP/1.1" 200 1088124
+2026-03-04 11:15:37,970 [INFO]   ✓ Downloaded (team change: Carlton → St Kilda)
+2026-03-04 11:15:39,470 [INFO] [55/200] [TEAM CHANGE] Charlie Curnow (Sydney)
+2026-03-04 11:15:39,471 [DEBUG]   Fetching Sydney player data...
+2026-03-04 11:15:39,473 [DEBUG] Starting new HTTPS connection (1): www.sydneyswans.com.au:443
+2026-03-04 11:15:40,672 [DEBUG] https://www.sydneyswans.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:15:42,186 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:42,660 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/996731.png HTTP/1.1" 200 1601127
+2026-03-04 11:15:43,814 [INFO]   ✓ Downloaded (team change: Carlton → Sydney)
+2026-03-04 11:15:45,319 [INFO] [56/200] [TEAM CHANGE] Malcolm Rosas (Sydney)
+2026-03-04 11:15:45,322 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:46,447 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1005986.png HTTP/1.1" 200 1532994
+2026-03-04 11:15:47,097 [INFO]   ✓ Downloaded (team change: Gold Coast → Sydney)
+2026-03-04 11:15:48,603 [INFO] [57/200] [TEAM CHANGE] Deven Robertson (West Coast)
+2026-03-04 11:15:48,603 [DEBUG]   Fetching West Coast player data...
+2026-03-04 11:15:48,605 [DEBUG] Starting new HTTPS connection (1): www.westcoasteagles.com.au:443
+2026-03-04 11:15:49,516 [DEBUG] https://www.westcoasteagles.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:15:51,032 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:51,362 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1009385.png HTTP/1.1" 200 1716686
+2026-03-04 11:15:53,382 [INFO]   ✓ Downloaded (team change: Brisbane → West Coast)
+2026-03-04 11:15:54,887 [INFO] [58/200] [TEAM CHANGE] Brandon Starcevich (West Coast)
+2026-03-04 11:15:54,890 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:56,074 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1002401.png HTTP/1.1" 200 1516794
+2026-03-04 11:15:56,773 [INFO]   ✓ Downloaded (team change: Brisbane → West Coast)
+2026-03-04 11:15:58,279 [INFO] [59/200] [TEAM CHANGE] Tylar Young (West Coast)
+2026-03-04 11:15:58,281 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:15:58,571 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1018433.png HTTP/1.1" 200 1724992
+2026-03-04 11:15:59,277 [INFO]   ✓ Downloaded (team change: Richmond → West Coast)
+2026-03-04 11:16:00,782 [INFO] [60/200] [TEAM CHANGE] Connor Budarick (Western Bulldogs)
+2026-03-04 11:16:00,783 [DEBUG]   Fetching Western Bulldogs player data...
+2026-03-04 11:16:00,785 [DEBUG] Starting new HTTPS connection (1): www.westernbulldogs.com.au:443
+2026-03-04 11:16:02,205 [DEBUG] https://www.westernbulldogs.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:16:03,717 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:04,967 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008454.png HTTP/1.1" 200 1281762
+2026-03-04 11:16:05,877 [INFO]   ✓ Downloaded (team change: Gold Coast → Western Bulldogs)
+2026-03-04 11:16:07,378 [INFO] [61/200]  Indy Cotton (Adelaide)
+2026-03-04 11:16:07,381 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:08,049 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1044595.png HTTP/1.1" 404 48734
+2026-03-04 11:16:08,560 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:09,575 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1044595.png HTTP/1.1" 404 48734
+2026-03-04 11:16:10,086 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:11,592 [INFO] [62/200]  Archie Ludowyke (Adelaide)
+2026-03-04 11:16:11,594 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:12,341 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033053.png HTTP/1.1" 404 48734
+2026-03-04 11:16:12,848 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:13,569 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1033053.png HTTP/1.1" 404 48734
+2026-03-04 11:16:14,076 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:15,577 [INFO] [63/200]  Mitchell Marsh (Adelaide)
+2026-03-04 11:16:15,580 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:16,335 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1031747.png HTTP/1.1" 404 48734
+2026-03-04 11:16:16,847 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:17,873 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1031747.png HTTP/1.1" 404 48734
+2026-03-04 11:16:18,383 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:19,888 [INFO] [64/200]  Tyler Welsh (Adelaide)
+2026-03-04 11:16:19,891 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:24,698 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1022447.png HTTP/1.1" 200 1035413
+2026-03-04 11:16:25,594 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:27,097 [INFO] [65/200]  Daniel Annable (Brisbane)
+2026-03-04 11:16:27,100 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:28,316 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1029326.png HTTP/1.1" 200 1320983
+2026-03-04 11:16:29,136 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:30,641 [INFO] [66/200]  Cody Curtin (Brisbane)
+2026-03-04 11:16:30,644 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:31,979 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036780.png HTTP/1.1" 200 1642443
+2026-03-04 11:16:33,131 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:34,633 [INFO] [67/200]  Koby Evans (Brisbane)
+2026-03-04 11:16:34,635 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:35,994 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1037376.png HTTP/1.1" 200 1404069
+2026-03-04 11:16:37,002 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:38,508 [INFO] [68/200]  Tai Hayes (Brisbane)
+2026-03-04 11:16:38,510 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:39,899 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1040584.png HTTP/1.1" 200 1572442
+2026-03-04 11:16:40,736 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:42,241 [INFO] [69/200]  Ben Murphy (Brisbane)
+2026-03-04 11:16:42,244 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:43,787 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1044596.png HTTP/1.1" 200 1516861
+2026-03-04 11:16:44,206 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:45,711 [INFO] [70/200]  Cameron Rayner (Brisbane)
+2026-03-04 11:16:45,711 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:47,217 [INFO] [71/200]  Talor Byrne (Carlton)
+2026-03-04 11:16:47,219 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:49,020 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036426.png HTTP/1.1" 200 1459111
+2026-03-04 11:16:50,580 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:52,081 [INFO] [72/200]  Matt Carroll (Carlton)
+2026-03-04 11:16:52,082 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:53,587 [INFO] [73/200]  Matt Cottrell (Carlton)
+2026-03-04 11:16:53,587 [WARNING]   ✗ Could not download photo
+2026-03-04 11:16:55,093 [INFO] [74/200]  Harry Dean (Carlton)
+2026-03-04 11:16:55,096 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:16:56,883 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033084.png HTTP/1.1" 200 1292950
+2026-03-04 11:16:57,455 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:16:58,956 [INFO] [75/200]  Lachlan Fogarty (Carlton)
+2026-03-04 11:16:58,957 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:00,462 [INFO] [76/200]  Jack Ison (Carlton)
+2026-03-04 11:17:00,464 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:02,413 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033066.png HTTP/1.1" 200 1347794
+2026-03-04 11:17:02,790 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:04,294 [INFO] [77/200]  Zachary Williams (Carlton)
+2026-03-04 11:17:04,294 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:05,797 [INFO] [78/200]  Angus Anderson (Collingwood)
+2026-03-04 11:17:05,798 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:07,303 [INFO] [79/200]  Will Hayes (Collingwood)
+2026-03-04 11:17:07,303 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:08,806 [INFO] [80/200]  Zac McCarthy (Collingwood)
+2026-03-04 11:17:08,806 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:10,312 [INFO] [81/200]  Tyan Prindable (Collingwood)
+2026-03-04 11:17:10,312 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:11,817 [INFO] [82/200]  Jai Saxena (Collingwood)
+2026-03-04 11:17:11,818 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:13,323 [INFO] [83/200]  Lachlan Schultz (Collingwood)
+2026-03-04 11:17:13,324 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:14,829 [INFO] [84/200]  Lachie Sullivan (Collingwood)
+2026-03-04 11:17:14,829 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:16,334 [INFO] [85/200]  Samuel Swadling (Collingwood)
+2026-03-04 11:17:16,335 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:17,840 [INFO] [86/200]  Cillian Bourke (Essendon)
+2026-03-04 11:17:17,843 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:18,990 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1044339.png HTTP/1.1" 200 1302750
+2026-03-04 11:17:20,612 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:22,117 [INFO] [87/200]  Nikolas Cox (Essendon)
+2026-03-04 11:17:22,117 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:23,622 [INFO] [88/200]  Tom Edwards (Essendon)
+2026-03-04 11:17:23,623 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:25,128 [INFO] [89/200]  Hussien El Achkar (Essendon)
+2026-03-04 11:17:25,130 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:26,989 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1030308.png HTTP/1.1" 200 1341326
+2026-03-04 11:17:28,579 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:30,084 [INFO] [90/200]  Jacob Farrow (Essendon)
+2026-03-04 11:17:30,087 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:30,675 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1034305.png HTTP/1.1" 200 1294658
+2026-03-04 11:17:34,421 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:35,926 [INFO] [91/200]  Max Kondogiannis (Essendon)
+2026-03-04 11:17:35,929 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:36,273 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036584.png HTTP/1.1" 200 1339839
+2026-03-04 11:17:38,129 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:39,635 [INFO] [92/200]  Nicholas Martin (Essendon)
+2026-03-04 11:17:39,635 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:41,137 [INFO] [93/200]  Archie May (Essendon)
+2026-03-04 11:17:41,138 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:42,643 [INFO] [94/200]  Zachary Merrett (Essendon)
+2026-03-04 11:17:42,643 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:44,149 [INFO] [95/200]  Sullivan Robey (Essendon)
+2026-03-04 11:17:44,152 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:44,530 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1043261.png HTTP/1.1" 200 1363095
+2026-03-04 11:17:45,229 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:46,734 [INFO] [96/200]  Dyson Sharp (Essendon)
+2026-03-04 11:17:46,737 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:47,050 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027168.png HTTP/1.1" 200 1429212
+2026-03-04 11:17:48,673 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:50,177 [INFO] [97/200]  Josh Draper (Fremantle)
+2026-03-04 11:17:50,177 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:51,682 [INFO] [98/200]  Matt Johnson (Fremantle)
+2026-03-04 11:17:51,683 [WARNING]   ✗ Could not download photo
+2026-03-04 11:17:53,188 [INFO] [99/200]  Leon Kickett (Fremantle)
+2026-03-04 11:17:53,191 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:17:54,637 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032862.png HTTP/1.1" 200 1327006
+2026-03-04 11:17:54,969 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:17:56,474 [INFO] [100/200]  Ryda Luke (Fremantle)
+2026-03-04 11:17:56,477 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:01,327 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1037928.png HTTP/1.1" 200 1205013
+2026-03-04 11:18:03,962 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:05,467 [INFO] [101/200]  Tobyn Murray (Fremantle)
+2026-03-04 11:18:05,470 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:07,236 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027844.png HTTP/1.1" 200 1234717
+2026-03-04 11:18:07,591 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:09,096 [INFO] [102/200]  Chris Scerri (Fremantle)
+2026-03-04 11:18:09,096 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:10,602 [INFO] [103/200]  Adam Sweid (Fremantle)
+2026-03-04 11:18:10,604 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:11,681 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1030311.png HTTP/1.1" 200 1213011
+2026-03-04 11:18:12,128 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:13,633 [INFO] [104/200]  Toby Whan (Fremantle)
+2026-03-04 11:18:13,635 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:14,722 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033719.png HTTP/1.1" 200 1190688
+2026-03-04 11:18:15,087 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:16,592 [INFO] [105/200]  Harley Barker (Geelong)
+2026-03-04 11:18:16,595 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:17,680 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1026983.png HTTP/1.1" 404 48734
+2026-03-04 11:18:18,197 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:18,907 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1026983.png HTTP/1.1" 404 48734
+2026-03-04 11:18:19,418 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:20,922 [INFO] [106/200]  Bradley Close (Geelong)
+2026-03-04 11:18:20,923 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:22,428 [INFO] [107/200]  Ollie Dempsey (Geelong)
+2026-03-04 11:18:22,428 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:23,933 [INFO] [108/200]  Nick Driscoll (Geelong)
+2026-03-04 11:18:23,934 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:25,439 [INFO] [109/200]  Lennox Hoffman (Geelong)
+2026-03-04 11:18:25,439 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:26,943 [INFO] [110/200]  Hunter Holmes (Geelong)
+2026-03-04 11:18:26,945 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:27,892 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1038922.png HTTP/1.1" 404 48734
+2026-03-04 11:18:28,427 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:28,985 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1038922.png HTTP/1.1" 404 48734
+2026-03-04 11:18:29,540 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:31,042 [INFO] [111/200]  Mitchell Knevitt (Geelong)
+2026-03-04 11:18:31,043 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:32,548 [INFO] [112/200]  Keighton Matofai-Forbes (Geelong)
+2026-03-04 11:18:32,551 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:33,656 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032141.png HTTP/1.1" 200 1219317
+2026-03-04 11:18:33,952 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:35,456 [INFO] [113/200]  Jesse Mellor (Geelong)
+2026-03-04 11:18:35,459 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:36,429 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033087.png HTTP/1.1" 404 48734
+2026-03-04 11:18:36,940 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:37,652 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1033087.png HTTP/1.1" 404 48734
+2026-03-04 11:18:38,161 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:39,666 [INFO] [114/200]  George Stevens (Geelong)
+2026-03-04 11:18:39,669 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:40,716 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1023681.png HTTP/1.1" 200 1110438
+2026-03-04 11:18:40,972 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:18:42,477 [INFO] [115/200]  Thomas Stewart (Geelong)
+2026-03-04 11:18:42,478 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:43,983 [INFO] [116/200]  Beau Addinsall (Gold Coast)
+2026-03-04 11:18:43,986 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:44,710 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032398.png HTTP/1.1" 404 48734
+2026-03-04 11:18:45,225 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:46,246 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1032398.png HTTP/1.1" 404 48734
+2026-03-04 11:18:46,758 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:48,264 [INFO] [117/200]  Samuel Collins (Gold Coast)
+2026-03-04 11:18:48,264 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:49,769 [INFO] [118/200]  Koby Coulson (Gold Coast)
+2026-03-04 11:18:49,773 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:50,865 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033555.png HTTP/1.1" 404 48734
+2026-03-04 11:18:51,375 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:52,393 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1033555.png HTTP/1.1" 404 48734
+2026-03-04 11:18:52,902 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:54,405 [INFO] [119/200]  Nicholas Holman (Gold Coast)
+2026-03-04 11:18:54,406 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:55,911 [INFO] [120/200]  Leo Lombard (Gold Coast)
+2026-03-04 11:18:55,911 [WARNING]   ✗ Could not download photo
+2026-03-04 11:18:57,413 [INFO] [121/200]  Jai Murray (Gold Coast)
+2026-03-04 11:18:57,416 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:58,080 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1029307.png HTTP/1.1" 404 48734
+2026-03-04 11:18:58,588 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:18:59,458 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1029307.png HTTP/1.1" 404 48734
+2026-03-04 11:18:59,971 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:01,476 [INFO] [122/200]  Dylan Patterson (Gold Coast)
+2026-03-04 11:19:01,480 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:02,531 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033568.png HTTP/1.1" 404 48734
+2026-03-04 11:19:03,043 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:03,759 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1033568.png HTTP/1.1" 404 48734
+2026-03-04 11:19:04,269 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:05,774 [INFO] [123/200]  Avery Thomas (Gold Coast)
+2026-03-04 11:19:05,777 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:06,524 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1030438.png HTTP/1.1" 404 48734
+2026-03-04 11:19:07,034 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:07,781 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1030438.png HTTP/1.1" 404 48734
+2026-03-04 11:19:08,329 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:09,831 [INFO] [124/200]  Jamarra Ugle-Hagan (Gold Coast)
+2026-03-04 11:19:09,834 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:11,136 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1009301.png HTTP/1.1" 200 1220523
+2026-03-04 11:19:11,456 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:12,961 [INFO] [125/200]  Zeke Uwland (Gold Coast)
+2026-03-04 11:19:12,964 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:13,898 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1029297.png HTTP/1.1" 404 48734
+2026-03-04 11:19:14,407 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:15,126 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1029297.png HTTP/1.1" 404 48734
+2026-03-04 11:19:15,642 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:17,145 [INFO] [126/200]  Lachlan Weller (Gold Coast)
+2026-03-04 11:19:17,146 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:18,651 [INFO] [127/200]  Lachlan Ash (GWS Giants)
+2026-03-04 11:19:18,652 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:20,157 [INFO] [128/200]  Finnegan Davis (GWS Giants)
+2026-03-04 11:19:20,160 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:21,574 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033070.png HTTP/1.1" 200 1558908
+2026-03-04 11:19:22,137 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:23,642 [INFO] [129/200]  Joseph Fonti (GWS Giants)
+2026-03-04 11:19:23,642 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:25,145 [INFO] [130/200]  Riley Hamilton (GWS Giants)
+2026-03-04 11:19:25,148 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:26,496 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1029046.png HTTP/1.1" 200 1376720
+2026-03-04 11:19:26,921 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:28,426 [INFO] [131/200]  Harrison Himmelberg (GWS Giants)
+2026-03-04 11:19:28,426 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:29,932 [INFO] [132/200]  Joshua Kelly (GWS Giants)
+2026-03-04 11:19:29,932 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:31,437 [INFO] [133/200]  Nick Madden (GWS Giants)
+2026-03-04 11:19:31,438 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:32,942 [INFO] [134/200]  Oskar Taylor (GWS Giants)
+2026-03-04 11:19:32,945 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:34,027 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036379.png HTTP/1.1" 200 1595114
+2026-03-04 11:19:34,330 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:35,834 [INFO] [135/200]  Jack Dalton (Hawthorn)
+2026-03-04 11:19:35,834 [DEBUG]   Fetching Hawthorn player data...
+2026-03-04 11:19:35,837 [DEBUG] Starting new HTTPS connection (1): www.hawthornfc.com.au:443
+2026-03-04 11:19:36,939 [DEBUG] https://www.hawthornfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-03-04 11:19:38,451 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:39,398 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033042.png HTTP/1.1" 200 1187291
+2026-03-04 11:19:39,712 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:41,218 [INFO] [136/200]  Ollie Greeves (Hawthorn)
+2026-03-04 11:19:41,218 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:42,723 [INFO] [137/200]  Matthew LeRay (Hawthorn)
+2026-03-04 11:19:42,727 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:43,760 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027145.png HTTP/1.1" 200 1402355
+2026-03-04 11:19:44,076 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:45,577 [INFO] [138/200]  Mitchell Lewis (Hawthorn)
+2026-03-04 11:19:45,577 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:47,083 [INFO] [139/200]  Cameron Mackenzie (Hawthorn)
+2026-03-04 11:19:47,083 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:48,588 [INFO] [140/200]  Cameron Nairn (Hawthorn)
+2026-03-04 11:19:48,591 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:49,394 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032408.png HTTP/1.1" 200 1395695
+2026-03-04 11:19:49,815 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:51,317 [INFO] [141/200]  Aidan Schubert (Hawthorn)
+2026-03-04 11:19:51,320 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:52,293 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1031492.png HTTP/1.1" 200 1487667
+2026-03-04 11:19:52,637 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:54,141 [INFO] [142/200]  Joshua Weddle (Hawthorn)
+2026-03-04 11:19:54,141 [WARNING]   ✗ Could not download photo
+2026-03-04 11:19:55,642 [INFO] [143/200]  Oscar Berry (Melbourne)
+2026-03-04 11:19:55,645 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:56,598 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1005152.png HTTP/1.1" 200 1463228
+2026-03-04 11:19:56,926 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:19:58,430 [INFO] [144/200]  Max Heath (Melbourne)
+2026-03-04 11:19:58,433 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:19:59,359 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1015886.png HTTP/1.1" 200 1542170
+2026-03-04 11:20:00,068 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:01,573 [INFO] [145/200]  Thomas Matthews (Melbourne)
+2026-03-04 11:20:01,576 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:02,944 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1034214.png HTTP/1.1" 200 1725587
+2026-03-04 11:20:09,899 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:11,406 [INFO] [146/200]  Riley Onley (Melbourne)
+2026-03-04 11:20:11,408 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:12,875 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033093.png HTTP/1.1" 200 1489834
+2026-03-04 11:20:13,203 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:14,705 [INFO] [147/200]  Latrelle Pickett (Melbourne)
+2026-03-04 11:20:14,709 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:15,641 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1022677.png HTTP/1.1" 200 1487598
+2026-03-04 11:20:16,795 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:18,301 [INFO] [148/200]  Jack Steele (Melbourne)
+2026-03-04 11:20:18,303 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:19,159 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/296205.png HTTP/1.1" 200 1631103
+2026-03-04 11:20:19,618 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:21,121 [INFO] [149/200]  Xavier Taylor (Melbourne)
+2026-03-04 11:20:21,124 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:22,403 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033072.png HTTP/1.1" 200 1293087
+2026-03-04 11:20:22,734 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:24,238 [INFO] [150/200]  Kalani White (Melbourne)
+2026-03-04 11:20:24,241 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:25,169 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033572.png HTTP/1.1" 200 1586350
+2026-03-04 11:20:25,552 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:27,058 [INFO] [151/200]  Tom Blamires (North Melbourne)
+2026-03-04 11:20:27,060 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:28,236 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1015883.png HTTP/1.1" 404 48734
+2026-03-04 11:20:28,751 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:29,620 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1015883.png HTTP/1.1" 404 48734
+2026-03-04 11:20:30,131 [WARNING]   ✗ Could not download photo
+2026-03-04 11:20:31,634 [INFO] [152/200]  Lachy Dovaston (North Melbourne)
+2026-03-04 11:20:31,635 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:33,150 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033060.png HTTP/1.1" 200 1643412
+2026-03-04 11:20:33,633 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:35,139 [INFO] [153/200]  Robert Hansen (North Melbourne)
+2026-03-04 11:20:35,140 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:37,132 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1023144.png HTTP/1.1" 200 1550900
+2026-03-04 11:20:37,451 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:38,956 [INFO] [154/200]  Hugo Mikunda (North Melbourne)
+2026-03-04 11:20:38,959 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:39,981 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036403.png HTTP/1.1" 200 1463034
+2026-03-04 11:20:40,331 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:41,836 [INFO] [155/200]  Blake Thredgold (North Melbourne)
+2026-03-04 11:20:41,838 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:42,849 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1031718.png HTTP/1.1" 200 1321217
+2026-03-04 11:20:43,255 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:44,761 [INFO] [156/200]  Lachlan Jones (Port Adelaide)
+2026-03-04 11:20:44,761 [WARNING]   ✗ Could not download photo
+2026-03-04 11:20:46,264 [INFO] [157/200]  Jack Watkins (Port Adelaide)
+2026-03-04 11:20:46,266 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:46,541 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1012002.png HTTP/1.1" 200 1113845
+2026-03-04 11:20:46,896 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:20:48,402 [INFO] [158/200]  Oliver Wines (Port Adelaide)
+2026-03-04 11:20:48,402 [WARNING]   ✗ Could not download photo
+2026-03-04 11:20:49,907 [INFO] [159/200]  Sam Cumming (Richmond)
+2026-03-04 11:20:49,908 [DEBUG]   Fetching Richmond player data...
+2026-03-04 11:20:49,911 [DEBUG] Starting new HTTPS connection (1): www.richmondfc.com.au:443
+2026-03-04 11:20:51,272 [DEBUG] https://www.richmondfc.com.au:443 "GET /players HTTP/1.1" 200 35294
+2026-03-04 11:20:52,784 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:53,426 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027099.png HTTP/1.1" 404 48734
+2026-03-04 11:20:53,938 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:54,709 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1027099.png HTTP/1.1" 404 48734
+2026-03-04 11:20:55,236 [WARNING]   ✗ Could not download photo
+2026-03-04 11:20:56,738 [INFO] [160/200]  Samuel Grlj (Richmond)
+2026-03-04 11:20:56,738 [WARNING]   ✗ Could not download photo
+2026-03-04 11:20:58,242 [INFO] [161/200]  Zane Peucker (Richmond)
+2026-03-04 11:20:58,245 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:20:58,956 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1027367.png HTTP/1.1" 404 48734
+2026-03-04 11:20:59,469 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:00,191 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1027367.png HTTP/1.1" 404 48734
+2026-03-04 11:21:00,699 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:02,203 [INFO] [162/200]  Patrick Retschko (Richmond)
+2026-03-04 11:21:02,205 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:03,105 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032081.png HTTP/1.1" 200 1263943
+2026-03-04 11:21:03,480 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:04,986 [INFO] [163/200]  Noah Roberts-Thomson (Richmond)
+2026-03-04 11:21:04,988 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:05,573 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1026974.png HTTP/1.1" 404 48734
+2026-03-04 11:21:06,129 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:06,948 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1026974.png HTTP/1.1" 404 48734
+2026-03-04 11:21:07,457 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:08,963 [INFO] [164/200]  Eamonn Armstrong (St Kilda)
+2026-03-04 11:21:08,963 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:21:08,966 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:21:09,331 [DEBUG] https://www.saints.com.au:443 "GET /players/13967/eamonn-armstrong HTTP/1.1" 200 31571
+2026-03-04 11:21:09,865 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:10,938 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1039730.png HTTP/1.1" 200 1011481
+2026-03-04 11:21:11,236 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:12,741 [INFO] [165/200]  Charlie Banfield (St Kilda)
+2026-03-04 11:21:12,742 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:21:12,744 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:21:13,404 [DEBUG] https://www.saints.com.au:443 "GET /players/12937/charlie-banfield HTTP/1.1" 200 32679
+2026-03-04 11:21:13,917 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:14,832 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1036769.png HTTP/1.1" 200 1139600
+2026-03-04 11:21:15,154 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:16,658 [INFO] [166/200]  Daniel Butler (St Kilda)
+2026-03-04 11:21:16,658 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:18,164 [INFO] [167/200]  Kye Fincher (St Kilda)
+2026-03-04 11:21:18,164 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:21:18,166 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:21:18,481 [DEBUG] https://www.saints.com.au:443 "GET /players/12455/kye-fincher HTTP/1.1" 200 32754
+2026-03-04 11:21:18,994 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:20,663 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033048.png HTTP/1.1" 200 1056338
+2026-03-04 11:21:20,944 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:22,450 [INFO] [168/200]  Jackson Macrae (St Kilda)
+2026-03-04 11:21:22,450 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:23,955 [INFO] [169/200]  Kobe McDonald (St Kilda)
+2026-03-04 11:21:23,956 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:21:23,959 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:21:24,292 [DEBUG] https://www.saints.com.au:443 "GET /players/15854/kobe-mcdonald HTTP/1.1" 200 30637
+2026-03-04 11:21:24,811 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:25,378 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1044597.png HTTP/1.1" 404 48734
+2026-03-04 11:21:25,898 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:27,530 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1044597.png HTTP/1.1" 404 48734
+2026-03-04 11:21:28,037 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:29,542 [INFO] [170/200]  Mitchito Owens (St Kilda)
+2026-03-04 11:21:29,543 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:31,048 [INFO] [171/200]  Alix Tauru (St Kilda)
+2026-03-04 11:21:31,048 [DEBUG]   Fetching providerId from player page...
+2026-03-04 11:21:31,051 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-03-04 11:21:31,508 [DEBUG] https://www.saints.com.au:443 "GET /players/9233/alix-tauru HTTP/1.1" 200 None
+2026-03-04 11:21:32,020 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:33,361 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1030433.png HTTP/1.1" 200 1138436
+2026-03-04 11:21:34,099 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:35,602 [INFO] [172/200]  Noah Chamberlain (Sydney)
+2026-03-04 11:21:35,605 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:36,741 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033013.png HTTP/1.1" 200 1398647
+2026-03-04 11:21:37,015 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:38,517 [INFO] [173/200]  Billy Cootee (Sydney)
+2026-03-04 11:21:38,520 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:40,120 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1007053.png HTTP/1.1" 200 1310969
+2026-03-04 11:21:40,848 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:42,349 [INFO] [174/200]  Will Edwards (Sydney)
+2026-03-04 11:21:42,350 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:43,855 [INFO] [175/200]  Will Green (Sydney)
+2026-03-04 11:21:43,856 [WARNING]   ✗ Could not download photo
+2026-03-04 11:21:45,361 [INFO] [176/200]  Liam Hetherton (Sydney)
+2026-03-04 11:21:45,363 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:47,802 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033612.png HTTP/1.1" 200 1384330
+2026-03-04 11:21:48,370 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:49,874 [INFO] [177/200]  Harry Kyle (Sydney)
+2026-03-04 11:21:49,878 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:52,485 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1037405.png HTTP/1.1" 200 1274606
+2026-03-04 11:21:53,362 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:54,866 [INFO] [178/200]  Jevan Phillipou (Sydney)
+2026-03-04 11:21:54,869 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:21:56,405 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1032354.png HTTP/1.1" 200 1382434
+2026-03-04 11:21:57,187 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:21:58,691 [INFO] [179/200]  Matthew Roberts (Sydney)
+2026-03-04 11:21:58,692 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:00,196 [INFO] [180/200]  Sam Allen (West Coast)
+2026-03-04 11:22:00,198 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:01,934 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033063.png HTTP/1.1" 200 1760054
+2026-03-04 11:22:02,663 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:04,167 [INFO] [181/200]  Cooper Duff-Tytler (West Coast)
+2026-03-04 11:22:04,169 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:05,897 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1028725.png HTTP/1.1" 200 1769989
+2026-03-04 11:22:10,872 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:12,376 [INFO] [182/200]  Willem Duursma (West Coast)
+2026-03-04 11:22:12,378 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:12,583 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033115.png HTTP/1.1" 200 1611566
+2026-03-04 11:22:12,877 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:14,382 [INFO] [183/200]  Matthew Flynn (West Coast)
+2026-03-04 11:22:14,382 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:15,888 [INFO] [184/200]  Josh Lindsay (West Coast)
+2026-03-04 11:22:15,889 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:16,203 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033078.png HTTP/1.1" 200 1563247
+2026-03-04 11:22:16,566 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:18,067 [INFO] [185/200]  Matt Owies (West Coast)
+2026-03-04 11:22:18,067 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:19,572 [INFO] [186/200]  Fred Rodriguez (West Coast)
+2026-03-04 11:22:19,573 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:20,906 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033704.png HTTP/1.1" 200 1615805
+2026-03-04 11:22:21,961 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:23,466 [INFO] [187/200]  Harry Schoenberg (West Coast)
+2026-03-04 11:22:23,468 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:23,648 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1008543.png HTTP/1.1" 200 1739597
+2026-03-04 11:22:24,033 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:25,537 [INFO] [188/200]  Tylah Williams (West Coast)
+2026-03-04 11:22:25,540 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:26,821 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1037004.png HTTP/1.1" 200 1669638
+2026-03-04 11:22:27,265 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:28,770 [INFO] [189/200]  Lachlan Carmichael (Western Bulldogs)
+2026-03-04 11:22:28,773 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:29,942 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033626.png HTTP/1.1" 200 1174318
+2026-03-04 11:22:30,284 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:31,790 [INFO] [190/200]  Nicholas Coffield (Western Bulldogs)
+2026-03-04 11:22:31,790 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:33,293 [INFO] [191/200]  Will Darcy (Western Bulldogs)
+2026-03-04 11:22:33,296 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:34,339 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1042728.png HTTP/1.1" 200 1264351
+2026-03-04 11:22:34,683 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:36,186 [INFO] [192/200]  Louis Emmett (Western Bulldogs)
+2026-03-04 11:22:36,189 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-03-04 11:22:37,569 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1033076.png HTTP/1.1" 200 1535467
+2026-03-04 11:22:38,110 [INFO]   ✓ Downloaded successfully
+2026-03-04 11:22:39,615 [INFO] [193/200]  Timothy English (Western Bulldogs)
+2026-03-04 11:22:39,615 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:41,117 [INFO] [194/200]  Thomas Liberatore (Western Bulldogs)
+2026-03-04 11:22:41,118 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:42,623 [INFO] [195/200]  Taylor Duryea (Western Bulldogs)
+2026-03-04 11:22:42,624 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:44,129 [INFO] [196/200]  Travis Boak (Port Adelaide)
+2026-03-04 11:22:44,129 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:45,635 [INFO] [197/200]  Willie Rioli (Port Adelaide)
+2026-03-04 11:22:45,635 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:47,138 [INFO] [198/200]  Jeremy Finlayson (Port Adelaide)
+2026-03-04 11:22:47,138 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:48,643 [INFO] [199/200]  Ryan Burton (Port Adelaide)
+2026-03-04 11:22:48,643 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:50,149 [INFO] [200/200]  Matt Crouch (Adelaide)
+2026-03-04 11:22:50,149 [WARNING]   ✗ Could not download photo
+2026-03-04 11:22:51,668 [INFO] ============================================================
+2026-03-04 11:22:51,668 [INFO] SUMMARY
+2026-03-04 11:22:51,668 [INFO]   Downloaded (new): 63
+2026-03-04 11:22:51,669 [INFO]   Downloaded (team changes): 59
+2026-03-04 11:22:51,669 [INFO]   Total downloaded: 122
+2026-03-04 11:22:51,669 [INFO]   Failed: 78
+2026-03-04 11:22:51,669 [INFO]   Remaining: 0
+2026-03-04 11:22:51,669 [INFO] ============================================================

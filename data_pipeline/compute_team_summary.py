@@ -52,27 +52,37 @@ CATEGORY_METRICS = {
             "Contested Possessions Diff": {
                 "compute": lambda df: df["ContestedPossessions"] - df.get("ContestedPossessions_Opposition", df.get("ContestedPossessions_Opp", 0)),
                 "higher_is_better": True,
-                "weight": 0.25
+                "weight": 0.20
             },
             "Ground Ball Gets": {
                 "compute": lambda df: df["GroundBallGets"],
                 "higher_is_better": True,
-                "weight": 0.20
+                "weight": 0.15
             },
             "Clearance Diff": {
                 "compute": lambda df: df["TotalClearances"] - df.get("TotalClearances_Opposition", df.get("TotalClearances_Opp", 0)),
                 "higher_is_better": True,
-                "weight": 0.25
+                "weight": 0.20
             },
             "1st Poss to Clear %": {
                 "compute": lambda df: df["FirstPossessionToClearance"],
                 "higher_is_better": True,
-                "weight": 0.15
+                "weight": 0.10
             },
             "Hitouts to Advantage": {
                 "compute": lambda df: df.get("HitoutsToAdvantage", 0),
                 "higher_is_better": True,
+                "weight": 0.10
+            },
+            "Equity Pre-Clearance Diff": {
+                "compute": lambda df: df.get("Equity_PreClearance_Diff", df.get("Equity_PreClearance", 0) - df.get("Equity_PreClearance_Opposition", 0)),
+                "higher_is_better": True,
                 "weight": 0.15
+            },
+            "Equity Post-Clearance Diff": {
+                "compute": lambda df: df.get("Equity_PostClearance_Diff", df.get("Equity_PostClearance", 0) - df.get("Equity_PostClearance_Opposition", 0)),
+                "higher_is_better": True,
+                "weight": 0.10
             },
         }
     },
@@ -82,17 +92,17 @@ CATEGORY_METRICS = {
             "Metres Gained Diff": {
                 "compute": lambda df: df["MetresGained"] - df.get("MetresGained_Opposition", df.get("MetresGained_Opp", 0)),
                 "higher_is_better": True,
-                "weight": 0.25
+                "weight": 0.20
             },
             "Disposal Efficiency": {
                 "compute": lambda df: df["DisposalEfficiency"],
                 "higher_is_better": True,
-                "weight": 0.25
+                "weight": 0.20
             },
             "Def Half to Score %": {
                 "compute": lambda df: df.get("DefHalfToScore", df.get("DefensiveHalfToScore", 0)),
                 "higher_is_better": True,
-                "weight": 0.20
+                "weight": 0.15
             },
             "Inside 50s Diff": {
                 "compute": lambda df: df["Inside50s"] - df.get("Inside50s_Opposition", df.get("Inside50s_Opp", 0)),
@@ -102,7 +112,12 @@ CATEGORY_METRICS = {
             "Retention Rating": {
                 "compute": lambda df: df.get("RetentionRating", 0),
                 "higher_is_better": True,
-                "weight": 0.15
+                "weight": 0.10
+            },
+            "Equity Ball Use Diff": {
+                "compute": lambda df: df.get("Equity_BallUse_Diff", df.get("Equity_BallUse", 0) - df.get("Equity_BallUse_Opposition", 0)),
+                "higher_is_better": True,
+                "weight": 0.20
             },
         }
     },
@@ -137,17 +152,17 @@ CATEGORY_METRICS = {
             "Goals Against (Opp)": {
                 "compute": lambda df: df.get("Goals_Opposition", df.get("Goals_Opp", 0)),
                 "higher_is_better": False,  # Lower is better
-                "weight": 0.30
+                "weight": 0.25
             },
             "Intercepts": {
                 "compute": lambda df: df["Intercepts"],
                 "higher_is_better": True,
-                "weight": 0.25
+                "weight": 0.20
             },
             "Rebound 50s": {
                 "compute": lambda df: df.get("Rebound50s", 0),
                 "higher_is_better": True,
-                "weight": 0.20
+                "weight": 0.15
             },
             "Spoils": {
                 "compute": lambda df: df.get("Spoils", 0),
@@ -158,6 +173,11 @@ CATEGORY_METRICS = {
                 "compute": lambda df: 100 - df.get("ContestDefensiveLossPercentage", 50),
                 "higher_is_better": True,
                 "weight": 0.10
+            },
+            "xScore Against": {
+                "compute": lambda df: df.get("xScore_Opposition", 0),
+                "higher_is_better": False,
+                "weight": 0.15
             },
         }
     },
@@ -192,17 +212,27 @@ CATEGORY_METRICS = {
             "Rating Points": {
                 "compute": lambda df: df["RatingPoints"],
                 "higher_is_better": True,
-                "weight": 0.40
+                "weight": 0.30
             },
             "Experience": {
                 "compute": lambda df: df["Experience"],
                 "higher_is_better": True,
-                "weight": 0.30
+                "weight": 0.20
             },
             "Average Age (Optimal ~25)": {
                 "compute": lambda df: -abs(df["Age"] - 25),  # Closer to 25 is better
                 "higher_is_better": True,
-                "weight": 0.30
+                "weight": 0.20
+            },
+            "xChain Score from Stoppage Diff": {
+                "compute": lambda df: df.get("xChainScoreFromStoppage_Diff", df.get("xChainScoreFromStoppage", 0) - df.get("xChainScoreFromStoppage_Opposition", 0)),
+                "higher_is_better": True,
+                "weight": 0.15
+            },
+            "xChain Score from Turnover Diff": {
+                "compute": lambda df: df.get("xChainScoreFromTurnover_Diff", df.get("xChainScoreFromTurnover", 0) - df.get("xChainScoreFromTurnover_Opposition", 0)),
+                "higher_is_better": True,
+                "weight": 0.15
             },
         }
     },

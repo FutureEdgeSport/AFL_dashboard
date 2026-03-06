@@ -26,8 +26,8 @@ Adelaide,Lachlan Sholl,2026,8,Restricted Free Agent
 Adelaide,Luke Nankervis,2027,6,Non-Free Agent
 Adelaide,Luke Pedlar,2026,6,Non-Free Agent
 Adelaide,Mark Keane,2028,6,Non-Free Agent
-Adelaide,Max Michalanney,2026,4,Non-Free Agent
-Adelaide,Mitchell Hinge,2026,6,Non-Free Agent
+Adelaide,Max Michalanney,2030,8,Restricted Free Agent
+Adelaide,Mitchell Hinge,2026,6,Unrestricted Free Agent
 Adelaide,Mitchell Marsh,2027,2,Unknown
 Adelaide,Nick Murray,2028,8,Restricted Free Agent
 Adelaide,Oscar Ryan,2026,3,Non-Free Agent
@@ -38,7 +38,7 @@ Adelaide,Sam Berry,2026,6,Non-Free Agent
 Adelaide,Sid Draper,2027,3,Non-Free Agent
 Adelaide,Taylor Walker,2026,19,Unrestricted Free Agent
 Adelaide,Toby Murray,2027,4,Non-Free Agent
-Adelaide,Tyler Welsh,2026,2,Non-Free Agent
+Adelaide,Tyler Welsh,2026,2,Unrestricted Free Agent
 Adelaide,Wayne Milera,2028,13,Unrestricted Free Agent
 Adelaide,Zac Taylor,2026,5,Non-Free Agent
 Brisbane,Ben Murphy,2027,2,Unknown
@@ -61,7 +61,7 @@ Brisbane,Jack Payne,2029,12,Unrestricted Free Agent
 Brisbane,James Tunstill,2026,5,Non-Free Agent
 Brisbane,Jarrod Berry,2029,13,Unrestricted Free Agent
 Brisbane,Jaspa Fletcher,2030,8,Restricted Free Agent
-Brisbane,Josh Dunkley,2028,6,Non-Free Agent
+Brisbane,Josh Dunkley,2030,8,Restricted Free Agent
 Brisbane,Kai Lohmann,2027,6,Non-Free Agent
 Brisbane,Keidean Coleman,2027,8,Restricted Free Agent
 Brisbane,Koby Evans,2027,2,Unknown
@@ -95,6 +95,7 @@ Carlton,Blake Acres,2027,5,Non-Free Agent
 Carlton,Brodie Kemp,2027,8,Restricted Free Agent
 Carlton,Campbell Chesser,2027,2,Non-Free Agent
 Carlton,Cooper Lord,2026,3,Non-Free Agent
+Carlton,Elijah Hollands,2026,3,Unrestricted Free Agent
 Carlton,Flynn Young,2026,2,Non-Free Agent
 Carlton,Francis Evans,2026,2,Unrestricted Free Agent
 Carlton,George Hewett,2027,6,Non-Free Agent
@@ -124,8 +125,9 @@ Carlton,Oliver Florent,2030,5,Unrestricted Free Agent
 Carlton,Oliver Hollands,2026,4,Non-Free Agent
 Carlton,Patrick Cripps,2027,14,Unrestricted Free Agent
 Carlton,Rob Monahan,2026,3,Non-Free Agent
-Carlton,Sam Walsh,2026,8,Restricted Free Agent
+Carlton,Sam Walsh,2034,16,Unrestricted Free Agent
 Carlton,Talor Byrne,2027,2,Unknown
+Carlton,Wade Derksen,2026,1,Unrestricted Free Agent
 Carlton,Will Hayward,2030,5,Unrestricted Free Agent
 Carlton,Zachary Williams,2026,6,Non-Free Agent
 Collingwood,Angus Anderson,2027,2,Unknown
@@ -185,9 +187,9 @@ Essendon,Dyson Sharp,2028,3,Unknown
 Essendon,Elijah Tsatas,2026,4,Non-Free Agent
 Essendon,Harrison Jones,2027,8,Restricted Free Agent
 Essendon,Hussien El Achkar,2027,2,Unknown
-Essendon,Isaac Kako,2027,3,Non-Free Agent
+Essendon,Isaac Kako,2029,5,Non-Free Agent
 Essendon,Jacob Farrow,2028,3,Unknown
-Essendon,Jade Gresham,2026,3,Non-Free Agent
+Essendon,Jade Gresham,2026,3,Unrestricted Free Agent
 Essendon,Jaxon Prior,2026,2,Unrestricted Free Agent
 Essendon,Jayden Nguyen,2026,2,Non-Free Agent
 Essendon,Jordan Ridley,2029,13,Unrestricted Free Agent
@@ -207,7 +209,7 @@ Essendon,Nikolas Cox,2026,6,Non-Free Agent
 Essendon,Peter Wright,2027,7,Non-Free Agent
 Essendon,Rhys Unwin,2026,2,Non-Free Agent
 Essendon,Saad El-Hawli,2026,3,Non-Free Agent
-Essendon,Sam Durham,2028,8,Restricted Free Agent
+Essendon,Sam Durham,2032,12,Unrestricted Free Agent
 Essendon,Sullivan Robey,2028,3,Unknown
 Essendon,Tom Edwards,2026,2,Non-Free Agent
 Essendon,Vigo Visentini,2027,4,Non-Free Agent
@@ -223,8 +225,9 @@ Fremantle,Andrew Brayshaw,2031,14,Unrestricted Free Agent
 Fremantle,Bailey Banfield,2026,9,Unrestricted Free Agent
 Fremantle,Brandon Walker,2027,7,Non-Free Agent
 Fremantle,Brennan Cox,2030,14,Unrestricted Free Agent
-Fremantle,Caleb Serong,2027,8,Restricted Free Agent
+Fremantle,Caleb Serong,2034,15,Unrestricted Free Agent
 Fremantle,Charlie Nicholls,2026,2,Non-Free Agent
+Fremantle,Chris Scerri,2026,1,Unknown
 Fremantle,Cooper Simpson,2027,4,Non-Free Agent
 Fremantle,Corey Wagner,2026,4,Unrestricted Free Agent
 Fremantle,Hayden Young,2033,14,Unrestricted Free Agent
@@ -263,7 +266,7 @@ Geelong,Bailey Smith,2031,7,Non-Free Agent
 Geelong,Bradley Close,2028,9,Restricted Free Agent
 Geelong,Cillian Burke,2026,2,Non-Free Agent
 Geelong,Connor O'Sullivan,2028,5,Non-Free Agent
-Geelong,George Stevens,2026,3,Non-Free Agent
+Geelong,George Stevens,2026,3,Unrestricted Free Agent
 Geelong,Gryan Miers,2028,11,Unrestricted Free Agent
 Geelong,Harley Barker,2027,2,Unknown
 Geelong,Hunter Holmes,2027,2,Unknown
@@ -308,7 +311,7 @@ Gold Coast,Asher Eastham,2026,2,Non-Free Agent
 Gold Coast,Avery Thomas,2027,2,Unknown
 Gold Coast,Bailey Humphrey,2028,6,Non-Free Agent
 Gold Coast,Beau Addinsall,2028,3,Unknown
-Gold Coast,Ben Jepson,2026,2,Non-Free Agent
+Gold Coast,Ben Jepson,2026,2,Unrestricted Free Agent
 Gold Coast,Ben King,2026,8,Restricted Free Agent
 Gold Coast,Ben Long,2026,4,Non-Free Agent
 Gold Coast,Bodhi Uwland,2026,5,Non-Free Agent
@@ -335,7 +338,7 @@ Gold Coast,Lachlan Weller,2026,9,Restricted Free Agent
 Gold Coast,Leo Lombard,2027,3,Non-Free Agent
 Gold Coast,Mac Andrew,2030,9,Restricted Free Agent
 Gold Coast,Matt Rowell,2027,8,Restricted Free Agent
-Gold Coast,Max Knobel,2026,2,Non-Free Agent
+Gold Coast,Max Knobel,2026,2,Unrestricted Free Agent
 Gold Coast,Ned Moyle,2028,8,Restricted Free Agent
 Gold Coast,Nicholas Holman,2026,9,Unrestricted Free Agent
 Gold Coast,Noah Anderson,2027,8,Restricted Free Agent
@@ -353,7 +356,7 @@ GWS Giants,Callum Brown,2028,10,Unrestricted Free Agent
 GWS Giants,Clayton Oliver,2030,5,Unrestricted Free Agent
 GWS Giants,Cody Angove,2028,4,Non-Free Agent
 GWS Giants,Connor Idun,2032,14,Unrestricted Free Agent
-GWS Giants,Conor Stone,2026,6,Non-Free Agent
+GWS Giants,Conor Stone,2026,6,Unrestricted Free Agent
 GWS Giants,Darcy Jones,2028,6,Non-Free Agent
 GWS Giants,Finn Callaghan,2029,8,Restricted Free Agent
 GWS Giants,Finnegan Davis,2027,2,Unknown
@@ -403,6 +406,7 @@ Hawthorn,Connor MacDonald,2029,8,Restricted Free Agent
 Hawthorn,Conor Nash,2029,13,Unrestricted Free Agent
 Hawthorn,Dylan Moore,2030,13,Unrestricted Free Agent
 Hawthorn,Finn Maginness,2027,8,Restricted Free Agent
+Hawthorn,Flynn Perez,2026,1,Unrestricted Free Agent
 Hawthorn,Harry Morrison,2026,10,Unrestricted Free Agent
 Hawthorn,Henry Hustwaite,2026,4,Non-Free Agent
 Hawthorn,Jack Dalton,2027,2,Unknown
@@ -416,7 +420,7 @@ Hawthorn,James Sicily,2027,14,Unrestricted Free Agent
 Hawthorn,Jarman Impey,2026,9,Restricted Free Agent
 Hawthorn,Josh Battle,2030,6,Non-Free Agent
 Hawthorn,Josh Ward,2029,8,Restricted Free Agent
-Hawthorn,Joshua Weddle,2026,4,Non-Free Agent
+Hawthorn,Joshua Weddle,2030,8,Restricted Free Agent
 Hawthorn,Karl Amon,2027,5,Non-Free Agent
 Hawthorn,Lloyd Meek,2029,7,Non-Free Agent
 Hawthorn,Mabior Chol,2027,4,Unrestricted Free Agent
@@ -446,7 +450,7 @@ Melbourne,Daniel Turner,2030,10,Unrestricted Free Agent
 Melbourne,Ed Langdon,2028,9,Restricted Free Agent
 Melbourne,Harrison Petty,2027,10,Unrestricted Free Agent
 Melbourne,Harry Sharp,2027,3,Non-Free Agent
-Melbourne,Harvey Langford,2027,3,Non-Free Agent
+Melbourne,Harvey Langford,2029,5,Non-Free Agent
 Melbourne,Jack Henderson,2026,2,Non-Free Agent
 Melbourne,Jack Steele,2028,3,Non-Free Agent
 Melbourne,Jack Viney,2028,16,Unrestricted Free Agent
@@ -466,6 +470,7 @@ Melbourne,Matthew Jefferson,2026,4,Non-Free Agent
 Melbourne,Max Gawn,2027,18,Unrestricted Free Agent
 Melbourne,Max Heath,2028,3,Non-Free Agent
 Melbourne,Oscar Berry,2027,2,Unknown
+Melbourne,Paddy Cross,2026,1,Unknown
 Melbourne,Ricky Mentha,2026,2,Non-Free Agent
 Melbourne,Riley Onley,2026,1,Unknown
 Melbourne,Shane McAdam,2026,3,Non-Free Agent
@@ -477,7 +482,7 @@ Melbourne,Tom Sparrow,2026,8,Restricted Free Agent
 Melbourne,Trent Rivers,2027,8,Restricted Free Agent
 Melbourne,Xavier Lindsay,2027,3,Non-Free Agent
 Melbourne,Xavier Taylor,2028,3,Unknown
-North Melbourne,Aidan Corr,2026,6,Non-Free Agent
+North Melbourne,Aidan Corr,2026,6,Unrestricted Free Agent
 North Melbourne,Bailey Scott,2026,8,Restricted Free Agent
 North Melbourne,Blake Thredgold,2027,2,Unknown
 North Melbourne,Brayden George,2026,4,Non-Free Agent
@@ -513,6 +518,7 @@ North Melbourne,River Stevens,2026,2,Non-Free Agent
 North Melbourne,Robert Hansen,2026,4,Non-Free Agent
 North Melbourne,Taylor Goad,2028,5,Non-Free Agent
 North Melbourne,Toby Pink,2026,3,Unrestricted Free Agent
+North Melbourne,Tom Blamires,2026,1,Unknown
 North Melbourne,Tom Powell,2028,8,Restricted Free Agent
 North Melbourne,Tristan Xerri,2031,14,Unrestricted Free Agent
 North Melbourne,Wil Dawson,2026,3,Non-Free Agent
@@ -520,6 +526,7 @@ North Melbourne,Zac Banch,2026,2,Non-Free Agent
 North Melbourne,Zac Fisher,2027,4,Non-Free Agent
 North Melbourne,Zane Duursma,2026,3,Non-Free Agent
 Port Adelaide,Aliir Aliir,2026,6,Non-Free Agent
+Port Adelaide,Balyn O'Brien,2026,1,Unknown
 Port Adelaide,Benny Barrett,2026,2,Non-Free Agent
 Port Adelaide,Brandon Zerk-Thatcher,2026,3,Non-Free Agent
 Port Adelaide,Christian Moraes,2027,3,Non-Free Agent
@@ -550,6 +557,7 @@ Port Adelaide,Logan Evans,2028,5,Non-Free Agent
 Port Adelaide,Mani Liddy,2026,2,Non-Free Agent
 Port Adelaide,Miles Bergman,2027,8,Restricted Free Agent
 Port Adelaide,Mitch Georgiades,2027,8,Restricted Free Agent
+Port Adelaide,Mitch Zadow,2026,1,Unknown
 Port Adelaide,Oliver Wines,2026,14,Unrestricted Free Agent
 Port Adelaide,Ollie Lord,2026,6,Non-Free Agent
 Port Adelaide,Sam Powell-Pepper,2029,13,Unrestricted Free Agent
@@ -561,7 +569,7 @@ Port Adelaide,Will Lorenz,2026,3,Non-Free Agent
 Port Adelaide,Willem Drew,2028,12,Unrestricted Free Agent
 Port Adelaide,Xavier Walsh,2026,3,Non-Free Agent
 Port Adelaide,Zak Butters,2026,8,Restricted Free Agent
-Richmond,Ben Miller,2026,9,Unrestricted Free Agent
+Richmond,Ben Miller,2027,10,Unrestricted Free Agent
 Richmond,Campbell Gray,2027,4,Non-Free Agent
 Richmond,Dion Prestia,2026,10,Unrestricted Free Agent
 Richmond,Harry Armstrong,2027,3,Non-Free Agent
@@ -596,6 +604,7 @@ Richmond,Samuel Grlj,2028,3,Unknown
 Richmond,Seth Campbell,2029,7,Non-Free Agent
 Richmond,Steely Green,2026,4,Non-Free Agent
 Richmond,Taj Hotton,2027,3,Non-Free Agent
+Richmond,Thomas Burton,2026,1,Unknown
 Richmond,Thomas Sims,2027,3,Non-Free Agent
 Richmond,Tim Taranto,2029,7,Non-Free Agent
 Richmond,Toby Nankervis,2026,10,Unrestricted Free Agent
@@ -640,9 +649,9 @@ St Kilda,Max King,2032,14,Unrestricted Free Agent
 St Kilda,Mitchito Owens,2029,8,Restricted Free Agent
 St Kilda,Nasiah Wanganeen-Milera,2027,6,Non-Free Agent
 St Kilda,Paddy Dow,2026,3,Non-Free Agent
-St Kilda,Patrick Said,2026,2,Non-Free Agent
+St Kilda,Patrick Said,2026,2,Unrestricted Free Agent
 St Kilda,Rowan Marshall,2027,11,Unrestricted Free Agent
-St Kilda,Ryan Byrnes,2027,8,Restricted Free Agent
+St Kilda,Ryan Byrnes,2027,8,Unrestricted Free Agent
 St Kilda,Sam Flanders,2031,6,Non-Free Agent
 St Kilda,Tobie Travaglia,2027,3,Non-Free Agent
 St Kilda,Tom De Koning,2033,8,Restricted Free Agent
@@ -669,7 +678,7 @@ Sydney,Jesse Dattoli,2027,3,Non-Free Agent
 Sydney,Jevan Phillipou,2027,2,Unknown
 Sydney,Joel Amartey,2026,9,Restricted Free Agent
 Sydney,Joel Hamling,2026,3,Unrestricted Free Agent
-Sydney,Justin McInerney,2026,8,Restricted Free Agent
+Sydney,Justin McInerney,2031,13,Unrestricted Free Agent
 Sydney,Lewis Melican,2027,13,Unrestricted Free Agent
 Sydney,Liam Hetherton,2027,2,Unknown
 Sydney,Logan McDonald,2028,8,Restricted Free Agent
@@ -722,6 +731,7 @@ West Coast,Lucca Grego,2027,3,Non-Free Agent
 West Coast,Malakai Champion,2026,2,Non-Free Agent
 West Coast,Matt Owies,2027,3,Non-Free Agent
 West Coast,Matthew Flynn,2026,3,Non-Free Agent
+West Coast,Milan Murdock,2026,1,Unknown
 West Coast,Noah Long,2026,4,Non-Free Agent
 West Coast,Reuben Ginbey,2027,5,Non-Free Agent
 West Coast,Rhett Bazzo,2026,5,Non-Free Agent
@@ -752,9 +762,9 @@ Western Bulldogs,James Harmes,2026,3,Non-Free Agent
 Western Bulldogs,James O'Donnell,2027,5,Non-Free Agent
 Western Bulldogs,Jedd Busslinger,2026,4,Non-Free Agent
 Western Bulldogs,Joel Freijah,2029,6,Non-Free Agent
-Western Bulldogs,Jordan Croft,2026,3,Non-Free Agent
+Western Bulldogs,Jordan Croft,2029,6,Non-Free Agent
 Western Bulldogs,Josh Dolan,2028,4,Non-Free Agent
-Western Bulldogs,Lachie Jaques,2026,2,Non-Free Agent
+Western Bulldogs,Lachie Jaques,2028,4,Non-Free Agent
 Western Bulldogs,Lachlan Bramble,2026,3,Unrestricted Free Agent
 Western Bulldogs,Lachlan Carmichael,2027,2,Unknown
 Western Bulldogs,Lachlan McNeil,2026,6,Unrestricted Free Agent
@@ -767,7 +777,7 @@ Western Bulldogs,Marcus Bontempelli,2029,16,Unrestricted Free Agent
 Western Bulldogs,Matthew Kennedy,2027,3,Unrestricted Free Agent
 Western Bulldogs,Michael Sellwood,2026,2,Non-Free Agent
 Western Bulldogs,Nicholas Coffield,2026,3,Non-Free Agent
-Western Bulldogs,Oskar Baker,2026,4,Non-Free Agent
+Western Bulldogs,Oskar Baker,2026,4,Unrestricted Free Agent
 Western Bulldogs,Rhylee West,2030,12,Unrestricted Free Agent
 Western Bulldogs,Riley Garcia,2027,8,Restricted Free Agent
 Western Bulldogs,Rory Lobb,2027,5,Non-Free Agent
@@ -778,4 +788,5 @@ Western Bulldogs,Sam Davidson,2028,4,Non-Free Agent
 Western Bulldogs,Thomas Liberatore,2026,16,Unrestricted Free Agent
 Western Bulldogs,Timothy English,2029,13,Unrestricted Free Agent
 Western Bulldogs,Will Darcy,2027,2,Unknown
+Western Bulldogs,Will Lewis,2026,1,Unknown
 Western Bulldogs,Zac Walker,2026,2,Non-Free Agent

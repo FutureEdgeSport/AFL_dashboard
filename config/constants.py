@@ -295,12 +295,14 @@ class UIConfig:
 # ============================================================================
 METRIC_TOOLTIPS: Dict[str, str] = {
     # Team Metrics
-    "Ball Winning Ranking": "Measures a team's ability to win contested possessions, clearances, and ground balls. Higher = better at winning the ball.",
-    "Ball Movement Ranking": "Evaluates efficiency in moving the ball from defense to attack through kicking, handballing, and chain plays.",
+    "Ball Winning Ranking": "Measures a team's ability to win contested possessions, clearances, ground balls, hitouts to advantage, and equity pre/post clearance. Higher = better at winning the ball.",
+    "Ball Movement Ranking": "Evaluates efficiency in moving the ball from defense to attack through metres gained, disposal efficiency, inside 50s, retention rating, and equity ball use. Higher = better ball movement.",
     "Scoring Ranking": "Assesses attacking efficiency including goals per inside 50, accuracy, and expected score performance.",
-    "Defence Ranking": "Measures defensive effectiveness including scores conceded, defensive pressure, and opposition scoring efficiency.",
+    "Defence Ranking": "Measures defensive effectiveness including scores conceded, expected score against (xScore), defensive pressure, and opposition scoring efficiency.",
+    "xScore Against": "Expected score conceded per game based on shot quality and location. Lower = better defence at limiting high-quality scoring opportunities.",
     "Pressure Ranking": "Evaluates tackling pressure, forward 50 tackles, pressure acts, and 1%ers defensive efforts.",
     "Team Rating": "Overall composite rating combining all game phases. Higher = stronger overall team performance.",
+    "Health Check Ranking": "List quality indicators including rating points, experience, age profile, and expected chain scores from stoppages and turnovers.",
     
     # Player Metrics  
     "Rating": "Overall player rating based on performance across all measured attributes. Scale typically 0-100.",
