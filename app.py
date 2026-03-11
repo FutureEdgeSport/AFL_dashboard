@@ -541,6 +541,32 @@ def render_sortable_table(html_table: str, height: int = None):
         font-weight: 800;
         font-size: 0.85em;
     }}
+    .ct-pill {{
+        display: inline-block;
+        min-width: 60px;
+        padding: 5px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85em;
+        letter-spacing: 0.02em;
+        text-align: center;
+        white-space: nowrap;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        line-height: 1.4;
+    }}
+    .ct-fa {{
+        min-width: 50px;
+        padding: 5px 14px;
+        font-size: 0.78em;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }}
+    .ct-cap {{
+        font-weight: 700;
+        color: #FFD700 !important;
+        font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        font-size: 0.88em;
+    }}
     </style>
     </head>
     <body>
@@ -9186,8 +9212,7 @@ elif page == "Player Profile":
                     if c in pred_table.columns:
                         pred_table[c] = pd.to_numeric(pred_table[c], errors="coerce").round(1)
                 # Build fe-table styled HTML to match Contract Status
-                pred_html = """<style>.ct-pill{display:inline-block;padding:3px 12px;border-radius:12px;font-weight:700;font-size:0.82em;letter-spacing:0.02em;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.25);}</style>"""
-                pred_html += "<table class='fe-table fe-sortable'><thead><tr>"
+                pred_html = "<table class='fe-table fe-sortable'><thead><tr>"
                 for col in pred_table.columns:
                     pred_html += f"<th>{col}</th>"
                 pred_html += "</tr></thead><tbody>"
@@ -13885,30 +13910,6 @@ elif page == "Contract Status":
 
     # ---------- Build HTML table ----------
     html = f"""
-<style>
-.ct-pill {{
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.82em;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-}}
-.ct-fa {{
-    padding: 3px 10px;
-    font-size: 0.78em;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}}
-.ct-cap {{
-    font-weight: 700;
-    color: #FFD700 !important;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 0.88em;
-}}
-</style>
 <table class="fe-table fe-sortable">
 <thead>
 <tr>

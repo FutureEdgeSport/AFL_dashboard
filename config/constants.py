@@ -631,6 +631,38 @@ UNIFIED_TABLE_CSS = """
    COLOR-CODED CELLS
    ============================================ */
 
+/* ct-pill: Consistent colored badge for rating/status values */
+.ct-pill {
+    display: inline-block;
+    min-width: 60px;
+    padding: 5px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85em;
+    letter-spacing: 0.02em;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    line-height: 1.4;
+}
+
+/* ct-fa: Compact uppercase pill for status labels (e.g. UFA, RFA) */
+.ct-fa {
+    min-width: 50px;
+    padding: 5px 14px;
+    font-size: 0.78em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ct-cap: Monospace gold styling for monetary values */
+.ct-cap {
+    font-weight: 700;
+    color: #FFD700 !important;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.88em;
+}
+
 .fe-table .cell-elite {
     background: #008000 !important;
     color: #FFFFFF !important;
