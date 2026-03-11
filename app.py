@@ -2127,6 +2127,19 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         if "Overall_Rating" in df.columns and "Rating" not in df.columns:
             df["Rating"] = df["Overall_Rating"]
 
+        # Ensure core trait columns always exist (may be NaN until API data arrives)
+        for core_col in ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
+            if core_col not in df.columns:
+                df[core_col] = np.nan
+
+        # Ensure sub-trait columns exist too (needed for detailed breakdowns)
+        for sub_col in ["Stoppage", "Contest", "Power", "Receives",
+                        "Handballing", "Kicking", "Goal Kicking", "Connecting",
+                        "Marking", "Contested", "Moks", "Ruck",
+                        "Pressure", "Tackling", "Intercepting", "Neutralise"]:
+            if sub_col not in df.columns:
+                df[sub_col] = np.nan
+
         # clean obvious junk strings
         for c in ["Player_Full", "Team_Full", "Position_Full"]:
             df[c] = df[c].replace({"nan": "", "None": ""})
@@ -9826,11 +9839,11 @@ elif page == "Depth Chart":
 
 elif page == "Team Age Breakdown":
 
-    # Season filter (same pattern as List Ladder)
+    render_page_header("AFL Team Age Breakdown", "Age Group Performance Analysis")
+
+    # Season filter
     _tab_seasons = sorted(get_player_seasons(), reverse=True)
     selected_season = st.selectbox("Season", _tab_seasons, index=0, key="team_age_breakdown_season")
-
-    render_page_header("AFL Team Age Breakdown", f"{selected_season} Season | Age Group Performance Analysis")
 
     # Load player data for the selected season
     try:
@@ -10062,11 +10075,12 @@ elif page == "Team Age Breakdown":
 # ================= LIST LADDER =================
 
 elif page == "List Ladder":
+
+    render_page_header("AFL List Ladder", "Positional Depth Rankings")
+
     # Season filter
     _ll_seasons = sorted(get_player_seasons(), reverse=True)
     selected_season = st.selectbox("Season", _ll_seasons, index=0, key="list_ladder_season")
-
-    render_page_header("AFL List Ladder", f"{selected_season} Season | Positional Depth Rankings")
 
     # Load player data
     try:
@@ -10465,11 +10479,12 @@ elif page == "List Ladder":
 # ================= TEAM LIST SUMMARY =================
 
 elif page == "Team List Summary":
+
+    render_page_header("Team List Summary", "Complete Team Overview", "document")
+
     # Season filter
     _tls_seasons = sorted(get_player_seasons(), reverse=True)
     selected_season = st.selectbox("Season", _tls_seasons, index=0, key="team_list_summary_season")
-
-    render_page_header("Team List Summary", f"{selected_season} Complete Team Overview", "document")
     
     # Team selection
     # Get teams from player data
@@ -12201,7 +12216,9 @@ elif page == "Best 23":
 # ================= LIST BREAKDOWN - TRAITS =================
 
 elif page == "List Breakdown - Traits":
-    
+
+    render_page_header("List Breakdown - Traits", "Squad Trait Analysis & Player Profiles", "chart_bar")
+
     import base64
     
     # Helper functions for player name and team normalization
@@ -12567,27 +12584,36 @@ elif page == "List Breakdown - Traits":
     # Build trait cards
     trait_cards = []
     for trait_name in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
-        stats = team_stats[trait_name]
-        # Format value based on FC mode
-        if fc_mode:
-            display_val = str(convert_trait_to_fc_rating(stats["avg"]))
-        else:
-            display_val = f'{stats["avg"]:.2f}'
-        card_html = f"""<div style='background-color: {stats["color"]}; color: {stats["text_color"]}; padding: 25px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.15);'>
+        stats = team_stats.get(trait_name)
+        if stats:
+            # Format value based on FC mode
+            if fc_mode:
+                display_val = str(convert_trait_to_fc_rating(stats["avg"]))
+            else:
+                display_val = f'{stats["avg"]:.2f}'
+            card_html = f"""<div style='background-color: {stats["color"]}; color: {stats["text_color"]}; padding: 25px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.15);'>
 <div style='font-size: 0.85em; font-weight: 600; letter-spacing: 0.12em; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{trait_name}</div>
 <div style='font-size: 2.5em; font-weight: 900; line-height: 1; margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{display_val}</div>
 <div style='font-size: 0.95em; font-weight: 700; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>#{stats["rank"]} of {stats["total"]}</div>
+</div>"""
+        else:
+            card_html = f"""<div style='background-color: #555555; color: white; padding: 25px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.15);'>
+<div style='font-size: 0.85em; font-weight: 600; letter-spacing: 0.12em; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>{trait_name}</div>
+<div style='font-size: 2.5em; font-weight: 900; line-height: 1; margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>N/A</div>
+<div style='font-size: 0.95em; font-weight: 700; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;'>No data</div>
 </div>"""
         trait_cards.append(card_html)
     
     trait_grid = "".join(trait_cards)
     
-    overall_stats = team_stats["Overall Rating"]
+    overall_stats = team_stats.get("Overall Rating")
+    if not overall_stats:
+        overall_stats = {"avg": 0, "rank": "—", "total": "—", "color": "#555555", "text_color": "white"}
     # Format overall value based on FC mode
     if fc_mode:
         overall_display_val = str(convert_trait_to_fc_rating(overall_stats["avg"]))
     else:
-        overall_display_val = f'{overall_stats["avg"]:.2f}'
+        overall_display_val = f'{overall_stats["avg"]:.2f}' if isinstance(overall_stats["avg"], (int, float)) else 'N/A'
     
     header_html = f"""<div style='background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 20px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 2px solid #e94560;'>
 <div style='text-align: center; margin-bottom: 20px;'>{logo_html}</div>
@@ -12684,9 +12710,10 @@ elif page == "List Breakdown - Traits":
     ladder_df = ladder_df.sort_values("Overall", ascending=False).reset_index(drop=True)
     ladder_df["Rank"] = range(1, len(ladder_df) + 1)
     
-    # Add ranking for each trait column
+    # Add ranking for each trait column (handle NaN gracefully)
     for col in ["Overall", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
-        ladder_df[f"{col}_Rank"] = ladder_df[col].rank(ascending=False, method="min").astype(int)
+        ranks = ladder_df[col].rank(ascending=False, method="min")
+        ladder_df[f"{col}_Rank"] = ranks.fillna(len(ladder_df)).astype(int)
     
     # Helper function to get color based on rank - 5 tier system
     def get_ladder_rank_color(rank, total=18):
@@ -12736,8 +12763,11 @@ elif page == "List Breakdown - Traits":
             val = row[col]
             trait_rank = row[f"{col}_Rank"]
             bg, fg = get_ladder_rank_color(trait_rank, len(ladder_df))
-            # Format value based on FC mode
-            if fc_mode:
+            # Format value based on FC mode (handle NaN gracefully)
+            if pd.isna(val):
+                display_val = "N/A"
+                bg, fg = "#555555", "white"
+            elif fc_mode:
                 display_val = str(convert_trait_to_fc_rating(val))
             else:
                 display_val = f'{val:.2f}'
@@ -12799,11 +12829,13 @@ elif page == "List Breakdown - Traits":
         top4_averages = []
         
         for metric in trait_metrics:
-            team1_val = float(team1_data[metric])
-            team2_val = float(team2_data[metric])
+            team1_val = float(team1_data[metric]) if pd.notna(team1_data[metric]) else 0.0
+            team2_val = float(team2_data[metric]) if pd.notna(team2_data[metric]) else 0.0
             
             # Calculate Top 4 average
             top4_avg = ladder_df.nlargest(4, metric)[metric].mean()
+            if pd.isna(top4_avg):
+                top4_avg = 0.0
             
             team1_values.append(team1_val)
             team2_values.append(team2_val)
@@ -12980,8 +13012,14 @@ elif page == "List Breakdown - Traits":
         for i, metric in enumerate(trait_metrics):
             team1_val = team1_values[i]
             team2_val = team2_values[i]
-            team1_rank = int(team1_data[f"{metric}_Rank"])
-            team2_rank = int(team2_data[f"{metric}_Rank"])
+            try:
+                team1_rank = int(team1_data[f"{metric}_Rank"])
+            except (ValueError, TypeError):
+                team1_rank = len(ladder_df)
+            try:
+                team2_rank = int(team2_data[f"{metric}_Rank"])
+            except (ValueError, TypeError):
+                team2_rank = len(ladder_df)
             
             trait_analysis.append({
                 "metric": trait_display[i],
