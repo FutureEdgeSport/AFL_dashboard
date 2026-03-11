@@ -1951,13 +1951,25 @@ def load_full_squad(season: int) -> pd.DataFrame:
 
 def _load_traits_api_cache() -> dict:
     """
-    Load cached Traits API data. Returns empty dict if not available.
+    Load cached Traits API data, filtered to AFL-only entries.
+    Excludes VFL and other non-AFL competition data.
+    Returns empty dict if not available.
     """
     if not TRAITS_API_AVAILABLE:
         return {}
     try:
         cache = load_traits_cache()
-        return cache.get('players', {})
+        all_players = cache.get('players', {})
+        # Filter to AFL-only: exclude entries where Team_API contains 'VFL'
+        # or Competition is explicitly 'VFL'
+        afl_only = {}
+        for name, data in all_players.items():
+            team = str(data.get('Team_API', ''))
+            comp = str(data.get('Competition', ''))
+            if 'VFL' in team.upper() or comp.upper() == 'VFL':
+                continue
+            afl_only[name] = data
+        return afl_only
     except Exception:
         return {}
 

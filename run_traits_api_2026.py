@@ -134,12 +134,13 @@ def run_traits_api_for_2026_players():
         api_calls += 1
         
         if response:
-            parsed = parse_traits_response(response)
+            parsed = parse_traits_response(response, competition="AFL")
             if parsed:
                 results[player] = parsed
                 traits_cache.setdefault('players', {})[player] = parsed
                 api_success += 1
             else:
+                # No AFL participation (VFL-only or no data)
                 api_failed += 1
         else:
             api_failed += 1

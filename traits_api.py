@@ -213,27 +213,43 @@ def query_traits_api(name, dob):
     return None
 
 
-def parse_traits_response(api_response):
+def parse_traits_response(api_response, competition="AFL"):
     """
     Parse API response into a flat dict suitable for DataFrame.
     
+    Prefers the requested competition (default AFL) over others (e.g. VFL).
+    If no participation matches the requested competition, returns None.
+    
     Args:
         api_response: Raw API response dict
+        competition: Competition to filter for (default "AFL")
         
     Returns:
-        Dict with trait ratings
+        Dict with trait ratings, or None if no matching participation
     """
     if not api_response or 'participations' not in api_response:
         return None
     
-    # Get the most recent participation
-    participation = api_response['participations'][0]
+    participations = api_response['participations']
+    
+    # Find the participation matching the requested competition
+    participation = None
+    for p in participations:
+        if p.get('competition_name', '').upper() == competition.upper():
+            participation = p
+            break
+    
+    # If no match for the requested competition, skip this player
+    if participation is None:
+        return None
+    
     ratings = participation.get('ratings', {})
     
     result = {
         'Player': api_response.get('full_name'),
         'data_provider_id': api_response.get('data_provider_id'),
         'Team_API': participation.get('team_name'),
+        'Competition': participation.get('competition_name'),
         'Position_API': participation.get('position', {}).get('name'),
         'Overall_Rating': ratings.get('rating'),
     }
@@ -277,12 +293,16 @@ def fetch_all_traits(players_df, force_refresh=False, progress_callback=None):
     api_calls = 0
     
     for idx, player_name in enumerate(player_names):
-        # Check traits cache first
+        # Check traits cache first (skip VFL-only entries)
         if player_name in traits_cache.get('players', {}):
-            results.append(traits_cache['players'][player_name])
-            if progress_callback:
-                progress_callback(idx + 1, total, player_name, 'cached')
-            continue
+            cached_data = traits_cache['players'][player_name]
+            team_api = str(cached_data.get('Team_API', ''))
+            comp = str(cached_data.get('Competition', ''))
+            if 'VFL' not in team_api.upper() and comp.upper() != 'VFL':
+                results.append(cached_data)
+                if progress_callback:
+                    progress_callback(idx + 1, total, player_name, 'cached')
+                continue
         
         # Get DOB
         dob = dob_cache.get(player_name)
@@ -296,7 +316,7 @@ def fetch_all_traits(players_df, force_refresh=False, progress_callback=None):
         api_calls += 1
         
         if response:
-            parsed = parse_traits_response(response)
+            parsed = parse_traits_response(response, competition="AFL")
             if parsed:
                 results.append(parsed)
                 traits_cache.setdefault('players', {})[player_name] = parsed
@@ -331,10 +351,14 @@ def get_traits_for_player(player_name, dob=None):
     Returns:
         Dict with player traits, or None if not found
     """
-    # Try cache first
+    # Try cache first (skip VFL-only entries)
     traits_cache = load_traits_cache()
     if player_name in traits_cache.get('players', {}):
-        return traits_cache['players'][player_name]
+        cached_data = traits_cache['players'][player_name]
+        team_api = str(cached_data.get('Team_API', ''))
+        comp = str(cached_data.get('Competition', ''))
+        if 'VFL' not in team_api.upper() and comp.upper() != 'VFL':
+            return cached_data
     
     # Get DOB if not provided
     if not dob:
@@ -354,7 +378,7 @@ def get_traits_for_player(player_name, dob=None):
     # Query API
     response = query_traits_api(player_name, dob)
     if response:
-        parsed = parse_traits_response(response)
+        parsed = parse_traits_response(response, competition="AFL")
         if parsed:
             # Update cache
             traits_cache.setdefault('players', {})[player_name] = parsed
