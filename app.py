@@ -8570,6 +8570,9 @@ elif page == "Club List":
     # Convert league ratings to FC mode for proper color scaling
     if rating_type == "Trait Rating" and fc_mode:
         league_ratings = league_ratings.apply(convert_trait_to_fc_rating).dropna()
+
+    # League-wide coaches votes for percentile colour bands (exclude 0-match players)
+    league_coaches = season_df.loc[played_mask, "CoachesVotes_Avg"].dropna() if "CoachesVotes_Avg" in season_df.columns else pd.Series(dtype=float)
     
     # Dynamic column header based on rating type
     if rating_type == "Trait Rating" and fc_mode:
@@ -8627,6 +8630,10 @@ elif page == "Club List":
 
         coaches_val = r["COACHES VOTES"]
         coaches_str = "—" if pd.isna(coaches_val) else f"{float(coaches_val):.2f}"
+        if has_played and not pd.isna(coaches_val):
+            cv_bg, cv_fg = rating_colour_for_value(float(coaches_val), league_coaches)
+        else:
+            cv_bg, cv_fg = "#444444", "#999999"
 
         tog_val = r["TOG %"]
         tog_str = "—" if pd.isna(tog_val) else f"{float(tog_val):.1f}%"
@@ -8651,7 +8658,7 @@ elif page == "Club List":
 <td><span class="ct-pill" style="background:{bg}; color:{fg};">{rating_str}</span></td>
 <td>{r['COMP RANK']}</td>
 <td>{r['POS RANK']}</td>
-<td>{coaches_str}</td>
+<td><span class="ct-pill" style="background:{cv_bg}; color:{cv_fg};">{coaches_str}</span></td>
 <td>{tog_str}</td>
 <td>{ratings_total_str}</td>
 <td>{pct_team_str}</td>
@@ -9357,6 +9364,10 @@ elif page == "Player Profile":
 
         all_comp_ratings = players_full["RatingPoints_Avg"].dropna()
 
+        # League-wide coaches votes for percentile-based colouring (exclude 0-match players)
+        _played = pd.to_numeric(players_full["Matches"], errors="coerce").fillna(0) > 0
+        all_coaches_votes = players_full.loc[_played, "CoachesVotes_Avg"].dropna() if "CoachesVotes_Avg" in players_full.columns else pd.Series(dtype=float)
+
         # Gather all trait ratings across seasons for percentile-based colouring
         all_trait_ratings_list = []
         for s in player_table["Season"].unique():
@@ -9386,7 +9397,8 @@ elif page == "Player Profile":
                         html_season_table += "<td>–</td>"
                 elif col == "Coaches Votes":
                     if pd.notna(val) and float(val) > 0:
-                        html_season_table += f"<td>{float(val):.2f}</td>"
+                        cv_bg, cv_fg = rating_colour_for_value(float(val), all_coaches_votes)
+                        html_season_table += f"<td><span class='ct-pill' style='background:{cv_bg};color:{cv_fg};'>{float(val):.2f}</span></td>"
                     else:
                         html_season_table += "<td>–</td>"
                 elif col == "Age":
