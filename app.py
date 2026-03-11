@@ -8563,8 +8563,9 @@ elif page == "Club List":
         out = out.head(5).copy()
 
     # ---------- Render using unified table system ----------
-    # Use the appropriate rating column for color scaling
-    league_ratings = season_df[display_rating_col].dropna() if display_rating_col in season_df.columns else season_df["RatingPoints_Avg"].dropna()
+    # Use the appropriate rating column for color scaling (league-wide, exclude 0-match players)
+    played_mask = pd.to_numeric(season_df["Matches"], errors="coerce").fillna(0) > 0
+    league_ratings = season_df.loc[played_mask, display_rating_col].dropna() if display_rating_col in season_df.columns else season_df.loc[played_mask, "RatingPoints_Avg"].dropna()
     
     # Convert league ratings to FC mode for proper color scaling
     if rating_type == "Trait Rating" and fc_mode:
@@ -8603,7 +8604,12 @@ elif page == "Club List":
 
     for _, r in out.iterrows():
         rating_val = r["RATING"]
-        bg, fg = rating_colour_for_value(rating_val, league_ratings)
+        matches_val_raw = r["MATCHES"]
+        has_played = not pd.isna(matches_val_raw) and int(matches_val_raw) > 0
+        if has_played:
+            bg, fg = rating_colour_for_value(rating_val, league_ratings)
+        else:
+            bg, fg = "#444444", "#999999"  # Grey pill for unplayed
 
         age_val = r["AGE"]
         age_str = "—" if pd.isna(age_val) else f"{float(age_val):.1f}"
