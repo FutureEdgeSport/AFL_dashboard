@@ -1947,6 +1947,42 @@ def _load_traits_api_cache() -> dict:
         return {}
 
 
+def _extract_surname(name: str) -> str:
+    """Extract the surname (last word) from a player name, handling edge cases."""
+    parts = str(name).strip().split()
+    if not parts:
+        return ""
+    # Handle hyphenated names properly (e.g. 'Darcy Byrne-Jones')
+    return parts[-1].lower()
+
+
+def _build_surname_index(names_with_teams: list) -> dict:
+    """
+    Build a (surname, team) -> full_name index for fuzzy matching.
+    Only stores entries where the surname is unique within a team,
+    to avoid false positives.
+    
+    Args:
+        names_with_teams: list of (player_name, team_name) tuples
+    Returns:
+        dict of (surname_lower, team_name) -> player_name
+    """
+    from collections import defaultdict
+    # Group by (surname, team)
+    surname_team_groups = defaultdict(list)
+    for player_name, team_name in names_with_teams:
+        surname = _extract_surname(player_name)
+        if surname:
+            surname_team_groups[(surname, team_name)].append(player_name)
+    
+    # Only keep unique surname+team combos (no ambiguity)
+    index = {}
+    for (surname, team), players in surname_team_groups.items():
+        if len(players) == 1:
+            index[(surname, team)] = players[0]
+    return index
+
+
 def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
     """
     Enhance Excel traits data with API data where available.
@@ -1962,6 +1998,14 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
     """
     if not api_cache:
         return df
+    
+    # Team code to full name mapping for API team codes
+    TEAM_CODE_TO_NAME = {
+        "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
+        "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
+        "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
+        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
+    }
     
     # Map API trait column names to Excel column names
     API_TO_EXCEL = {
@@ -1996,11 +2040,27 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
         if excel_col not in df.columns:
             df[excel_col] = np.nan
     
+    # Build surname+team index for fuzzy matching (fallback for name variants)
+    api_surname_index = _build_surname_index([
+        (name, TEAM_CODE_TO_NAME.get(data.get('Team_API', ''), data.get('Team_API', '')))
+        for name, data in api_cache.items()
+    ])
+    
     for idx, row in df.iterrows():
         player_name = row.get('Player_Full') or row.get('Player', '')
+        team_name = row.get('Team_Full', '')
         
-        # Try to find in API cache
+        # Try exact name match first
         api_data = api_cache.get(player_name)
+        
+        # Fallback: surname + team match (handles Zachary→Zach, Lachlan→Lachie etc.)
+        if not api_data:
+            surname = _extract_surname(player_name)
+            if surname:
+                matched_name = api_surname_index.get((surname, team_name))
+                if matched_name:
+                    api_data = api_cache.get(matched_name)
+        
         if not api_data:
             continue
         
@@ -2024,13 +2084,25 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
 def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.DataFrame:
     """
     For players in the current season who are missing trait values,
-    backfill from the prior season's data (matched by Player_Full).
+    backfill from the prior season's data.
+    
+    Matching strategy (in order):
+    1. Exact Player_Full match
+    2. Surname + team match (handles abbreviated names like 'C. Mills',
+       and name variants like 'Mitch' vs 'Mitchell')
     
     This keeps the dashboard populated with last-known ratings until
     new-season API data arrives. Backfilled values are marked via a
     '_traits_backfilled' boolean column for transparency.
     """
     prior_season = current_season - 1
+    
+    TEAM_CODE_TO_NAME = {
+        "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
+        "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
+        "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
+        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
+    }
     
     # All trait columns to backfill
     BACKFILL_COLS = [
@@ -2067,8 +2139,20 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
             return df
     df_prior["Player_Full"] = df_prior["Player_Full"].astype(str).str.strip()
     
-    # Build lookup: player -> {col: value}
-    prior_lookup = {}
+    # Map team codes to full names in prior data
+    if "Team" in df_prior.columns:
+        df_prior["_team_full"] = (
+            df_prior["Team"].astype(str).str.strip()
+            .map(TEAM_CODE_TO_NAME)
+            .fillna(df_prior["Team"].astype(str).str.strip())
+        )
+    elif "Team_Full" in df_prior.columns:
+        df_prior["_team_full"] = df_prior["Team_Full"].astype(str).str.strip()
+    else:
+        df_prior["_team_full"] = ""
+    
+    # Build exact lookup: player_name -> {col: value}
+    prior_exact = {}
     for _, row in df_prior.iterrows():
         player = row["Player_Full"]
         vals = {}
@@ -2076,9 +2160,30 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
             if col in df_prior.columns and pd.notna(row.get(col)):
                 vals[col] = row[col]
         if vals:
-            prior_lookup[player] = vals
+            prior_exact[player] = vals
     
-    if not prior_lookup:
+    # Build surname+team lookup for fuzzy matching
+    # (surname_lower, team_full) -> {col: value}
+    prior_surname_team = {}
+    from collections import defaultdict
+    surname_team_groups = defaultdict(list)
+    for _, row in df_prior.iterrows():
+        surname = _extract_surname(row["Player_Full"])
+        team = row["_team_full"]
+        if surname and team:
+            vals = {}
+            for col in BACKFILL_COLS:
+                if col in df_prior.columns and pd.notna(row.get(col)):
+                    vals[col] = row[col]
+            if vals:
+                surname_team_groups[(surname, team)].append(vals)
+    
+    # Only keep unambiguous surname+team matches
+    for key, vals_list in surname_team_groups.items():
+        if len(vals_list) == 1:
+            prior_surname_team[key] = vals_list[0]
+    
+    if not prior_exact and not prior_surname_team:
         return df
     
     # Mark backfill column
@@ -2088,7 +2193,17 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
     backfilled = 0
     for idx in df.index[missing_mask]:
         player = df.at[idx, "Player_Full"]
-        prior_vals = prior_lookup.get(player)
+        team = df.at[idx, "Team_Full"] if "Team_Full" in df.columns else ""
+        
+        # Try exact name match first
+        prior_vals = prior_exact.get(player)
+        
+        # Fallback: surname + team match
+        if not prior_vals:
+            surname = _extract_surname(player)
+            if surname and team:
+                prior_vals = prior_surname_team.get((surname, team))
+        
         if not prior_vals:
             continue
         for col, val in prior_vals.items():
