@@ -3905,7 +3905,7 @@ def render_grouped_navigation():
     }
     /* Pad sidebar content below fixed logo */
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        padding-top: 200px !important;
+        padding-top: 260px !important;
     }
     [data-testid="stSidebar"] > div:first-child {
         overflow-y: auto;
