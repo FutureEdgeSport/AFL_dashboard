@@ -8616,14 +8616,14 @@ elif page == "Club List":
 <td>{r['POSITION']}</td>
 <td>{age_str}</td>
 <td>{matches_str}</td>
-<td style="background-color:{bg}; color:{fg}; font-weight:900;">{rating_str}</td>
+<td><span class="ct-pill" style="background:{bg}; color:{fg};">{rating_str}</span></td>
 <td>{r['COMP RANK']}</td>
 <td>{r['POS RANK']}</td>
 <td>{coaches_str}</td>
 <td>{tog_str}</td>
 <td>{ratings_total_str}</td>
 <td>{pct_team_str}</td>
-<td>{tpp_output_str}</td>
+<td class="ct-cap">{tpp_output_str}</td>
 </tr>
 """
 
@@ -9186,7 +9186,8 @@ elif page == "Player Profile":
                     if c in pred_table.columns:
                         pred_table[c] = pd.to_numeric(pred_table[c], errors="coerce").round(1)
                 # Build fe-table styled HTML to match Contract Status
-                pred_html = "<table class='fe-table fe-sortable'><thead><tr>"
+                pred_html = """<style>.ct-pill{display:inline-block;padding:3px 12px;border-radius:12px;font-weight:700;font-size:0.82em;letter-spacing:0.02em;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.25);}</style>"""
+                pred_html += "<table class='fe-table fe-sortable'><thead><tr>"
                 for col in pred_table.columns:
                     pred_html += f"<th>{col}</th>"
                 pred_html += "</tr></thead><tbody>"
@@ -9196,6 +9197,9 @@ elif page == "Player Profile":
                         val = row[col]
                         if pd.isna(val):
                             pred_html += "<td>—</td>"
+                        elif col in ('Predicted_Rating', 'Upper_Band', 'Lower_Band') and isinstance(val, (int, float)):
+                            bg_color, text_color = rating_colour_for_value(float(val), all_ratings)
+                            pred_html += f"<td><span class='ct-pill' style='background:{bg_color};color:{text_color};'>{val:.1f}</span></td>"
                         elif isinstance(val, float):
                             pred_html += f"<td>{val:.1f}</td>"
                         else:
@@ -9340,13 +9344,13 @@ elif page == "Player Profile":
                 if col == "Rating":
                     if pd.notna(val):
                         bg_color, text_color = rating_colour_for_value(float(val), all_comp_ratings)
-                        html_season_table += f"<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{float(val):.1f}</td>"
+                        html_season_table += f"<td><span class='ct-pill' style='background:{bg_color};color:{text_color};'>{float(val):.1f}</span></td>"
                     else:
                         html_season_table += "<td>–</td>"
                 elif col == "Trait Rating":
                     if pd.notna(val):
                         bg_color, text_color = rating_colour_for_value(float(val), all_trait_ratings)
-                        html_season_table += f"<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{float(val):.2f}</td>"
+                        html_season_table += f"<td><span class='ct-pill' style='background:{bg_color};color:{text_color};'>{float(val):.2f}</span></td>"
                     else:
                         html_season_table += "<td>–</td>"
                 elif col == "Coaches Votes":
@@ -15524,9 +15528,9 @@ elif page == "IDP":
                     <td style='text-align:left;font-weight:600;'>{substat}
                         <span style='font-size:11px;color:{tier1_color};margin-left:8px;background:{tier1_color}20;padding:2px 6px;border-radius:8px;'>{tier1}</span>
                     </td>
-                    <td style='background:{p1_bg};font-weight:700;color:{tier1_color};'>{p1_str}</td>
-                    <td style='background:{p2_bg};font-weight:700;color:{tier2_color};'>{p2_str}</td>
-                    <td style='color:{delta_color};font-weight:700;'>{delta_display}</td>
+                    <td><span class='ct-pill' style='background:{tier1_color};color:#fff;'>{p1_str}</span></td>
+                    <td><span class='ct-pill' style='background:{tier2_color};color:#fff;'>{p2_str}</span></td>
+                    <td><span class='ct-pill' style='background:{delta_color};color:#fff;'>{delta_display}</span></td>
                 </tr>""")
             
             if comparison_rows:
