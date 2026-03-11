@@ -13,6 +13,10 @@ import json
 import time
 from pathlib import Path
 from datetime import datetime
+import sys
+
+sys.path.insert(0, str(Path(__file__).parent))
+from config.constants import CURRENT_SEASON
 
 # Import from traits_api module
 from traits_api import (
@@ -26,8 +30,8 @@ from traits_api import (
 
 
 def load_footywire_dobs():
-    """Load DOBs from the Footywire 2026 scrape."""
-    path = Path("data/raw/player/footywire_2026_complete.csv")
+    """Load DOBs from the Footywire scrape."""
+    path = Path(f"data/raw/player/footywire_{CURRENT_SEASON}_complete.csv")
     if not path.exists():
         print(f"Error: {path} not found")
         return {}
@@ -77,12 +81,12 @@ def update_dob_cache_from_footywire():
 def run_traits_api_for_2026_players():
     """Query Traits API for all 2026 players."""
     print("\n" + "=" * 60)
-    print("Running Traits API for 2026 Players")
+    print(f"Running Traits API for {CURRENT_SEASON} Players")
     print("=" * 60 + "\n")
     
-    # Load the 2026 player data
-    df = pd.read_csv("data/raw/player/footywire_2026_complete.csv")
-    print(f"Loaded {len(df)} players from 2026 dataset")
+    # Load player data
+    df = pd.read_csv(f"data/raw/player/footywire_{CURRENT_SEASON}_complete.csv")
+    print(f"Loaded {len(df)} players from {CURRENT_SEASON} dataset")
     
     # Load caches
     dob_cache = load_dob_cache()
@@ -99,6 +103,7 @@ def run_traits_api_for_2026_players():
     
     print("\nQuerying Traits API...")
     total = len(df)
+    last_save = 0  # Track when we last saved cache
     
     for idx, row in df.iterrows():
         player = row['Player']
@@ -120,7 +125,12 @@ def run_traits_api_for_2026_players():
             continue
         
         # Query API
-        response = query_traits_api(player, dob)
+        try:
+            response = query_traits_api(player, dob)
+        except Exception as e:
+            print(f"  API exception for {player}: {e}")
+            api_failed += 1
+            continue
         api_calls += 1
         
         if response:
@@ -139,6 +149,13 @@ def run_traits_api_for_2026_players():
             time.sleep(1)
         elif api_calls % 3 == 0:
             time.sleep(0.3)
+        
+        # Incremental cache save every 25 API calls to prevent data loss on timeout
+        if api_calls - last_save >= 25:
+            traits_cache['timestamp'] = datetime.now().isoformat()
+            save_traits_cache(traits_cache)
+            last_save = api_calls
+            print(f"  💾  Cache saved ({api_success} successes so far)")
     
     # Save updated cache
     traits_cache['timestamp'] = datetime.now().isoformat()
@@ -163,7 +180,7 @@ def enhance_2026_dataset_with_traits(traits_results):
     print("=" * 60 + "\n")
     
     # Load base data
-    df = pd.read_csv("data/raw/player/footywire_2026_complete.csv")
+    df = pd.read_csv(f"data/raw/player/footywire_{CURRENT_SEASON}_complete.csv")
     
     # Key traits columns to add
     trait_columns = [
@@ -199,7 +216,7 @@ def enhance_2026_dataset_with_traits(traits_results):
     print(f"Matched traits for {matched}/{len(df)} players ({matched/len(df)*100:.1f}%)")
     
     # Save enhanced dataset
-    output_path = Path("data/raw/player/footywire_2026_with_traits.csv")
+    output_path = Path(f"data/raw/player/footywire_{CURRENT_SEASON}_with_traits.csv")
     df.to_csv(output_path, index=False)
     print(f"\nSaved to: {output_path}")
     
@@ -219,19 +236,29 @@ def enhance_2026_dataset_with_traits(traits_results):
 
 def main():
     print("=" * 60)
-    print("Traits API Integration for 2026 Footywire Data")
+    print(f"Traits API Integration for {CURRENT_SEASON} Footywire Data")
     print("=" * 60)
     print()
     
     # Step 1: Update DOB cache with Footywire data
-    update_dob_cache_from_footywire()
+    try:
+        update_dob_cache_from_footywire()
+    except Exception as e:
+        print(f"\n\u26a0\ufe0f  DOB cache update failed: {e}")
     
     # Step 2: Run Traits API for all players
-    traits_results = run_traits_api_for_2026_players()
+    try:
+        traits_results = run_traits_api_for_2026_players()
+    except Exception as e:
+        print(f"\n\u26a0\ufe0f  Traits API query failed: {e}")
+        traits_results = {}
     
     # Step 3: Enhance the 2026 dataset
     if traits_results:
-        enhance_2026_dataset_with_traits(traits_results)
+        try:
+            enhance_2026_dataset_with_traits(traits_results)
+        except Exception as e:
+            print(f"\n\u26a0\ufe0f  Dataset enhancement failed: {e}")
     else:
         print("\nNo traits data retrieved!")
 

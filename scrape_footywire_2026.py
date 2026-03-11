@@ -12,6 +12,10 @@ import re
 import time
 from datetime import datetime
 from pathlib import Path
+from utils.http_utils import create_retry_session
+
+# Shared HTTP session with retry logic
+_session = create_retry_session(retries=3, backoff_factor=1.0, timeout=15)
 
 # Team configurations
 TEAMS = {
@@ -82,7 +86,7 @@ def scrape_team_players(team_name, team_slug):
     url = f"https://www.footywire.com/afl/footy/tp-{team_slug}"
     
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp = _session.get(url, headers=HEADERS, timeout=15)
         if resp.status_code != 200:
             print(f"  ✗ HTTP {resp.status_code}")
             return []

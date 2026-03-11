@@ -1,112 +1,7 @@
 {
-  "last_run": "2026-03-04T11:22:51.664103",
-  "total_downloaded": 125,
+  "last_run": "2026-03-10T14:45:25.200989",
+  "total_downloaded": 135,
   "failed_players": [
-    {
-      "name": "Nick Driscoll",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Lennox Hoffman",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Hunter Holmes",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Mitchell Knevitt",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Jesse Mellor",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Thomas Stewart",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Beau Addinsall",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Samuel Collins",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Koby Coulson",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Nicholas Holman",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Leo Lombard",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Jai Murray",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Dylan Patterson",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Avery Thomas",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Zeke Uwland",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Lachlan Weller",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Lachlan Ash",
-      "team": "GWS Giants",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Joseph Fonti",
-      "team": "GWS Giants",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Harrison Himmelberg",
-      "team": "GWS Giants",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Joshua Kelly",
-      "team": "GWS Giants",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Nick Madden",
-      "team": "GWS Giants",
-      "reason": "Not found in team data"
-    },
     {
       "name": "Ollie Greeves",
       "team": "Hawthorn",
@@ -138,7 +33,17 @@
       "reason": "Not found in team data"
     },
     {
+      "name": "Balyn O'Brien",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
       "name": "Oliver Wines",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Mitch Zadow",
       "team": "Port Adelaide",
       "reason": "Not found in team data"
     },
@@ -218,6 +123,11 @@
       "reason": "Not found in team data"
     },
     {
+      "name": "Will Lewis",
+      "team": "Western Bulldogs",
+      "reason": "Not found in team data"
+    },
+    {
       "name": "Thomas Liberatore",
       "team": "Western Bulldogs",
       "reason": "Not found in team data"
@@ -249,6 +159,96 @@
     },
     {
       "name": "Matt Crouch",
+      "team": "Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Harry Boyd",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Arie Schoenmaker",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Jimmy Webster",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Zaine Cordy",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Zak Jones",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Ted Clohesy",
+      "team": "Geelong",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Liam Jones",
+      "team": "Western Bulldogs",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Lachlan Murphy",
+      "team": "Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Jason Johannisen",
+      "team": "Western Bulldogs",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Rory Atkins",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Brodie Smith",
+      "team": "Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Mitch Duncan",
+      "team": "Geelong",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Caleb Poulter",
+      "team": "Western Bulldogs",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Jed McEntee",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Angus McLennan",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Hugh Jackson",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Dylan Williams",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Chris Burgess",
       "team": "Adelaide",
       "reason": "Not found in team data"
     }
@@ -1056,6 +1056,16 @@
     "michael_sellwood": "Western Bulldogs",
     "lachlan_smith": "Western Bulldogs",
     "zac_walker": "Western Bulldogs",
-    "cody_weightman": "Western Bulldogs"
+    "cody_weightman": "Western Bulldogs",
+    "harley_barker": "Geelong",
+    "hunter_holmes": "Geelong",
+    "jesse_mellor": "Geelong",
+    "beau_addinsall": "Gold Coast",
+    "koby_coulson": "Gold Coast",
+    "jai_murray": "Gold Coast",
+    "dylan_patterson": "Gold Coast",
+    "avery_thomas": "Gold Coast",
+    "zeke_uwland": "Gold Coast",
+    "flynn_perez": "Hawthorn"
   }
 }

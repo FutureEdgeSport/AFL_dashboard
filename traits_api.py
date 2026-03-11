@@ -14,9 +14,23 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from pathlib import Path
 
-# API Configuration
-API_KEY = os.environ.get("AFL_TRAITS_API_KEY", "sk_4PCTg45wYI_udETo5kT6ad6lU7977L8DdqxZ2UFUl-c")
+# Load .env file if python-dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent / ".env")
+except ImportError:
+    pass  # dotenv not installed — rely on environment variables
+
+from utils.http_utils import create_retry_session
+
+# API Configuration — key MUST be set via environment variable or .env file
+API_KEY = os.environ.get("AFL_TRAITS_API_KEY", "")
+if not API_KEY:
+    print("⚠️  AFL_TRAITS_API_KEY not set. Set it in .env or export it.")
 API_BASE = "https://partner-api.traitsinsights.app"
+
+# Shared HTTP session with retry logic
+_session = create_retry_session(retries=3, backoff_factor=1.0, timeout=10)
 
 # Cache file paths
 CACHE_DIR = Path(__file__).parent / "data" / "cache"
@@ -88,7 +102,7 @@ def get_dob_from_wikipedia(player_name, team=None):
     
     for url in urls:
         try:
-            resp = requests.get(url, headers=headers, timeout=10)
+            resp = _session.get(url, headers=headers, timeout=10)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 
@@ -188,9 +202,11 @@ def query_traits_api(name, dob):
     }
     
     try:
-        resp = requests.get(url, params=params, headers=headers, timeout=10)
+        resp = _session.get(url, params=params, headers=headers, timeout=10)
         if resp.status_code == 200:
             return resp.json()
+        elif resp.status_code == 401:
+            print(f"API auth failed for {name} — check AFL_TRAITS_API_KEY")
     except Exception as e:
         print(f"API error for {name}: {e}")
     
@@ -354,7 +370,7 @@ def get_positions():
     headers = {'Authorization': f'Bearer {API_KEY}'}
     
     try:
-        resp = requests.get(url, headers=headers, timeout=10)
+        resp = _session.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
             return resp.json()
     except Exception as e:
@@ -369,7 +385,7 @@ def get_position_weights(position_id):
     headers = {'Authorization': f'Bearer {API_KEY}'}
     
     try:
-        resp = requests.get(url, headers=headers, timeout=10)
+        resp = _session.get(url, headers=headers, timeout=10)
         if resp.status_code == 200:
             return resp.json()
     except Exception as e:

@@ -16,21 +16,25 @@ import sys
 import json
 
 BASE_DIR = Path(__file__).parent
+sys.path.insert(0, str(BASE_DIR))
+from config.constants import CURRENT_SEASON
+
+SEASON = CURRENT_SEASON  # Parameterized — no hardcoded year
 
 def build_2026_data():
     print("=" * 60)
-    print("BUILDING 2026 SEASON DATA")
+    print(f"BUILDING {SEASON} SEASON DATA")
     print("=" * 60)
     
-    # ---- 1. Load fresh 2026 squad list ----
-    print("\n1. Loading fresh 2026 squad list...")
-    lists_path = BASE_DIR / "data" / "raw" / "player" / "footywire_2026_lists.csv"
+    # ---- 1. Load fresh squad list ----
+    print(f"\n1. Loading fresh {SEASON} squad list...")
+    lists_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_lists.csv"
     df = pd.read_csv(lists_path)
     print(f"   {len(df)} players from {df['Team'].nunique()} teams")
     
     # ---- 2. Merge with existing contract data ----
     print("\n2. Merging contract data...")
-    contracts_path = BASE_DIR / "data" / "raw" / "player" / "footywire_contracts_2026.csv"
+    contracts_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_contracts_{SEASON}.csv"
     if contracts_path.exists():
         contracts = pd.read_csv(contracts_path)
         # Normalize names for matching
@@ -54,7 +58,7 @@ def build_2026_data():
     
     # ---- 3. Merge with existing draft data ----
     print("\n3. Merging draft data...")
-    complete_path = BASE_DIR / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    complete_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_complete.csv"
     if complete_path.exists():
         complete = pd.read_csv(complete_path)
         draft_cols = ["Draft_Year", "Draft_Type", "Draft_Round", "Draft_Pick"]
@@ -78,12 +82,12 @@ def build_2026_data():
     
     # ---- 4. Save updated complete file ----
     print("\n4. Saving updated complete file...")
-    complete_out = BASE_DIR / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    complete_out = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_complete.csv"
     merged.to_csv(complete_out, index=False)
     print(f"   Saved {complete_out.name}: {len(merged)} players, {len(merged.columns)} columns")
     
-    # ---- 5. Create squads_2026.csv in app format ----
-    print("\n5. Creating squads_2026.csv...")
+    # ---- 5. Create squads CSV in app format ----
+    print(f"\n5. Creating squads_{SEASON}.csv...")
     squads = merged.copy()
     
     # Map positions to app format
@@ -118,72 +122,36 @@ def build_2026_data():
         "Games": "Matches_Career",
         "Age_Numeric": "Age_Decimal",
     })
-    squads_out["Season"] = 2026
+    squads_out["Season"] = SEASON
     squads_out["Matches_Current"] = 0  # No games played yet
     
-    squads_path = BASE_DIR / "data" / "raw" / "player" / "squads_2026.csv"
+    squads_path = BASE_DIR / "data" / "raw" / "player" / f"squads_{SEASON}.csv"
     squads_out.to_csv(squads_path, index=False)
-    print(f"   Saved squads_2026.csv: {len(squads_out)} players")
+    print(f"   Saved squads_{SEASON}.csv: {len(squads_out)} players")
     
-    # ---- 6. Create 2026 player stats with 2025 fallback ----
-    print("\n6. Creating player_stats_2026.csv with 2025 ratings fallback...")
-    stats_2025_path = BASE_DIR / "data" / "raw" / "player" / "player_stats_2025.csv"
-    
-    if stats_2025_path.exists():
-        stats_2025 = pd.read_csv(stats_2025_path)
-        print(f"   Loaded 2025 stats: {len(stats_2025)} players, {len(stats_2025.columns)} columns")
-        
-        # Key rating columns to carry forward
-        rating_cols = [c for c in stats_2025.columns if any(k in c.lower() for k in 
-            ["rating", "average", "avg", "rank", "percentage", "efficiency",
-             "disposal", "goal", "tackle", "mark", "inside50", "clearance",
-             "contested", "metres", "intercept", "rebound", "spoil", "pressure"])]
-        
-        # Also include the standard per-game averages
-        keep_cols = ["Player", "Team"] + rating_cols
-        keep_cols = [c for c in keep_cols if c in stats_2025.columns]
-        
-        stats_2025_subset = stats_2025[keep_cols].copy()
-        stats_2025_subset.rename(columns={"Team": "Team_2025"}, inplace=True)
-        
-        # Merge: use 2026 squad as base, bring in 2025 ratings
-        stats_2026 = squads_out[["Player", "Team", "Jumper", "Position", "Height", "DOB", "Age_Decimal", "Matches_Career"]].copy()
-        stats_2026.rename(columns={"Matches_Career": "Matches", "Age_Decimal": "Age"}, inplace=True)
-        stats_2026["Matches"] = 0  # No 2026 games played yet
-        stats_2026 = stats_2026.merge(stats_2025_subset, on="Player", how="left", suffixes=("", "_2025"))
-        
-        # Clean up: use 2026 team, drop the 2025 team column
-        if "Team_2025" in stats_2026.columns:
-            stats_2026.drop(columns=["Team_2025"], inplace=True)
-        
-        matched = stats_2026[rating_cols[0] if rating_cols else "Player"].notna().sum() if rating_cols else 0
-        print(f"   Matched {matched}/{len(stats_2026)} players with 2025 ratings")
-        
-        stats_2026_path = BASE_DIR / "data" / "raw" / "player" / "player_stats_2026.csv"
-        stats_2026.to_csv(stats_2026_path, index=False)
-        print(f"   Saved player_stats_2026.csv: {len(stats_2026)} players, {len(stats_2026.columns)} columns")
-    else:
-        print("   ⚠️ No 2025 stats file found - creating minimal 2026 stats")
-        stats_2026 = squads_out[["Player", "Team", "Jumper", "Position", "Height", "DOB", "Age_Decimal", "Matches_Career"]].copy()
-        stats_2026.rename(columns={"Matches_Career": "Matches", "Age_Decimal": "Age"}, inplace=True)
-        stats_2026["Matches"] = 0
-        stats_2026_path = BASE_DIR / "data" / "raw" / "player" / "player_stats_2026.csv"
-        stats_2026.to_csv(stats_2026_path, index=False)
+    # ---- 6. Create player stats (metadata only – no carry-forward) ----
+    print(f"\n6. Creating player_stats_{SEASON}.csv (metadata only, ratings come from Wheelo)...")
+    stats = squads_out[["Player", "Team", "Jumper", "Position", "Height", "DOB", "Age_Decimal", "Matches_Career"]].copy()
+    stats.rename(columns={"Matches_Career": "Matches", "Age_Decimal": "Age"}, inplace=True)
+    stats["Matches"] = 0  # Actual match data comes from wheelo_player_to_raw step
+    stats_path = BASE_DIR / "data" / "raw" / "player" / f"player_stats_{SEASON}.csv"
+    stats.to_csv(stats_path, index=False)
+    print(f"   Saved player_stats_{SEASON}.csv: {len(stats)} players, {len(stats.columns)} columns")
     
     # ---- 7. Merge traits data ----
     print("\n7. Merging traits data...")
-    traits_path = BASE_DIR / "data" / "raw" / "player" / "footywire_2026_with_traits.csv"
+    traits_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_with_traits.csv"
     if traits_path.exists():
         traits_df = pd.read_csv(traits_path)
         trait_cols = [c for c in traits_df.columns if "Rating" in c or "Overall" in c or "data_provider" in c]
         if trait_cols:
             traits_subset = traits_df[["Player", "Team"] + trait_cols].copy()
-            traits_out_path = BASE_DIR / "data" / "raw" / "traits" / "traits_2026.csv"
+            traits_out_path = BASE_DIR / "data" / "raw" / "traits" / f"traits_{SEASON}.csv"
             traits_subset.to_csv(traits_out_path, index=False)
             has_traits = traits_subset["Overall_Rating"].notna().sum() if "Overall_Rating" in traits_subset.columns else 0
-            print(f"   Saved traits_2026.csv: {has_traits} players with trait ratings")
+            print(f"   Saved traits_{SEASON}.csv: {has_traits} players with trait ratings")
     else:
-        print("   ⚠️ No traits data found for 2026")
+        print(f"   ⚠️ No traits data found for {SEASON}")
     
     # ---- 8. Summary of new players (need photos) ----
     print("\n8. Checking for new players needing photos...")
@@ -223,7 +191,7 @@ def build_2026_data():
         print(f"  {team:20s}  {len(team_df):2d} players  Avg Age: {avg_age:.1f}  Avg Games: {avg_games:.0f}")
     
     print("\n" + "=" * 60)
-    print("✅ 2026 DATA BUILD COMPLETE")
+    print(f"\u2705 {SEASON} DATA BUILD COMPLETE")
     print("=" * 60)
     
     return len(squads_out)

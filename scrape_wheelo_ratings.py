@@ -45,6 +45,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
+from config.constants import CURRENT_SEASON
+
 try:
     from selenium import webdriver
     from selenium.webdriver.chrome.service import Service
@@ -65,6 +67,8 @@ except ImportError:
     print("❌ Required packages not installed.")
     print("   Run: pip install pandas openpyxl")
     sys.exit(1)
+
+from utils.safe_io import _backup_if_exists
 
 # Configuration
 BASE_DIR = Path(__file__).parent
@@ -89,9 +93,18 @@ URLS = {
 # The app uses: "2026 Summary", "2026 Team Summary", "2026 Ladders", etc.
 # We use "Wheelo" prefix to keep scraped data separate.
 SEASONS = {
-    "2026": {"team_sheet": "Wheelo 2026 Season", "player_sheet": "Wheelo 2026 Season"},
-    "Last 10 games": {"team_sheet": "Wheelo 2026 L10", "player_sheet": "Wheelo 2026 L10"},
-    "Last 5 games": {"team_sheet": "Wheelo 2026 L5", "player_sheet": "Wheelo 2026 L5"}
+    str(CURRENT_SEASON): {
+        "team_sheet": f"Wheelo {CURRENT_SEASON} Season",
+        "player_sheet": f"Wheelo {CURRENT_SEASON} Season",
+    },
+    "Last 10 games": {
+        "team_sheet": f"Wheelo {CURRENT_SEASON} L10",
+        "player_sheet": f"Wheelo {CURRENT_SEASON} L10",
+    },
+    "Last 5 games": {
+        "team_sheet": f"Wheelo {CURRENT_SEASON} L5",
+        "player_sheet": f"Wheelo {CURRENT_SEASON} L5",
+    },
 }
 
 
@@ -104,8 +117,11 @@ class WheeloScraper:
         # Create download directory
         DOWNLOAD_DIR.mkdir(exist_ok=True)
         
-    def _setup_driver(self):
-        """Set up Chrome WebDriver with download preferences."""
+    def _setup_driver(self, max_retries=3):
+        """Set up Chrome WebDriver with download preferences.
+        
+        Retries up to max_retries times on failure (e.g. ChromeDriver version mismatch).
+        """
         options = Options()
         if self.headless:
             options.add_argument("--headless=new")  # New headless mode in Chrome
@@ -124,19 +140,38 @@ class WheeloScraper:
         }
         options.add_experimental_option("prefs", prefs)
         
-        print("🔧 Setting up Chrome driver...")
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=options
-        )
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                print(f"🔧 Setting up Chrome driver (attempt {attempt}/{max_retries})...")
+                self.driver = webdriver.Chrome(
+                    service=Service(ChromeDriverManager().install()),
+                    options=options
+                )
+                
+                # Enable downloads in headless mode (Chrome 77+)
+                self.driver.execute_cdp_cmd("Page.setDownloadBehavior", {
+                    "behavior": "allow",
+                    "downloadPath": str(DOWNLOAD_DIR.absolute())
+                })
+                
+                print("✅ Chrome driver ready")
+                return  # Success
+            except Exception as e:
+                last_error = e
+                print(f"  ⚠️  Attempt {attempt} failed: {e}")
+                if self.driver:
+                    try:
+                        self.driver.quit()
+                    except Exception:
+                        pass
+                    self.driver = None
+                if attempt < max_retries:
+                    wait = 2 ** attempt
+                    print(f"  Retrying in {wait}s...")
+                    time.sleep(wait)
         
-        # Enable downloads in headless mode (Chrome 77+)
-        self.driver.execute_cdp_cmd("Page.setDownloadBehavior", {
-            "behavior": "allow",
-            "downloadPath": str(DOWNLOAD_DIR.absolute())
-        })
-        
-        print("✅ Chrome driver ready")
+        raise RuntimeError(f"Failed to start Chrome after {max_retries} attempts: {last_error}")
         
     def _close_driver(self):
         """Close the WebDriver."""
@@ -381,6 +416,7 @@ class WheeloScraper:
         print(f"\n📝 Saving to: {WHEELO_TEAM_FILE.name}")
         
         # Create new Excel file with all team data (don't touch original files)
+        _backup_if_exists(WHEELO_TEAM_FILE)
         with pd.ExcelWriter(WHEELO_TEAM_FILE, engine='openpyxl') as writer:
             for season, csv_path in downloaded_files.items():
                 sheet_name = SEASONS[season]["team_sheet"]
@@ -404,6 +440,7 @@ class WheeloScraper:
         print(f"\n📝 Saving to: {WHEELO_PLAYER_FILE.name}")
         
         # Create new Excel file with all player data (don't touch original files)
+        _backup_if_exists(WHEELO_PLAYER_FILE)
         with pd.ExcelWriter(WHEELO_PLAYER_FILE, engine='openpyxl') as writer:
             # Update player stats sheets
             for season, csv_path in downloaded_files.items():
@@ -419,7 +456,7 @@ class WheeloScraper:
                 
             # Update squad list sheet
             if squad_file:
-                sheet_name = "2025 AFL Squads"
+                sheet_name = f"{CURRENT_SEASON} AFL Squads"
                 print(f"  Writing sheet: {sheet_name}")
                 
                 try:

@@ -1,0 +1,16 @@
+2026-03-10 14:17:21,649 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-10_1417.log
+2026-03-10 14:17:21,649 [INFO] ============================================================
+2026-03-10 14:17:21,649 [INFO] AFL Dashboard – Scheduled Data Update
+2026-03-10 14:17:21,649 [INFO] Date: Tuesday 10 March 2026 14:17
+2026-03-10 14:17:21,649 [INFO] Mode: DRY RUN
+2026-03-10 14:17:21,649 [INFO] ============================================================
+2026-03-10 14:17:21,650 [INFO] Python: /Users/marcuswagner/coding/AFL_dashboard/.venv/bin/python
+2026-03-10 14:17:21,650 [INFO] 
+Steps to run (5):
+2026-03-10 14:17:21,650 [INFO]   • footywire_squads: Scrape 2026 player squads from Footywire
+2026-03-10 14:17:21,650 [INFO]   • footywire_extended: Scrape contracts & draft history from Footywire
+2026-03-10 14:17:21,650 [INFO]   • afl_ladders: Scrape AFL ladder standings from Footywire
+2026-03-10 14:17:21,650 [INFO]   • build_2026: Build 2026 season data files (squads, stats, traits CSVs)
+2026-03-10 14:17:21,650 [INFO]   • regenerate_ratings: Regenerate computed team summaries and ladders
+2026-03-10 14:17:21,650 [INFO] 
+2026-03-10 14:17:21,650 [INFO] Dry run complete – no scripts executed.

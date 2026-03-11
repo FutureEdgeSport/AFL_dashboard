@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  AFL Dashboard – Daily Wheelo Scrape (LaunchAgent)
+  ===================================================
+  Runs the Wheelo ratings scraper every day at 7:00 AM.
+  If the Mac was asleep at the scheduled time, it runs as soon as it wakes.
+
+  INSTALL:
+    cp com.afldashboard.wheelo.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.afldashboard.wheelo.plist
+
+  UNINSTALL:
+    launchctl unload ~/Library/LaunchAgents/com.afldashboard.wheelo.plist
+    rm ~/Library/LaunchAgents/com.afldashboard.wheelo.plist
+
+  MANUAL TRIGGER (test):
+    launchctl start com.afldashboard.wheelo
+
+  VIEW LOGS:
+    tail -f /Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stdout.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.afldashboard.wheelo</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh</string>
+        <string>--only</string>
+        <string>wheelo_ratings</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard</string>
+
+    <!-- Every day at 07:00 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Redirect stdout/stderr to log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stderr.log</string>
+
+    <!-- Inherit user's PATH so conda/homebrew are found -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/marcuswagner</string>
+    </dict>
+</dict>
+</plist>

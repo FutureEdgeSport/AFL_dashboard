@@ -119,6 +119,85 @@ TEAM_CODE_TO_NAME: Dict[str, str] = {
     "WBFC": "Western Bulldogs",
 }
 
+# ============================================================================
+# PLAYER NICKNAME / ALIAS MAPPING
+# ============================================================================
+# Bidirectional mapping of common AFL first-name abbreviations.
+# Used for photo lookup, traits matching, and squad summary enrichment.
+# Keys and values are lower-case.  Both directions are present so a simple
+# dict lookup works in either direction.
+PLAYER_NICKNAME_MAP: Dict[str, str] = {
+    "lachlan": "lachie", "lachie": "lachlan",
+    "matthew": "matt", "matt": "matthew",
+    "nicholas": "nick", "nick": "nicholas",
+    "nic": "nicholas",
+    "william": "will", "will": "william",
+    "timothy": "tim", "tim": "timothy",
+    "thomas": "tom", "tom": "thomas",
+    "cameron": "cam", "cam": "cameron",
+    "daniel": "dan", "dan": "daniel",
+    "joshua": "josh", "josh": "joshua",
+    "joseph": "joe", "joe": "joseph",
+    "mitchell": "mitch", "mitch": "mitchell",
+    "mitchito": "mitch",
+    "samuel": "sam", "sam": "samuel",
+    "bradley": "brad", "brad": "bradley",
+    "harrison": "harry", "harry": "harrison",
+    "oliver": "ollie", "ollie": "oliver",
+    "benjamin": "ben", "ben": "benjamin",
+    "zachary": "zach", "zach": "zachary",
+    "zac": "zachary",
+    "nikolas": "nik",
+    "archie": "archer", "archer": "archie",
+    "leonardo": "leo", "leo": "leonardo",
+    "alixzander": "alix", "alix": "alixzander",
+    "alexander": "alex", "alex": "alexander",
+    "edward": "ed", "ed": "edward",
+    "patrick": "paddy", "paddy": "patrick",
+    "jonathan": "jonathon",  # spelling variant
+    "jonathon": "jonathan",
+    "christopher": "chris", "chris": "christopher",
+    "robert": "bobby", "bobby": "robert",
+    "michael": "mick", "mick": "michael",
+    "jacob": "jake", "jake": "jacob",
+    "isaac": "izak",
+    "callum": "cal", "cal": "callum",
+}
+
+
+def get_nickname_variants(first_name: str) -> list:
+    """Return a list of all known nickname variants for a first name (including itself)."""
+    low = first_name.lower()
+    variants = {low}
+    # Direct lookup
+    alt = PLAYER_NICKNAME_MAP.get(low)
+    if alt:
+        variants.add(alt)
+        # Also check if the alt has further mappings (e.g. zac -> zachary -> zach)
+        alt2 = PLAYER_NICKNAME_MAP.get(alt)
+        if alt2:
+            variants.add(alt2)
+    # Reverse search: find any keys that map to this name
+    for k, v in PLAYER_NICKNAME_MAP.items():
+        if v == low:
+            variants.add(k)
+    return list(variants)
+
+
+def build_player_name_variants(full_name: str) -> list:
+    """Given a full player name, return all nickname-variant full names.
+    E.g. 'Cameron Rayner' -> ['Cameron Rayner', 'Cam Rayner']
+    """
+    parts = full_name.strip().split()
+    if len(parts) < 2:
+        return [full_name]
+    first = parts[0]
+    rest = " ".join(parts[1:])
+    variants = get_nickname_variants(first)
+    # Capitalise and build full names
+    return [f"{v.capitalize()} {rest}" for v in variants]
+
+
 TEAM_COLOURS: Dict[str, str] = {
     "Adelaide": "#002B5C",
     "Brisbane": "#7C003E",

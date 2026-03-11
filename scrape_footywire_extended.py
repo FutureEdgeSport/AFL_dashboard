@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
-Extended Footywire Scraper for 2026 AFL Data
+Extended Footywire Scraper for AFL Data
 
 Adds to the base player data:
 1. Contract Expiry (Final Year) 
 2. Free Agency Status
 3. Draft information (Type, Round, Pick, Year)
+
+Usage:
+    python scrape_footywire_extended.py               # Full scrape (all draft years)
+    python scrape_footywire_extended.py --current-only # Current season only (fast)
 
 Uses team contracts pages (to-) and draft pages (td-?year=) from Footywire.
 """
@@ -14,8 +18,18 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 import time
+import argparse
 from datetime import datetime
 from pathlib import Path
+from utils.http_utils import create_retry_session
+from config.constants import CURRENT_SEASON
+from utils.safe_io import safe_csv_write
+
+# Draft history cache for --current-only incremental mode
+DRAFTS_CACHE = Path("data/cache/footywire_drafts.csv")
+
+# Shared HTTP session with retry logic
+_session = create_retry_session(retries=3, backoff_factor=1.0, timeout=15)
 
 # Team configurations - same as main scraper
 TEAMS = {
@@ -63,7 +77,7 @@ def scrape_team_contracts(team_name, team_slug):
     url = f"https://www.footywire.com/afl/footy/to-{team_slug}"
     
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp = _session.get(url, headers=HEADERS, timeout=15)
         if resp.status_code != 200:
             print(f"  ✗ Contracts HTTP {resp.status_code}")
             return []
@@ -113,7 +127,7 @@ def scrape_team_drafts(team_name, team_slug, start_year=2001, end_year=2025):
         url = f"https://www.footywire.com/afl/footy/td-{team_slug}?year={year}"
         
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=10)
+            resp = _session.get(url, headers=HEADERS, timeout=10)
             if resp.status_code != 200:
                 continue
             
@@ -186,8 +200,7 @@ def main():
     if all_contracts:
         contracts_df = pd.DataFrame(all_contracts)
         contracts_path = Path("data/raw/player/footywire_contracts_2026.csv")
-        contracts_path.parent.mkdir(parents=True, exist_ok=True)
-        contracts_df.to_csv(contracts_path, index=False)
+        safe_csv_write(contracts_df, contracts_path)
         print(f"\nContracts saved to: {contracts_path}")
         print(f"  Total players: {len(contracts_df)}")
         
@@ -203,9 +216,14 @@ def main():
     if all_drafts:
         drafts_df = pd.DataFrame(all_drafts)
         drafts_path = Path("data/raw/player/footywire_drafts_history.csv")
-        drafts_df.to_csv(drafts_path, index=False)
+        safe_csv_write(drafts_df, drafts_path)
         print(f"\nDrafts saved to: {drafts_path}")
         print(f"  Total draft picks: {len(drafts_df)}")
+        
+        # Update the full drafts cache for future --current-only runs
+        DRAFTS_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        safe_csv_write(drafts_df, DRAFTS_CACHE)
+        print(f"  Cache updated: {DRAFTS_CACHE}")
         
         # Show draft type breakdown
         print(f"\n  Draft type breakdown:")
@@ -268,7 +286,7 @@ def main():
         
         # Save merged data
         merged_path = Path("data/raw/player/footywire_2026_complete.csv")
-        base_df.to_csv(merged_path, index=False)
+        safe_csv_write(base_df, merged_path)
         print(f"\nMerged data saved to: {merged_path}")
         
         # Show coverage stats

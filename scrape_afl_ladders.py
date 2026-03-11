@@ -1,14 +1,25 @@
 """
 AFL Ladder Scraper
-Scrapes AFL ladder data from FootyWire for seasons 2011-2024
+Scrapes AFL ladder data from FootyWire for seasons 2011 to current
 Saves to Excel file for use in the dashboard
+
+Flags:
+  --current-only   Only scrape the current season (fast incremental mode)
 """
 
+import argparse
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
 from datetime import datetime
+from pathlib import Path
+from config.constants import CURRENT_SEASON
+from utils.http_utils import create_retry_session
+from utils.safe_io import safe_excel_write
+
+# Shared HTTP session with retry logic
+_session = create_retry_session(retries=3, backoff_factor=1.0, timeout=15)
 
 def scrape_ladder(year):
     """Scrape AFL ladder for a specific year"""
@@ -16,7 +27,7 @@ def scrape_ladder(year):
     
     try:
         print(f"Scraping {year} ladder...")
-        response = requests.get(url, headers={
+        response = _session.get(url, headers={
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         })
         response.raise_for_status()
@@ -79,18 +90,31 @@ def scrape_ladder(year):
 
 def main():
     """Main scraping function"""
+    parser = argparse.ArgumentParser(description="Scrape AFL ladder data from FootyWire")
+    parser.add_argument("--current-only", action="store_true",
+                        help="Only scrape the current season (fast incremental mode)")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("AFL LADDER SCRAPER")
     print("=" * 60)
-    print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-    
-    # Years to scrape (2011 to 2025)
+    print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Mode: {'CURRENT ONLY' if args.current_only else 'FULL (2011-present)'}\n")
+
+    # Years to scrape
     start_year = 2011
-    end_year = 2025
-    
+    end_year = CURRENT_SEASON
+
+    if args.current_only:
+        # In incremental mode, only scrape the current season and merge
+        # with the existing file for historical data
+        years_to_scrape = [end_year]
+    else:
+        years_to_scrape = list(range(start_year, end_year + 1))
+
     all_ladders = []
-    
-    for year in range(start_year, end_year + 1):
+
+    for year in years_to_scrape:
         df = scrape_ladder(year)
         
         if df is not None:
@@ -104,20 +128,43 @@ def main():
         print("\n⚠️  No data scraped!")
         return
     
-    # Combine all years
+    # Combine scraped data
     print("\n" + "=" * 60)
     print("COMBINING DATA")
     print("=" * 60)
     
-    combined_df = pd.concat(all_ladders, ignore_index=True)
+    scraped_df = pd.concat(all_ladders, ignore_index=True)
+
+    # In --current-only mode, merge with existing historical data
+    output_dir = Path('data')
+    output_dir.mkdir(exist_ok=True)
+    output_file = output_dir / f'afl_ladders_2011_{end_year}.xlsx'
+    legacy_file = Path('afl_ladders_2011_2025.xlsx')
+
+    if args.current_only and output_file.exists():
+        existing_df = pd.read_excel(output_file)
+        # Drop existing rows for the current season and replace with fresh
+        existing_df = existing_df[existing_df['Season'] != end_year]
+        combined_df = pd.concat([existing_df, scraped_df], ignore_index=True)
+        print(f"  Merged: {len(existing_df)} historical + {len(scraped_df)} fresh = {len(combined_df)} total")
+    elif args.current_only and legacy_file.exists():
+        existing_df = pd.read_excel(legacy_file)
+        existing_df = existing_df[existing_df['Season'] != end_year]
+        combined_df = pd.concat([existing_df, scraped_df], ignore_index=True)
+        print(f"  Merged: {len(existing_df)} historical + {len(scraped_df)} fresh = {len(combined_df)} total")
+    else:
+        combined_df = scraped_df
     
-    # Save to Excel
-    output_file = 'afl_ladders_2011_2025.xlsx'
-    combined_df.to_excel(output_file, index=False)
+    # Save to Excel (atomic write with backup)
+    safe_excel_write(combined_df, output_file)
+    safe_excel_write(combined_df, legacy_file)
     
+    n_seasons = combined_df['Season'].nunique()
+    yr_min = int(combined_df['Season'].min())
+    yr_max = int(combined_df['Season'].max())
     print(f"\n✓ Saved {len(combined_df)} rows to {output_file}")
-    print(f"  - Years: {start_year}-{end_year}")
-    print(f"  - Total seasons: {len(all_ladders)}")
+    print(f"  - Years: {yr_min}-{yr_max}")
+    print(f"  - Total seasons: {n_seasons}")
     print(f"  - Columns: {', '.join(combined_df.columns.tolist())}")
     
     # Display summary
