@@ -3289,8 +3289,8 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
     # Track ratings for each cell to calculate averages
     ratings_grid = {pos: {band: [] for band in AGE_BANDS} for pos in DEPTH_POSITIONS}
 
-    # Calculate weighted rating for sorting (Rating × Matches) - same as List Ladder
-    # Look for matches column in df_team or fall back to raw rating
+    # Sort by highest rated player first within each grid cell
+    # Look for matches column (used later for rankings, not for grid ordering)
     matches_col_display = None
     for col_name in ['Matches', f'{CURRENT_SEASON} Matches', '2025 Matches', 'Total Matches']:
         if col_name in df_team.columns:
@@ -3299,12 +3299,10 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
     
     # Cap matches at 23 (regular season) to avoid over-rating players who played finals
     MAX_MATCHES_FOR_RATING = 23
-    if matches_col_display:
-        df_team = df_team.copy()
-        capped_matches = pd.to_numeric(df_team[matches_col_display], errors="coerce").fillna(0).clip(upper=MAX_MATCHES_FOR_RATING)
-        df_team["_Weighted_Sort"] = pd.to_numeric(df_team[rating_col], errors="coerce").fillna(0) * capped_matches
-        df_sorted = df_team.sort_values("_Weighted_Sort", ascending=False, na_position='last')
-    elif rating_col in df_team.columns:
+
+    # Sort grid display by raw rating (highest rated player first)
+    df_team = df_team.copy()
+    if rating_col in df_team.columns:
         df_sorted = df_team.sort_values(rating_col, ascending=False, na_position='last')
     else:
         df_sorted = df_team.copy()
