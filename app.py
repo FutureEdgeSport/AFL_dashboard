@@ -9185,7 +9185,24 @@ elif page == "Player Profile":
                 for c in ["Predicted_Rating", "Upper_Band", "Lower_Band"]:
                     if c in pred_table.columns:
                         pred_table[c] = pd.to_numeric(pred_table[c], errors="coerce").round(1)
-                st.dataframe(pred_table, hide_index=True, width="stretch")
+                # Build fe-table styled HTML to match Contract Status
+                pred_html = "<table class='fe-table fe-sortable'><thead><tr>"
+                for col in pred_table.columns:
+                    pred_html += f"<th>{col}</th>"
+                pred_html += "</tr></thead><tbody>"
+                for _, row in pred_table.iterrows():
+                    pred_html += "<tr>"
+                    for col in pred_table.columns:
+                        val = row[col]
+                        if pd.isna(val):
+                            pred_html += "<td>—</td>"
+                        elif isinstance(val, float):
+                            pred_html += f"<td>{val:.1f}</td>"
+                        else:
+                            pred_html += f"<td>{val}</td>"
+                    pred_html += "</tr>"
+                pred_html += "</tbody></table>"
+                render_sortable_table(pred_html)
         else:
             st.info("Unable to generate performance projection with available data.")
     except Exception as e:
@@ -15513,7 +15530,8 @@ elif page == "IDP":
                 </tr>""")
             
             if comparison_rows:
-                st.markdown(f"<table class='fe-table fe-table-compact'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>", unsafe_allow_html=True)
+                _comp_table_html = f"<table class='fe-table fe-sortable'><thead><tr><th style='text-align:left;'>Statistic</th><th>{selected_player}</th><th>{comparison_player}</th><th>Difference</th></tr></thead><tbody>{''.join(comparison_rows)}</tbody></table>"
+                render_sortable_table(_comp_table_html)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
