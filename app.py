@@ -2021,6 +2021,85 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
     return df
 
 
+def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.DataFrame:
+    """
+    For players in the current season who are missing trait values,
+    backfill from the prior season's data (matched by Player_Full).
+    
+    This keeps the dashboard populated with last-known ratings until
+    new-season API data arrives. Backfilled values are marked via a
+    '_traits_backfilled' boolean column for transparency.
+    """
+    prior_season = current_season - 1
+    
+    # All trait columns to backfill
+    BACKFILL_COLS = [
+        "Rating", "Ball Winning", "Ball Use", "Aerial", "Defence",
+        "Stoppage", "Contest", "Power", "Receives",
+        "Handballing", "Kicking", "Goal Kicking", "Connecting",
+        "Marking", "Contested", "Moks", "Ruck",
+        "Pressure", "Tackling", "Intercepting", "Neutralise",
+    ]
+    
+    # Identify players missing core trait data
+    if "Rating" not in df.columns:
+        return df
+    missing_mask = df["Rating"].isna()
+    if not missing_mask.any():
+        return df  # Everyone already has data
+    
+    # Load prior season CSV
+    prior_csv = Path(__file__).parent / "data" / "raw" / "traits" / f"traits_{prior_season}.csv"
+    if not prior_csv.exists():
+        return df
+    
+    try:
+        df_prior = pd.read_csv(prior_csv)
+        df_prior.columns = [str(c).strip() for c in df_prior.columns]
+    except Exception:
+        return df
+    
+    # Normalise Player_Full in prior data
+    if "Player_Full" not in df_prior.columns:
+        if "Player" in df_prior.columns:
+            df_prior["Player_Full"] = df_prior["Player"].astype(str).str.strip()
+        else:
+            return df
+    df_prior["Player_Full"] = df_prior["Player_Full"].astype(str).str.strip()
+    
+    # Build lookup: player -> {col: value}
+    prior_lookup = {}
+    for _, row in df_prior.iterrows():
+        player = row["Player_Full"]
+        vals = {}
+        for col in BACKFILL_COLS:
+            if col in df_prior.columns and pd.notna(row.get(col)):
+                vals[col] = row[col]
+        if vals:
+            prior_lookup[player] = vals
+    
+    if not prior_lookup:
+        return df
+    
+    # Mark backfill column
+    if "_traits_backfilled" not in df.columns:
+        df["_traits_backfilled"] = False
+    
+    backfilled = 0
+    for idx in df.index[missing_mask]:
+        player = df.at[idx, "Player_Full"]
+        prior_vals = prior_lookup.get(player)
+        if not prior_vals:
+            continue
+        for col, val in prior_vals.items():
+            if col in df.columns and pd.isna(df.at[idx, col]):
+                df.at[idx, col] = val
+        df.at[idx, "_traits_backfilled"] = True
+        backfilled += 1
+    
+    return df
+
+
 @st.cache_data(show_spinner=False)
 def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """
@@ -2149,6 +2228,12 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             api_cache = _load_traits_api_cache()
             if api_cache:
                 df = _enhance_traits_with_api(df, api_cache)
+
+        # Backfill missing trait values from prior season for current season
+        # This ensures players who had ratings last year show data until new
+        # season values come through from the API
+        if actual_season == CURRENT_SEASON:
+            df = _backfill_from_prior_season(df, actual_season)
 
         return df
 
