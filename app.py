@@ -28,6 +28,7 @@ from config.constants import (
     get_unified_table_css, METRIC_TOOLTIPS, get_tooltip_html,
     PLAYER_NICKNAME_MAP, get_nickname_variants, build_player_name_variants,
 )
+from config.player_names import get_resolver as _get_name_resolver
 
 # Import data pipeline for computed ratings (migration from Excel formulas)
 from data_pipeline.compute_ratings import (
@@ -1860,6 +1861,13 @@ def load_full_squad(season: int) -> pd.DataFrame:
             if "Position" in df.columns:
                 df["Position"] = df["Position"].astype(str).str.strip()
             
+            # Resolve player names to canonical form
+            try:
+                _resolver = _get_name_resolver()
+                df["Player"] = _resolver.resolve_df(df, "Player", "Team")
+            except Exception:
+                pass
+            
             # Compute exact Age_Decimal from DOB
             df = _compute_age_decimal_from_dob(df, season)
             
@@ -1919,6 +1927,13 @@ def load_full_squad(season: int) -> pd.DataFrame:
             df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
         if "Position" in df.columns:
             df["Position"] = df["Position"].astype(str).str.strip()
+
+        # Resolve player names to canonical form
+        try:
+            _resolver = _get_name_resolver()
+            df["Player"] = _resolver.resolve_df(df, "Player", "Team")
+        except Exception:
+            pass
 
         # Compute exact Age_Decimal from DOB
         df = _compute_age_decimal_from_dob(df, season)
@@ -1998,14 +2013,6 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
     """
     if not api_cache:
         return df
-    
-    # Team code to full name mapping for API team codes
-    TEAM_CODE_TO_NAME = {
-        "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
-        "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
-        "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
-        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
-    }
     
     # Map API trait column names to Excel column names
     API_TO_EXCEL = {
@@ -2097,13 +2104,6 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
     """
     prior_season = current_season - 1
     
-    TEAM_CODE_TO_NAME = {
-        "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
-        "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
-        "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
-        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
-    }
-    
     # All trait columns to backfill
     BACKFILL_COLS = [
         "Rating", "Ball Winning", "Ball Use", "Aerial", "Defence",
@@ -2150,6 +2150,14 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
         df_prior["_team_full"] = df_prior["Team_Full"].astype(str).str.strip()
     else:
         df_prior["_team_full"] = ""
+    
+    # Resolve prior player names to canonical form so they match current-season
+    # names regardless of format differences (abbreviated, nickname variants, etc.)
+    try:
+        _resolver = _get_name_resolver()
+        df_prior["Player_Full"] = _resolver.resolve_df(df_prior, "Player_Full", "_team_full")
+    except Exception:
+        pass  # Fall through to surname+team matching as safety net
     
     # Build exact lookup: player_name -> {col: value}
     prior_exact = {}
@@ -2231,12 +2239,6 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     
     Falls back to 2025 if requested season (e.g., 2026) doesn't exist yet.
     """
-    TEAM_CODE_TO_NAME = {
-        "AFC": "Adelaide","BFC": "Brisbane","CFC": "Carlton","COFC": "Collingwood","EFC": "Essendon",
-        "FRFC": "Fremantle","GFC": "Geelong","GCFC": "Gold Coast","GWS": "GWS Giants","HFC": "Hawthorn",
-        "MFC": "Melbourne","NMFC": "North Melbourne","PAFC": "Port Adelaide","RFC": "Richmond","SKFC": "St Kilda",
-        "SFC": "Sydney","SYFC": "Sydney","WCFC": "West Coast","WBFC": "Western Bulldogs",
-    }
 
     POSITION_ABBREV_TO_FULL = {
         "R": "Ruck",
@@ -2283,31 +2285,16 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             else:
                 return pd.DataFrame()
         df["Player_Full"] = df["Player_Full"].astype(str).str.strip()
-        
-        # Fix Sydney player names by matching surnames with player summary
+
+        # Canonical name resolution — handles nickname variants (Zachary↔Zach),
+        # abbreviated names (A. Cadman → Aaron Cadman), and team-scoped
+        # surname matching.  Applied once here so all downstream merges
+        # (API enrichment, backfill, traits↔summary join) match automatically.
         try:
-            sydney_mask = df["Team_Full"] == "Sydney"
-            if sydney_mask.any():
-                player_summary_path = "data/computed/player_summary.csv"
-                if os.path.exists(player_summary_path):
-                    player_summary = pd.read_csv(player_summary_path)
-                    sydney_players = player_summary[player_summary["Team"] == "Sydney"]["Player"].tolist()
-                    
-                    def extract_surname(name):
-                        parts = str(name).strip().split()
-                        return parts[-1] if len(parts) >= 2 else name
-                    
-                    surname_to_full = {extract_surname(n): n for n in sydney_players}
-                    
-                    def fix_sydney_name(row):
-                        if row["Team_Full"] == "Sydney":
-                            surname = extract_surname(row["Player_Full"])
-                            return surname_to_full.get(surname, row["Player_Full"])
-                        return row["Player_Full"]
-                    
-                    df["Player_Full"] = df.apply(fix_sydney_name, axis=1)
+            _resolver = _get_name_resolver()
+            df["Player_Full"] = _resolver.resolve_df(df, "Player_Full", "Team_Full")
         except Exception:
-            pass
+            pass  # Graceful degradation if resolver fails
 
         # Position_Full
         if "Position" in df.columns:

@@ -115,6 +115,7 @@ TEAM_CODE_TO_NAME: Dict[str, str] = {
     "RFC": "Richmond",
     "SKFC": "St Kilda",
     "SFC": "Sydney",
+    "SYFC": "Sydney",
     "WCFC": "West Coast",
     "WBFC": "Western Bulldogs",
 }
@@ -1511,9 +1512,13 @@ def safe_float(x) -> float:
 
 # Canonical team name normalization map (long name -> short name)
 # Used by normalize_team_name() and importable by other modules
+# Unified team normalization map — handles full names, codes and common variants.
+# Maps any known team representation to the canonical short name used throughout.
 TEAM_NAME_NORMALIZE_MAP: Dict[str, str] = {
+    # Long / mascot names
     "GWS": "GWS Giants",
     "Greater Western Sydney": "GWS Giants",
+    "Greater Western Sydney Giants": "GWS Giants",
     "Sydney Swans": "Sydney",
     "Brisbane Lions": "Brisbane",
     "Adelaide Crows": "Adelaide",
@@ -1530,14 +1535,21 @@ TEAM_NAME_NORMALIZE_MAP: Dict[str, str] = {
     "Richmond Tigers": "Richmond",
     "St Kilda Saints": "St Kilda",
     "West Coast Eagles": "West Coast",
+    # Team codes (superset of TEAM_CODE_TO_NAME)
+    **TEAM_CODE_TO_NAME,
 }
 
 
 def normalize_team_name(team: str) -> str:
-    """Normalize team name to standard format."""
+    """Normalize any team representation to its canonical short name.
+
+    Handles full mascot names ("Brisbane Lions"), codes ("BFC", "SYFC"),
+    and common variants ("GWS", "Greater Western Sydney").
+    Returns the input unchanged if no mapping is found.
+    """
     if not team:
         return team
-    
+
     team = str(team).strip()
     return TEAM_NAME_NORMALIZE_MAP.get(team, team)
 
