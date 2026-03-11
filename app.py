@@ -4025,18 +4025,32 @@ def render_grouped_navigation():
     
     @st.cache_data(show_spinner=False)
     def get_all_players_for_search(season: int):
-        """Get all players for search functionality."""
+        """Get all players for search functionality.
+        
+        Prefers load_full_squad (includes all listed players) over
+        load_players (only those with game stats).  This ensures players
+        drafted for the upcoming season are searchable even before games
+        are played.
+        """
         try:
-            players = load_players(season)
-            if players.empty:
+            # Try full squad first (has all listed players for the season)
+            players = load_full_squad(season)
+            # Fallback to rated players if squad is empty
+            if players is None or players.empty:
+                players = load_players(season)
+            if players is None or players.empty:
                 return []
             player_list = []
+            seen = set()
             for _, row in players.iterrows():
-                player = row.get("Player", "")
-                team = row.get("Team", "")
-                if player and team:
-                    player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
-            return player_list
+                player = str(row.get("Player", "")).strip()
+                team = str(row.get("Team", "")).strip()
+                if player and team and player != "nan" and team != "nan":
+                    key = f"{player}|{team}"
+                    if key not in seen:
+                        seen.add(key)
+                        player_list.append({"player": player, "team": team, "display": f"{player} ({team})"})
+            return sorted(player_list, key=lambda x: x["player"])
         except Exception:
             return []
 
@@ -4061,6 +4075,9 @@ def render_grouped_navigation():
                         st.session_state.default_team = match['team']
                         st.session_state.selected_page = "Player Profile"
                         st.session_state.page_override = True
+                        # Clear stale widget keys so selectboxes respect new defaults
+                        for _k in ("pp_team", "pp_player"):
+                            st.session_state.pop(_k, None)
                         add_to_recent_views("player", match['player'], match['team'], "Player Profile")
                         st.rerun()
                 with col2:
@@ -4170,6 +4187,9 @@ if st.session_state.favorite_teams or st.session_state.favorite_players:
                         st.session_state.default_team = team
                         st.session_state.selected_page = "Player Profile"
                         st.session_state.page_override = True
+                        # Clear stale widget keys so selectboxes respect new defaults
+                        for _k in ("pp_team", "pp_player"):
+                            st.session_state.pop(_k, None)
                         add_to_recent_views("player", player, team, "Player Profile")
                         st.rerun()
                 with col2:
@@ -4196,6 +4216,9 @@ if st.session_state.recent_views:
                 st.session_state.default_team = item.get("team", "")
                 st.session_state.selected_page = item.get("page", "Player Profile")
             st.session_state.page_override = True
+            # Clear stale widget keys so selectboxes respect new defaults
+            for _k in ("pp_team", "pp_player"):
+                st.session_state.pop(_k, None)
             st.rerun()
 
 # --- Comparison History ---
