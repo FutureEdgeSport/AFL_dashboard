@@ -8571,8 +8571,12 @@ elif page == "Club List":
     if rating_type == "Trait Rating" and fc_mode:
         league_ratings = league_ratings.apply(convert_trait_to_fc_rating).dropna()
 
-    # League-wide coaches votes for percentile colour bands (exclude 0-match players)
-    league_coaches = season_df.loc[played_mask, "CoachesVotes_Avg"].dropna() if "CoachesVotes_Avg" in season_df.columns else pd.Series(dtype=float)
+    # League-wide coaches votes for percentile colour bands (exclude 0-match and 0-vote players)
+    if "CoachesVotes_Avg" in season_df.columns:
+        _cv_vals = pd.to_numeric(season_df.loc[played_mask, "CoachesVotes_Avg"], errors="coerce")
+        league_coaches = _cv_vals[_cv_vals > 0].dropna()
+    else:
+        league_coaches = pd.Series(dtype=float)
     
     # Dynamic column header based on rating type
     if rating_type == "Trait Rating" and fc_mode:
@@ -8630,8 +8634,10 @@ elif page == "Club List":
 
         coaches_val = r["COACHES VOTES"]
         coaches_str = "—" if pd.isna(coaches_val) else f"{float(coaches_val):.2f}"
-        if has_played and not pd.isna(coaches_val):
+        if has_played and not pd.isna(coaches_val) and float(coaches_val) > 0:
             cv_bg, cv_fg = rating_colour_for_value(float(coaches_val), league_coaches)
+        elif has_played:
+            cv_bg, cv_fg = "#FF0000", "white"  # Red pill for played but 0 votes
         else:
             cv_bg, cv_fg = "#444444", "#999999"
 
@@ -9364,9 +9370,12 @@ elif page == "Player Profile":
 
         all_comp_ratings = players_full["RatingPoints_Avg"].dropna()
 
-        # League-wide coaches votes for percentile-based colouring (exclude 0-match players)
-        _played = pd.to_numeric(players_full["Matches"], errors="coerce").fillna(0) > 0
-        all_coaches_votes = players_full.loc[_played, "CoachesVotes_Avg"].dropna() if "CoachesVotes_Avg" in players_full.columns else pd.Series(dtype=float)
+        # League-wide coaches votes for percentile-based colouring (only players with votes > 0)
+        if "CoachesVotes_Avg" in players_full.columns:
+            _cv = pd.to_numeric(players_full.loc[_played, "CoachesVotes_Avg"], errors="coerce")
+            all_coaches_votes = _cv[_cv > 0].dropna()
+        else:
+            all_coaches_votes = pd.Series(dtype=float)
 
         # Gather all trait ratings across seasons for percentile-based colouring
         all_trait_ratings_list = []
