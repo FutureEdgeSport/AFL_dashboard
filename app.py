@@ -8424,7 +8424,7 @@ elif page == "Club List":
 
     # ---------- Toggle ----------
     if "club_list_full" not in st.session_state:
-        st.session_state.club_list_full = False
+        st.session_state.club_list_full = True
 
     c1, c2, _ = st.columns([1, 1, 6])
     with c1:
