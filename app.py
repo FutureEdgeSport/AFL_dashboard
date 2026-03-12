@@ -4934,7 +4934,7 @@ def _phase_card(title: str, rating: int, stats_rows):
 
 def render_game_day_playground(teams: list[str]):
     _gd_icon = _svg_inline('gamepad', 40)
-    st.markdown(f"""<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);padding: 40px 20px;border-radius: 16px;box-shadow: 0 8px 24px rgba(0,0,0,0.4);margin-bottom: 32px;text-align: center;"><h1 style="color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight: 900;font-size: 48px;margin: 0 0 12px 0;letter-spacing: 0.02em;text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">{_gd_icon} Game Day Playground</h1><p style="color: rgba(255,255,255,0.8);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size: 16px;margin: 0;font-weight: 600;letter-spacing: 0.03em;">Select two teams + time window, explore game modes + zone health (all mock for now). Next: wire in real data.</p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);padding: 40px 20px;border-radius: 16px;box-shadow: 0 8px 24px rgba(0,0,0,0.4);margin-bottom: 32px;text-align: center;"><h1 style="color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight: 900;font-size: 48px;margin: 0 0 12px 0;letter-spacing: 0.02em;text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">{_gd_icon} Game Day Playground</h1><p style="color: rgba(255,255,255,0.8);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size: 16px;margin: 0;font-weight: 600;letter-spacing: 0.03em;">Select two teams and compare their 5 phases of the game side-by-side.</p></div>""", unsafe_allow_html=True)
 
     # -------------------------------------------------
     # SAFETY: build teams if global list is empty
@@ -5161,609 +5161,390 @@ def render_game_day_playground(teams: list[str]):
 
     # --- Time-slice filter (under logos)
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;font-weight:900;font-size:18px;margin-bottom:16px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;'>⏱️ Time Filter</div>", unsafe_allow_html=True)
-
-    time_options = ["Q1", "Q2", "Q3", "Q4", "Last 10 min"]
-    
+    st.markdown("<div style='text-align:center;font-weight:900;font-size:18px;margin-bottom:16px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.05em;'>⏱️ Data Filter</div>", unsafe_allow_html=True)
 
     # --- Time filter (single widget, single key)
     time_filter = st.radio(
-        "Time Filter",
-        ["Q1", "Q2", "Q3", "Q4", "Last 10 min"],
+        "Data Filter",
+        ["Season", "Last 10 Games"],
         horizontal=True,
         key="gdp_time_filter",
         label_visibility="collapsed",
-)
-
-
-
-# use time_filter directly below
-
-
-
-
-    game_type, phases, stats = _mock_matchup_model(team_a, team_b)
-
-        # =====================================================
-        # What type of game are we in?
-        # =====================================================
-    st.markdown("<div style='margin:40px 0 24px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('star', 20)} What type of game are we in?</div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Green fill indicates how strongly the game is trending toward each mode. Full opacity = strong, light opacity = slight.</div>", unsafe_allow_html=True)
-
-    dims = [
-        ("Chaos", "Control", "Chaos vs Control"),
-        ("Stoppage", "Transition", "Stoppage vs Transition"),
-        ("Front Half", "Back Half", "Front Half vs Back Half"),
-        ("Shoot Out", "Slog", "Shoot Out vs Slog"),
-    ]
-
-    for left, right, key in dims:
-        v = int(game_type[key])  # 0–100
-
-        # winner side (ONLY one)
-        left_wins = v < 50
-        right_wins = not left_wins
-
-        # strength based on distance from 50
-        dist = abs(v - 50)  # 0..50
-        if dist >= 20:
-            strength_opacity = 1.0     # strong
-        elif dist >= 8:
-            strength_opacity = 0.30    # slight
-        else:
-            strength_opacity = 0.18    # very slight / near neutral
-
-        row = st.columns([2.4, 0.4, 2.4, 0.8])
-
-        with row[0]:
-            st.markdown(
-                _game_mode_pill(left, strength_opacity, on=left_wins),
-                unsafe_allow_html=True
-            )
-        with row[1]:
-            st.markdown("<div style='text-align:center;opacity:0.5;font-weight:900;font-size:20px;'>↔</div>", unsafe_allow_html=True)
-        with row[2]:
-            st.markdown(
-                _game_mode_pill(right, strength_opacity, on=right_wins),
-                unsafe_allow_html=True
-            )
-        with row[3]:
-            st.markdown(
-                f"<div class='gdp-muted' style='text-align:right;font-weight:700;'>Index: <b>{v}</b></div>",
-                unsafe_allow_html=True,
-            )
-
-
-    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
-
-    # =====================================================
-    # Momentum Meter
-    # =====================================================
-    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:26px;margin-bottom:8px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;text-shadow:2px 2px 6px rgba(0,0,0,0.4);'>{_svg_inline('trending', 20)} Momentum Meter</div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.75);font-size:14px;margin-bottom:28px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Rolling last 10 minutes — aggregated across all 5 phases</div>", unsafe_allow_html=True)
-
-    # Calculate momentum based on all 5 phases
-    rng = random.Random(_stable_seed(team_a, team_b))
-    
-    team_a_scores = []
-    team_b_scores = []
-    
-    for phase_name, phase_score in phases.items():
-        if rng.random() > 0.5:
-            team_a_scores.append(phase_score)
-            team_b_scores.append(100 - phase_score + rng.randint(-10, 10))
-        else:
-            team_b_scores.append(phase_score)
-            team_a_scores.append(100 - phase_score + rng.randint(-10, 10))
-    
-    team_a_momentum_raw = sum(team_a_scores) / len(team_a_scores)
-    team_b_momentum_raw = sum(team_b_scores) / len(team_b_scores)
-    
-    total_momentum = team_a_momentum_raw + team_b_momentum_raw
-    if total_momentum > 0:
-        team_a_pct = (team_a_momentum_raw / total_momentum) * 100
-    else:
-        team_a_pct = 50
-    
-    team_b_pct = 100 - team_a_pct
-    momentum_diff = abs(team_a_pct - 50)
-    
-    if momentum_diff >= 25:
-        momentum_status = "DOMINANT"
-        status_color = "#00FF41"
-    elif momentum_diff >= 15:
-        momentum_status = "STRONG"
-        status_color = "#FFD700"
-    elif momentum_diff >= 8:
-        momentum_status = "BUILDING"
-        status_color = "#FF6B35"
-    else:
-        momentum_status = "NEUTRAL"
-        status_color = "#888888"
-    
-    # Build complete momentum meter as pure HTML
-    phase_labels = ["Ball Win", "Ball Use", "Scoring", "Defence", "Pressure"]
-    phase_indicators_html = ""
-    
-    for i, label in enumerate(phase_labels):
-        if i < len(team_a_scores):
-            p_a = team_a_scores[i]
-            p_b = team_b_scores[i]
-            phase_leader = "A" if p_a > p_b else "B"
-            phase_color = "#FF6B35" if phase_leader == "A" else "#4A90E2"
-            phase_strength = abs(p_a - p_b) / max(p_a + p_b, 1) * 100
-            dot_opacity = 0.3 + (phase_strength / 100 * 0.7)
-            
-            phase_indicators_html += "<div style='display:flex;flex-direction:column;align-items:center;gap:6px;'>"
-            phase_indicators_html += "<div style='width:12px;height:12px;border-radius:50%;background:" + phase_color + ";opacity:" + str(dot_opacity) + ";box-shadow:0 0 12px " + phase_color + ";'></div>"
-            phase_indicators_html += "<div style='font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;text-align:center;'>" + label + "</div>"
-            phase_indicators_html += "</div>"
-    
-    # Build the complete HTML string using concatenation
-    momentum_html = "<div style='background:linear-gradient(145deg, rgba(15,15,25,0.98), rgba(25,25,40,0.98));padding:32px 28px;border-radius:20px;border:2px solid rgba(255,255,255,0.12);box-shadow:0 12px 32px rgba(0,0,0,0.6);'>"
-    
-    momentum_html += "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;'>"
-    momentum_html += "<div style='font-weight:900;font-size:20px;'>" + team_a + "</div>"
-    momentum_html += "<div style='background:rgba(255,255,255,0.08);padding:8px 20px;border-radius:20px;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;color:" + status_color + ";text-align:center;'>" + momentum_status + "</div>"
-    momentum_html += "<div style='font-weight:900;font-size:20px;'>" + team_b + "</div>"
-    momentum_html += "</div>"
-    
-    momentum_html += "<div style='position:relative;height:48px;background:rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;border:2px solid rgba(255,255,255,0.1);margin-bottom:20px;'>"
-    momentum_html += "<div style='position:absolute;left:0;top:0;bottom:0;width:" + str(team_a_pct) + "%;background:linear-gradient(90deg, #FF6B35 0%, #F7931E 100%);'></div>"
-    momentum_html += "<div style='position:absolute;right:0;top:0;bottom:0;width:" + str(team_b_pct) + "%;background:linear-gradient(270deg, #4A90E2 0%, #357ABD 100%);'></div>"
-    momentum_html += "<div style='position:absolute;left:50%;top:0;bottom:0;width:3px;background:rgba(255,255,255,0.5);transform:translateX(-50%);'></div>"
-    momentum_html += "<div style='position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:900;font-size:18px;color:#FFFFFF;text-shadow:2px 2px 6px rgba(0,0,0,0.8);'>" + str(int(team_a_pct)) + "%</div>"
-    momentum_html += "<div style='position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:900;font-size:18px;color:#FFFFFF;text-shadow:2px 2px 6px rgba(0,0,0,0.8);'>" + str(int(team_b_pct)) + "%</div>"
-    momentum_html += "</div>"
-    
-    momentum_html += "<div style='display:flex;justify-content:center;gap:16px;'>"
-    momentum_html += phase_indicators_html
-    momentum_html += "</div>"
-    
-    momentum_html += "</div>"
-    
-    st.markdown(momentum_html, unsafe_allow_html=True)
-
-    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
-
-    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('stadium', 20)} Ground health check</div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Each zone shows an overall health score (0–100). Expand a zone to see which phases are driving it (mock).</div>", unsafe_allow_html=True)
-
-    # Stable mock zone + phase ratings tied to matchup
-    rng = random.Random(_stable_seed(team_a, team_b, "zones_v2"))
-
-    zone_names = ["Defensive 50", "Defensive Mid", "Centre Bounce", "Attacking Mid", "Forward 50"]
-    phase_names = ["Ball Winning", "Ball Use", "Scoring", "Defence", "Pressure"]
-
-    # Build mock phase ratings per zone (these are what you’ll later compute from real data)
-    zone_phase = {}
-    for z in zone_names:
-        zone_phase[z] = {p: rng.randint(40, 92) for p in phase_names}
-
-    # Give each zone a single overall rating = average of its phase ratings
-    zone_overall = {z: int(round(sum(zone_phase[z].values()) / len(phase_names), 0)) for z in zone_names}
-
-    # Render zone tiles in a row
-    zcols = st.columns(5, gap="large")
-
-    for i, z in enumerate(zone_names):
-        with zcols[i]:
-            # headline tile
-            st.markdown(_gdp_zone_tile(z, zone_overall[z], subtitle="Overall zone health"), unsafe_allow_html=True)
-
-            # expand -> show phase breakdown
-            with st.expander(f"Explain {z}", expanded=False):
-                # phase mini-cards (clean + readable)
-                for p in phase_names:
-                    r = int(zone_phase[z][p])
-                    col = _gdp_colour(r)
-                    st.markdown(
-                        f"""
-                        <div class="gdp-card" style="padding:16px 20px;margin-bottom:12px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div style="font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;opacity:0.9;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            {p}
-                            </div>
-                            <div style="font-weight:900;font-size:18px;color:{col};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">{r}/100</div>
-                        </div>
-                        <div class="gdp-bar-bg" style="margin-top:8px;">
-                            <div class="gdp-bar-fill" style="width:{r}%;background:{col};box-shadow:0 0 16px {col};"></div>
-                        </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-                st.caption("Mock: in v1 this is arbitrary. In v2, each phase score is computed from your real KPI bundle for that zone.")
-
-
-        # =====================================================
-        # 5 phases of the game
-        # =====================================================
-    st.markdown("<div style='margin:40px 0 24px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('chart_bar', 20)} 5 phases of the game</div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Each phase has a rating (0–100). Expand each card to see the stats feeding the score (mock inputs).</div>", unsafe_allow_html=True)
-
-
-
-    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Mock page only. Next step is wiring this to your existing match + player/team metric tables.</div>", unsafe_allow_html=True)
-
-# 5 cards in a single row (5 columns)
-    pkeys = list(phases.keys())
-    cols = st.columns(5, gap="large")
-
-    for i, k in enumerate(pkeys):
-        with cols[i]:
-            _gdp_phase_card(k, int(phases[k]), stats[k])
-
-    # =====================================================
-    # 5 KEY IMPACT AREAS
-    # =====================================================
-    st.markdown("<div style='margin:48px 0 32px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('star', 20)} 5 Key Impact Areas</div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:32px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Focus on these zone-phase combinations to maximize performance (hypothetical analysis)</div>", unsafe_allow_html=True)
-
-    # Generate 5 key impact areas (zone + phase combinations)
-    # Use stable seed for consistent mock data
-    impact_rng = random.Random(_stable_seed(team_a, team_b, "impact_areas"))
-    
-    # Define all possible zone-phase combinations
-    all_zones = ["Defensive 50", "Defensive Mid", "Centre Bounce", "Attacking Mid", "Forward 50"]
-    all_phases = ["Ball Winning", "Ball Use", "Scoring", "Defence", "Pressure"]
-    
-    # Create weighted impact combinations (some are more logical than others)
-    impact_combinations = [
-        ("Defensive 50", "Defence", "High impact: Protecting the defensive zone"),
-        ("Defensive 50", "Ball Use", "Critical: Launching counter-attacks from defense"),
-        ("Defensive Mid", "Ball Winning", "Essential: Winning clearances in defensive midfield"),
-        ("Defensive Mid", "Pressure", "Key: Applying pressure to stop opposition transition"),
-        ("Centre Bounce", "Ball Winning", "Crucial: Dominating center clearances"),
-        ("Centre Bounce", "Pressure", "Important: First pressure at stoppages"),
-        ("Attacking Mid", "Ball Use", "Vital: Quality delivery into forward 50"),
-        ("Attacking Mid", "Ball Winning", "Critical: Winning ball in attacking territory"),
-        ("Forward 50", "Scoring", "Essential: Converting opportunities"),
-        ("Forward 50", "Pressure", "Important: Locking ball in forward zone"),
-        ("Forward 50", "Ball Use", "Key: Smart ball movement inside 50"),
-        ("Defensive 50", "Pressure", "Critical: Preventing opposition scores"),
-    ]
-    
-    # Randomly select 5 impact areas with scores
-    selected_impacts = impact_rng.sample(impact_combinations, 5)
-    
-    # Generate impact scores and recommendations
-    impact_areas = []
-    for zone, phase, reasoning in selected_impacts:
-        # Get the score from our existing zone_phase data
-        impact_score = zone_phase.get(zone, {}).get(phase, impact_rng.randint(45, 90))
-        
-        # Determine if this is strength or weakness
-        if impact_score >= 75:
-            status = "STRENGTH"
-            status_color = "#00CC00"
-            icon = "✅"
-            action = "Maintain"
-        elif impact_score >= 60:
-            status = "MODERATE"
-            status_color = "#F4A261"
-            icon = "⚠️"
-            action = "Improve"
-        else:
-            status = "WEAKNESS"
-            status_color = "#FF4444"
-            icon = ""
-            action = "Prioritize"
-        
-        impact_areas.append({
-            "zone": zone,
-            "phase": phase,
-            "score": impact_score,
-            "reasoning": reasoning,
-            "status": status,
-            "status_color": status_color,
-            "icon": icon,
-            "action": action
-        })
-    
-    # Sort by score (weaknesses first for priority focus)
-    impact_areas.sort(key=lambda x: x["score"])
-    
-    # Display impact areas in cards
-    for idx, area in enumerate(impact_areas, 1):
-        zone = area["zone"]
-        phase = area["phase"]
-        score = area["score"]
-        reasoning = area["reasoning"]
-        status = area["status"]
-        status_color = area["status_color"]
-        icon = area["icon"]
-        action = area["action"]
-        
-        # Determine gradient color based on score
-        card_color = _gdp_colour(score)
-        
-        st.markdown(
-            f"""
-            <div class="gdp-card" style="padding:24px 28px;margin-bottom:20px;border-left:6px solid {status_color};position:relative;overflow:hidden;">
-                <div style="position:absolute;top:0;right:0;bottom:0;width:180px;background:linear-gradient(90deg, transparent 0%, {card_color}15 100%);"></div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;">
-                    <div style="flex:1;">
-                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                            <span style="font-size:28px;">{icon}</span>
-                            <div>
-                                <div style="font-weight:900;font-size:20px;color:#FFFFFF;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.02em;">
-                                    #{idx} · {zone} – {phase}
-                                </div>
-                                <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-weight:600;">
-                                    {reasoning}
-                                </div>
-                            </div>
-                        </div>
-                        <div style="display:flex;gap:16px;align-items:center;margin-top:16px;">
-                            <div style="background:{status_color}25;border:1px solid {status_color};padding:8px 16px;border-radius:8px;">
-                                <span style="font-size:11px;font-weight:900;color:{status_color};letter-spacing:0.1em;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                                    {status}
-                                </span>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:8px;">
-                                <span style="font-size:11px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:0.1em;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                                    ACTION: {action.upper()}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-left:24px;">
-                        <div style="font-weight:900;font-size:48px;color:{card_color};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;line-height:1;text-shadow:0 2px 8px {card_color}50;">
-                            {score}
-                        </div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            IMPACT SCORE
-                        </div>
-                        <div class="gdp-bar-bg" style="width:120px;margin-top:8px;">
-                            <div class="gdp-bar-fill" style="width:{score}%;background:{card_color};box-shadow:0 0 16px {card_color};"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    
-    # Summary card
-    avg_impact_score = sum(area["score"] for area in impact_areas) / len(impact_areas)
-    weaknesses_count = sum(1 for area in impact_areas if area["status"] == "WEAKNESS")
-    strengths_count = sum(1 for area in impact_areas if area["status"] == "STRENGTH")
-    
-    summary_color = _gdp_colour(avg_impact_score)
-    
-    st.markdown(
-        f"""
-        <div class="gdp-card" style="padding:24px 28px;margin-top:32px;background:linear-gradient(135deg, rgba(20,20,30,0.98) 0%, rgba(30,30,45,0.98) 100%);border:2px solid {summary_color}40;">
-            <div style="text-align:center;">
-                <div style="font-weight:900;font-size:18px;color:rgba(255,255,255,0.9);margin-bottom:16px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.05em;">
-                    IMPACT AREAS SUMMARY
-                </div>
-                <div style="display:flex;justify-content:center;gap:32px;margin-top:20px;">
-                    <div>
-                        <div style="font-size:32px;font-weight:900;color:{summary_color};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            {avg_impact_score:.0f}
-                        </div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            AVG SCORE
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:32px;font-weight:900;color:#00CC00;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            {strengths_count}
-                        </div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            STRENGTHS
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:32px;font-weight:900;color:#FF4444;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            {weaknesses_count}
-                        </div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            PRIORITIES
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
     )
-    
-    st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
-    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>Note: All impact areas and scores are hypothetical for demonstration purposes</div>", unsafe_allow_html=True)
-    
+
+
+
     # =====================================================
-    # COACHES BOX DASHBOARD - Single Screen Consolidated View
+    # LOAD REAL DATA
     # =====================================================
-    st.markdown("<div style='margin:60px 0 20px 0;border-top:3px solid rgba(255,215,0,0.4);'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style='text-align:center;margin-bottom:24px;'>
-        <div style='font-weight:900;font-size:32px;color:#FFD700;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;letter-spacing:0.05em;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>
-            COACHES BOX DASHBOARD
+    _block = "L10" if time_filter == "Last 10 Games" else "Season"
+    _season = CURRENT_SEASON
+
+    # Load team ladder data (phase ratings 50-99 scale)
+    ladders = load_team_ladders(_season, block=_block)
+    if ladders.empty:
+        # Try previous season as fallback
+        _season = CURRENT_SEASON - 1
+        ladders = load_team_ladders(_season, block=_block)
+
+    if ladders.empty:
+        st.warning("No team rating data available yet.")
+        return
+
+    # Normalise team names
+    if "Team" in ladders.columns:
+        ladders["Team"] = ladders["Team"].apply(lambda x: normalize_team_name(str(x)) if pd.notna(x) else x)
+
+    # Load raw team stats for component data
+    from pathlib import Path as _Path
+    _raw_path = _Path(__file__).parent / "data" / "raw" / "team" / f"team_stats_{_season}.csv"
+    if _raw_path.exists():
+        raw_stats = pd.read_csv(_raw_path)
+        raw_stats = raw_stats[raw_stats["Team"].notna()]
+        raw_stats = raw_stats[~raw_stats["Team"].astype(str).str.contains("Total|Average|nan", case=False, na=False)]
+        raw_stats["Team"] = raw_stats["Team"].apply(lambda x: normalize_team_name(str(x)) if pd.notna(x) else x)
+    else:
+        raw_stats = pd.DataFrame()
+
+    # Phase column mapping
+    PHASE_COLS = {
+        "Ball Winning": ("Ball Winning Ranking", "Ball Winning Rank"),
+        "Ball Movement": ("Ball Movement Ranking", "Ball Movement Rank"),
+        "Scoring": ("Scoring Ranking", "Scoring Rank"),
+        "Defence": ("Defence Ranking", "Defence Rank"),
+        "Pressure": ("Pressure Ranking", "Pressure Rank"),
+    }
+
+    # Component stats per phase (from raw team stats)
+    PHASE_COMPONENT_STATS = {
+        "Ball Winning": [
+            ("Post Clear CP Diff", lambda r: r.get("PostClearanceContestedPossessions", 0) - r.get("PostClearanceContestedPossessions_Opposition", 0), "higher better"),
+            ("Ground Ball Diff", lambda r: r.get("GroundBallGets", 0) - r.get("GroundBallGets_Opposition", 0), "higher better"),
+            ("1st Poss to Clear %", lambda r: r.get("FirstPossessionToClearance", 0), "higher better"),
+            ("Clearance Diff", lambda r: r.get("TotalClearances", 0) - r.get("TotalClearances_Opposition", 0), "higher better"),
+        ],
+        "Ball Movement": [
+            ("Def Half to Score %", lambda r: r.get("DefHalfToScore", 0), "higher better"),
+            ("Chain to Score %", lambda r: r.get("ChainToScore", 0), "higher better"),
+            ("D50 to F50 %", lambda r: r.get("D50ToF50", 0), "higher better"),
+            ("Kick Rating", lambda r: r.get("KickingEfficiency", 0), "higher better"),
+        ],
+        "Scoring": [
+            ("Scores per I50 %", lambda r: r.get("ScoringShotsPerInside50", 0), "higher better"),
+            ("Goals per I50 %", lambda r: r.get("GoalsPerInside50", 0), "higher better"),
+            ("Accuracy %", lambda r: r.get("GoalAccuracy", 0), "higher better"),
+            ("+/- Exp Score", lambda r: r.get("xScoreRating", 0), "higher better"),
+        ],
+        "Defence": [
+            ("Def Half to Score Ag %", lambda r: r.get("DefHalfToScore_Opposition", 0), "lower better"),
+            ("Chain to Score Ag %", lambda r: r.get("ChainToScore_Opposition", 0), "lower better"),
+            ("D50 to F50 Ag %", lambda r: r.get("D50ToF50_Opposition", 0), "lower better"),
+            ("Goals per I50 Ag %", lambda r: r.get("GoalsPerInside50_Opposition", 0), "lower better"),
+        ],
+        "Pressure": [
+            ("Tackle Diff", lambda r: r.get("Tackles", 0) - r.get("Tackles_Opposition", 0), "higher better"),
+            ("F50 Tackles", lambda r: r.get("TacklesInside50", 0), "higher better"),
+            ("Pressure Acts", lambda r: r.get("PressureActs", 0), "higher better"),
+            ("1%'ers", lambda r: r.get("OnePercenters", 0), "higher better"),
+        ],
+    }
+
+    def _get_team_phase_rating(team_name: str, phase: str):
+        """Get team's phase rating and rank from ladder data."""
+        rating_col, rank_col = PHASE_COLS[phase]
+        row = ladders[ladders["Team"] == team_name]
+        if row.empty:
+            return None, None
+        rating = pd.to_numeric(row.iloc[0].get(rating_col), errors="coerce")
+        rank = pd.to_numeric(row.iloc[0].get(rank_col), errors="coerce")
+        return (float(rating) if pd.notna(rating) else None,
+                int(rank) if pd.notna(rank) else None)
+
+    def _get_team_overall_rating(team_name: str):
+        """Get team's overall rating and rank."""
+        row = ladders[ladders["Team"] == team_name]
+        if row.empty:
+            return None, None
+        rating = pd.to_numeric(row.iloc[0].get("Overall Rating", row.iloc[0].get("Team Rating")), errors="coerce")
+        rank = pd.to_numeric(row.iloc[0].get("Overall Rank", row.iloc[0].get("Team Rating Rank")), errors="coerce")
+        return (float(rating) if pd.notna(rating) else None,
+                int(rank) if pd.notna(rank) else None)
+
+    def _get_team_component_stats(team_name: str, phase: str):
+        """Get component stats for a team's phase from raw data."""
+        if raw_stats.empty:
+            return []
+        row = raw_stats[raw_stats["Team"] == team_name]
+        if row.empty:
+            return []
+        row_dict = row.iloc[0].to_dict()
+        results = []
+        for stat_name, compute_fn, direction in PHASE_COMPONENT_STATS.get(phase, []):
+            try:
+                val = float(compute_fn(row_dict))
+                results.append((stat_name, val, direction))
+            except Exception:
+                results.append((stat_name, None, direction))
+        return results
+
+    # =====================================================
+    # Overall Rating comparison banner
+    # =====================================================
+    st.markdown("<div style='margin:40px 0 24px 0;'></div>", unsafe_allow_html=True)
+
+    overall_a, rank_a = _get_team_overall_rating(team_a)
+    overall_b, rank_b = _get_team_overall_rating(team_b)
+
+    def _ordinal(n):
+        if n is None:
+            return "—"
+        n = int(n)
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
+    col_a = _gdp_colour(overall_a) if overall_a else "#888"
+    col_b = _gdp_colour(overall_b) if overall_b else "#888"
+
+    st.markdown(f"""
+    <div class="gdp-card" style="padding:28px;margin-bottom:32px;">
+        <div style="text-align:center;font-weight:900;font-size:16px;color:#FFD700;margin-bottom:20px;letter-spacing:0.08em;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            OVERALL TEAM RATING — {_season} {time_filter}
         </div>
-        <div style='color:rgba(255,255,255,0.7);font-size:13px;margin-top:8px;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;font-weight:600;'>
-            Game Day Monitor View — All Key Data on One Screen
+        <div style="display:flex;justify-content:center;align-items:center;gap:48px;">
+            <div style="text-align:center;">
+                <div style="font-size:14px;font-weight:800;color:rgba(255,255,255,0.8);margin-bottom:8px;">{team_a}</div>
+                <div style="font-size:48px;font-weight:900;color:{col_a};text-shadow:0 2px 12px {col_a}50;">{int(overall_a) if overall_a else '—'}</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;">Ranked {_ordinal(rank_a)}</div>
+            </div>
+            <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.3);">VS</div>
+            <div style="text-align:center;">
+                <div style="font-size:14px;font-weight:800;color:rgba(255,255,255,0.8);margin-bottom:8px;">{team_b}</div>
+                <div style="font-size:48px;font-weight:900;color:{col_b};text-shadow:0 2px 12px {col_b}50;">{int(overall_b) if overall_b else '—'}</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;font-weight:700;">Ranked {_ordinal(rank_b)}</div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Build the consolidated dashboard HTML
-    # Top row: Team logos with VS, Game Type indicators, Momentum
-    
-    # Get team logo paths
-    team_a_code = TEAM_CODE_MAP.get(team_a, team_a.lower().replace(" ", ""))
-    team_b_code = TEAM_CODE_MAP.get(team_b, team_b.lower().replace(" ", ""))
-    team_a_logo = f"{LOGO_FOLDER}/{team_a_code}.png"
-    team_b_logo = f"{LOGO_FOLDER}/{team_b_code}.png"
-    
-    # Encode logos to base64 for embedding
-    def get_logo_b64(path):
-        try:
-            with open(path, "rb") as f:
-                return base64.b64encode(f.read()).decode()
-        except Exception:
-            return ""
-    
-    logo_a_b64 = get_logo_b64(team_a_logo)
-    logo_b_b64 = get_logo_b64(team_b_logo)
-    
-    # Game mode values
-    game_modes_html = ""
-    for left, right, key in dims:
-        v = int(game_type[key])
-        winner = left if v < 50 else right
-        dist = abs(v - 50)
-        strength = "STRONG" if dist >= 20 else ("SLIGHT" if dist >= 8 else "EVEN")
-        mode_color = "#3FB984" if dist >= 8 else "#888888"
-        game_modes_html += f"""
-        <div style='display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);'>
-            <span style='font-size:10px;color:rgba(255,255,255,0.6);width:80px;'>{left}/{right[0:4]}</span>
-            <span style='font-size:11px;font-weight:800;color:{mode_color};'>{winner}</span>
-        </div>
-        """
-    
-    # Zone health mini-bars
-    zones_html = ""
-    for z in zone_names:
-        score = zone_overall[z]
-        col = _gdp_colour(score)
-        short_name = z.replace("Defensive ", "D").replace("Attacking ", "A").replace("Centre Bounce", "CB").replace("Forward ", "F").replace("Mid", "M")
-        zones_html += f"""
-        <div style='flex:1;text-align:center;padding:4px;'>
-            <div style='font-size:9px;color:rgba(255,255,255,0.5);margin-bottom:2px;font-weight:700;'>{short_name}</div>
-            <div style='font-size:14px;font-weight:900;color:{col};'>{score}</div>
-            <div style='height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:2px;'>
-                <div style='height:4px;width:{score}%;background:{col};border-radius:2px;'></div>
-            </div>
-        </div>
-        """
-    
-    # Phase ratings mini-cards
-    phases_html = ""
-    for k in pkeys:
-        score = int(phases[k])
-        col = _gdp_colour(score)
-        short_phase = k.replace("Ball Winning", "WIN").replace("Ball Use", "USE").replace("Scoring", "SCORE").replace("Defence", "DEF").replace("Pressure", "PRESS")
-        phases_html += f"""
-        <div style='flex:1;text-align:center;padding:6px 4px;background:rgba(255,255,255,0.03);border-radius:6px;margin:0 2px;'>
-            <div style='font-size:8px;color:rgba(255,255,255,0.5);margin-bottom:2px;font-weight:700;letter-spacing:0.05em;'>{short_phase}</div>
-            <div style='font-size:16px;font-weight:900;color:{col};'>{score}</div>
-        </div>
-        """
-    
-    # Top 3 impact areas (sorted by priority - lowest scores first)
-    top_impacts_html = ""
-    for i, area in enumerate(impact_areas[:3], 1):
-        score = area["score"]
-        col = _gdp_colour(score)
-        zone_short = area["zone"].replace("Defensive ", "D").replace("Attacking ", "A").replace("Centre Bounce", "CB").replace("Forward ", "F").replace("Mid", "M")
-        phase_short = area["phase"].replace("Ball Winning", "WIN").replace("Ball Use", "USE").replace("Scoring", "SCORE").replace("Defence", "DEF").replace("Pressure", "PRESS")
-        top_impacts_html += f"""
-        <div style='display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:4px;border-left:3px solid {area["status_color"]};'>
-            <span style='font-size:10px;color:rgba(255,255,255,0.8);font-weight:700;'>{zone_short} • {phase_short}</span>
-            <span style='font-size:12px;font-weight:900;color:{col};'>{score}</span>
-        </div>
-        """
-    
-    # Build the complete consolidated dashboard
-    dashboard_html = f"""
-    <div style='
-        background: linear-gradient(145deg, rgba(10,10,18,0.98), rgba(20,20,35,0.98));
-        border: 2px solid rgba(255,215,0,0.3);
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    '>
-        <!-- ROW 1: Teams + Game Type + Momentum -->
-        <div style='display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:12px;margin-bottom:12px;'>
-            
-            <!-- Team Matchup -->
-            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:center;gap:12px;'>
-                <div style='text-align:center;'>
-                    <img src='data:image/png;base64,{logo_a_b64}' style='width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));'/>
-                    <div style='font-size:10px;font-weight:800;color:#FFFFFF;margin-top:4px;'>{team_a[:12]}</div>
+
+    # =====================================================
+    # 5 Phases side-by-side comparison
+    # =====================================================
+    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:12px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('chart_bar', 20)} 5 Phases of the Game</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Side-by-side phase ratings ({_season} {time_filter}) — expand each to see contributing stats</div>", unsafe_allow_html=True)
+
+    phase_colours = {
+        "Ball Winning": "#0066CC",
+        "Ball Movement": "#009933",
+        "Scoring": "#FFD700",
+        "Defence": "#CC0000",
+        "Pressure": "#800080",
+    }
+
+    for phase_name in ["Ball Winning", "Ball Movement", "Scoring", "Defence", "Pressure"]:
+        rating_a, rank_phase_a = _get_team_phase_rating(team_a, phase_name)
+        rating_b, rank_phase_b = _get_team_phase_rating(team_b, phase_name)
+
+        p_col = phase_colours[phase_name]
+        col_ra = _gdp_colour(rating_a) if rating_a else "#888"
+        col_rb = _gdp_colour(rating_b) if rating_b else "#888"
+        val_a = int(rating_a) if rating_a else "—"
+        val_b = int(rating_b) if rating_b else "—"
+        bar_a = max(0, min(100, int(rating_a))) if rating_a else 0
+        bar_b = max(0, min(100, int(rating_b))) if rating_b else 0
+
+        # Determine winner
+        winner_html = ""
+        if rating_a and rating_b:
+            if rating_a > rating_b:
+                winner_html = f"<span style='font-size:11px;font-weight:800;color:#00CC00;'>▲ {team_a}</span>"
+            elif rating_b > rating_a:
+                winner_html = f"<span style='font-size:11px;font-weight:800;color:#00CC00;'>▲ {team_b}</span>"
+            else:
+                winner_html = "<span style='font-size:11px;font-weight:800;color:#888;'>EVEN</span>"
+
+        st.markdown(f"""
+        <div class="gdp-card" style="padding:20px 24px;margin-bottom:16px;border-left:5px solid {p_col};">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div style="font-weight:900;font-size:18px;color:{p_col};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.03em;">
+                    {phase_name}
                 </div>
-                <div style='font-size:18px;font-weight:900;color:rgba(255,255,255,0.4);'>VS</div>
-                <div style='text-align:center;'>
-                    <img src='data:image/png;base64,{logo_b_b64}' style='width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));'/>
-                    <div style='font-size:10px;font-weight:800;color:#FFFFFF;margin-top:4px;'>{team_b[:12]}</div>
-                </div>
+                {winner_html}
             </div>
-            
-            <!-- Game Type -->
-            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
-                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:6px;letter-spacing:0.1em;text-align:center;'>GAME TYPE</div>
-                {game_modes_html}
-            </div>
-            
-            <!-- Momentum -->
-            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
-                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>MOMENTUM</div>
-                <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'>
-                    <span style='font-size:11px;font-weight:800;color:#FF6B35;'>{team_a[:8]}</span>
-                    <span style='font-size:10px;font-weight:900;color:{status_color};padding:2px 8px;background:rgba(255,255,255,0.08);border-radius:8px;'>{momentum_status}</span>
-                    <span style='font-size:11px;font-weight:800;color:#4A90E2;'>{team_b[:8]}</span>
+            <div style="display:flex;gap:24px;align-items:stretch;">
+                <!-- Team A -->
+                <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+                        <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,0.85);">{team_a}</span>
+                        <span style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Ranked {_ordinal(rank_phase_a)}</span>
+                    </div>
+                    <div style="font-size:32px;font-weight:900;color:{col_ra};text-shadow:0 2px 8px {col_ra}50;">{val_a}</div>
+                    <div class="gdp-bar-bg" style="margin-top:10px;">
+                        <div class="gdp-bar-fill" style="width:{bar_a}%;background:{col_ra};box-shadow:0 0 16px {col_ra};"></div>
+                    </div>
                 </div>
-                <div style='position:relative;height:20px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;'>
-                    <div style='position:absolute;left:0;top:0;bottom:0;width:{team_a_pct}%;background:linear-gradient(90deg, #FF6B35 0%, #F7931E 100%);'></div>
-                    <div style='position:absolute;right:0;top:0;bottom:0;width:{team_b_pct}%;background:linear-gradient(270deg, #4A90E2 0%, #357ABD 100%);'></div>
-                    <div style='position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.4);transform:translateX(-50%);'></div>
-                    <span style='position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:900;color:#FFF;'>{int(team_a_pct)}%</span>
-                    <span style='position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:900;color:#FFF;'>{int(team_b_pct)}%</span>
+                <!-- Team B -->
+                <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+                        <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,0.85);">{team_b}</span>
+                        <span style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Ranked {_ordinal(rank_phase_b)}</span>
+                    </div>
+                    <div style="font-size:32px;font-weight:900;color:{col_rb};text-shadow:0 2px 8px {col_rb}50;">{val_b}</div>
+                    <div class="gdp-bar-bg" style="margin-top:10px;">
+                        <div class="gdp-bar-fill" style="width:{bar_b}%;background:{col_rb};box-shadow:0 0 16px {col_rb};"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- ROW 2: Zone Health -->
-        <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:12px;'>
-            <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>ZONE HEALTH</div>
-            <div style='display:flex;justify-content:space-between;gap:4px;'>
-                {zones_html}
-            </div>
+        """, unsafe_allow_html=True)
+
+        # Expandable component stats
+        with st.expander(f"📊 {phase_name} — Contributing Stats", expanded=False):
+            stats_a = _get_team_component_stats(team_a, phase_name)
+            stats_b = _get_team_component_stats(team_b, phase_name)
+
+            if stats_a and stats_b:
+                # Compare stats side-by-side in a table
+                comp_rows = []
+                for (sn_a, sv_a, dir_a), (sn_b, sv_b, _) in zip(stats_a, stats_b):
+                    # Determine who is better
+                    better = ""
+                    if sv_a is not None and sv_b is not None:
+                        higher_better = dir_a == "higher better"
+                        if (higher_better and sv_a > sv_b) or (not higher_better and sv_a < sv_b):
+                            better = "A"
+                        elif (higher_better and sv_b > sv_a) or (not higher_better and sv_b < sv_a):
+                            better = "B"
+
+                    def _fmt(v):
+                        if v is None:
+                            return "—"
+                        if abs(v) >= 100:
+                            return f"{v:.0f}"
+                        return f"{v:.1f}"
+
+                    dot_a = "🟢" if better == "A" else ("🔴" if better == "B" else "⚪")
+                    dot_b = "🟢" if better == "B" else ("🔴" if better == "A" else "⚪")
+
+                    comp_rows.append({
+                        f"{team_a}": f"{dot_a} {_fmt(sv_a)}",
+                        "Stat": sn_a,
+                        f"{team_b}": f"{dot_b} {_fmt(sv_b)}",
+                    })
+
+                comp_df = pd.DataFrame(comp_rows)
+                st.dataframe(comp_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Raw component stats not available for this filter/season.")
+
+    # =====================================================
+    # Summary Comparison Table
+    # =====================================================
+    st.markdown("<div style='margin:40px 0;border-top:1px solid rgba(255,255,255,0.15);'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center;font-weight:900;font-size:24px;margin-bottom:8px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;letter-spacing:0.03em;'>{_svg_inline('trophy', 20)} Head-to-Head Summary</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:24px;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;font-weight:600;'>Phase-by-phase advantage breakdown</div>", unsafe_allow_html=True)
+
+    summary_rows = []
+    team_a_wins = 0
+    team_b_wins = 0
+    for phase_name in ["Ball Winning", "Ball Movement", "Scoring", "Defence", "Pressure"]:
+        ra, rk_a = _get_team_phase_rating(team_a, phase_name)
+        rb, rk_b = _get_team_phase_rating(team_b, phase_name)
+        adv = ""
+        if ra and rb:
+            diff = ra - rb
+            if diff > 0:
+                adv = f"▲ {team_a} (+{diff:.0f})"
+                team_a_wins += 1
+            elif diff < 0:
+                adv = f"▲ {team_b} (+{abs(diff):.0f})"
+                team_b_wins += 1
+            else:
+                adv = "Even"
+        summary_rows.append({
+            "Phase": phase_name,
+            f"{team_a} Rating": int(ra) if ra else "—",
+            f"{team_a} Rank": _ordinal(rk_a),
+            f"{team_b} Rating": int(rb) if rb else "—",
+            f"{team_b} Rank": _ordinal(rk_b),
+            "Advantage": adv,
+        })
+
+    summary_df = pd.DataFrame(summary_rows)
+
+    # Build a styled HTML table
+    sum_html = ["<table class='fe-table'><thead><tr>"]
+    for col in summary_df.columns:
+        bg = "#1a1a1a"
+        fg = "#FFFFFF"
+        if col == "Phase":
+            pass
+        elif team_a in col:
+            bg = "#FF6B35"
+        elif team_b in col:
+            bg = "#4A90E2"
+        elif col == "Advantage":
+            bg = "#2a2a2a"
+        sum_html.append(f"<th style='background:{bg};color:{fg};padding:10px 14px;font-size:12px;'>{col}</th>")
+    sum_html.append("</tr></thead><tbody>")
+
+    for _, row in summary_df.iterrows():
+        sum_html.append("<tr>")
+        for col in summary_df.columns:
+            val = row[col]
+            style = "padding:8px 14px;font-size:13px;"
+            if col == "Phase":
+                p_c = phase_colours.get(val, "#FFF")
+                style += f"font-weight:900;color:{p_c};"
+            elif "Rating" in col:
+                try:
+                    c = _gdp_colour(float(val))
+                    style += f"font-weight:900;color:{c};"
+                except (ValueError, TypeError):
+                    pass
+            elif col == "Advantage":
+                if f"▲ {team_a}" in str(val):
+                    style += "color:#FF6B35;font-weight:800;"
+                elif f"▲ {team_b}" in str(val):
+                    style += "color:#4A90E2;font-weight:800;"
+                else:
+                    style += "color:#888;"
+            sum_html.append(f"<td style='{style}'>{val}</td>")
+        sum_html.append("</tr>")
+    sum_html.append("</tbody></table>")
+    st.markdown("\n".join(sum_html), unsafe_allow_html=True)
+
+    # Verdict banner
+    if team_a_wins > team_b_wins:
+        verdict_team = team_a
+        verdict_col = "#FF6B35"
+    elif team_b_wins > team_a_wins:
+        verdict_team = team_b
+        verdict_col = "#4A90E2"
+    else:
+        verdict_team = "EVEN"
+        verdict_col = "#FFD700"
+
+    st.markdown(f"""
+    <div class="gdp-card" style="margin-top:24px;padding:20px;text-align:center;border:2px solid {verdict_col}40;">
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:800;letter-spacing:0.08em;margin-bottom:8px;">PHASE ADVANTAGE</div>
+        <div style="font-size:28px;font-weight:900;color:{verdict_col};font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            {verdict_team}
         </div>
-        
-        <!-- ROW 3: 5 Phases + Impact Areas -->
-        <div style='display:grid;grid-template-columns:2fr 1fr;gap:12px;'>
-            
-            <!-- 5 Phases -->
-            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
-                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>5 PHASES</div>
-                <div style='display:flex;justify-content:space-between;'>
-                    {phases_html}
-                </div>
-            </div>
-            
-            <!-- Top 3 Impact Areas -->
-            <div style='background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;'>
-                <div style='font-size:10px;font-weight:800;color:#FFD700;margin-bottom:8px;letter-spacing:0.1em;text-align:center;'>TOP 3 PRIORITIES</div>
-                {top_impacts_html}
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div style='text-align:center;margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);'>
-            <span style='font-size:9px;color:rgba(255,255,255,0.4);font-weight:600;'>FUTUREEDGE SPORT • GAME DAY MONITOR • {time_filter}</span>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:8px;font-weight:700;">
+            {team_a_wins} – {team_b_wins} phase wins
         </div>
     </div>
-    """
-    
-    # Use components.html for complex HTML with embedded images
-    import streamlit.components.v1 as components
-    components.html(dashboard_html, height=320, scrolling=False)
-    
-    st.markdown("<div style='margin:20px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:11px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>{_svg_inline('star', 16)} This consolidated view is designed to fit on a single monitor in the coaches box during game day</div>", unsafe_allow_html=True)
-    
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='margin:24px 0;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;font-style:italic;font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>Data: {_season} {time_filter} · Ratings on 50-99 scale</div>", unsafe_allow_html=True)
+
     # Professional footer
     render_footer()
+
 
 
 # ================= OVERVIEW =================
@@ -5915,7 +5696,7 @@ if page == "Overview":
     # Team leaders cards (top4)
     # ----------------------------
     top4_colour_map = {
-        "Team Rating": ("#000000", "white"),
+        "Team Rating": ("#DAA520", "white"),
         "Ball Winning Ranking": ("#0066CC", "white"),
         "Ball Movement Ranking": ("#009933", "white"),
         "Scoring Ranking": ("#FFEB3B", "black"),
@@ -6076,7 +5857,7 @@ if page == "Overview":
 
     # Color maps (matching your palette)
     metric_colors = {
-        "Team\nRating": ("#000000", "white"),
+        "Team\nRating": ("#DAA520", "white"),
         "Ball Winning\nRanking": ("#0066CC", "white"),
         "Ball Movement\nRanking": ("#009933", "white"),
         "Scoring\nRanking": ("#FFEB3B", "black"),
@@ -6084,7 +5865,7 @@ if page == "Overview":
         "Pressure\nRanking": ("#800080", "white"),
     }
     rank_header_colors = {
-        "Team Rating\nRank": ("#404040", "white"),
+        "Team Rating\nRank": ("#8B6914", "white"),
     }
 
     # Precompute opacity ranks by metric value column
@@ -6099,9 +5880,9 @@ if page == "Overview":
         if not s.isna().all():
             column_rankings[c] = s.rank(ascending=False, method="min")
 
-    # Build HTML table using unified .fe-table-light CSS
+    # Build HTML table using unified .fe-table CSS (dark background, matching Club List)
     html = []
-    html.append("<table class='fe-table fe-table-light fe-sortable'><thead><tr>")
+    html.append("<table class='fe-table fe-sortable'><thead><tr>")
 
     # headers
     for c in ladder_view.columns:
@@ -6119,10 +5900,10 @@ if page == "Overview":
 
         if c.endswith("\nRank"):
             # rank col header: tie it to parent metric header color if possible
-            parent = c.replace("\nRank", "\nRanking")
-            if parent == "Team\nRating":
-                bg, fg = rank_header_colors.get("Team Rating\nRank", ("#404040", "white"))
-            elif parent in metric_colors:
+            if c == "Team Rating\nRank":
+                bg, fg = rank_header_colors.get("Team Rating\nRank", ("#8B6914", "white"))
+            elif c.replace("\nRank", "\nRanking") in metric_colors:
+                parent = c.replace("\nRank", "\nRanking")
                 bg, fg = metric_colors[parent]
                 bg = darken_color(bg, 0.75)
             else:
@@ -6150,7 +5931,7 @@ if page == "Overview":
                 html.append(f"<td>{v}</td>")
                 continue
 
-            # metric value cell
+            # metric value cell — pill with opacity-based coloring
             if c in metric_colors:
                 bg, fg = metric_colors[c]
                 opacity = 1.0
@@ -6159,17 +5940,17 @@ if page == "Overview":
                     if pd.notna(r):
                         opacity = 1.0 - (float(r) - 1.0) / denom * 0.7  # 1.0 -> 0.3
                 r_, g_, b_ = int(bg[1:3], 16), int(bg[3:5], 16), int(bg[5:7], 16)
-                html.append(f"<td style='background:rgba({r_},{g_},{b_},{opacity:.3f});color:{fg};'>{v}</td>")
+                html.append(f"<td><span class='ct-pill' style='background:rgba({r_},{g_},{b_},{opacity:.3f});color:{fg};'>{v}</span></td>")
                 continue
 
-            # rank cell
+            # rank cell — pill
             if c.endswith("\nRank"):
-                parent = c.replace("\nRank", "\nRanking")
-                if parent == "Team\nRating":
-                    bg = "#404040"
+                if c == "Team Rating\nRank":
+                    bg = darken_color("#DAA520", 0.75)
                     fg = "white"
                     parent_metric = "Team\nRating"
-                elif parent in metric_colors:
+                elif c.replace("\nRank", "\nRanking") in metric_colors:
+                    parent = c.replace("\nRank", "\nRanking")
                     bg, fg = metric_colors[parent]
                     bg = darken_color(bg, 0.75)
                     parent_metric = parent
@@ -6184,7 +5965,7 @@ if page == "Overview":
                         opacity = 1.0 - (float(r) - 1.0) / denom * 0.7
 
                 r_, g_, b_ = int(bg[1:3], 16), int(bg[3:5], 16), int(bg[5:7], 16)
-                html.append(f"<td style='background:rgba({r_},{g_},{b_},{opacity:.3f});color:{fg};'>{v}</td>")
+                html.append(f"<td><span class='ct-pill' style='background:rgba({r_},{g_},{b_},{opacity:.3f});color:{fg};'>{v}</span></td>")
                 continue
 
             html.append(f"<td>{v}</td>")
@@ -6250,7 +6031,7 @@ if page == "Overview":
             comp_html.append("<th style='background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);color:#FFFFFF;'>Team</th>")
             
             metric_colors_comp = {
-                "Team Rating": ("#000000", "white"),
+                "Team Rating": ("#DAA520", "white"),
                 "Ball Winning Ranking": ("#0066CC", "white"),
                 "Ball Movement Ranking": ("#009933", "white"),
                 "Scoring Ranking": ("#FFEB3B", "black"),
@@ -10296,85 +10077,7 @@ elif page == "Team Age Breakdown":
     display_cols = ["Team"] + AGE_BANDS
     
     # Build age breakdown HTML table
-    html_table = """<style>
-.ll-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    border-radius: 10px;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-.ll-table th {
-    background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
-    color: #FFFFFF;
-    padding: 12px 10px;
-    font-weight: 800;
-    font-size: 0.8em;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-bottom: 2px solid rgba(255,255,255,0.08);
-    text-align: center;
-    cursor: pointer;
-    user-select: none;
-}
-.ll-table th:hover {
-    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
-    color: #FFD700;
-}
-.ll-table th::after {
-    content: ' ⇅';
-    opacity: 0.4;
-    font-size: 0.8em;
-}
-.ll-table th.sort-asc::after {
-    content: ' ▲';
-    opacity: 1;
-    color: #FFD700;
-}
-.ll-table th.sort-desc::after {
-    content: ' ▼';
-    opacity: 1;
-    color: #FFD700;
-}
-.ll-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    text-align: center;
-    vertical-align: middle;
-    color: #E0E0E0;
-}
-.ll-table tbody tr:nth-child(even) {
-    background: rgba(0,0,0,0.15);
-}
-.ll-table tbody tr:hover {
-    background: rgba(255,215,0,0.08) !important;
-}
-.ll-table td:first-child {
-    text-align: left;
-    padding-left: 16px;
-    font-weight: 700;
-    color: #FFFFFF;
-}
-.ll-pts {
-    display: block;
-    font-weight: 700;
-    font-size: 1.05em;
-    color: #E0E0E0;
-    margin-bottom: 3px;
-}
-.ll-rank {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.72em;
-    letter-spacing: 0.3px;
-}
-</style>
-<table class='ll-table fe-sortable'>
+    html_table = """<table class='fe-table fe-sortable'>
 <thead>
 <tr>
 """
@@ -10399,8 +10102,8 @@ elif page == "Team Age Breakdown":
                 text_color = "black" if bg_color in ("#90EE90", "#FFD700") else "white"
                 html_table += (
                     f"<td>"
-                    f"<span class='ll-pts'>{pct:.1f}%</span>"
-                    f"<span class='ll-rank' style='background-color:{bg_color};color:{text_color};'>{get_ordinal_suffix(rank_val)}</span>"
+                    f"<div style='font-weight:700;font-size:1.05em;color:#E0E0E0;margin-bottom:3px;'>{pct:.1f}%</div>"
+                    f"<span class='ct-pill' style='background-color:{bg_color};color:{text_color};'>{get_ordinal_suffix(rank_val)}</span>"
                     f"</td>\n"
                 )
         html_table += "</tr>\n"
@@ -10614,79 +10317,17 @@ elif page == "List Ladder":
     display_df = pd.DataFrame(display_data)
     
     # Build list ladder HTML table
-    html_table = """<style>
-.ll-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    border-radius: 10px;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-.ll-table th {
-    background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
-    color: #FFFFFF;
-    padding: 12px 6px;
-    font-weight: 800;
-    font-size: 0.72em;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-bottom: 2px solid rgba(255,255,255,0.08);
-    text-align: center;
-}
-.ll-table td {
-    padding: 10px 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    text-align: center;
-    vertical-align: middle;
-    color: #E0E0E0;
-}
-.ll-table tbody tr:nth-child(even) {
-    background: rgba(0,0,0,0.15);
-}
-.ll-table tbody tr:hover {
-    background: rgba(255,215,0,0.08) !important;
-}
-.ll-table td:first-child {
-    font-weight: 800;
-    font-size: 0.95em;
-    color: #FFFFFF;
-}
-.ll-table td:nth-child(2) {
-    text-align: left;
-    padding-left: 14px;
-    font-weight: 700;
-    color: #FFFFFF;
-}
-.ll-table td:last-child {
-    font-weight: 800;
-}
-.ll-pts {
-    display: block;
-    font-weight: 700;
-    font-size: 1.05em;
-    color: #E0E0E0;
-    margin-bottom: 3px;
-}
-.ll-rank {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.72em;
-    letter-spacing: 0.3px;
-}
-</style>
-<table class='ll-table fe-sortable'>
+    html_table = """<table class='fe-table fe-sortable'>
 <thead>
 <tr>
 """
 
     # Add column headers
     for col in display_df.columns:
-        html_table += f"<th>{col}</th>"
+        if col == "Total Points":
+            html_table += f"<th style='background:linear-gradient(135deg,#f0f0f0 0%,#ffffff 100%);color:#1a1a1a;border-left:3px solid rgba(255,215,0,0.6);'>{col}</th>"
+        else:
+            html_table += f"<th>{col}</th>"
     html_table += "</tr>\n</thead>\n<tbody>\n"
 
     # Add data rows with Depth-Chart-style ranking badges
@@ -10700,9 +10341,9 @@ elif page == "List Ladder":
                 tp_bg = get_rank_color(overall_rank)
                 tp_text = "black" if tp_bg in ("#90EE90", "#FFD700") else "white"
                 html_table += (
-                    f"<td>"
-                    f"<span class='ll-pts'>{row[col]}</span>"
-                    f"<span class='ll-rank' style='background-color:{tp_bg};color:{tp_text};'>{get_ordinal_suffix(overall_rank)}</span>"
+                    f"<td style='background:rgba(255,255,255,0.95);border-left:3px solid rgba(255,215,0,0.6);'>"
+                    f"<div style='font-weight:800;font-size:1.1em;color:#1a1a1a;margin-bottom:3px;'>{row[col]}</div>"
+                    f"<span class='ct-pill' style='background-color:{tp_bg};color:{tp_text};'>{get_ordinal_suffix(overall_rank)}</span>"
                     f"</td>\n"
                 )
             else:
@@ -10718,8 +10359,8 @@ elif page == "List Ladder":
 
                     html_table += (
                         f"<td>"
-                        f"<span class='ll-pts'>{pts_part}</span>"
-                        f"<span class='ll-rank' style='background-color:{bg_color};color:{text_color};'>{rank_part}</span>"
+                        f"<div style='font-weight:700;font-size:1.05em;color:#E0E0E0;margin-bottom:3px;'>{pts_part}</div>"
+                        f"<span class='ct-pill' style='background-color:{bg_color};color:{text_color};'>{rank_part}</span>"
                         f"</td>\n"
                     )
                 else:
@@ -10783,7 +10424,12 @@ elif page == "List Ladder":
                         st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%); padding: 12px; border-radius: 8px 8px 0 0; margin-top: 15px;'><h4 style='margin: 0; color: #FFFFFF; text-align: center; font-weight: 900; font-size: 1.2em;'>{position}</h4></div>""", unsafe_allow_html=True)
                         
                         # Create HTML table with color coding (uses unified .fe-table CSS)
-                        html_player_table = """<table class='fe-table fe-table-compact'>
+                        html_player_table = """<table class='fe-table fe-table-compact' style='table-layout:fixed;width:100%;'>
+<colgroup>
+<col style='width:55%;'>
+<col style='width:25%;'>
+<col style='width:20%;'>
+</colgroup>
 <thead>
 <tr>
 <th>Player</th>
@@ -10801,7 +10447,7 @@ elif page == "List Ladder":
                             
                             html_player_table += f"""<tr>
 <td>{row['Player']}</td>
-<td style='background-color: {bg_color}; color: {text_color}; font-weight: 800;'>{row['Rating']}</td>
+<td><span class="ct-pill" style="background:{bg_color}; color:{text_color};">{row['Rating']}</span></td>
 <td style='font-weight: 600; color: #CCCCCC;'>{row['Points']}</td>
 </tr>
 """
@@ -11134,7 +10780,7 @@ elif page == "Team List Summary":
 <td>{row['Top 4 Avg']}</td>
 <td style='color: {diff_league_color}; font-weight: 700;'>{row['Diff vs League']}</td>
 <td style='color: {diff_top4_color}; font-weight: 700;'>{row['Diff vs Top 4']}</td>
-<td><span class='rank-badge' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
+<td><span class='ct-pill' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
 </tr>
 """
     
@@ -11286,7 +10932,7 @@ elif page == "Team List Summary":
 <td>{row['Top 4 Avg']}</td>
 <td style='color: {diff_league_color}; font-weight: 700;'>{row['Diff vs League']}</td>
 <td style='color: {diff_top4_color}; font-weight: 700;'>{row['Diff vs Top 4']}</td>
-<td><span class='rank-badge' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
+<td><span class='ct-pill' style='background: {bg_color}; color: {text_color};'>{rank_display}</span></td>
 </tr>
 """
         

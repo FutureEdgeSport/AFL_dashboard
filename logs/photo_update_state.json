@@ -1,7 +1,42 @@
 {
-  "last_run": "2026-03-10T14:45:25.200989",
-  "total_downloaded": 135,
+  "last_run": "2026-03-13T09:42:03.093077",
+  "total_downloaded": 149,
   "failed_players": [
+    {
+      "name": "Leo Lombard",
+      "team": "Gold Coast",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Lachlan Weller",
+      "team": "Gold Coast",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Lachlan Ash",
+      "team": "GWS Giants",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Joseph Fonti",
+      "team": "GWS Giants",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Harrison Himmelberg",
+      "team": "GWS Giants",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Joshua Kelly",
+      "team": "GWS Giants",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Nick Madden",
+      "team": "GWS Giants",
+      "reason": "Not found in team data"
+    },
     {
       "name": "Ollie Greeves",
       "team": "Hawthorn",
@@ -23,17 +58,7 @@
       "reason": "Not found in team data"
     },
     {
-      "name": "Tom Blamires",
-      "team": "North Melbourne",
-      "reason": "Not found in team data"
-    },
-    {
       "name": "Lachlan Jones",
-      "team": "Port Adelaide",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Balyn O'Brien",
       "team": "Port Adelaide",
       "reason": "Not found in team data"
     },
@@ -43,27 +68,7 @@
       "reason": "Not found in team data"
     },
     {
-      "name": "Mitch Zadow",
-      "team": "Port Adelaide",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Sam Cumming",
-      "team": "Richmond",
-      "reason": "Not found in team data"
-    },
-    {
       "name": "Samuel Grlj",
-      "team": "Richmond",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Zane Peucker",
-      "team": "Richmond",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Noah Roberts-Thomson",
       "team": "Richmond",
       "reason": "Not found in team data"
     },
@@ -119,11 +124,6 @@
     },
     {
       "name": "Timothy English",
-      "team": "Western Bulldogs",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Will Lewis",
       "team": "Western Bulldogs",
       "reason": "Not found in team data"
     },
@@ -1066,6 +1066,20 @@
     "dylan_patterson": "Gold Coast",
     "avery_thomas": "Gold Coast",
     "zeke_uwland": "Gold Coast",
-    "flynn_perez": "Hawthorn"
+    "flynn_perez": "Hawthorn",
+    "indy_cotton": "Adelaide",
+    "archie_ludowyke": "Adelaide",
+    "mitchell_marsh": "Adelaide",
+    "angus_anderson": "Collingwood",
+    "zac_mccarthy": "Collingwood",
+    "tyan_prindable": "Collingwood",
+    "jai_saxena": "Collingwood",
+    "tom_blamires": "North Melbourne",
+    "balyn_obrien": "Port Adelaide",
+    "mitch_zadow": "Port Adelaide",
+    "sam_cumming": "Richmond",
+    "zane_peucker": "Richmond",
+    "noah_roberts-thomson": "Richmond",
+    "will_lewis": "Western Bulldogs"
   }
 }
