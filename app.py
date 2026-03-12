@@ -3484,12 +3484,21 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             # Otherwise use the position from player data
             return map_position_to_depth(fallback_position)
         
-        # Find matches column (could be 'Total Matches', '<YEAR> Matches', or 'Matches')
+        # Find matches column - prefer one with meaningful data (non-zero sum)
         matches_col = None
-        for col_name in [f'{CURRENT_SEASON} Matches', '2025 Matches', 'Total Matches', 'Matches']:
+        _matches_candidates = [f'{CURRENT_SEASON} Matches', '2025 Matches', 'Total Matches', 'Matches']
+        for col_name in _matches_candidates:
             if col_name in all_teams_df.columns:
-                matches_col = col_name
-                break
+                _m = pd.to_numeric(all_teams_df[col_name], errors="coerce").fillna(0)
+                if _m.sum() > 0:
+                    matches_col = col_name
+                    break
+        # If no column had meaningful data, still try any that exists
+        if matches_col is None:
+            for col_name in _matches_candidates:
+                if col_name in all_teams_df.columns:
+                    matches_col = col_name
+                    break
         
         # Calculate weighted rating: Rating × Matches (rewards sustained performance)
         # Cap matches at 23 (regular season) to avoid over-rating players who played finals
@@ -4331,9 +4340,9 @@ if page == "Home":
         }}
         """
 
-    _brand_border = f"1px solid {_pri}33" if _has_brand else "1px solid rgba(255,255,255,0.12)"
-    _brand_glow = f"0 0 30px {_pri}18" if _has_brand else "none"
-    _accent_gradient = f"linear-gradient(90deg, {_pri}00, {_pri}44, {_pri}00)" if _has_brand else "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)"
+    _brand_border = "1px solid rgba(255,255,255,0.12)"
+    _brand_glow = "none"
+    _accent_gradient = "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)"
 
     st.markdown(f"""
     <style>
@@ -4355,12 +4364,12 @@ if page == "Home":
     }}
     .ams-card:hover {{
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.35){(', 0 0 20px ' + _pri + '22') if _has_brand else ''};
-        border-color: {_pri + '66' if _has_brand else 'rgba(255,255,255,0.3)'};
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        border-color: rgba(255,255,255,0.3);
     }}
     .ams-card-active {{
-        border: 2px solid {_pri + '99' if _has_brand else 'rgba(255,255,255,0.6)'} !important;
-        box-shadow: 0 4px 20px {_pri + '20' if _has_brand else 'rgba(255,255,255,0.12)'};
+        border: 2px solid rgba(255,255,255,0.6) !important;
+        box-shadow: 0 4px 20px rgba(255,255,255,0.12);
     }}
     .ams-card .ams-icon {{
         font-size: 2.4em;
@@ -4404,7 +4413,7 @@ if page == "Home":
         box-shadow: none !important;
     }}
     .ams-dash-card {{
-        border: 1px solid {_pri + '22' if _has_brand else 'rgba(255,255,255,0.10)'};
+        border: 1px solid rgba(255,255,255,0.10);
         border-radius: 12px;
         padding: 18px 18px 14px 18px;
         text-align: left;
@@ -4416,8 +4425,8 @@ if page == "Home":
         background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
     }}
     .ams-dash-card:hover {{
-        background: {_pri + '0D' if _has_brand else 'rgba(255,255,255,0.04)'};
-        border-color: {_pri + '44' if _has_brand else 'rgba(255,255,255,0.25)'};
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(255,255,255,0.25);
         transform: translateX(3px);
     }}
     .ams-dash-icon {{
@@ -4477,7 +4486,7 @@ if page == "Home":
         )
 
     # ----- Title -----
-    _title_colour = _pri if _has_brand else "#FFFFFF"
+    _title_colour = "#FFFFFF"
     st.markdown(
         f"""
         <h1 style='text-align: center; font-size: 2.2em; margin-top: 5px; margin-bottom: 0px; letter-spacing: 0.02em; color: {_title_colour};'>
@@ -4521,14 +4530,11 @@ if page == "Home":
     # Show selected team name with branded accent line (logo is the watermark)
     if st.session_state.get("default_team"):
         team = st.session_state.default_team
-        pal = TEAM_COLOUR_PALETTES.get(team, {"primary": "#FFFFFF", "secondary": "#888888"})
-        t_pri = pal["primary"]
-        t_sec = pal["secondary"]
         st.markdown(
             f"""<div class='ams-team-banner'>
-                <div class='team-name' style='color: {t_pri};'>{team}</div>
+                <div class='team-name' style='color: #FFFFFF;'>{team}</div>
                 <div style='height: 3px; margin: 6px auto 0 auto; width: 60px; border-radius: 2px;
-                     background: linear-gradient(90deg, {t_pri}, {t_sec});'></div>
+                     background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));'></div>
             </div>""",
             unsafe_allow_html=True,
         )
@@ -4545,13 +4551,8 @@ if page == "Home":
             is_active = st.session_state.home_category == cat_name
             active_cls = " ams-card-active" if is_active else ""
             cat_bg = meta["colour"]
-            # Blend category colour with team primary if branded
-            if _has_brand:
-                card_gradient = f"linear-gradient(135deg, {_pri}18, {cat_bg}30, {_pri}10)"
-                border_extra = f"border-top: 2px solid {_pri}44;"
-            else:
-                card_gradient = f"linear-gradient(135deg, {cat_bg}44, {cat_bg}22)"
-                border_extra = ""
+            card_gradient = f"linear-gradient(135deg, {cat_bg}44, {cat_bg}22)"
+            border_extra = ""
             # Visual card + select button below
             st.markdown(f"""
                 <div class='ams-card{active_cls}' style='background: {card_gradient}; {border_extra}'>
@@ -9372,7 +9373,7 @@ elif page == "Player Profile":
 
         # League-wide coaches votes for percentile-based colouring (only players with votes > 0)
         if "CoachesVotes_Avg" in players_full.columns:
-            _cv = pd.to_numeric(players_full.loc[_played, "CoachesVotes_Avg"], errors="coerce")
+            _cv = pd.to_numeric(players_full["CoachesVotes_Avg"], errors="coerce")
             all_coaches_votes = _cv[_cv > 0].dropna()
         else:
             all_coaches_votes = pd.Series(dtype=float)
@@ -9540,7 +9541,12 @@ elif page == "Player Profile":
                 ball_use = player_trait.get("Ball Use", None)
                 aerial = player_trait.get("Aerial", None)
                 defence = player_trait.get("Defence", None)
-                position = player_trait.get("Position_Full", player_trait.get("Position", latest_position))
+                _pos_raw = player_trait.get("Position_Full", None)
+                if _pos_raw is None or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)):
+                    _pos_raw = player_trait.get("Position", None)
+                if _pos_raw is None or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)):
+                    _pos_raw = latest_position
+                position = _pos_raw
 
                 # ---------------------------
                 # KPI CARDS (FIXED POSITION RANK)
@@ -9581,7 +9587,7 @@ elif page == "Player Profile":
                 pos_df = pd.DataFrame()
                 pos_col = "Position_Full" if "Position_Full" in all_traits_sorted.columns else ("Position" if "Position" in all_traits_sorted.columns else None)
 
-                if rv is not None and pos_col and position not in [None, ""] and not all_traits_sorted.empty:
+                if rv is not None and pos_col and position not in [None, ""] and not pd.isna(position) and not all_traits_sorted.empty:
                     pos_df = all_traits_sorted[all_traits_sorted[pos_col].astype(str) == str(position)].copy()
 
                     if not pos_df.empty:
@@ -9854,6 +9860,17 @@ elif page == "Player Profile":
                 except Exception:
                     _th_league_ratings = pd.to_numeric(_th_view["Rating"], errors="coerce").dropna() if "Rating" in _th_view.columns else pd.Series(dtype=float)
 
+                # League-wide sub-trait distributions for pill colouring
+                _th_subtrait_series = {}
+                for _st_col in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
+                    try:
+                        if _th_league_df is not None and _st_col in _th_league_df.columns:
+                            _th_subtrait_series[_st_col] = pd.to_numeric(_th_league_df[_st_col], errors="coerce").dropna()
+                        else:
+                            _th_subtrait_series[_st_col] = pd.to_numeric(_th_view[_st_col], errors="coerce").dropna() if _st_col in _th_view.columns else pd.Series(dtype=float)
+                    except Exception:
+                        _th_subtrait_series[_st_col] = pd.Series(dtype=float)
+
                 def _th_fmt(x):
                     if pd.isna(x):
                         return "—"
@@ -9874,11 +9891,16 @@ elif page == "Player Profile":
                             v = _th_row.get(c, np.nan)
                             if pd.notna(v) and len(_th_league_ratings) > 0:
                                 bg, fg = rating_colour_for_value(float(v), _th_league_ratings)
-                                _th_html += f"<td style='background-color:{bg}; color:{fg}; font-weight:900;'>{_th_fmt(v)}</td>"
+                                _th_html += f"<td><span class='ct-pill' style='background:{bg};color:{fg};'>{_th_fmt(v)}</span></td>"
                             else:
                                 _th_html += "<td>—</td>"
                         elif c in ["Ball Winning", "Ball Use", "Aerial", "Defence"]:
-                            _th_html += f"<td>{_th_fmt(_th_row.get(c, np.nan))}</td>"
+                            v = _th_row.get(c, np.nan)
+                            if pd.notna(v) and c in _th_subtrait_series and len(_th_subtrait_series[c]) > 0:
+                                bg, fg = rating_colour_for_value(float(v), _th_subtrait_series[c])
+                                _th_html += f"<td><span class='ct-pill' style='background:{bg};color:{fg};'>{_th_fmt(v)}</span></td>"
+                            else:
+                                _th_html += f"<td>{_th_fmt(v)}</td>"
                         else:
                             _th_html += f"<td>{_th_row.get(c, '—')}</td>"
                     _th_html += "</tr>"
@@ -10024,9 +10046,6 @@ elif page == "Depth Chart":
         except Exception as _e:
             pass  # Fall back to regular Summary sheet
     
-    # Load current season players data (same source as List Ladder) for ranking calculations
-    players_2025_df = load_players(CURRENT_SEASON)
-
     # Normalize team names in dropdown to match logic
     teams = sorted([
         "GWS Giants" if t in ["GWS", "GWS Giants", "Greater Western Sydney"] else t
@@ -10083,17 +10102,43 @@ elif page == "Depth Chart":
     df_team["RatingPoints_Avg"] = pd.to_numeric(
         df_team[rating_col_name], errors="coerce"
     )
+
+    # Load player data for ranking calculations
+    # Determine which season's data to use based on the actual rating column
+    _ranking_season = CURRENT_SEASON
+    try:
+        _rcn = str(rating_col_name)
+        _rating_year = int(_rcn) if _rcn.isdigit() else None
+        if _rating_year and 2012 <= _rating_year <= CURRENT_SEASON:
+            _ranking_season = _rating_year
+    except (ValueError, TypeError):
+        pass
+    players_ranking_df = load_players(_ranking_season)
+    # If the ranking season data is sparse (e.g. early in a new season), fall back to previous season
+    if not players_ranking_df.empty and "Matches" in players_ranking_df.columns:
+        _avg_matches = pd.to_numeric(players_ranking_df["Matches"], errors="coerce").mean()
+        if _avg_matches < 2 and _ranking_season > 2012:
+            _fallback = load_players(_ranking_season - 1)
+            if not _fallback.empty:
+                players_ranking_df = _fallback
     
     # IMPORTANT: df_team (from Summary) is used for DISPLAY - shows ALL squad players
-    # This includes players who didn't play in 2025 (they'll have NaN ratings but still appear)
+    # This includes players who didn't play (they'll have NaN ratings but still appear)
     # Ensure all players appear even without ratings
     
-    # For RANKING calculations: use 2025 players data (same as List Ladder) when "2025 (latest)" selected
-    # Players who didn't play (not in 2025 data) don't affect rankings
-    if rating_col_name in (2025, "2025") and not players_2025_df.empty:
-        # Use 2025 players data for ranking (same data source as List Ladder)
-        # Only players who actually played in 2025 will affect rankings
-        ranking_df = players_2025_df.copy()
+    # For RANKING calculations: use per-season player data when a specific year is selected
+    # Detect if rating_col_name is a year
+    _is_year_rating = False
+    try:
+        _yr = int(rating_col_name) if isinstance(rating_col_name, str) and rating_col_name.isdigit() else (rating_col_name if isinstance(rating_col_name, int) else None)
+        _is_year_rating = _yr is not None and 2012 <= _yr <= CURRENT_SEASON
+    except (ValueError, TypeError):
+        pass
+
+    if _is_year_rating and not players_ranking_df.empty:
+        # Use per-season players data for ranking (same data source as List Ladder)
+        # Only players who actually played will affect rankings
+        ranking_df = players_ranking_df.copy()
         # Ensure it has RatingPoints_Avg and Matches
         if "RatingPoints_Avg" not in ranking_df.columns:
             ranking_df["RatingPoints_Avg"] = 0
@@ -10105,15 +10150,17 @@ elif page == "Depth Chart":
         ranking_df["RatingPoints_Avg"] = pd.to_numeric(
             ranking_df[rating_col_name], errors="coerce"
         )
-        # Get matches from Summary - use current season Matches or Total Matches
-        _matches_col_check = f"{CURRENT_SEASON} Matches"
-        if _matches_col_check in ranking_df.columns:
-            ranking_df["Matches"] = pd.to_numeric(ranking_df[_matches_col_check], errors="coerce").fillna(0)
-        elif '2025 Matches' in ranking_df.columns:
-            ranking_df["Matches"] = pd.to_numeric(ranking_df['2025 Matches'], errors="coerce").fillna(0)
-        elif 'Total Matches' in ranking_df.columns:
-            ranking_df["Matches"] = pd.to_numeric(ranking_df['Total Matches'], errors="coerce").fillna(0)
-        else:
+        # Get matches from Summary - prefer most recent season with meaningful data
+        # Check for matches columns in order, preferring ones with actual games played
+        _matches_found = False
+        for _mc in ['2025 Matches', f'{CURRENT_SEASON} Matches', 'Total Matches']:
+            if _mc in ranking_df.columns:
+                _m_vals = pd.to_numeric(ranking_df[_mc], errors="coerce").fillna(0)
+                if _m_vals.sum() > 0:
+                    ranking_df["Matches"] = _m_vals
+                    _matches_found = True
+                    break
+        if not _matches_found:
             ranking_df["Matches"] = 0
 
     st.markdown(
@@ -16364,7 +16411,7 @@ elif page == "Custom Player Comparison":
         # =====================================================
         # ROW 1: Custom Player vs Most Similar Player
         # =====================================================
-        st.markdown(f"### {_svg_inline('star', 20)} Comparison")
+        st.markdown(f"### {_svg_inline('star', 20)} Comparison", unsafe_allow_html=True)
         
         col_custom, col_match = st.columns(2)
         
