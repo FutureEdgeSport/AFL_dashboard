@@ -91,6 +91,13 @@ UPDATE_STEPS = [
         True,  # This is slow — uses Selenium
     ),
     (
+        "wheelo_match_stats",
+        "scrape_wheelo_match_stats.py",
+        [],
+        "Scrape Wheelo match-by-match player ratings (Selenium)",
+        True,  # This is slow — uses Selenium
+    ),
+    (
         "traits_api",
         "run_traits_api.py",
         [],

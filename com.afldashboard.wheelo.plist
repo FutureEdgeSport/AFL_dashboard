@@ -32,6 +32,7 @@
         <string>/Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh</string>
         <string>--only</string>
         <string>wheelo_ratings</string>
+        <string>wheelo_match_stats</string>
     </array>
 
     <key>WorkingDirectory</key>
