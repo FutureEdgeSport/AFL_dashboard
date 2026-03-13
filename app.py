@@ -142,7 +142,11 @@ def _check_password() -> bool:
     return False
 
 # Only enforce the gate when secrets are configured (i.e. on Streamlit Cloud)
-if st.secrets.get("passwords", {}).get("app_password"):
+try:
+    _has_pw = st.secrets.get("passwords", {}).get("app_password")
+except Exception:
+    _has_pw = None
+if _has_pw:
     if not _check_password():
         st.stop()
 
