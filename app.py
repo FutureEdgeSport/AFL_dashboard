@@ -12024,184 +12024,351 @@ elif page == "Best 23":
     # =====================================================
     st.markdown("---")
     st.header("Manual Selection (Pick Your Own Best 23)")
+    st.caption("Fill every position on the oval using the dropdowns below. Once a player is picked they cannot be selected again.")
 
-    def _manual_picker(team_name, merged_all, use_bench=True):
-        import pandas as pd
+    # Position layout that mirrors the oval —
+    # each tuple: (slot_label, position_category, group_tag)
+    MANUAL_FIELD_ROWS = [
+        # --- Back 6 ---
+        [("Key Def 1", "Key Defender", "Back 6"),
+         ("Key Def 2", "Key Defender", "Back 6")],
+        [("Gen Def 1", "Gen. Defender", "Back 6"),
+         ("Gen Def 2", "Gen. Defender", "Back 6")],
+        [("Gen Def 3", "Gen. Defender", "Back 6"),
+         ("Gen Def 4", "Gen. Defender", "Back 6")],
+        # --- Midfield ---
+        [("Wing 1", "Wing", "Midfield"),
+         ("Ruck", "Ruck", "Midfield"),
+         ("Wing 2", "Wing", "Midfield")],
+        [("Mid 1", "Midfielder", "Midfield"),
+         ("Mid 2", "Midfielder", "Midfield"),
+         ("Mid 3", "Midfielder", "Midfield")],
+        # --- Forward 6 ---
+        [("Gen Fwd 1", "Gen. Forward", "Forward 6"),
+         ("Gen Fwd 2", "Gen. Forward", "Forward 6")],
+        [("Mid-Fwd", "Mid-Forward", "Forward 6"),
+         ("Gen Fwd 3", "Gen. Forward", "Forward 6")],
+        [("Key Fwd 1", "Key Forward", "Forward 6"),
+         ("Key Fwd 2", "Key Forward", "Forward 6")],
+        # --- Bench ---
+        [("Bench 1", "Bench", "Bench"),
+         ("Bench 2", "Bench", "Bench"),
+         ("Bench 3", "Bench", "Bench"),
+         ("Bench 4", "Bench", "Bench"),
+         ("Bench 5", "Bench", "Bench")],
+    ]
 
+    # Map slot_label → (x%, y%) for oval rendering
+    MANUAL_SLOT_XY = {
+        "Key Def 1": (32, 15), "Key Def 2": (63, 15),
+        "Gen Def 1": (32, 24), "Gen Def 2": (63, 24),
+        "Gen Def 3": (32, 33), "Gen Def 4": (63, 33),
+        "Wing 1": (20, 55), "Ruck": (48, 46), "Wing 2": (76, 55),
+        "Mid 1": (48, 52), "Mid 2": (48, 58), "Mid 3": (48, 64),
+        "Gen Fwd 1": (32, 75), "Gen Fwd 2": (63, 75),
+        "Mid-Fwd": (32, 84), "Gen Fwd 3": (63, 84),
+        "Key Fwd 1": (32, 93), "Key Fwd 2": (63, 93),
+    }
+    MANUAL_BENCH_XY = {
+        "Bench 1": (BENCH_X, BENCH_YS[0]),
+        "Bench 2": (BENCH_X, BENCH_YS[1]),
+        "Bench 3": (BENCH_X, BENCH_YS[2]),
+        "Bench 4": (BENCH_X, BENCH_YS[3]),
+        "Bench 5": (BENCH_X, BENCH_YS[4]),
+    }
+
+    def _manual_oval_picker(team_key, team_name, merged_all):
+        """Render position-by-position dropdowns and return (picked_df, selections_dict)."""
         df = merged_all[merged_all["Team"] == team_name].copy()
         df = df.sort_values("Rating", ascending=False)
 
-        # Group pools (FREE PICK: any player can go anywhere)
-        pools = {
-            "Back 6": df,
-            "Midfield": df,
-            "Forward 6": df,
-            "Bench": df,
+        used = set()
+        selections = {}  # slot_label → row dict
+
+        section_labels = {
+            0: "🛡️ **Back 6**", 3: "🏃 **Midfield**",
+            5: "🎯 **Forward 6**", 8: "🪑 **Bench**",
         }
 
+        for row_idx, row_slots in enumerate(MANUAL_FIELD_ROWS):
+            if row_idx in section_labels:
+                st.markdown(section_labels[row_idx])
 
-        counts = {"Back 6": 6, "Midfield": 6, "Forward 6": 6, "Bench": 5}
+            cols = st.columns(len(row_slots))
+            for col, (slot_label, pos_cat, grp) in zip(cols, row_slots):
+                with col:
+                    avail = df[~df["Player"].isin(used)]
+                    options = ["— empty —"] + [
+                        f"{r.Player} ({r.Position}) – {float(r.Rating):.1f}"
+                        for r in avail.itertuples()
+                    ]
+                    choice = st.selectbox(
+                        slot_label,
+                        options,
+                        index=0,
+                        key=f"ms_{team_key}_{slot_label}",
+                    )
+                    if choice != "— empty —":
+                        # Parse player name from label
+                        p_name = choice.split(" (")[0]
+                        match = avail[avail["Player"] == p_name]
+                        if not match.empty:
+                            r = match.iloc[0]
+                            used.add(r["Player"])
+                            selections[slot_label] = {
+                                "Player": r["Player"],
+                                "Position": r["Position"],
+                                "Rating": float(r["Rating"]),
+                                "Jumper": r.get("Jumper", ""),
+                                "Team": team_name,
+                                "Group": grp,
+                            }
 
-        picked_rows = []
-        used = set()
+        if not selections:
+            return pd.DataFrame(), selections
 
-        for grp in ["Back 6", "Midfield", "Forward 6"] + (["Bench"] if use_bench else []):
-            sub = pools[grp].copy()
-            sub = sub[~sub["Player"].isin(used)]
-
-            options = [
-                f"{r.Player} ({r.Position}) – {float(r.Rating):.1f}"
-                for r in sub.itertuples()
-            ]
-            idx_map = {options[i]: i for i in range(len(options))}
-
-            chosen = st.multiselect(
-                f"{grp} (pick {counts[grp]})",
-                options,
-                default=[],
-                key=f"manual_{team_name}_{grp}",
-                max_selections=counts[grp],
-            )
-
-            for label in chosen:
-                r = sub.iloc[idx_map[label]]
-                used.add(r["Player"])
-                rr = r[["Player", "Position", "Rating", "Jumper", "Team"]].to_dict()
-                rr["Group"] = grp
-                picked_rows.append(rr)
-
-        if not picked_rows:
-            return pd.DataFrame()
-
-        out = pd.DataFrame(picked_rows)
+        out = pd.DataFrame(list(selections.values()))
         out["Rating"] = pd.to_numeric(out["Rating"], errors="coerce")
-        return out
+        return out, selections
 
+    def _render_manual_oval(team_name, selections, team_ratings_series):
+        """Render the filled oval for manual selections."""
+        magnets_html = ""
+        for slot_label, sel in selections.items():
+            xy = MANUAL_SLOT_XY.get(slot_label) or MANUAL_BENCH_XY.get(slot_label)
+            if xy is None:
+                continue
+            x, y = xy
+            first, last = split_name(sel["Player"])
+            grp = pos_group(sel["Position"])
+            num = ""
+            try:
+                j = sel.get("Jumper", "")
+                if j and not pd.isna(j):
+                    num = str(j)
+            except Exception:
+                pass
+            rat = f"{sel['Rating']:.1f}"
+            is_bench = slot_label.startswith("Bench")
+            fade = "opacity:0.55;" if is_bench else ""
+            bgc, fgc, bri = rating_style(sel["Rating"], team_ratings_series)
 
-    m1, m2 = st.columns(2)
-    with m1:
-        st.subheader(f"{team_a} – Manual")
-        selected_a = _manual_picker(team_a, merged_all, use_bench=use_bench)
-    with m2:
-        st.subheader(f"{team_b} – Manual")
-        selected_b = _manual_picker(team_b, merged_all, use_bench=use_bench)
+            magnets_html += f"""
+            <div class="wrap" style="left:{x}%; top:{y}%; {fade}">
+            <div class="magnet {grp}">
+                <div class="num">{num}</div>
+                <div class="name">
+                <div class="first">{first}</div>
+                <div class="last">{last}</div>
+                </div>
+                <div class="rating"
+                    style="background:{bgc};
+                            color:{fgc};
+                            filter:brightness({bri:.3f});">
+                {rat}
+                </div>
+            </div>
+            </div>
+            """
 
+        # Empty slots for unfilled positions
+        all_slots = {**MANUAL_SLOT_XY, **MANUAL_BENCH_XY}
+        for slot_label, (x, y) in all_slots.items():
+            if slot_label not in selections:
+                is_bench = slot_label.startswith("Bench")
+                fade = "opacity:0.35;" if is_bench else "opacity:0.45;"
+                magnets_html += f"""
+                <div class="wrap" style="left:{x}%; top:{y}%; {fade}">
+                <div class="magnet other">
+                    <div class="num"></div>
+                    <div class="name">
+                    <div class="first">&nbsp;</div>
+                    <div class="last">{slot_label}</div>
+                    </div>
+                    <div class="rating" style="background:rgba(255,255,255,0.15);color:#999;">—</div>
+                </div>
+                </div>
+                """
+
+        manual_html = f"""
+        <style>
+        .field-container {{ width: 100%; max-width: {FIELD_WIDTH_PX}px; margin: 0 auto; }}
+        .field {{ position: relative; width: 100%; padding-bottom: {(FIELD_HEIGHT_PX / FIELD_WIDTH_PX) * 100}%;
+                  background: url("data:image/png;base64,{bg}") center/contain no-repeat; margin: auto; }}
+        .wrap {{ position: absolute; transform: translate(-50%, -50%); }}
+        .magnet {{ width: clamp(140px, 18vw, 235px); height: clamp(32px, 4vw, 44px);
+                   display: flex; align-items: center; gap: clamp(4px, 0.6vw, 8px);
+                   padding: clamp(4px, 0.5vw, 6px) clamp(6px, 0.8vw, 10px);
+                   border-radius: 16px; color: #fff;
+                   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                   font-weight: 800; box-shadow: 0 8px 18px rgba(0,0,0,.35); }}
+        .num {{ min-width: clamp(20px, 2.5vw, 30px); text-align: center;
+                font-size: clamp(10px, 1.2vw, 13px); opacity: 0.95; }}
+        .name {{ display: flex; flex-direction: column; line-height: 1.05; }}
+        .first {{ font-size: clamp(7px, 0.8vw, 9px); opacity: 0.9; }}
+        .last {{ font-size: clamp(10px, 1.2vw, 13px); }}
+        .rating {{ margin-left: auto; width: clamp(28px, 3.5vw, 40px); height: clamp(20px, 2.5vw, 28px);
+                   border-radius: 10px; display: flex; align-items: center; justify-content: center;
+                   font-size: clamp(9px, 1.1vw, 12px); font-weight: 900; background: #fff; color: #000; }}
+        .def {{ background: #c62828; }}
+        .mid {{ background: #2e7d32; }}
+        .wingfwd {{ background: #ef6c00; }}
+        .ruckkf {{ background: #1565c0; }}
+        .other {{ background: #555; }}
+        </style>
+        <div class="field-container"><div class="field">{magnets_html}</div></div>
+        """
+        components.html(manual_html.strip(), height=int(min(FIELD_HEIGHT_PX + 20, 900)), scrolling=True)
+
+    # --- Team A manual selection ---
+    st.markdown("---")
+    ms_team_a = st.selectbox(
+        "Team A", teams,
+        index=teams.index(st.session_state.default_team) if "default_team" in st.session_state and st.session_state.default_team in teams else 0,
+        key="ms_team_a_sel",
+    )
+    st.subheader(f"{ms_team_a} – Pick Your Best 23")
+    ms_sel_a_df, ms_sel_a_dict = _manual_oval_picker("A", ms_team_a, merged_all)
+    ms_a_series = merged_all.loc[merged_all["Team"] == ms_team_a, "Rating"]
+    if ms_sel_a_dict:
+        _render_manual_oval(ms_team_a, ms_sel_a_dict, ms_a_series)
+
+    # --- Team B manual selection ---
+    st.markdown("---")
+    ms_b_teams = [t for t in teams if t != ms_team_a]
+    ms_team_b = st.selectbox("Team B", ms_b_teams, key="ms_team_b_sel")
+    st.subheader(f"{ms_team_b} – Pick Your Best 23")
+    ms_sel_b_df, ms_sel_b_dict = _manual_oval_picker("B", ms_team_b, merged_all)
+    ms_b_series = merged_all.loc[merged_all["Team"] == ms_team_b, "Rating"]
+    if ms_sel_b_dict:
+        _render_manual_oval(ms_team_b, ms_sel_b_dict, ms_b_series)
 
     # =====================================================
-    # Selected vs Model – Summary (Δ)  (single clean section)
+    # Manual Selection Comparison (mirrors Best 23 Comparison)
     # =====================================================
-    def render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench):
-        import pandas as pd
-        import streamlit as st
+    ms_count_a = len(ms_sel_a_dict) if ms_sel_a_dict else 0
+    ms_count_b = len(ms_sel_b_dict) if ms_sel_b_dict else 0
+    ms_expected = 23
+
+    if ms_count_a == ms_expected and ms_count_b == ms_expected:
+        st.markdown("---")
+        st.header("Manual Selection Comparison")
+
+        # --- Header with logos ---
+        ms_overall_a = avg_rating(ms_sel_a_df)
+        ms_overall_b = avg_rating(ms_sel_b_df)
+        ms_net = None
+        if ms_overall_a is not None and ms_overall_b is not None:
+            ms_net = ms_overall_a - ms_overall_b
+
+        ms_logo_a_b64 = _team_logo_b64(ms_team_a)
+        ms_logo_b_b64 = _team_logo_b64(ms_team_b)
+        ms_oa_str = "" if ms_overall_a is None else f"{ms_overall_a:.2f}"
+        ms_ob_str = "" if ms_overall_b is None else f"{ms_overall_b:.2f}"
+
+        ms_hdr = f"""
+        <div class="b23Header">
+        <div class="teamCol">
+            {"<img class='logo' src='data:image/png;base64," + ms_logo_a_b64 + "' />" if ms_logo_a_b64 else "<div class='logoFallback'></div>"}
+            <div class="teamName">{ms_team_a}</div>
+            <div class="label">YOUR SELECTED RATING</div>
+            {_pill(ms_oa_str if ms_oa_str else "—", big=True)}
+        </div>
+        <div class="midCol">
+            <div class="vsPill">VS</div>
+            <div class="netLabel">NET (A − B)</div>
+            {_diff_pill(ms_net)}
+            <div class="subNote">Positive = Team A higher</div>
+        </div>
+        <div class="teamCol">
+            {"<img class='logo' src='data:image/png;base64," + ms_logo_b_b64 + "' />" if ms_logo_b_b64 else "<div class='logoFallback'></div>"}
+            <div class="teamName">{ms_team_b}</div>
+            <div class="label">YOUR SELECTED RATING</div>
+            {_pill(ms_ob_str if ms_ob_str else "—", big=True)}
+        </div>
+        </div>
+        """
+        components.html(ms_hdr.strip(), height=400, scrolling=False)
+
+        # --- Position-by-position comparison ---
+        MS_CAT_MAP = {
+            "Key Defender": ["Key Defender"],
+            "Gen. Defender": ["Gen. Defender"],
+            "Wing": ["Wing"],
+            "Midfielder": ["Midfielder"],
+            "Ruck": ["Ruck"],
+            "Key Forward": ["Key Forward"],
+            "Gen. Forward": ["Gen. Forward", "Mid-Forward"],
+        }
+
+        def ms_cat_df(df, cat_name):
+            pos_list = MS_CAT_MAP[cat_name]
+            if df.empty:
+                return df
+            return df[df["Position"].isin(pos_list)].copy()
+
+        def _ms_render_position(cat_name):
+            left_df = ms_cat_df(ms_sel_a_df, cat_name).sort_values("Rating", ascending=False)
+            right_df = ms_cat_df(ms_sel_b_df, cat_name).sort_values("Rating", ascending=False)
+            lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
+            with lcol:
+                st.markdown(f"**{cat_name}**")
+                if left_df.empty:
+                    st.caption("—")
+                else:
+                    for _, row in left_df.iterrows():
+                        st.markdown(_magnet_html(row, ms_a_series), unsafe_allow_html=True)
+            with ccol:
+                _centre_stats(left_df, right_df, cat_name)
+            with rcol:
+                st.markdown(f"**{cat_name}**")
+                if right_df.empty:
+                    st.caption("—")
+                else:
+                    for _, row in right_df.iterrows():
+                        st.markdown(_magnet_html(row, ms_b_series), unsafe_allow_html=True)
 
         st.markdown("---")
-        st.header("Selected vs Model – Summary (Δ)")
+        _ms_render_position("Key Defender")
+        st.markdown("---")
+        _ms_render_position("Gen. Defender")
+        st.markdown("---")
+        _ms_render_position("Midfielder")
+        st.markdown("---")
+        _ms_render_position("Wing")
+        st.markdown("---")
+        _ms_render_position("Ruck")
+        st.markdown("---")
+        _ms_render_position("Key Forward")
+        st.markdown("---")
+        _ms_render_position("Gen. Forward")
 
-        st.caption(
-            "**Definitions**\n"
-            "- **Δ (Delta)** = *Your Selected team average rating* − *Model Best team average rating*\n"
-            "- **Positive Δ**: your selection is stronger than the model | **Negative Δ**: weaker\n"
-            "- **Net advantage** = Team A Δ − Team B Δ (who gained more vs the model)"
-        )
-
-        expected = 23 if use_bench else 18
-
-        def _is_full(df):
-            return isinstance(df, pd.DataFrame) and (not df.empty) and (len(df) == expected)
-
-        if not _is_full(selected_a) or not _is_full(selected_b):
-            st.info(f"Select **{expected} players** for both teams to see results.")
-            return
-
-        # Ensure numeric
-        for _df in [best_a, best_b, selected_a, selected_b]:
-            if _df is not None and not _df.empty and "Rating" in _df.columns:
-                _df["Rating"] = pd.to_numeric(_df["Rating"], errors="coerce")
-
-        def _avg(df):
-            if df is None or df.empty:
-                return None
-            v = pd.to_numeric(df["Rating"], errors="coerce").dropna()
-            return float(v.mean()) if not v.empty else None
-
-        def _delta(sel, best):
-            a = _avg(sel)
-            b = _avg(best)
-            if a is None or b is None:
-                return None
-            return a - b
-
-        # Overall deltas
-        dA = _delta(selected_a, best_a)
-        dB = _delta(selected_b, best_b)
-        net = None if (dA is None or dB is None) else (dA - dB)
-
-        # Simple top row
-        c1, c2, c3 = st.columns([1.2, 1, 1.2])
-        with c1:
-            st.metric(f"{team_a} Δ (Overall)", "—" if dA is None else f"{dA:+.2f}")
-        with c2:
-            st.metric("Net advantage (AΔ − BΔ)", "—" if net is None else f"{net:+.2f}")
-        with c3:
-            st.metric(f"{team_b} Δ (Overall)", "—" if dB is None else f"{dB:+.2f}")
-
-        # Group definitions (manual groups)
-        group_order = ["Back 6", "Midfield", "Forward 6"] + (["Bench"] if use_bench else [])
-
-        # Map model best df to comparable groups
-        def best_group_avg(best_df, grp):
-            if best_df is None or best_df.empty:
-                return None
-            if grp == "Back 6":
-                sub = best_df[best_df["Position"].isin(["Key Defender", "Gen. Defender"])]
-            elif grp == "Midfield":
-                sub = best_df[best_df["Position"].isin(["Midfielder", "Wing", "Ruck"])]
-            elif grp == "Forward 6":
-                sub = best_df[best_df["Position"].isin(["Key Forward", "Gen. Forward", "Mid-Forward"])]
-            elif grp == "Bench":
-                if "IsBench" not in best_df.columns:
-                    return None
-                sub = best_df[best_df["IsBench"] == True]
+        # --- Bench comparison ---
+        st.markdown("---")
+        bench_a = ms_sel_a_df[ms_sel_a_df["Group"] == "Bench"].sort_values("Rating", ascending=False) if not ms_sel_a_df.empty else pd.DataFrame()
+        bench_b = ms_sel_b_df[ms_sel_b_df["Group"] == "Bench"].sort_values("Rating", ascending=False) if not ms_sel_b_df.empty else pd.DataFrame()
+        lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
+        with lcol:
+            st.markdown("**Bench**")
+            if bench_a.empty:
+                st.caption("—")
             else:
-                return None
-            return _avg(sub)
+                for _, row in bench_a.iterrows():
+                    st.markdown(_magnet_html(row, ms_a_series, dim=True), unsafe_allow_html=True)
+        with ccol:
+            _centre_stats(bench_a, bench_b, "Bench")
+        with rcol:
+            st.markdown("**Bench**")
+            if bench_b.empty:
+                st.caption("—")
+            else:
+                for _, row in bench_b.iterrows():
+                    st.markdown(_magnet_html(row, ms_b_series, dim=True), unsafe_allow_html=True)
 
-        def selected_group_avg(sel_df, grp):
-            if sel_df is None or sel_df.empty or "Group" not in sel_df.columns:
-                return None
-            return _avg(sel_df[sel_df["Group"] == grp])
+    else:
+        st.markdown("---")
+        st.info(f"Select **{ms_expected} players** for both teams to see the comparison. (Team A: {ms_count_a}/23, Team B: {ms_count_b}/23)")
 
-        rows = []
-        for grp in group_order:
-            bestA = best_group_avg(best_a, grp)
-            bestB = best_group_avg(best_b, grp)
-            selA  = selected_group_avg(selected_a, grp)
-            selB  = selected_group_avg(selected_b, grp)
-
-            gdA = None if (selA is None or bestA is None) else (selA - bestA)
-            gdB = None if (selB is None or bestB is None) else (selB - bestB)
-            gnet = None if (gdA is None or gdB is None) else (gdA - gdB)
-
-            rows.append({
-                "Group": grp,
-                f"{team_a} Δ": "—" if gdA is None else f"{gdA:+.1f}",
-                "Net (AΔ−BΔ)": "—" if gnet is None else f"{gnet:+.1f}",
-                f"{team_b} Δ": "—" if gdB is None else f"{gdB:+.1f}",
-                "Meaning": "Positive = you improved vs model"
-            })
-
-        st.subheader("Where the differences came from")
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
-
-        st.caption(
-            "How to use this: If Overall Δ is negative, your selection is weaker than the model on average. "
-            "Use the group rows to see which line (Back/Mid/Fwd/Bench) drove the difference."
-        )
-
-
-    # Call once (and only once)
-    render_selected_vs_model(best_a, best_b, selected_a, selected_b, team_a, team_b, use_bench)
-    
     # Professional footer
     render_footer()
 
