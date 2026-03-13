@@ -126,6 +126,26 @@ st.set_page_config(
     layout="wide",
 )
 
+# ---------------- PASSWORD GATE ----------------
+def _check_password() -> bool:
+    """Return True if the user has entered the correct password."""
+    if st.session_state.get("password_correct"):
+        return True
+    pwd = st.text_input("Enter password to access the dashboard", type="password", key="_pw_input")
+    if pwd:
+        correct = st.secrets.get("passwords", {}).get("app_password", "")
+        if pwd == correct:
+            st.session_state["password_correct"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password")
+    return False
+
+# Only enforce the gate when secrets are configured (i.e. on Streamlit Cloud)
+if st.secrets.get("passwords", {}).get("app_password"):
+    if not _check_password():
+        st.stop()
+
 # Inject unified table CSS globally
 st.markdown(get_unified_table_css(), unsafe_allow_html=True)
 
