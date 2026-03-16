@@ -93,8 +93,8 @@ UPDATE_STEPS = [
     (
         "wheelo_match_stats",
         "scrape_wheelo_match_stats.py",
-        [],
-        "Scrape Wheelo match-by-match player ratings (Selenium)",
+        ["--brownlow"],
+        "Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)",
         True,  # This is slow — uses Selenium
     ),
     (

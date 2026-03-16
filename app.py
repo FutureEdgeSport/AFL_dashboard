@@ -17355,7 +17355,7 @@ elif page == "Player Rating Matrix":
     render_page_header("Player Rating Matrix", "Round-by-Round Player Ratings", "chart_bar")
     render_breadcrumb([("Home", "Home"), ("Player Rating Matrix", None)])
 
-    from data_loader import load_match_ratings
+    from data_loader import load_match_ratings, load_brownlow_predictions
     import re as _mr_re
 
     # Discover available seasons from match_ratings_*.csv files
@@ -17376,9 +17376,22 @@ elif page == "Player Rating Matrix":
     if df_mr.empty:
         st.warning("No match rating data available for this season. Run the Wheelo Match Stats scraper first:\n\n```\npython scrape_wheelo_match_stats.py --season " + str(selected_season) + "\n```")
     else:
-        # Metric toggle
-        _mr_metric = st.toggle("Show Coaches Votes", value=False, key="mr_metric_toggle")
-        _mr_use_votes = _mr_metric
+        # Metric selector
+        _mr_metric_choice = st.selectbox(
+            "Metric",
+            ["Player Ratings", "Coaches Votes", "Predicted Brownlow Votes"],
+            index=0,
+            key="mr_metric_select",
+        )
+        _mr_use_votes = _mr_metric_choice == "Coaches Votes"
+        _mr_use_brownlow = _mr_metric_choice == "Predicted Brownlow Votes"
+
+        # Load Brownlow data if needed
+        df_brownlow = pd.DataFrame()
+        if _mr_use_brownlow:
+            df_brownlow = load_brownlow_predictions(selected_season)
+            if df_brownlow.empty:
+                st.warning("No Brownlow prediction data available for this season. Run:\n\n```\npython scrape_wheelo_match_stats.py --brownlow-only --season " + str(selected_season) + "\n```")
 
         # Determine rating column
         rating_col = None
@@ -17396,8 +17409,12 @@ elif page == "Player Rating Matrix":
             if numeric_cols:
                 rating_col = numeric_cols[0]
 
-        # Pick active column based on toggle
-        if _mr_use_votes and votes_col:
+        # Pick active column and data source based on metric choice
+        if _mr_use_brownlow and not df_brownlow.empty:
+            active_col = "Votes"
+            _mr_fv = lambda v: f"{v:.1f}"
+            _mr_fv_avg = _mr_fv
+        elif _mr_use_votes and votes_col:
             active_col = votes_col
             _mr_fv = lambda v: f"{v:.0f}"
             _mr_fv_avg = lambda v: f"{v:.1f}"
@@ -17409,9 +17426,12 @@ elif page == "Player Rating Matrix":
         if active_col is None:
             st.error("Could not identify a rating column in the match data.")
         else:
+            # Choose data source: Brownlow predictions or match ratings
+            _mr_source_df = df_brownlow if (_mr_use_brownlow and not df_brownlow.empty) else df_mr
+
             # Filters
-            teams_available = sorted(df_mr["Team"].dropna().unique()) if "Team" in df_mr.columns else []
-            rounds_available = sorted(df_mr["Round"].dropna().unique()) if "Round" in df_mr.columns else []
+            teams_available = sorted(_mr_source_df["Team"].dropna().unique()) if "Team" in _mr_source_df.columns else []
+            rounds_available = sorted(_mr_source_df["Round"].dropna().unique()) if "Round" in _mr_source_df.columns else []
 
             col_f1, col_f2 = st.columns(2)
             with col_f1:
@@ -17421,11 +17441,11 @@ elif page == "Player Rating Matrix":
                                         (int(min(rounds_available)), int(max(rounds_available)))) if len(rounds_available) > 1 else (int(rounds_available[0]), int(rounds_available[0]))
 
             # Filter data
-            mask = pd.Series(True, index=df_mr.index)
+            mask = pd.Series(True, index=_mr_source_df.index)
             if selected_team:
-                mask &= df_mr["Team"] == selected_team
-            mask &= df_mr["Round"].between(round_range[0], round_range[1])
-            df_filt = df_mr[mask].copy()
+                mask &= _mr_source_df["Team"] == selected_team
+            mask &= _mr_source_df["Round"].between(round_range[0], round_range[1])
+            df_filt = _mr_source_df[mask].copy()
 
             if df_filt.empty:
                 st.info("No data for the selected filters.")
@@ -17465,20 +17485,42 @@ elif page == "Player Rating Matrix":
                         return "#90EE90", "#000"
                     return "#555555", "#aaa"
 
+                # Brownlow predicted-votes colour bands (decimal 0-3)
+                def _bv_colour(v):
+                    if pd.isna(v):
+                        return "#555555", "#aaa"
+                    n = float(v)
+                    if n >= 2.0:
+                        return "#006400", "#fff"
+                    if n >= 1.5:
+                        return "#228B22", "#fff"
+                    if n >= 1.0:
+                        return "#3CB371", "#000"
+                    if n >= 0.5:
+                        return "#66CDAA", "#000"
+                    if n >= 0.1:
+                        return "#90EE90", "#000"
+                    return "#555555", "#aaa"
+
+                _is_vote_mode = _mr_use_votes or _mr_use_brownlow
+
                 # Build a "played" lookup so we can tell 0-votes-but-played from didn't-play
-                if _mr_use_votes and votes_col:
+                if _is_vote_mode:
+                    _rp_col = "RatingPoints" if "RatingPoints" in df_filt.columns else active_col
                     _played_pivot = df_filt.pivot_table(
                         index=player_col, columns="Round",
-                        values="RatingPoints" if "RatingPoints" in df_filt.columns else active_col,
+                        values=_rp_col,
                         aggfunc="first",
                     )
                     _played_pivot.columns = [("OR" if int(c) == 0 else f"R{int(c)}") for c in _played_pivot.columns]
                 else:
                     _played_pivot = None
 
-                def _matrix_colour(v, is_votes=False):
+                def _matrix_colour(v, is_votes=False, is_brownlow=False):
                     if pd.isna(v):
                         return "rgba(255,255,255,0.05)"
+                    if is_brownlow:
+                        return _bv_colour(v)[0]
                     if is_votes:
                         return _cv_colour(v)[0]
                     if v >= q80:
@@ -17491,7 +17533,9 @@ elif page == "Player Rating Matrix":
                         return "#FFA500"
                     return "#FF0000"
 
-                def _text_colour(bg, v=None, is_votes=False):
+                def _text_colour(bg, v=None, is_votes=False, is_brownlow=False):
+                    if is_brownlow and v is not None and not pd.isna(v):
+                        return _bv_colour(v)[1]
                     if is_votes and v is not None and not pd.isna(v):
                         return _cv_colour(v)[1]
                     return "#000" if bg in ("#90EE90", "#FFD700", "#FFA500", "#66CDAA", "#3CB371") else "#fff"
@@ -17506,22 +17550,21 @@ elif page == "Player Rating Matrix":
                     cells = ""
                     for rc in round_cols:
                         val = row[rc]
-                        if _mr_use_votes and pd.isna(val):
+                        if _is_vote_mode and pd.isna(val):
                             # Check if player actually played this round
                             played = _played_pivot is not None and rc in _played_pivot.columns and pd.notna(_played_pivot.loc[player, rc]) if _played_pivot is not None and player in _played_pivot.index else False
                             if played:
-                                # Played but 0 votes — show as 0 grey
                                 val = 0
-                                bg = _matrix_colour(val, is_votes=True)
-                                tc = _text_colour(bg, v=val, is_votes=True)
+                                bg = _matrix_colour(val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                                tc = _text_colour(bg, v=val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                                 display = "0"
                             else:
                                 bg = "rgba(255,255,255,0.05)"
                                 tc = "#555"
                                 display = "—"
-                        elif _mr_use_votes and pd.notna(val):
-                            bg = _matrix_colour(val, is_votes=True)
-                            tc = _text_colour(bg, v=val, is_votes=True)
+                        elif _is_vote_mode and pd.notna(val):
+                            bg = _matrix_colour(val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                            tc = _text_colour(bg, v=val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                             display = _mr_fv(val)
                         else:
                             bg = _matrix_colour(val)
@@ -17529,8 +17572,8 @@ elif page == "Player Rating Matrix":
                             display = _mr_fv(val) if pd.notna(val) else "—"
                         cells += f"<td style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
                     avg_val = row["Avg"]
-                    avg_bg = _matrix_colour(avg_val, is_votes=_mr_use_votes)
-                    avg_tc = _text_colour(avg_bg, v=avg_val, is_votes=_mr_use_votes)
+                    avg_bg = _matrix_colour(avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                    avg_tc = _text_colour(avg_bg, v=avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                     cells += f"<td style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);'><span class='ct-pill' style='background:{avg_bg};color:{avg_tc};font-weight:800;'>{_mr_fv_avg(avg_val)}</span></td>"
                     rows_html += f"<tr><td style='padding:6px 12px;white-space:nowrap;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;left:0;background:#1a1a2e;z-index:1;'>{player}</td>{cells}</tr>"
 
@@ -17539,7 +17582,18 @@ elif page == "Player Rating Matrix":
                 st.markdown(matrix_html, unsafe_allow_html=True)
 
                 # Legend
-                if _mr_use_votes:
+                if _mr_use_brownlow:
+                    st.markdown("""
+<div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin-top:16px;'>
+<span style='color:#006400;'>■</span> 2.0+ votes |
+<span style='color:#228B22;'>■</span> 1.5-2.0 |
+<span style='color:#3CB371;'>■</span> 1.0-1.5 |
+<span style='color:#66CDAA;'>■</span> 0.5-1.0 |
+<span style='color:#90EE90;'>■</span> 0.1-0.5 |
+<span style='color:#555555;'>■</span> &lt;0.1 votes |
+— Didn't play
+</div>""", unsafe_allow_html=True)
+                elif _mr_use_votes:
                     st.markdown("""
 <div style='text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin-top:16px;'>
 <span style='color:#006400;'>■</span> 9+ votes |
@@ -17569,8 +17623,8 @@ elif page == "Player Rating Matrix":
                     rows = ""
                     for rank, (player, row) in enumerate(data.iterrows(), 1):
                         avg = row["Avg"]
-                        bg = _matrix_colour(avg, is_votes=_mr_use_votes)
-                        tc = _text_colour(bg, v=avg, is_votes=_mr_use_votes)
+                        bg = _matrix_colour(avg, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                        tc = _text_colour(bg, v=avg, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                         bar_w = max(10, min(100, avg / (data["Avg"].max() or 1) * 100)) if not ascending else max(10, min(100, (data["Avg"].max() - avg + data["Avg"].min()) / (data["Avg"].max() or 1) * 100))
                         rows += (
                             f"<tr>"
@@ -17593,7 +17647,7 @@ elif page == "Player Rating Matrix":
                         f"<table style='width:100%;border-collapse:collapse;'>{rows}</table></div>"
                     )
 
-                _mr_label = "AVG COACHES VOTES" if _mr_use_votes else "AVG RATING"
+                _mr_label = "AVG PREDICTED BROWNLOW" if _mr_use_brownlow else ("AVG COACHES VOTES" if _mr_use_votes else "AVG RATING")
                 c1, c2 = st.columns(2)
                 with c1:
                     st.markdown(_leaderboard_card(f"TOP 5 — {_mr_label}", "#008000", top5), unsafe_allow_html=True)

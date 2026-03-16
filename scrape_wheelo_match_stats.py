@@ -13,7 +13,9 @@ Usage:
 """
 
 import argparse
+import platform
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -44,6 +46,17 @@ BASE_DIR = Path(__file__).parent
 DOWNLOAD_DIR = BASE_DIR / "wheelo_downloads"
 OUTPUT_DIR = BASE_DIR / "data" / "raw" / "player"
 MATCH_STATS_URL = "https://www.wheeloratings.com/afl_match_stats.html"
+BROWNLOW_URL = "https://www.wheeloratings.com/afl_brownlow.html"
+
+# Wheelo Brownlow CSV uses abbreviated team names — map to full names
+BROWNLOW_TEAM_MAP = {
+    "Adel": "Adelaide", "Bris": "Brisbane", "Carl": "Carlton",
+    "Coll": "Collingwood", "Ess": "Essendon", "Fre": "Fremantle",
+    "Geel": "Geelong", "GC": "Gold Coast", "GWS": "Greater Western Sydney",
+    "Haw": "Hawthorn", "Melb": "Melbourne", "NM": "North Melbourne",
+    "PA": "Port Adelaide", "Rich": "Richmond", "St K": "St Kilda",
+    "Syd": "Sydney", "WB": "Western Bulldogs", "WC": "West Coast",
+}
 
 
 class MatchStatsScraper:
@@ -78,8 +91,10 @@ class MatchStatsScraper:
         for attempt in range(1, max_retries + 1):
             try:
                 print(f"🔧 Chrome driver attempt {attempt}/{max_retries}…")
+                driver_path = ChromeDriverManager().install()
+                self._codesign_if_needed(driver_path)
                 self.driver = webdriver.Chrome(
-                    service=Service(ChromeDriverManager().install()),
+                    service=Service(driver_path),
                     options=options,
                 )
                 self.driver.execute_cdp_cmd(
@@ -101,6 +116,29 @@ class MatchStatsScraper:
                     time.sleep(2 ** attempt)
 
         raise RuntimeError(f"Failed to start Chrome after {max_retries} attempts: {last_error}")
+
+    @staticmethod
+    def _codesign_if_needed(driver_path: str):
+        """Ad-hoc sign chromedriver on macOS to avoid Gatekeeper SIGKILL."""
+        if platform.system() != "Darwin":
+            return
+        try:
+            result = subprocess.run(
+                ["codesign", "--verify", driver_path],
+                capture_output=True, timeout=10,
+            )
+            if result.returncode == 0:
+                return  # already validly signed
+        except Exception:
+            pass
+        try:
+            subprocess.run(
+                ["codesign", "--force", "--deep", "--sign", "-", driver_path],
+                capture_output=True, timeout=30, check=True,
+            )
+            print(f"  🔏 Ad-hoc signed chromedriver")
+        except Exception as e:
+            print(f"  ⚠️  Could not ad-hoc sign chromedriver: {e}")
 
     def _close_driver(self):
         if self.driver:
@@ -273,6 +311,61 @@ class MatchStatsScraper:
             return pd.concat(all_frames, ignore_index=True)
         return pd.DataFrame()
 
+    # ------------------------------------------------- Brownlow predictions
+    def scrape_brownlow(self, season: int = CURRENT_SEASON):
+        """Download Brownlow Match-by-Match CSV from wheelo and return DataFrame."""
+        self._setup_driver()
+        try:
+            self._clear_downloads()
+            self.driver.get(BROWNLOW_URL)
+            time.sleep(5)
+
+            pre = self._get_csv_files()
+
+            # Click "Download Match-by-Match as CSV" button (id=download-raw-csv-button)
+            try:
+                btn = self.driver.find_element(By.ID, "download-raw-csv-button")
+                self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
+                time.sleep(0.5)
+                self.driver.execute_script("arguments[0].click();", btn)
+            except Exception as e:
+                print(f"  ❌ Could not click Brownlow download button: {e}")
+                return pd.DataFrame()
+
+            csv_path = self._wait_for_download(pre)
+            if csv_path is None:
+                print("  ❌ Brownlow CSV download timed out")
+                return pd.DataFrame()
+
+            df = pd.read_csv(csv_path)
+            csv_path.unlink()
+
+            # Map abbreviated team names to full names
+            if "Team" in df.columns:
+                df["Team"] = df["Team"].map(BROWNLOW_TEAM_MAP).fillna(df["Team"])
+
+            return df
+
+        finally:
+            self._close_driver()
+
+    def scrape_and_save_brownlow(self, season: int = CURRENT_SEASON):
+        """Scrape Brownlow predictions and save to CSV."""
+        print(f"\n{'='*60}")
+        print(f"  WHEELO BROWNLOW PREDICTIONS — {season}")
+        print(f"{'='*60}")
+
+        df = self.scrape_brownlow(season)
+        if df.empty:
+            print("\n⚠️  No Brownlow data scraped.")
+            return None
+
+        out_path = OUTPUT_DIR / f"brownlow_predictions_{season}.csv"
+        df.sort_values(["Round", "Team", "Player"], inplace=True, ignore_index=True)
+        df.to_csv(out_path, index=False)
+        print(f"\n💾 Saved {len(df)} rows → {out_path}")
+        return out_path
+
     def scrape_and_save(self, season: int = CURRENT_SEASON,
                         round_start: int = 0, round_end: int | None = None):
         """Scrape and write to data/raw/player/match_ratings_{season}.csv"""
@@ -305,13 +398,21 @@ def main():
     parser.add_argument("--rounds", type=int, nargs=2, metavar=("START", "END"),
                         help="Round range (inclusive)")
     parser.add_argument("--no-headless", action="store_true", help="Show browser")
+    parser.add_argument("--brownlow", action="store_true",
+                        help="Also scrape Brownlow predictions")
+    parser.add_argument("--brownlow-only", action="store_true",
+                        help="Only scrape Brownlow predictions (skip match stats)")
     args = parser.parse_args()
 
-    r_start = args.rounds[0] if args.rounds else 0
-    r_end = args.rounds[1] if args.rounds else None
-
     scraper = MatchStatsScraper(headless=not args.no_headless)
-    scraper.scrape_and_save(args.season, r_start, r_end)
+
+    if not args.brownlow_only:
+        r_start = args.rounds[0] if args.rounds else 0
+        r_end = args.rounds[1] if args.rounds else None
+        scraper.scrape_and_save(args.season, r_start, r_end)
+
+    if args.brownlow or args.brownlow_only:
+        scraper.scrape_and_save_brownlow(args.season)
 
 
 if __name__ == "__main__":

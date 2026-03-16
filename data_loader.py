@@ -466,6 +466,23 @@ def load_match_ratings(season: int = None) -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False)
+def load_brownlow_predictions(season: int = None) -> pd.DataFrame:
+    """Load Brownlow predictions from data/raw/player/brownlow_predictions_{season}.csv."""
+    if season is None:
+        from config.constants import CURRENT_SEASON
+        season = CURRENT_SEASON
+    path = _get_base_path() / "data" / "raw" / "player" / f"brownlow_predictions_{season}.csv"
+    if path.exists():
+        try:
+            df = pd.read_csv(path)
+            df.columns = df.columns.astype(str).str.strip()
+            return df
+        except Exception:
+            pass
+    return pd.DataFrame()
+
+
+@st.cache_data(show_spinner=False)
 def load_wheelo_team_data() -> pd.DataFrame:
     """Load Wheelo team metrics."""
     master_xl = get_master_excel_file()
