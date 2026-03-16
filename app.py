@@ -17456,8 +17456,9 @@ elif page == "Player Rating Matrix":
                                             values=active_col, aggfunc="first")
                 pivot.columns = [("OR" if int(c) == 0 else f"R{int(c)}") for c in pivot.columns]
 
-                # Add season average
-                pivot["Avg"] = pivot.mean(axis=1).round(1)
+                # Add season total and average
+                pivot["Tot"] = pivot.sum(axis=1).round(1)
+                pivot["Avg"] = pivot.drop(columns="Tot").mean(axis=1).round(1)
                 pivot.sort_values("Avg", ascending=False, inplace=True)
 
                 # Determine colour thresholds from the data
@@ -17541,9 +17542,11 @@ elif page == "Player Rating Matrix":
                     return "#000" if bg in ("#90EE90", "#FFD700", "#FFA500", "#66CDAA", "#3CB371") else "#fff"
 
                 # Build HTML table
-                round_cols = [c for c in pivot.columns if c != "Avg"]
+                round_cols = [c for c in pivot.columns if c not in ("Tot", "Avg")]
+                _summary_hdr_style = "padding:8px 10px;text-align:center;font-size:12px;font-weight:700;color:#fff;border-bottom:1px solid rgba(255,255,255,0.15);border-left:2px solid rgba(255,255,255,0.2);"
                 header_cells = "".join(f"<th style='padding:8px 10px;text-align:center;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);'>{c}</th>" for c in round_cols)
-                header_cells += "<th style='padding:8px 10px;text-align:center;font-size:12px;font-weight:700;color:#fff;border-bottom:1px solid rgba(255,255,255,0.15);border-left:2px solid rgba(255,255,255,0.2);'>Avg</th>"
+                header_cells += f"<th style='{_summary_hdr_style}'>Tot</th>"
+                header_cells += f"<th style='{_summary_hdr_style}'>Avg</th>"
 
                 rows_html = ""
                 for player, row in pivot.iterrows():
@@ -17571,10 +17574,15 @@ elif page == "Player Rating Matrix":
                             tc = _text_colour(bg)
                             display = _mr_fv(val) if pd.notna(val) else "—"
                         cells += f"<td style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
+                    _summary_td_style = "padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);"
+                    tot_val = row["Tot"]
+                    tot_bg = _matrix_colour(tot_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                    tot_tc = _text_colour(tot_bg, v=tot_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                    cells += f"<td style='{_summary_td_style}'><span class='ct-pill' style='background:{tot_bg};color:{tot_tc};font-weight:800;'>{_mr_fv_avg(tot_val)}</span></td>"
                     avg_val = row["Avg"]
                     avg_bg = _matrix_colour(avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                     avg_tc = _text_colour(avg_bg, v=avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
-                    cells += f"<td style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);'><span class='ct-pill' style='background:{avg_bg};color:{avg_tc};font-weight:800;'>{_mr_fv_avg(avg_val)}</span></td>"
+                    cells += f"<td style='{_summary_td_style}'><span class='ct-pill' style='background:{avg_bg};color:{avg_tc};font-weight:800;'>{_mr_fv_avg(avg_val)}</span></td>"
                     rows_html += f"<tr><td style='padding:6px 12px;white-space:nowrap;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;left:0;background:#1a1a2e;z-index:1;'>{player}</td>{cells}</tr>"
 
                 matrix_html = f"<div style='overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);'><table style='border-collapse:collapse;width:100%;'><thead><tr><th style='padding:8px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;left:0;background:#1a1a2e;z-index:2;'>Player</th>{header_cells}</tr></thead><tbody>{rows_html}</tbody></table></div>"
