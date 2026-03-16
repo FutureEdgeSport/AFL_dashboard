@@ -17612,44 +17612,53 @@ elif page == "Player Rating Matrix":
                     rows_html += f"<tr><td style='padding:6px 12px;white-space:nowrap;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;left:0;background:#1a1a2e;z-index:1;'>{player}</td>{cells}</tr>"
 
                 _player_hdr = "padding:8px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;left:0;background:#1a1a2e;z-index:2;cursor:pointer;user-select:none;"
-                matrix_html = (
+                matrix_table = (
                     f"<div style='overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);'>"
                     f"<table id='mr-matrix' style='border-collapse:collapse;width:100%;'>"
                     f"<thead><tr><th style='{_player_hdr}' onclick='_mrSort(0)' title='Click to sort'>Player <span class='_mr-arrow' id='_mr-arr-0'></span></th>{header_cells}</tr></thead>"
                     f"<tbody>{rows_html}</tbody></table></div>"
                 )
 
-                _sort_js = """
+                _num_rows = len(pivot)
+                _component_height = 54 + _num_rows * 34 + 20  # header + rows + padding
+
+                _sort_html = f"""<!DOCTYPE html>
+<html><head><style>
+html, body {{ margin:0; padding:0; background:transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+.ct-pill {{ display:inline-block; padding:2px 10px; border-radius:6px; font-size:12px; font-weight:600; min-width:32px; text-align:center; }}
+</style></head><body>
+{matrix_table}
 <script>
 var _mrSortCol = -1, _mrSortAsc = true;
-function _mrSort(ci) {
-    if (_mrSortCol === ci) { _mrSortAsc = !_mrSortAsc; } else { _mrSortCol = ci; _mrSortAsc = ci === 0; }
+function _mrSort(ci) {{
+    if (_mrSortCol === ci) {{ _mrSortAsc = !_mrSortAsc; }} else {{ _mrSortCol = ci; _mrSortAsc = ci === 0; }}
     var tbl = document.getElementById('mr-matrix');
     if (!tbl) return;
     var tbody = tbl.tBodies[0];
     var rows = Array.from(tbody.rows);
-    rows.sort(function(a, b) {
+    rows.sort(function(a, b) {{
         var av, bv;
-        if (ci === 0) {
+        if (ci === 0) {{
             av = a.cells[0].textContent.trim().toLowerCase();
             bv = b.cells[0].textContent.trim().toLowerCase();
             return _mrSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-        }
+        }}
         var rawA = a.cells[ci].getAttribute('data-val');
         var rawB = b.cells[ci].getAttribute('data-val');
         av = rawA === '' || rawA === null ? -1e9 : parseFloat(rawA);
         bv = rawB === '' || rawB === null ? -1e9 : parseFloat(rawB);
         return _mrSortAsc ? av - bv : bv - av;
-    });
-    rows.forEach(function(r) { tbody.appendChild(r); });
+    }});
+    rows.forEach(function(r) {{ tbody.appendChild(r); }});
     var arrows = tbl.querySelectorAll('._mr-arrow');
-    arrows.forEach(function(el) { el.textContent = ''; });
+    arrows.forEach(function(el) {{ el.textContent = ''; }});
     var arrow = document.getElementById('_mr-arr-' + ci);
     if (arrow) arrow.textContent = _mrSortAsc ? ' ▲' : ' ▼';
-}
-</script>"""
+}}
+</script></body></html>"""
 
-                st.markdown(matrix_html + _sort_js, unsafe_allow_html=True)
+                import streamlit.components.v1 as components
+                components.html(_sort_html, height=_component_height, scrolling=True)
 
                 # Legend
                 if _mr_use_brownlow:
