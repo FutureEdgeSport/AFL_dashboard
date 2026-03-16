@@ -17517,6 +17517,27 @@ elif page == "Player Rating Matrix":
                 else:
                     _played_pivot = None
 
+                # Percentile thresholds for Tot column
+                tot_vals = pivot["Tot"].dropna()
+                tq80 = tot_vals.quantile(0.80)
+                tq60 = tot_vals.quantile(0.60)
+                tq40 = tot_vals.quantile(0.40)
+                tq20 = tot_vals.quantile(0.20)
+
+                def _pct_colour(v, p80, p60, p40, p20):
+                    """Percentile-based green-to-red colour."""
+                    if pd.isna(v):
+                        return "rgba(255,255,255,0.05)", "#555"
+                    if v >= p80:
+                        return "#008000", "#fff"
+                    if v >= p60:
+                        return "#90EE90", "#000"
+                    if v >= p40:
+                        return "#FFD700", "#000"
+                    if v >= p20:
+                        return "#FFA500", "#000"
+                    return "#FF0000", "#fff"
+
                 def _matrix_colour(v, is_votes=False, is_brownlow=False):
                     if pd.isna(v):
                         return "rgba(255,255,255,0.05)"
@@ -17576,8 +17597,7 @@ elif page == "Player Rating Matrix":
                         cells += f"<td style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
                     _summary_td_style = "padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);"
                     tot_val = row["Tot"]
-                    tot_bg = _matrix_colour(tot_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
-                    tot_tc = _text_colour(tot_bg, v=tot_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
+                    tot_bg, tot_tc = _pct_colour(tot_val, tq80, tq60, tq40, tq20)
                     cells += f"<td style='{_summary_td_style}'><span class='ct-pill' style='background:{tot_bg};color:{tot_tc};font-weight:800;'>{_mr_fv_avg(tot_val)}</span></td>"
                     avg_val = row["Avg"]
                     avg_bg = _matrix_colour(avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
