@@ -17528,6 +17528,8 @@ elif page == "Player Rating Matrix":
                     """Percentile-based green-to-red colour."""
                     if pd.isna(v):
                         return "rgba(255,255,255,0.05)", "#555"
+                    if _is_vote_mode and float(v) == 0:
+                        return "#555555", "#aaa"
                     if v >= p80:
                         return "#008000", "#fff"
                     if v >= p60:
