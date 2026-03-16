@@ -17538,11 +17538,22 @@ elif page == "Player Rating Matrix":
                     tq20 = tot_vals.quantile(0.20)
 
                 def _pct_colour(v, p80, p60, p40, p20):
-                    """Percentile-based green-to-red colour."""
+                    """Percentile-based colour for Tot column."""
                     if pd.isna(v):
                         return "rgba(255,255,255,0.05)", "#555"
                     if _is_vote_mode and float(v) == 0:
                         return "#555555", "#aaa"
+                    if _is_vote_mode:
+                        # All-green shades: darkest for highest, lightest for lowest
+                        if v >= p80:
+                            return "#006400", "#fff"
+                        if v >= p60:
+                            return "#228B22", "#fff"
+                        if v >= p40:
+                            return "#3CB371", "#000"
+                        if v >= p20:
+                            return "#66CDAA", "#000"
+                        return "#90EE90", "#000"
                     if v >= p80:
                         return "#008000", "#fff"
                     if v >= p60:
