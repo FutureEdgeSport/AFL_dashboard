@@ -17518,11 +17518,24 @@ elif page == "Player Rating Matrix":
                     _played_pivot = None
 
                 # Percentile thresholds for Tot column
+                # In vote modes, exclude zeros so bands differentiate vote-getters
                 tot_vals = pivot["Tot"].dropna()
-                tq80 = tot_vals.quantile(0.80)
-                tq60 = tot_vals.quantile(0.60)
-                tq40 = tot_vals.quantile(0.40)
-                tq20 = tot_vals.quantile(0.20)
+                if _is_vote_mode:
+                    _nonzero_tots = tot_vals[tot_vals > 0]
+                    if len(_nonzero_tots) >= 5:
+                        tq80 = _nonzero_tots.quantile(0.80)
+                        tq60 = _nonzero_tots.quantile(0.60)
+                        tq40 = _nonzero_tots.quantile(0.40)
+                        tq20 = _nonzero_tots.quantile(0.20)
+                    else:
+                        # Too few non-zero values; fall back to simple spread
+                        _mx = _nonzero_tots.max() if len(_nonzero_tots) else 1
+                        tq80, tq60, tq40, tq20 = _mx * 0.8, _mx * 0.6, _mx * 0.4, _mx * 0.2
+                else:
+                    tq80 = tot_vals.quantile(0.80)
+                    tq60 = tot_vals.quantile(0.60)
+                    tq40 = tot_vals.quantile(0.40)
+                    tq20 = tot_vals.quantile(0.20)
 
                 def _pct_colour(v, p80, p60, p40, p20):
                     """Percentile-based green-to-red colour."""
