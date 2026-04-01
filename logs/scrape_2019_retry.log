@@ -1,0 +1,157 @@
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2019
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 27 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 19 (round 19)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 20 (round 20)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 21 (round 21)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 22 (round 22)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 23 (round 23)
+    📥 Downloading all matches…
+    ❌ Download button click failed: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=146.0.7680.76); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+0   chromedriver                        0x0000000100c774e4 cxxbridge1$str$ptr + 3160724
+1   chromedriver                        0x0000000100c6f578 cxxbridge1$str$ptr + 3128104
+2   chromedriver                        0x0000000100743924 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 75032
+3   chromedriver                        0x000000010072c81c chromedriver + 231452
+4   chromedriver                        0x0000000100750b08 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 128764
+5   chromedriver                        0x00000001007b447c _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 536688
+6   chromedriver                        0x00000001007ca014 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 625672
+7   chromedriver                        0x00000001007811b4 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 327080
+8   chromedriver                        0x0000000100c35e80 cxxbridge1$str$ptr + 2892848
+9   chromedriver                        0x0000000100c39570 cxxbridge1$str$ptr + 2906912
+10  chromedriver                        0x0000000100c1b5dc cxxbridge1$str$ptr + 2784140
+11  chromedriver                        0x0000000100c39df4 cxxbridge1$str$ptr + 2909092
+12  chromedriver                        0x0000000100c0c06c cxxbridge1$str$ptr + 2721308
+13  chromedriver                        0x0000000100c5e9a8 cxxbridge1$str$ptr + 3059544
+14  chromedriver                        0x0000000100c5eb24 cxxbridge1$str$ptr + 3059924
+15  chromedriver                        0x0000000100c6f1d0 cxxbridge1$str$ptr + 3127168
+16  libsystem_pthread.dylib             0x000000018ada1c08 _pthread_start + 136
+17  libsystem_pthread.dylib             0x000000018ad9cba8 thread_start + 8
+
+
+  📋 Finals Week 1 (round 24)
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 283, in scrape_and_save
+    df = self.scrape(season, round_start, round_end)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 239, in scrape
+    self._select_round(value)
+  File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 174, in _select_round
+    sel_el = self.driver.find_element(By.ID, "round-list")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/.venv/lib/python3.12/site-packages/selenium/webdriver/remote/webdriver.py", line 816, in find_element
+    return self.execute(Command.FIND_ELEMENT, {"using": by, "value": value})["value"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/.venv/lib/python3.12/site-packages/selenium/webdriver/remote/webdriver.py", line 446, in execute
+    self.error_handler.check_response(response)
+  File "/Users/marcuswagner/coding/AFL_dashboard/.venv/lib/python3.12/site-packages/selenium/webdriver/remote/errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.InvalidSessionIdException: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+0   chromedriver                        0x0000000100c774e4 cxxbridge1$str$ptr + 3160724
+1   chromedriver                        0x0000000100c6f578 cxxbridge1$str$ptr + 3128104
+2   chromedriver                        0x0000000100743728 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 74524
+3   chromedriver                        0x0000000100780520 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323860
+4   chromedriver                        0x00000001007a7a38 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 484908
+5   chromedriver                        0x00000001007a6f10 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 482052
+6   chromedriver                        0x0000000100710b64 chromedriver + 117604
+7   chromedriver                        0x0000000100c35e80 cxxbridge1$str$ptr + 2892848
+8   chromedriver                        0x0000000100c39570 cxxbridge1$str$ptr + 2906912
+9   chromedriver                        0x0000000100c1b5dc cxxbridge1$str$ptr + 2784140
+10  chromedriver                        0x0000000100c39df4 cxxbridge1$str$ptr + 2909092
+11  chromedriver                        0x0000000100c0c06c cxxbridge1$str$ptr + 2721308
+12  chromedriver                        0x000000010070e8fc chromedriver + 108796
+13  dyld                                0x000000018a9d9d54 start + 7184
+

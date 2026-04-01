@@ -10,7 +10,9 @@ Replaces Excel formulas in AFL Player Ratings.xlsx:
 - 'Age Profile (1yr)' sheet
 
 Key calculations:
-- Count players per rating tier per position per team
+- Classify players into tiers per position using percentile distribution
+  (Elite = top 10%, A-Grade = top 30%, B-Grade = top 50%)
+- Count players per tier per position per team
 - Sum ratings by age band per team
 - Compute rankings
 """
@@ -24,11 +26,17 @@ from typing import Optional
 # Path to data directory
 DATA_DIR = Path(__file__).parent.parent / "data"
 
-# Rating thresholds for tiering
-RATING_TIERS = {
-    "Elite": (13.0, float("inf")),   # 13+ rating
-    "A-Grade": (10.0, 13.0),         # 10-13 rating
-    "B-Grade": (7.0, 10.0),          # 7-10 rating
+# Percentile thresholds for tier classification (within each position group)
+TIER_PERCENTILES = {
+    "Elite": 0.90,      # top 10%
+    "A-Grade": 0.70,    # top 30%
+    "B-Grade": 0.50,    # top 50%
+}
+
+TIER_POINTS = {
+    "Elite": 3,
+    "A-Grade": 2,
+    "B-Grade": 1,
 }
 
 # Position groups
@@ -63,15 +71,24 @@ def load_player_summary() -> pd.DataFrame:
     return compute_player_summary()
 
 
-def get_rating_tier(rating: float) -> Optional[str]:
+def get_rating_tier(rating: float, thresholds: dict) -> Optional[str]:
     """
-    Classify a rating into Elite/A-Grade/B-Grade tier.
+    Classify a rating into Elite/A-Grade/B-Grade tier using position thresholds.
     
-    Returns None if rating is below B-Grade threshold.
+    Args:
+        rating: The player's rating value
+        thresholds: Dict with 'Elite', 'A-Grade', 'B-Grade' threshold values
+        
+    Returns tier name or None if below B-Grade threshold.
     """
-    for tier_name, (min_val, max_val) in RATING_TIERS.items():
-        if min_val <= rating < max_val:
-            return tier_name
+    if pd.isna(rating) or rating <= 0:
+        return None
+    if rating >= thresholds.get("Elite", float("inf")):
+        return "Elite"
+    if rating >= thresholds.get("A-Grade", float("inf")):
+        return "A-Grade"
+    if rating >= thresholds.get("B-Grade", float("inf")):
+        return "B-Grade"
     return None
 
 
@@ -82,6 +99,11 @@ def compute_list_ladder(
 ) -> pd.DataFrame:
     """
     Compute List Ladder - count of players per tier per position per team.
+    
+    Tiers are determined by percentile distribution within each position:
+    - Elite: top 10% (>= 90th percentile)
+    - A-Grade: top 30% (>= 70th percentile)  
+    - B-Grade: top 50% (>= 50th percentile)
     
     Args:
         summary_df: Player summary DataFrame. If None, loads from CSV.
@@ -103,6 +125,27 @@ def compute_list_ladder(
     if include_positions is None:
         include_positions = POSITIONS
     
+    # Compute percentile thresholds per position across all teams
+    position_thresholds = {}
+    for position in include_positions:
+        pos_df = summary_df[
+            (summary_df["Position"] == position) & 
+            (summary_df[rating_col].notna()) & 
+            (summary_df[rating_col] > 0)
+        ]
+        if pos_df.empty:
+            position_thresholds[position] = {
+                "Elite": float("inf"), "A-Grade": float("inf"), "B-Grade": float("inf")
+            }
+            continue
+        
+        pos_ratings = pos_df[rating_col]
+        position_thresholds[position] = {
+            "Elite": pos_ratings.quantile(TIER_PERCENTILES["Elite"]),
+            "A-Grade": pos_ratings.quantile(TIER_PERCENTILES["A-Grade"]),
+            "B-Grade": pos_ratings.quantile(TIER_PERCENTILES["B-Grade"]),
+        }
+    
     teams = summary_df["Team"].dropna().unique()
     
     results = []
@@ -117,27 +160,28 @@ def compute_list_ladder(
         b_grade_total = 0
         
         for position in include_positions:
-            pos_df = team_df[team_df["Position"] == position]
+            pos_df = team_df[
+                (team_df["Position"] == position) &
+                (team_df[rating_col].notna()) &
+                (team_df[rating_col] > 0)
+            ]
             
-            for tier_name in ["Elite", "A-Grade", "B-Grade"]:
-                min_val, max_val = RATING_TIERS[tier_name]
-                
-                # Count players in this tier
-                count = len(pos_df[
-                    (pos_df[rating_col] >= min_val) & 
-                    (pos_df[rating_col] < max_val)
-                ])
-                
-                col_name = f"{position}_{tier_name}"
-                row[col_name] = count
-                
-                # Update totals
-                if tier_name == "Elite":
-                    elite_total += count
-                elif tier_name == "A-Grade":
-                    a_grade_total += count
-                else:
-                    b_grade_total += count
+            thresholds = position_thresholds.get(position, {})
+            
+            # Count players in each tier using position-specific thresholds
+            elite_count = len(pos_df[pos_df[rating_col] >= thresholds.get("Elite", float("inf"))])
+            remaining = pos_df[pos_df[rating_col] < thresholds.get("Elite", float("inf"))]
+            a_grade_count = len(remaining[remaining[rating_col] >= thresholds.get("A-Grade", float("inf"))])
+            remaining = remaining[remaining[rating_col] < thresholds.get("A-Grade", float("inf"))]
+            b_grade_count = len(remaining[remaining[rating_col] >= thresholds.get("B-Grade", float("inf"))])
+            
+            row[f"{position}_Elite"] = elite_count
+            row[f"{position}_A-Grade"] = a_grade_count
+            row[f"{position}_B-Grade"] = b_grade_count
+            
+            elite_total += elite_count
+            a_grade_total += a_grade_count
+            b_grade_total += b_grade_count
         
         row["Elite_Total"] = elite_total
         row["A-Grade_Total"] = a_grade_total
@@ -259,7 +303,7 @@ def compute_age_profile_2yr() -> pd.DataFrame:
     return compute_age_profile(rating_col="Last 2 Average")
 
 
-def compute_age_profile_1yr(current_season: int = 2025) -> pd.DataFrame:
+def compute_age_profile_1yr(current_season: int = 2026) -> pd.DataFrame:
     """Compute Age Profile using current season rating only."""
     return compute_age_profile(rating_col=str(current_season))
 
@@ -314,9 +358,9 @@ if __name__ == "__main__":
         save_age_profile(ap_2yr, "age_profile_2yr.csv")
         print("💾 Saved age_profile_2yr.csv")
         
-        # Compute Age Profile 1yr (2025)
-        print("\n=== Age Profile (2025) ===")
-        ap_1yr = compute_age_profile_1yr(2025)
+        # Compute Age Profile 1yr (2026)
+        print("\n=== Age Profile (2026) ===")
+        ap_1yr = compute_age_profile_1yr(2026)
         save_age_profile(ap_1yr, "age_profile_1yr.csv")
         print("💾 Saved age_profile_1yr.csv")
         

@@ -1,0 +1,51 @@
+2026-03-25 07:09:57,451 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-25_0709.log
+2026-03-25 07:09:57,451 [INFO] ============================================================
+2026-03-25 07:09:57,451 [INFO] AFL Dashboard – Scheduled Data Update
+2026-03-25 07:09:57,451 [INFO] Date: Wednesday 25 March 2026 07:09
+2026-03-25 07:09:57,451 [INFO] Mode: FULL
+2026-03-25 07:09:57,451 [INFO] ============================================================
+2026-03-25 07:09:57,451 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-03-25 07:09:57,451 [INFO] 
+Steps to run (2):
+2026-03-25 07:09:57,451 [INFO]   • wheelo_ratings: Scrape Wheelo team & player ratings (Selenium) [SLOW]
+2026-03-25 07:09:57,451 [INFO]   • wheelo_match_stats: Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium) [SLOW]
+2026-03-25 07:09:57,451 [INFO] 
+2026-03-25 07:09:57,451 [INFO] START [wheelo_ratings] Scrape Wheelo team & player ratings (Selenium)
+2026-03-25 07:09:57,451 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_ratings.py --all
+2026-03-25 07:57:06,043 [INFO]   DONE [wheelo_ratings] in 2828.6s
+2026-03-25 07:57:06,044 [INFO]     | 📊 Team Stats downloaded: 3 files
+2026-03-25 07:57:06,044 [INFO]     | 📊 Player Stats downloaded: 3 files
+2026-03-25 07:57:06,044 [INFO]     | 📊 Squad Lists downloaded: 1 file
+2026-03-25 07:57:06,044 [INFO]     | 
+2026-03-25 07:57:06,044 [INFO]     | 📁 CSV files saved in: /Users/marcuswagner/coding/AFL_dashboard/wheelo_downloads
+2026-03-25 07:57:06,044 [INFO] START [wheelo_match_stats] Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)
+2026-03-25 07:57:06,044 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py --brownlow
+2026-03-25 08:19:48,507 [ERROR]   FAILED [wheelo_match_stats] exit code 1 (1362.5s)
+2026-03-25 08:19:48,508 [ERROR]     | 6   chromedriver                        0x00000001025aa220 cxxbridge1$str$ptr + 2891948
+2026-03-25 08:19:48,508 [ERROR]     | 7   chromedriver                        0x00000001025ad910 cxxbridge1$str$ptr + 2906012
+2026-03-25 08:19:48,508 [ERROR]     | 8   chromedriver                        0x000000010258f5d8 cxxbridge1$str$ptr + 2782308
+2026-03-25 08:19:48,508 [ERROR]     | 9   chromedriver                        0x00000001025ae194 cxxbridge1$str$ptr + 2908192
+2026-03-25 08:19:48,508 [ERROR]     | 10  chromedriver                        0x0000000102580090 cxxbridge1$str$ptr + 2719516
+2026-03-25 08:19:48,508 [ERROR]     | 11  chromedriver                        0x00000001025d2b30 cxxbridge1$str$ptr + 3058108
+2026-03-25 08:19:48,508 [ERROR]     | 12  chromedriver                        0x00000001025d2cac cxxbridge1$str$ptr + 3058488
+2026-03-25 08:19:48,508 [ERROR]     | 13  chromedriver                        0x00000001025e3680 cxxbridge1$str$ptr + 3126540
+2026-03-25 08:19:48,508 [ERROR]     | 14  libsystem_pthread.dylib             0x000000018ada1c08 _pthread_start + 136
+2026-03-25 08:19:48,508 [ERROR]     | 15  libsystem_pthread.dylib             0x000000018ad9cba8 thread_start + 8
+2026-03-25 08:19:48,508 [ERROR]     | 
+2026-03-25 08:19:48,508 [ERROR]     |   📋 Round 1 (round 1)
+2026-03-25 08:19:48,508 [ERROR]     |     (no games found)
+2026-03-25 08:19:48,508 [ERROR]     | 
+2026-03-25 08:19:48,508 [ERROR]     |   📋 Round 2 (round 2)
+2026-03-25 08:19:48,508 [INFO] 
+2026-03-25 08:19:48,508 [INFO] ============================================================
+2026-03-25 08:19:48,508 [INFO] UPDATE SUMMARY
+2026-03-25 08:19:48,508 [INFO] ============================================================
+2026-03-25 08:19:48,508 [INFO]   ✓ wheelo_ratings: OK
+2026-03-25 08:19:48,508 [INFO]   ✗ wheelo_match_stats: FAILED: Exit code 1
+2026-03-25 08:19:48,508 [INFO] 
+2026-03-25 08:19:48,508 [INFO] Results: 1 passed, 1 failed, 0 skipped
+2026-03-25 08:19:48,508 [INFO] Total time: 4191s (69.9 min)
+2026-03-25 08:19:48,508 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-25_0709.log
+2026-03-25 08:19:48,509 [WARNING] 
+⚠️  1 step(s) failed. Check log for details.
+2026-03-25 08:19:53,337 [INFO] Email sent to marcus.wagner@futureedgesport.com.au

@@ -1,0 +1,52 @@
+2026-03-26 07:02:43,841 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-26_0702.log
+2026-03-26 07:02:43,841 [INFO] ============================================================
+2026-03-26 07:02:43,841 [INFO] AFL Dashboard – Scheduled Data Update
+2026-03-26 07:02:43,841 [INFO] Date: Thursday 26 March 2026 07:02
+2026-03-26 07:02:43,841 [INFO] Mode: FULL
+2026-03-26 07:02:43,841 [INFO] ============================================================
+2026-03-26 07:02:43,841 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-03-26 07:02:43,841 [INFO] 
+Steps to run (2):
+2026-03-26 07:02:43,841 [INFO]   • wheelo_ratings: Scrape Wheelo team & player ratings (Selenium) [SLOW]
+2026-03-26 07:02:43,841 [INFO]   • wheelo_match_stats: Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium) [SLOW]
+2026-03-26 07:02:43,842 [INFO] 
+2026-03-26 07:02:43,842 [INFO] START [wheelo_ratings] Scrape Wheelo team & player ratings (Selenium)
+2026-03-26 07:02:43,842 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_ratings.py --all
+2026-03-26 07:56:25,965 [INFO]   DONE [wheelo_ratings] in 3222.1s
+2026-03-26 07:56:25,965 [INFO]     | 📊 Team Stats downloaded: 3 files
+2026-03-26 07:56:25,966 [INFO]     | 📊 Player Stats downloaded: 3 files
+2026-03-26 07:56:25,966 [INFO]     | 📊 Squad Lists downloaded: 1 file
+2026-03-26 07:56:25,966 [INFO]     | 
+2026-03-26 07:56:25,966 [INFO]     | 📁 CSV files saved in: /Users/marcuswagner/coding/AFL_dashboard/wheelo_downloads
+2026-03-26 07:56:25,966 [INFO] START [wheelo_match_stats] Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)
+2026-03-26 07:56:25,966 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py --brownlow
+2026-03-26 08:03:26,521 [ERROR]   FAILED [wheelo_match_stats] exit code 1 (420.6s)
+2026-03-26 08:03:26,521 [ERROR]     |     main()
+2026-03-26 08:03:26,521 [ERROR]     |   File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 415, in main
+2026-03-26 08:03:26,521 [ERROR]     |     scraper.scrape_and_save_brownlow(args.season)
+2026-03-26 08:03:26,521 [ERROR]     |   File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 358, in scrape_and_save_brownlow
+2026-03-26 08:03:26,521 [ERROR]     |     df = self.scrape_brownlow(season)
+2026-03-26 08:03:26,521 [ERROR]     |   File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 317, in scrape_brownlow
+2026-03-26 08:03:26,521 [ERROR]     |     self._setup_driver()
+2026-03-26 08:03:26,521 [ERROR]     |   File "/Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py", line 118, in _setup_driver
+2026-03-26 08:03:26,521 [ERROR]     |     raise RuntimeError(f"Failed to start Chrome after {max_retries} attempts: {last_error}")
+2026-03-26 08:03:26,521 [ERROR]     | RuntimeError: Failed to start Chrome after 3 attempts: Could not reach host. Are you offline?
+2026-03-26 08:03:26,521 [ERROR]     |   ⚠️  Attempt 1 failed: Could not reach host. Are you offline?
+2026-03-26 08:03:26,521 [ERROR]     | 🔧 Chrome driver attempt 2/3…
+2026-03-26 08:03:26,521 [ERROR]     |   ⚠️  Attempt 2 failed: Could not reach host. Are you offline?
+2026-03-26 08:03:26,521 [ERROR]     | 🔧 Chrome driver attempt 3/3…
+2026-03-26 08:03:26,521 [ERROR]     |   ⚠️  Attempt 3 failed: Could not reach host. Are you offline?
+2026-03-26 08:03:26,521 [INFO] 
+2026-03-26 08:03:26,521 [INFO] ============================================================
+2026-03-26 08:03:26,521 [INFO] UPDATE SUMMARY
+2026-03-26 08:03:26,521 [INFO] ============================================================
+2026-03-26 08:03:26,521 [INFO]   ✓ wheelo_ratings: OK
+2026-03-26 08:03:26,521 [INFO]   ✗ wheelo_match_stats: FAILED: Exit code 1
+2026-03-26 08:03:26,521 [INFO] 
+2026-03-26 08:03:26,521 [INFO] Results: 1 passed, 1 failed, 0 skipped
+2026-03-26 08:03:26,521 [INFO] Total time: 3643s (60.7 min)
+2026-03-26 08:03:26,521 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-26_0702.log
+2026-03-26 08:03:26,522 [WARNING] 
+⚠️  1 step(s) failed. Check log for details.
+2026-03-26 08:03:26,622 [WARNING] SMTP email failed: [Errno 8] nodename nor servname provided, or not known
+2026-03-26 08:03:26,646 [INFO] Email sent via mailx to marcus.wagner@futureedgesport.com.au

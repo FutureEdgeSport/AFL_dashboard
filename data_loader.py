@@ -172,7 +172,7 @@ def load_from_master_or_legacy(
 # PLAYER DATA LOADERS
 # ============================================================================
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_player_summary_data() -> pd.DataFrame:
     """
     Load player summary data (master: Player_Summary, legacy: Summary sheet).
@@ -184,7 +184,7 @@ def load_player_summary_data() -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_player_stats_for_season(season: int) -> pd.DataFrame:
     """
     Load player stats for a specific season.
@@ -219,7 +219,7 @@ def load_player_stats_for_season(season: int) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_full_squad_data(season: int = 2025) -> pd.DataFrame:
     """
     Load full squad list including players who didn't play.
@@ -243,21 +243,21 @@ def load_full_squad_data(season: int = 2025) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_wings_data() -> pd.DataFrame:
     """Load wings position data."""
     df = load_from_master_or_legacy("player", "Wings")
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_player_contracts_data() -> pd.DataFrame:
     """Load player contract expiry data."""
     df = load_from_master_or_legacy("player", "Contract Expiry")
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_player_draft_data() -> pd.DataFrame:
     """Load player draft data."""
     df = load_from_master_or_legacy("player", "Draft Data")
@@ -268,7 +268,7 @@ def load_player_draft_data() -> pd.DataFrame:
 # TEAM DATA LOADERS
 # ============================================================================
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_summary_for_season(season: int) -> pd.DataFrame:
     """
     Load team summary for a specific season.
@@ -291,7 +291,7 @@ def load_team_summary_for_season(season: int) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_full_stats(season: int) -> pd.DataFrame:
     """Load full team stats for a season."""
     if season == 2025:
@@ -302,7 +302,7 @@ def load_team_full_stats(season: int) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_ladder_positions() -> pd.DataFrame:
     """
     Load all historical ladder positions (2011-2025).
@@ -344,7 +344,7 @@ def load_ladder_positions() -> pd.DataFrame:
 # TRAITS DATA LOADERS
 # ============================================================================
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_traits_for_season(season: int) -> pd.DataFrame:
     """
     Load player traits for a specific season.
@@ -382,7 +382,7 @@ def load_traits_for_season(season: int) -> pd.DataFrame:
 # REFERENCE DATA LOADERS  
 # ============================================================================
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_player_registry() -> pd.DataFrame:
     """Load player registry with ID mappings."""
     master_xl = get_master_excel_file()
@@ -404,7 +404,7 @@ def load_player_registry() -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_champion_data_ids() -> pd.DataFrame:
     """Load Champion Data player IDs."""
     master_xl = get_master_excel_file()
@@ -426,7 +426,7 @@ def load_champion_data_ids() -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_wheelo_player_data() -> pd.DataFrame:
     """Load Wheelo player metrics."""
     master_xl = get_master_excel_file()
@@ -448,7 +448,7 @@ def load_wheelo_player_data() -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_match_ratings(season: int = None) -> pd.DataFrame:
     """Load round-by-round match ratings from data/raw/player/match_ratings_{season}.csv."""
     if season is None:
@@ -465,7 +465,7 @@ def load_match_ratings(season: int = None) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_brownlow_predictions(season: int = None) -> pd.DataFrame:
     """Load Brownlow predictions from data/raw/player/brownlow_predictions_{season}.csv."""
     if season is None:
@@ -482,7 +482,7 @@ def load_brownlow_predictions(season: int = None) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_wheelo_team_data() -> pd.DataFrame:
     """Load Wheelo team metrics."""
     master_xl = get_master_excel_file()

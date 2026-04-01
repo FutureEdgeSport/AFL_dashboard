@@ -29,8 +29,62 @@ if not API_KEY:
     print("⚠️  AFL_TRAITS_API_KEY not set. Set it in .env or export it.")
 API_BASE = "https://partner-api.traitsinsights.app"
 
-# Shared HTTP session with retry logic
-_session = create_retry_session(retries=3, backoff_factor=1.0, timeout=10)
+# Shared HTTP session — NO automatic retries for the Traits API.
+# The previous retry config (retries=3) caused each not-found player to
+# hit the Traits server 4 times (1 original + 3 retries on 500),
+# generating unnecessary load on their end.
+_session = create_retry_session(retries=0, backoff_factor=0, timeout=10)
+
+# Placeholder DOB used by Footywire when actual DOB is unknown
+PLACEHOLDER_DOB = "2000-01-01"
+
+# --- Name-variant mapping ---------------------------------------------------
+# Footywire sometimes stores full/abbreviated names that differ from what
+# Traits has on file.  We try the original name first then fall back to
+# a common variant built from this table.
+_NAME_SHORT_TO_FULL = {
+    "Tom": "Thomas", "Tim": "Timothy", "Nick": "Nicholas",
+    "Matt": "Matthew", "Jack": "Jackson", "Will": "William",
+    "Sam": "Samuel", "Rob": "Robert", "Josh": "Joshua",
+    "Mitch": "Mitchell", "Ben": "Benjamin", "Cam": "Cameron",
+    "Zach": "Zachary", "Ollie": "Oliver", "Harry": "Harrison",
+    "Lachie": "Lachlan", "Finn": "Finnegan", "Chris": "Christopher",
+    "Nic": "Nicholas", "Dan": "Daniel", "Ed": "Edward",
+    "Pat": "Patrick", "Alex": "Alexander", "Mike": "Michael",
+    "Jake": "Jacob", "Joe": "Joseph", "Charlie": "Charles",
+    "Archie": "Archibald", "Freddy": "Frederick", "Fred": "Frederick",
+    "Max": "Maxwell", "Paddy": "Patrick",
+}
+# Build reverse map — prefer the more common short form when there are
+# duplicates (e.g. both "Nick" and "Nic" map to "Nicholas"; we want
+# "Nicholas" → "Nick").
+_NAME_FULL_TO_SHORT = {}
+for _short, _full in _NAME_SHORT_TO_FULL.items():
+    # Keep the first (more common) mapping; skip duplicates like "Nic"
+    if _full not in _NAME_FULL_TO_SHORT:
+        _NAME_FULL_TO_SHORT[_full] = _short
+
+
+def _name_variant(name: str) -> str | None:
+    """Return an alternate first-name form, or None if no mapping exists."""
+    parts = name.split(" ", 1)
+    if len(parts) < 2:
+        return None
+    first, rest = parts
+    alt = _NAME_FULL_TO_SHORT.get(first) or _NAME_SHORT_TO_FULL.get(first)
+    if alt:
+        return f"{alt} {rest}"
+    return None
+
+
+def _has_middle_initial(name: str) -> str | None:
+    """If the name contains a middle initial (e.g. 'Bailey J. Williams'),
+    return the version without it."""
+    import re
+    m = re.match(r'^(\S+)\s+[A-Z]\.\s+(\S.*)$', name)
+    if m:
+        return f"{m.group(1)} {m.group(2)}"
+    return None
 
 # Cache file paths
 CACHE_DIR = Path(__file__).parent / "data" / "cache"
@@ -180,27 +234,26 @@ def get_player_dobs(players_df, progress_callback=None):
     return cache
 
 
-def query_traits_api(name, dob):
-    """
-    Query the Traits API for a single player.
-    
-    Args:
-        name: Player full name
-        dob: Date of birth in YYYY-MM-DD format
-        
-    Returns:
-        API response dict, or None if not found
-    """
+def _is_placeholder_dob(dob: str) -> bool:
+    """Return True if the DOB is a known placeholder (not real)."""
+    return dob == PLACEHOLDER_DOB
+
+
+def _is_rookie_dob(dob: str, cutoff_year: int = 2007) -> bool:
+    """Return True if the player was born in or after *cutoff_year*.
+    First-year draftees typically won't be in the Traits database yet."""
+    try:
+        return int(dob[:4]) >= cutoff_year
+    except (ValueError, TypeError):
+        return False
+
+
+def _query_traits_api_once(name, dob):
+    """Single attempt to query the Traits API (no name fallback)."""
     url = f"{API_BASE}/profiles/participations/latest/ratings"
-    
-    params = {
-        'name': name,
-        'date_of_birth': dob
-    }
-    headers = {
-        'Authorization': f'Bearer {API_KEY}'
-    }
-    
+    params = {'name': name, 'date_of_birth': dob}
+    headers = {'Authorization': f'Bearer {API_KEY}'}
+
     try:
         resp = _session.get(url, params=params, headers=headers, timeout=10)
         if resp.status_code == 200:
@@ -209,7 +262,62 @@ def query_traits_api(name, dob):
             print(f"API auth failed for {name} — check AFL_TRAITS_API_KEY")
     except Exception as e:
         print(f"API error for {name}: {e}")
-    
+    return None
+
+
+def query_traits_api(name, dob):
+    """
+    Query the Traits API for a single player.
+
+    Tries the given *name* first, then automatically tries common
+    name variants (e.g. "Thomas" ↔ "Tom") and drops middle initials
+    (e.g. "Bailey J. Williams" → "Bailey Williams") before giving up.
+
+    Skips requests entirely for placeholder DOBs and first-year rookies.
+
+    Args:
+        name: Player full name
+        dob: Date of birth in YYYY-MM-DD format
+
+    Returns:
+        API response dict, or None if not found
+    """
+    if not dob:
+        return None
+
+    # Skip known-bad DOBs
+    if _is_placeholder_dob(dob):
+        return None
+
+    # Skip first-year draftees (born 2007+) — Traits won't have them yet
+    if _is_rookie_dob(dob):
+        return None
+
+    # --- Try original name ---------------------------------------------------
+    result = _query_traits_api_once(name, dob)
+    if result:
+        return result
+
+    # --- Try name variant (short ↔ full first name) --------------------------
+    alt = _name_variant(name)
+    if alt:
+        result = _query_traits_api_once(alt, dob)
+        if result:
+            return result
+
+    # --- Try dropping middle initial (e.g. "Bailey J. Williams") -------------
+    no_mid = _has_middle_initial(name)
+    if no_mid:
+        result = _query_traits_api_once(no_mid, dob)
+        if result:
+            return result
+        # Also try variant of the no-middle-initial form
+        alt2 = _name_variant(no_mid)
+        if alt2:
+            result = _query_traits_api_once(alt2, dob)
+            if result:
+                return result
+
     return None
 
 
@@ -262,7 +370,7 @@ def parse_traits_response(api_response, competition="AFL"):
         # Also add individual metrics
         for metric in trait.get('metrics', []):
             metric_name = metric['name']
-            result[f'{trait_name}_{metric_name}'] = metric.get('value')
+            result[f'{trait_name}_{metric_name}'] = metric.get('rating')
     
     return result
 

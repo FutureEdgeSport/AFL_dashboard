@@ -1,0 +1,42 @@
+2026-03-31 07:14:40,806 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-31_0714.log
+2026-03-31 07:14:40,806 [INFO] ============================================================
+2026-03-31 07:14:40,806 [INFO] AFL Dashboard – Scheduled Data Update
+2026-03-31 07:14:40,806 [INFO] Date: Tuesday 31 March 2026 07:14
+2026-03-31 07:14:40,806 [INFO] Mode: FULL
+2026-03-31 07:14:40,806 [INFO] ============================================================
+2026-03-31 07:14:40,806 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-03-31 07:14:40,806 [INFO] 
+Steps to run (2):
+2026-03-31 07:14:40,806 [INFO]   • wheelo_ratings: Scrape Wheelo team & player ratings (Selenium) [SLOW]
+2026-03-31 07:14:40,806 [INFO]   • wheelo_match_stats: Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium) [SLOW]
+2026-03-31 07:14:40,806 [INFO] 
+2026-03-31 07:14:40,806 [INFO] START [wheelo_ratings] Scrape Wheelo team & player ratings (Selenium)
+2026-03-31 07:14:40,806 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_ratings.py --all
+2026-03-31 07:26:22,754 [INFO]   DONE [wheelo_ratings] in 701.9s
+2026-03-31 07:26:22,754 [INFO]     | 📊 Team Stats downloaded: 3 files
+2026-03-31 07:26:22,754 [INFO]     | 📊 Player Stats downloaded: 3 files
+2026-03-31 07:26:22,755 [INFO]     | 📊 Squad Lists downloaded: 1 file
+2026-03-31 07:26:22,755 [INFO]     | 
+2026-03-31 07:26:22,755 [INFO]     | 📁 CSV files saved in: /Users/marcuswagner/coding/AFL_dashboard/wheelo_downloads
+2026-03-31 07:26:22,755 [INFO] START [wheelo_match_stats] Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)
+2026-03-31 07:26:22,755 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py --brownlow
+2026-03-31 07:43:56,505 [INFO]   DONE [wheelo_match_stats] in 1053.8s
+2026-03-31 07:43:56,506 [INFO]     | ============================================================
+2026-03-31 07:43:56,506 [INFO]     | 🔧 Chrome driver attempt 1/3…
+2026-03-31 07:43:56,506 [INFO]     | ✅ Chrome driver ready
+2026-03-31 07:43:56,506 [INFO]     | 
+2026-03-31 07:43:56,506 [INFO]     | 💾 Saved 1288 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/brownlow_predictions_2026.csv
+2026-03-31 07:43:56,506 [INFO] 
+2026-03-31 07:43:56,506 [INFO] ============================================================
+2026-03-31 07:43:56,506 [INFO] UPDATE SUMMARY
+2026-03-31 07:43:56,506 [INFO] ============================================================
+2026-03-31 07:43:56,506 [INFO]   ✓ wheelo_ratings: OK
+2026-03-31 07:43:56,506 [INFO]   ✓ wheelo_match_stats: OK
+2026-03-31 07:43:56,506 [INFO] 
+2026-03-31 07:43:56,506 [INFO] Results: 2 passed, 0 failed, 0 skipped
+2026-03-31 07:43:56,506 [INFO] Total time: 1756s (29.3 min)
+2026-03-31 07:43:56,506 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-03-31_0714.log
+2026-03-31 07:43:56,509 [INFO] Log rotation: removed 1 old log file(s)
+2026-03-31 07:43:56,509 [INFO] 
+✅ All steps completed successfully!
+2026-03-31 07:44:01,701 [INFO] Email sent to marcus.wagner@futureedgesport.com.au

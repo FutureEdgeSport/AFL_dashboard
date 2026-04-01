@@ -38,6 +38,8 @@ Sheet Naming Conventions:
 """
 
 import os
+import platform
+import subprocess
 import sys
 import time
 import argparse
@@ -144,8 +146,10 @@ class WheeloScraper:
         for attempt in range(1, max_retries + 1):
             try:
                 print(f"🔧 Setting up Chrome driver (attempt {attempt}/{max_retries})...")
+                driver_path = ChromeDriverManager().install()
+                self._codesign_if_needed(driver_path)
                 self.driver = webdriver.Chrome(
-                    service=Service(ChromeDriverManager().install()),
+                    service=Service(driver_path),
                     options=options
                 )
                 
@@ -173,6 +177,29 @@ class WheeloScraper:
         
         raise RuntimeError(f"Failed to start Chrome after {max_retries} attempts: {last_error}")
         
+    @staticmethod
+    def _codesign_if_needed(driver_path: str):
+        """Ad-hoc sign chromedriver on macOS to avoid Gatekeeper SIGKILL."""
+        if platform.system() != "Darwin":
+            return
+        try:
+            result = subprocess.run(
+                ["codesign", "--verify", driver_path],
+                capture_output=True, timeout=10,
+            )
+            if result.returncode == 0:
+                return  # already validly signed
+        except Exception:
+            pass
+        try:
+            subprocess.run(
+                ["codesign", "--force", "--deep", "--sign", "-", driver_path],
+                capture_output=True, timeout=30, check=True,
+            )
+            print(f"  🔏 Ad-hoc signed chromedriver")
+        except Exception as e:
+            print(f"  ⚠️  Could not ad-hoc sign chromedriver: {e}")
+
     def _close_driver(self):
         """Close the WebDriver."""
         if self.driver:

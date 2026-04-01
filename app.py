@@ -768,9 +768,6 @@ def render_footer():
         <p style="margin: 0 0 8px 0; font-weight: 600;">
             AFL Analytics Dashboard | Powered by FutureEdge Sport
         </p>
-        <p style="margin: 0; font-size: 0.85em;">
-            Data accuracy verified as of latest AFL.com.au update
-        </p>
     </div>
     ''', unsafe_allow_html=True)
 
@@ -1125,7 +1122,7 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
     return norm
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_ladders_from_excel(season: int, last10: bool = False, block: str | None = None) -> pd.DataFrame:
     """Load team ladder data from Excel sheets (legacy method with formulas).
     
@@ -1154,7 +1151,7 @@ def load_team_ladders_from_excel(season: int, last10: bool = False, block: str |
         return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_ladders_computed_wrapper(season: int, last10: bool = False, block: str | None = None) -> pd.DataFrame:
     """
     Load team ladder data from computed CSV files (sophisticated Z-score based ratings).
@@ -1234,7 +1231,7 @@ def load_team_ladders(season: int, last10: bool = False, block: str | None = Non
         return load_team_ladders_from_excel(season, last10, block=block)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_afl_ladder_positions() -> pd.DataFrame:
     """Load historical AFL ladder positions - uses master workbook with fallback.
     
@@ -1507,7 +1504,7 @@ def _generate_summary_from_raw(season: int) -> pd.DataFrame:
     return df_out
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_summary_for_year(season: int) -> pd.DataFrame:
     """Load team summary for a season - uses master workbook with fallback."""
     # Try new data loader first (master workbook)
@@ -1535,7 +1532,7 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_summary_for_year_l10(season: int) -> pd.DataFrame:
     """Load team Last 10 summary for a season."""
     try:
@@ -1549,7 +1546,7 @@ def load_team_summary_for_year_l10(season: int) -> pd.DataFrame:
         return load_team_summary_for_year(season)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_team_summary_for_year_l5(season: int) -> pd.DataFrame:
     """Load team Last 5 summary for a season."""
     try:
@@ -1564,7 +1561,7 @@ def load_team_summary_for_year_l5(season: int) -> pd.DataFrame:
 
 
 # ---------------- DATA LOADERS – PLAYERS ----------------
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def _load_player_summary_excel() -> pd.DataFrame:
     """Load player summary data - uses master workbook with fallback to legacy Excel."""
     # Try new data loader first (master workbook)
@@ -1601,9 +1598,10 @@ def _load_player_summary_computed() -> pd.DataFrame:
             df.columns = df.columns.astype(str).str.strip()
             
             # Ensure column compatibility with Excel version
-            # Rename '2025 Rating' to '2025' if needed (to match Excel column name)
-            if '2025 Rating' in df.columns and '2025' not in df.columns:
-                df = df.rename(columns={'2025 Rating': '2025_Rating_Current'})
+            # Rename season-specific Rating column if needed (to match Excel column name)
+            _rating_col_name = f'{CURRENT_SEASON} Rating'
+            if _rating_col_name in df.columns and str(CURRENT_SEASON) not in df.columns:
+                df = df.rename(columns={_rating_col_name: f'{CURRENT_SEASON}_Rating_Current'})
             
             return df
         else:
@@ -1630,7 +1628,7 @@ def load_player_summary() -> pd.DataFrame:
         return _load_player_summary_excel()
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_player_seasons() -> list[int]:
     """Get available player seasons with error handling."""
     try:
@@ -1647,7 +1645,7 @@ def get_player_seasons() -> list[int]:
         return AVAILABLE_SEASONS  # Fall back to config default
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_traits_seasons() -> list[int]:
     """Get available trait seasons from the traits Excel file (2021-2025)."""
     try:
@@ -1716,7 +1714,7 @@ def _compute_age_decimal_from_dob(df: pd.DataFrame, season: int = None) -> pd.Da
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_players(season: int) -> pd.DataFrame:
     """
     Player Ratings loader - uses master workbook with fallback to legacy files.
@@ -1866,7 +1864,7 @@ def load_players(season: int) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_full_squad(season: int) -> pd.DataFrame:
     """
     Load full squad list including players who didn't play.
@@ -2006,21 +2004,22 @@ def _load_traits_api_cache() -> dict:
     Excludes VFL and other non-AFL competition data.
     Returns empty dict if not available.
     """
-    if not TRAITS_API_AVAILABLE:
+    cache_path = Path(__file__).parent / "data" / "cache" / "traits_api_cache.json"
+    if not cache_path.exists():
         return {}
     try:
-        cache = load_traits_cache()
-        all_players = cache.get('players', {})
-        # Filter to AFL-only: exclude entries where Team_API contains 'VFL'
-        # or Competition is explicitly 'VFL'
-        afl_only = {}
-        for name, data in all_players.items():
-            team = str(data.get('Team_API', ''))
-            comp = str(data.get('Competition', ''))
-            if 'VFL' in team.upper() or comp.upper() == 'VFL':
-                continue
-            afl_only[name] = data
-        return afl_only
+        import json
+        with open(cache_path, 'r') as f:
+            data = json.load(f)
+        players = data.get('players', {})
+        # Filter out VFL-only entries
+        afl_players = {}
+        for name, pdata in players.items():
+            comp = str(pdata.get('Competition', ''))
+            team = str(pdata.get('Team_API', ''))
+            if 'VFL' not in comp.upper() and 'VFL' not in team.upper():
+                afl_players[name] = pdata
+        return afl_players
     except Exception:
         return {}
 
@@ -2143,8 +2142,13 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
         
         # Map Position_API abbreviation to Position / Position_Full
         pos_api = api_data.get('Position_API')
-        if pos_api and (pd.isna(row.get('Position', np.nan)) or str(row.get('Position', '')).strip() == ''):
-            df.at[idx, 'Position'] = str(pos_api).strip()
+        if pos_api:
+            pos_str = str(pos_api).strip()
+            pos_full = POSITION_ABBREV_TO_FULL.get(pos_str, pos_str)
+            if pd.isna(row.get('Position', np.nan)) or str(row.get('Position', '')).strip() in ('', 'nan', 'None'):
+                df.at[idx, 'Position'] = pos_str
+            if pd.isna(row.get('Position_Full', np.nan)) or str(row.get('Position_Full', '')).strip() in ('', 'nan', 'None'):
+                df.at[idx, 'Position_Full'] = pos_full
         
         updated_count += 1
     
@@ -2286,7 +2290,7 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """
     Load ENRICHED traits for a season.
@@ -2388,8 +2392,9 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         for c in ["Player_Full", "Team_Full", "Position_Full"]:
             df[c] = df[c].replace({"nan": "", "None": ""})
 
-        # Enhance with Traits API data for recent seasons
-        if actual_season >= 2025:
+        # Enhance with Traits API data for current season only
+        # (API cache contains latest values - don't overwrite historical seasons)
+        if actual_season == CURRENT_SEASON:
             api_cache = _load_traits_api_cache()
             if api_cache:
                 df = _enhance_traits_with_api(df, api_cache)
@@ -2542,7 +2547,7 @@ WHEELO_EXTRA_STATS = {
 _WHEELO_NON_TEAMS = {"Average", "League Average", "Avg", "Total"}
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def _load_wheelo_team_stats() -> pd.DataFrame:
     """Load Wheelo team data with new Equity/xChainScore columns."""
     try:
@@ -2731,7 +2736,7 @@ def get_team_logo_path(team_name: str):
     return None
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_player_name_mapping():
     """Load player photo guide and create mapping from various name formats to full names.
     
@@ -3065,7 +3070,7 @@ def build_player_traits_history_table(
     return out[display_cols], table_html
 
 # ---------------- TEAM SUMMARY: AVAILABLE YEARS ----------------
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_available_summary_years() -> list[int]:
     """
     Returns all years that have team summary data available.
@@ -3099,7 +3104,7 @@ def get_available_summary_years() -> list[int]:
     return years if years else sorted(set(TEAM_SEASONS), reverse=True)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_l10_available_years() -> set[int]:
     """Return set of years that have Last 10 data (computed CSV or Excel sheet)."""
     l10_years: set[int] = set()
@@ -3122,7 +3127,7 @@ def get_l10_available_years() -> set[int]:
     return l10_years
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_l5_available_years() -> set[int]:
     """Return set of years that have Last 5 data (computed CSV or Excel sheet)."""
     l5_years: set[int] = set()
@@ -3146,7 +3151,7 @@ def get_l5_available_years() -> set[int]:
 
 
 # ---------------- AFL LADDER HELPERS ----------------
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (position_str, position_int, color) for team/season from ladder file.
@@ -3178,7 +3183,7 @@ def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, s
         return str(position), None, "#888888"
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=3600)
 def get_ladder_percentage(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (percentage_str, pct_rank, color) for team/season.
@@ -4081,7 +4086,7 @@ def render_grouped_navigation():
         unsafe_allow_html=True,
     )
     
-    @st.cache_data(show_spinner=False)
+    @st.cache_data(show_spinner=False, ttl=3600)
     def get_all_players_for_search(season: int):
         """Get all players for search functionality.
         
@@ -4524,6 +4529,28 @@ if page == "Home":
         unsafe_allow_html=True
     )
 
+    # ...existing code...
+
+    # ── Last Updated (top right) ──
+    _base = Path(__file__).resolve().parent
+    _data_files = [
+        ("Player Ratings", _base / "data" / "raw" / "player" / f"player_stats_{CURRENT_SEASON}.csv"),
+        ("Match Ratings", _base / "data" / "raw" / "player" / f"match_ratings_{CURRENT_SEASON}.csv"),
+        ("Brownlow Predictions", _base / "data" / "raw" / "player" / f"brownlow_predictions_{CURRENT_SEASON}.csv"),
+    ]
+    _update_parts = []
+    for _lbl, _fp in _data_files:
+        if _fp.exists():
+            from datetime import datetime as _dt
+            _mtime = _dt.fromtimestamp(os.path.getmtime(_fp))
+            _update_parts.append(f"<span style='white-space:nowrap;'><b>{_lbl}:</b> {_mtime.strftime('%d %b %Y %H:%M')}</span>")
+    if _update_parts:
+        st.markdown(
+            """
+            <div style='position:fixed;top:18px;right:32px;z-index:9999;background:rgba(30,30,40,0.92);padding:7px 18px 7px 16px;border-radius:16px 0 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.18);font-size:13px;color:#fff;opacity:0.96;'>
+                Last data update<br>""" +
+            "<br>".join(_update_parts) +
+            "</div>" , unsafe_allow_html=True)
     # ----- Team Selector -----
     all_teams = [
         "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
@@ -4970,6 +4997,12 @@ def render_game_day_playground(teams: list[str]):
         try:
             df = load_player_summary()
             if "Team" in df.columns:
+                # Normalize team names for filter
+                df["Team"] = df["Team"].replace({
+                    "GWS": "GWS Giants",
+                    "Greater Western Sydney": "GWS Giants",
+                    "Greater Western Sydney Giants": "GWS Giants"
+                })
                 teams = sorted(df["Team"].dropna().unique())
         except Exception as e:
             st.error("Unable to load teams for Game Predictor")
@@ -6125,7 +6158,6 @@ if page == "Overview":
             st.caption(f"Comparison showing {len(comparison_df)} teams")
         else:
             st.info("No matching teams found between the two periods for comparison.")
-
 
 
 # ================= TEAM BREAKDOWN =================
@@ -8653,7 +8685,7 @@ elif page == "Player Profile":
     # Load Contract Expiry and FA Status from Footywire data
     contract_expiry = None
     fa_status = None
-    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / f"footywire_{CURRENT_SEASON}_complete.csv"
     if footywire_path.exists():
         try:
             fw_df = pd.read_csv(footywire_path)
@@ -9330,9 +9362,9 @@ elif page == "Player Profile":
                 aerial = player_trait.get("Aerial", None)
                 defence = player_trait.get("Defence", None)
                 _pos_raw = player_trait.get("Position_Full", None)
-                if _pos_raw is None or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)):
+                if not _pos_raw or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)) or str(_pos_raw).strip() in ("", "nan", "None"):
                     _pos_raw = player_trait.get("Position", None)
-                if _pos_raw is None or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)):
+                if not _pos_raw or (isinstance(_pos_raw, float) and pd.isna(_pos_raw)) or str(_pos_raw).strip() in ("", "nan", "None"):
                     _pos_raw = latest_position
                 position = _pos_raw
 
@@ -9708,10 +9740,12 @@ elif page == "Depth Chart":
     render_page_header("Depth Chart", "Positional Player Rankings", "depth_chart")
 
     # Depth Chart needs FULL roster data including Wings and players who didn't play
-    # Always load from Excel Summary sheet (not computed CSV which only has players who played)
-    summary_df = _load_player_summary_excel()
+    # Use computed summary (which has 2026 data) when available, otherwise fall back to Excel
+    summary_df = load_player_summary()
     if summary_df.empty:
-        st.error("Could not load Summary sheet from AFL Player Ratings.")
+        summary_df = _load_player_summary_excel()
+    if summary_df.empty:
+        st.error("Could not load player summary data.")
         st.stop()
     
     # ------------------------------------------------------------------
@@ -9891,6 +9925,17 @@ elif page == "Depth Chart":
         df_team[rating_col_name], errors="coerce"
     )
 
+    # For year-based ratings, null out rating for players with 0 matches
+    # so they display as "NA" with grey fill (consistent with Last 2 / Career filters)
+    _matches_col_depth = None
+    for _mc in [f'{CURRENT_SEASON} Matches', 'Matches', '2025 Matches']:
+        if _mc in df_team.columns:
+            _matches_col_depth = _mc
+            break
+    if _matches_col_depth:
+        _m_vals = pd.to_numeric(df_team[_matches_col_depth], errors="coerce").fillna(0)
+        df_team.loc[_m_vals == 0, "RatingPoints_Avg"] = float("nan")
+
     # Load player data for ranking calculations
     # Determine which season's data to use based on the actual rating column
     _ranking_season = CURRENT_SEASON
@@ -9941,7 +9986,7 @@ elif page == "Depth Chart":
         # Get matches from Summary - prefer most recent season with meaningful data
         # Check for matches columns in order, preferring ones with actual games played
         _matches_found = False
-        for _mc in ['2025 Matches', f'{CURRENT_SEASON} Matches', 'Total Matches']:
+        for _mc in [f'{CURRENT_SEASON} Matches', '2025 Matches', 'Total Matches']:
             if _mc in ranking_df.columns:
                 _m_vals = pd.to_numeric(ranking_df[_mc], errors="coerce").fillna(0)
                 if _m_vals.sum() > 0:
@@ -10159,30 +10204,9 @@ elif page == "List Ladder":
     # Calculate weighted score: RatingPoints_Avg × Matches
     # This rewards players who maintain high ratings over many games
     # Cap matches at 23 (regular season) to avoid over-rating players who played finals
-    # A player with 100 rating over 23 games = 2300 weighted score (max)
     MAX_MATCHES_FOR_RATING = 23
     capped_matches = players_df["Matches"].clip(upper=MAX_MATCHES_FOR_RATING)
     players_df["Weighted_Rating"] = players_df["RatingPoints_Avg"].fillna(0) * capped_matches
-    
-    # Get all weighted ratings for percentile calculation
-    all_weighted = players_df["Weighted_Rating"].dropna()
-    
-    # Define get_rating_points function using weighted score
-    def get_rating_points(weighted_val, all_weighted_clean):
-        """Convert weighted rating (Rating × Matches) to points based on percentile."""
-        if pd.isna(weighted_val) or weighted_val == 0:
-            return 0
-        
-        percentile = (all_weighted_clean <= weighted_val).mean()
-        
-        if percentile >= 0.85:
-            return 3  # dark green - top 15%
-        elif percentile >= 0.60:
-            return 1  # light green - top 40%
-        elif percentile >= 0.35:
-            return 0.5  # orange - top 65%
-        else:
-            return 0  # red - bottom group
     
     # Get unique teams
     teams = sorted(players_df["Team"].dropna().unique())
@@ -10242,13 +10266,37 @@ elif page == "List Ladder":
         lambda row: get_depth_position(row.get("Player"), row.get("Team"), row.get("Position")), axis=1
     )
     
-    # Calculate points for each player using weighted rating (Rating × Matches)
-    players_df["Points"] = players_df["Weighted_Rating"].apply(
-        lambda r: get_rating_points(r, all_weighted)
-    )
+    # Assign tier per position based on percentile within position group
+    # Top 10% = Elite (3 pts), Top 10-30% = A-Grade (2 pts), Top 30-50% = B-Grade (1 pt)
+    players_df["Tier"] = ""
+    players_df["Points"] = 0.0
     
-    # Also keep all_ratings for color coding individual players (raw rating for display)
-    all_ratings = players_df["RatingPoints_Avg"].dropna()
+    for position in DEPTH_POSITIONS:
+        pos_mask = (players_df["Depth_Position"] == position) & (players_df["Weighted_Rating"] > 0)
+        if not pos_mask.any():
+            continue
+        
+        pos_ratings = players_df.loc[pos_mask, "Weighted_Rating"]
+        
+        # Calculate percentile thresholds within this position
+        elite_threshold = pos_ratings.quantile(0.90)     # top 10%
+        a_grade_threshold = pos_ratings.quantile(0.70)   # top 30%
+        b_grade_threshold = pos_ratings.quantile(0.50)   # top 50%
+        
+        # Assign tiers (check from highest to lowest to handle threshold ties)
+        elite_idx = pos_mask & (players_df["Weighted_Rating"] >= elite_threshold)
+        a_grade_idx = pos_mask & (players_df["Weighted_Rating"] >= a_grade_threshold) & ~elite_idx
+        b_grade_idx = pos_mask & (players_df["Weighted_Rating"] >= b_grade_threshold) & ~elite_idx & ~a_grade_idx
+        
+        players_df.loc[elite_idx, "Tier"] = "Elite"
+        players_df.loc[elite_idx, "Points"] = 3
+        players_df.loc[a_grade_idx, "Tier"] = "A-Grade"
+        players_df.loc[a_grade_idx, "Points"] = 2
+        players_df.loc[b_grade_idx, "Tier"] = "B-Grade"
+        players_df.loc[b_grade_idx, "Points"] = 1
+    
+    # Color coding based only on players with matches (so 0-match players don't skew percentiles)
+    all_ratings = players_df.loc[players_df["Matches"] > 0, "RatingPoints_Avg"].dropna()
     
     # Build ladder table
     ladder_data = []
@@ -10279,8 +10327,9 @@ elif page == "List Ladder":
     ladder_df["Rank"] = range(1, len(ladder_df) + 1)
     
     # Compact ranking legend
-    st.markdown("""<div style='display:flex; align-items:center; gap:14px; padding:8px 14px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:16px; flex-wrap:wrap;'><span style='color:#888; font-size:0.75em; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;'>Ranking</span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#008000; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>1-4 Elite</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#90EE90; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>5-7 Good</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FFD700; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>8-11 Average</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FFA500; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>12-15 Below Avg</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FF0000; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>16-18 Poor</span></span></div>""", unsafe_allow_html=True)
-    st.markdown("<p style='color:#666; font-size:0.75em; margin:-8px 0 16px 14px;'>Points = Rating × Matches (capped at 23 regular season games). Total Points = overall list strength.</p>", unsafe_allow_html=True)
+    st.markdown("""<div style='display:flex; align-items:center; gap:14px; padding:8px 14px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:6px; flex-wrap:wrap;'><span style='color:#888; font-size:0.75em; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;'>Team Rank</span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#008000; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>1-4 Elite</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#90EE90; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>5-7 Good</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FFD700; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>8-11 Average</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FFA500; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>12-15 Below Avg</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FF0000; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>16-18 Poor</span></span></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='display:flex; align-items:center; gap:14px; padding:8px 14px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:16px; flex-wrap:wrap;'><span style='color:#888; font-size:0.75em; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;'>Player Tiers</span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#008000; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>Elite — Top 10% per position (3 pts)</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#90EE90; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>A-Grade — Top 30% (2 pts)</span></span><span style='display:inline-flex; align-items:center; gap:4px;'><span style='width:8px; height:8px; border-radius:50%; background:#FFD700; display:inline-block;'></span><span style='color:#AAA; font-size:0.75em;'>B-Grade — Top 50% (1 pt)</span></span></div>""", unsafe_allow_html=True)
+    st.markdown("<p style='color:#666; font-size:0.75em; margin:-8px 0 16px 14px;'>Weighted Rating = Rating × Matches (capped at 23 games). Tiers based on percentile within each position group. Total Points = sum of player tier points across all positions.</p>", unsafe_allow_html=True)
     
     # Helper function to get ordinal suffix
     def get_ordinal_suffix(n):
@@ -10422,10 +10471,9 @@ elif page == "List Ladder":
                         pos_players = pos_players.sort_values("RatingPoints_Avg", ascending=False)
                         
                         # Create display table
-                        player_table = pos_players[["Player", "RatingPoints_Avg", "Points"]].copy()
+                        player_table = pos_players[["Player", "RatingPoints_Avg", "Tier"]].copy()
                         player_table["Rating"] = player_table["RatingPoints_Avg"].round(1)
-                        player_table["Points"] = player_table["Points"].round(1)
-                        player_table = player_table[["Player", "Rating", "Points"]]
+                        player_table = player_table[["Player", "Rating", "Tier"]]
                         
                         # Position header with gradient
                         st.markdown(f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%); padding: 12px; border-radius: 8px 8px 0 0; margin-top: 15px;'><h4 style='margin: 0; color: #FFFFFF; text-align: center; font-weight: 900; font-size: 1.2em;'>{position}</h4></div>""", unsafe_allow_html=True)
@@ -10433,15 +10481,15 @@ elif page == "List Ladder":
                         # Create HTML table with color coding (uses unified .fe-table CSS)
                         html_player_table = """<table class='fe-table fe-table-compact' style='table-layout:fixed;width:100%;'>
 <colgroup>
-<col style='width:55%;'>
+<col style='width:45%;'>
 <col style='width:25%;'>
-<col style='width:20%;'>
+<col style='width:30%;'>
 </colgroup>
 <thead>
 <tr>
 <th>Player</th>
 <th>Rating</th>
-<th>Points</th>
+<th>Tier</th>
 </tr>
 </thead>
 <tbody>
@@ -10449,13 +10497,32 @@ elif page == "List Ladder":
                         
                         # Add player rows with color coding
                         for idx, row in player_table.iterrows():
+                            matches = pos_players.loc[idx, "Matches"] if "Matches" in pos_players.columns else 0
                             rating_val = pos_players.loc[idx, "RatingPoints_Avg"]
-                            bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
+                            
+                            # Players with no games: grey NA pill
+                            if pd.isna(matches) or matches == 0:
+                                rating_display = "NA"
+                                bg_color, text_color = "#555555", "#AAAAAA"
+                            else:
+                                rating_display = row['Rating']
+                                bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
+                            
+                            # Tier badge uses tier-specific colors
+                            tier = row['Tier']
+                            if tier == "Elite":
+                                tier_html = "<span class='ct-pill' style='background:#008000; color:white;'>Elite</span>"
+                            elif tier == "A-Grade":
+                                tier_html = "<span class='ct-pill' style='background:#90EE90; color:black;'>A-Grade</span>"
+                            elif tier == "B-Grade":
+                                tier_html = "<span class='ct-pill' style='background:#FFD700; color:black;'>B-Grade</span>"
+                            else:
+                                tier_html = "<span class='ct-pill' style='background:#FFFFFF; color:#000000;'>—</span>"
                             
                             html_player_table += f"""<tr>
 <td>{row['Player']}</td>
-<td><span class="ct-pill" style="background:{bg_color}; color:{text_color};">{row['Rating']}</span></td>
-<td style='font-weight: 600; color: #CCCCCC;'>{row['Points']}</td>
+<td><span class="ct-pill" style="background:{bg_color}; color:{text_color};">{rating_display}</span></td>
+<td>{tier_html}</td>
 </tr>
 """
                         
@@ -10540,7 +10607,9 @@ elif page == "Team List Summary":
     if players_filtered.empty:
         players_filtered = players_df.copy()
     
-    AGE_BANDS = ["<22", "22-25", "26-29", "30+"]
+    _LOCAL_AGE_BANDS = AGE_BANDS_ALT
+    # Shadow global AGE_BANDS for this page section (uses short format: <22, 22-25, etc.)
+    AGE_BANDS = _LOCAL_AGE_BANDS
     
     def assign_age_band(age):
         if pd.isna(age):
@@ -10997,7 +11066,7 @@ elif page == "Team List Summary":
         st.markdown(f"<h2 style='color: #FFFFFF; margin: 30px 0 20px 0;'>{_svg_inline('list', 24)} Summary</h2>", unsafe_allow_html=True)
         
         summary_html = f"""<div style='background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);'>
-<h3 style='color: #FFFFFF; margin-top: 0;'>{selected_team} - 2025 List Profile</h3>
+<h3 style='color: #FFFFFF; margin-top: 0;'>{selected_team} - {selected_season} List Profile</h3>
 <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;'>
 <div style='background: rgba(80,80,80,0.3); padding: 20px; border-radius: 8px;'>
 <h4 style='color: #FFFFFF; margin-top: 0;'>List Depth Ranking</h4>
@@ -13414,6 +13483,17 @@ elif page == "List Breakdown - Traits":
         if rename_map:
             leaders_traits_df = leaders_traits_df.rename(columns=rename_map)
         
+        # Filter to only players who have actually played in the selected season
+        try:
+            _leaders_season_df = load_players(int(selected_leaders_season))
+            if not _leaders_season_df.empty and "Matches" in _leaders_season_df.columns and "Player" in _leaders_season_df.columns:
+                _played = _leaders_season_df[_leaders_season_df["Matches"] > 0]["Player"].unique()
+                _before = len(leaders_traits_df)
+                leaders_traits_df = leaders_traits_df[leaders_traits_df["Player_Full"].isin(_played)]
+                leaders_traits_df = leaders_traits_df.reset_index(drop=True)
+        except Exception:
+            pass  # If season data unavailable, show all players
+        
         st.markdown(f"""
         <div style="text-align:center;margin-bottom:48px;">
             <h1 style="font-size:42px;font-weight:900;color:#FFFFFF;margin:0 0 8px 0;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;letter-spacing:0.02em;">
@@ -13744,7 +13824,7 @@ elif page == "Contract Status":
         df["Age"] = np.nan
 
     # ---------- Load Contract & FA Status from Footywire data ----------
-    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / "footywire_2026_complete.csv"
+    footywire_path = Path(__file__).parent / "data" / "raw" / "player" / f"footywire_{int(season)}_complete.csv"
     has_footywire = footywire_path.exists()
     
     if has_footywire:
@@ -15808,7 +15888,7 @@ elif page == "Custom Player Comparison":
         }
         return mapping.get(label, 2.25)
     
-    @st.cache_data(show_spinner=False)
+    @st.cache_data(show_spinner=False, ttl=3600)
     def load_traits_for_comparison(season: int) -> pd.DataFrame:
         """Load and prepare traits data for comparison."""
         traits_df = load_traits(season)
@@ -15885,7 +15965,7 @@ elif page == "Custom Player Comparison":
         
         return np.array(vector)
     
-    @st.cache_data(show_spinner=False)
+    @st.cache_data(show_spinner=False, ttl=3600)
     def calculate_all_similarities(
         custom_vector: tuple,  # Use tuple for caching
         traits_data: str,  # Serialized data for caching
@@ -17414,14 +17494,17 @@ elif page == "Player Rating Matrix":
             active_col = "Votes"
             _mr_fv = lambda v: f"{v:.1f}"
             _mr_fv_avg = _mr_fv
+            _mr_fv_tot = _mr_fv
         elif _mr_use_votes and votes_col:
             active_col = votes_col
             _mr_fv = lambda v: f"{v:.0f}"
             _mr_fv_avg = lambda v: f"{v:.1f}"
+            _mr_fv_tot = _mr_fv
         else:
             active_col = rating_col
             _mr_fv = lambda v: f"{v:.1f}"
             _mr_fv_avg = _mr_fv
+            _mr_fv_tot = _mr_fv
 
         if active_col is None:
             st.error("Could not identify a rating column in the match data.")
@@ -17590,7 +17673,7 @@ elif page == "Player Rating Matrix":
 
                 # Build HTML table
                 round_cols = [c for c in pivot.columns if c not in ("Tot", "Avg")]
-                _hdr_base = "padding:8px 10px;text-align:center;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;user-select:none;"
+                _hdr_base = "padding:10px 10px;text-align:center;font-size:13px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;user-select:none;"
                 _summary_hdr_style = _hdr_base + "font-weight:700;color:#fff;border-left:2px solid rgba(255,255,255,0.2);"
                 header_cells = ""
                 for ci, c in enumerate(round_cols, 1):
@@ -17626,18 +17709,18 @@ elif page == "Player Rating Matrix":
                             tc = _text_colour(bg)
                             display = _mr_fv(val) if pd.notna(val) else "—"
                         _dv = float(val) if pd.notna(val) else ''
-                        cells += f"<td data-val='{_dv}' style='padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
-                    _summary_td_style = "padding:4px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);"
+                        cells += f"<td data-val='{_dv}' style='padding:6px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
+                    _summary_td_style = "padding:6px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);"
                     tot_val = row["Tot"]
                     tot_bg, tot_tc = _pct_colour(tot_val, tq80, tq60, tq40, tq20)
-                    cells += f"<td data-val='{float(tot_val) if pd.notna(tot_val) else ''}' style='{_summary_td_style}'><span class='ct-pill' style='background:{tot_bg};color:{tot_tc};font-weight:800;'>{_mr_fv_avg(tot_val)}</span></td>"
+                    cells += f"<td data-val='{float(tot_val) if pd.notna(tot_val) else ''}' style='{_summary_td_style}'><span class='ct-pill' style='background:{tot_bg};color:{tot_tc};font-weight:800;'>{_mr_fv_tot(tot_val)}</span></td>"
                     avg_val = row["Avg"]
                     avg_bg = _matrix_colour(avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                     avg_tc = _text_colour(avg_bg, v=avg_val, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                     cells += f"<td data-val='{float(avg_val) if pd.notna(avg_val) else ''}' style='{_summary_td_style}'><span class='ct-pill' style='background:{avg_bg};color:{avg_tc};font-weight:800;'>{_mr_fv_avg(avg_val)}</span></td>"
-                    rows_html += f"<tr><td style='padding:6px 12px;white-space:nowrap;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;left:0;background:#1a1a2e;z-index:1;'>{player}</td>{cells}</tr>"
+                    rows_html += f"<tr><td style='padding:8px 14px;white-space:nowrap;font-size:14px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;left:0;background:#1a1a2e;z-index:1;'>{player}</td>{cells}</tr>"
 
-                _player_hdr = "padding:8px 12px;text-align:left;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;left:0;background:#1a1a2e;z-index:2;cursor:pointer;user-select:none;"
+                _player_hdr = "padding:10px 14px;text-align:left;font-size:13px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;left:0;background:#1a1a2e;z-index:2;cursor:pointer;user-select:none;"
                 matrix_table = (
                     f"<div style='overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);'>"
                     f"<table id='mr-matrix' style='border-collapse:collapse;width:100%;'>"
@@ -17646,12 +17729,12 @@ elif page == "Player Rating Matrix":
                 )
 
                 _num_rows = len(pivot)
-                _component_height = 54 + _num_rows * 34 + 20  # header + rows + padding
+                _component_height = 54 + _num_rows * 42 + 20  # header + rows + padding
 
                 _sort_html = f"""<!DOCTYPE html>
 <html><head><style>
 html, body {{ margin:0; padding:0; background:transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
-.ct-pill {{ display:inline-block; padding:2px 10px; border-radius:6px; font-size:12px; font-weight:600; min-width:32px; text-align:center; }}
+.ct-pill {{ display:inline-block; min-width:60px; padding:5px 16px; border-radius:12px; font-weight:700; font-size:0.85em; letter-spacing:0.02em; text-align:center; white-space:nowrap; box-shadow:0 1px 4px rgba(0,0,0,0.25); line-height:1.4; }}
 </style></head><body>
 {matrix_table}
 <script>

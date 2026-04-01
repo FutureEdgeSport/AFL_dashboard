@@ -241,8 +241,8 @@ def compute_player_summary(
         }
         
         # Add current season stats
-        row["2025 Matches"] = player_current.get("Matches", 0)
-        row["2025 Rating"] = player_current.get(rating_col, np.nan)
+        row[f"{current_season} Matches"] = player_current.get("Matches", 0)
+        row[f"{current_season} Rating"] = player_current.get(rating_col, np.nan)
         
         # Compute total matches across all seasons
         total_matches = 0
@@ -272,13 +272,13 @@ def compute_player_summary(
             player_name, season_data, current_season, n_years=2, rating_col=rating_col
         )
         
-        # Compute 2025 vs 2024 change
-        rating_2025 = row.get("2025", np.nan) if "2025" in row else np.nan
-        rating_2024 = row.get("2024", np.nan) if "2024" in row else np.nan
-        if pd.notna(rating_2025) and pd.notna(rating_2024):
-            row["2025 vs 2024"] = rating_2025 - rating_2024
+        # Compute year-over-year change
+        rating_curr = row.get(str(current_season), np.nan) if str(current_season) in row else np.nan
+        rating_prev = row.get(str(current_season - 1), np.nan) if str(current_season - 1) in row else np.nan
+        if pd.notna(rating_curr) and pd.notna(rating_prev):
+            row[f"{current_season} vs {current_season - 1}"] = rating_curr - rating_prev
         else:
-            row["2025 vs 2024"] = np.nan
+            row[f"{current_season} vs {current_season - 1}"] = np.nan
         
         summary_rows.append(row)
     
@@ -328,6 +328,50 @@ def compute_player_summary(
                 how="left"
             )
     
+    # Enrich generic positions (FootyWire uses "Forward", "Defender", "Midfield")
+    # with detailed positions (Key Forward, Gen. Forward, Wing, etc.) from Excel summary
+    _GENERIC_POSITIONS = {"Forward", "Defender", "Midfield", "Ruck",
+                          "DefenderForward", "MidfieldForward", "ForwardRuck",
+                          "DefenderMidfield", "DefenderRuck"}
+    has_generic = summary_df["Position"].isin(_GENERIC_POSITIONS).any()
+    if has_generic:
+        _pos_lookup = {}
+        # Try Excel summary first
+        try:
+            _excel_path = DATA_DIR.parent / "AFL Player Ratings.xlsx"
+            if _excel_path.exists():
+                _xl = pd.ExcelFile(_excel_path)
+                if "Summary" in _xl.sheet_names:
+                    _sum = _xl.parse("Summary")
+                    _sum.columns = _sum.columns.astype(str).str.strip()
+                    if "Player" in _sum.columns and "Position" in _sum.columns:
+                        for _, r in _sum.iterrows():
+                            pname = str(r["Player"]).strip().lower()
+                            pos = str(r["Position"]).strip()
+                            if pname and pos and pos not in ("nan", ""):
+                                _pos_lookup[pname] = pos
+        except Exception:
+            pass
+        
+        _FW_MAP = {
+            "Forward": "Gen. Forward", "Defender": "Gen. Defender",
+            "Midfield": "Midfielder", "DefenderForward": "Gen. Defender",
+            "MidfieldForward": "Mid-Forward", "ForwardRuck": "Ruck",
+            "DefenderMidfield": "Gen. Defender", "DefenderRuck": "Gen. Defender",
+        }
+        
+        def _enrich_pos(row):
+            cur = str(row.get("Position", "")).strip()
+            if cur not in _GENERIC_POSITIONS:
+                return cur
+            player = str(row.get("Player", "")).strip()
+            enriched = _pos_lookup.get(player.lower())
+            if enriched:
+                return enriched
+            return _FW_MAP.get(cur, cur)
+        
+        summary_df["Position"] = summary_df.apply(_enrich_pos, axis=1)
+    
     # Compute rankings
     summary_df = compute_rankings(summary_df, current_season)
     
@@ -337,7 +381,7 @@ def compute_player_summary(
     return summary_df
 
 
-def compute_rankings(df: pd.DataFrame, current_season: int = 2025) -> pd.DataFrame:
+def compute_rankings(df: pd.DataFrame, current_season: int = 2026) -> pd.DataFrame:
     """
     Compute rankings for career, current season, and last 2 years.
     
@@ -350,29 +394,29 @@ def compute_rankings(df: pd.DataFrame, current_season: int = 2025) -> pd.DataFra
     df["Career Rank >20gms"] = np.nan
     df.loc[mask, "Career Rank >20gms"] = df.loc[mask, "Career"].rank(ascending=False)
     
-    # 2025 ranking
+    # Current season ranking
     current_col = str(current_season)
+    matches_col = f"{current_season} Matches"
     if current_col in df.columns:
-        df["2025 Rank"] = df[current_col].rank(ascending=False)
+        df[f"{current_season} Rank"] = df[current_col].rank(ascending=False)
     
     # Last 2 years overall rank
     df["L2 Overall Rank"] = df["Last 2 Average"].rank(ascending=False)
     
     # Position-based rankings
     if "Position" in df.columns:
-        # 2025 position rank
-        df["2025 Pos Rank"] = df.groupby("Position")[current_col].rank(ascending=False) if current_col in df.columns else np.nan
+        # Current season position rank
+        df[f"{current_season} Pos Rank"] = df.groupby("Position")[current_col].rank(ascending=False) if current_col in df.columns else np.nan
         
         # L2 position rank
         df["L2 Pos Rank"] = df.groupby("Position")["Last 2 Average"].rank(ascending=False)
     
     # Compute impact (difference from median rating)
     # Cap matches at MAX_REGULAR_SEASON_MATCHES (23) to avoid over-rating players who played finals
-    current_col = str(current_season)
-    if current_col in df.columns:
+    if current_col in df.columns and matches_col in df.columns:
         median_rating = df[current_col].median()
-        capped_matches = df["2025 Matches"].clip(upper=MAX_REGULAR_SEASON_MATCHES)
-        df["2025 Impact"] = (df[current_col] - median_rating) * capped_matches
+        capped_matches = df[matches_col].clip(upper=MAX_REGULAR_SEASON_MATCHES)
+        df[f"{current_season} Impact"] = (df[current_col] - median_rating) * capped_matches
     
     if "Last 2 Average" in df.columns:
         median_l2 = df["Last 2 Average"].median()
@@ -405,7 +449,7 @@ def compute_cap_values(
     current_col = str(current_season)
     matches_col = f"{current_season} Matches"
     
-    # Calculate 2025 Rating % using Rating × Matches formula
+    # Calculate current season Rating % using Rating × Matches formula
     if current_col in df.columns and "Team" in df.columns:
         # Get matches - try various column names
         matches = None
@@ -424,25 +468,25 @@ def compute_cap_values(
             team_rxm_totals = df.groupby("Team")["_rating_x_matches"].transform("sum")
             
             # Calculate player's percentage of their team's total
-            df["2025 Rating %"] = (df["_rating_x_matches"] / team_rxm_totals) * 100
+            df[f"{current_season} Rating %"] = (df["_rating_x_matches"] / team_rxm_totals) * 100
             
             # Handle teams with zero total (shouldn't happen, but safety check)
-            df.loc[team_rxm_totals == 0, "2025 Rating %"] = 0
+            df.loc[team_rxm_totals == 0, f"{current_season} Rating %"] = 0
             
             # Apply minimum cap percentage floor
-            df["2025 Rating %"] = df["2025 Rating %"].clip(lower=min_cap_pct)
+            df[f"{current_season} Rating %"] = df[f"{current_season} Rating %"].clip(lower=min_cap_pct)
             
             # Cleanup temp column
             df = df.drop(columns=["_rating_x_matches"])
         else:
             # Fallback to simple rating / team total if no matches column
             team_totals = df.groupby("Team")[current_col].transform("sum")
-            df["2025 Rating %"] = (df[current_col] / team_totals) * 100
-            df["2025 Rating %"] = df["2025 Rating %"].clip(lower=min_cap_pct)
-            df.loc[team_totals == 0, "2025 Rating %"] = 0
+            df[f"{current_season} Rating %"] = (df[current_col] / team_totals) * 100
+            df[f"{current_season} Rating %"] = df[f"{current_season} Rating %"].clip(lower=min_cap_pct)
+            df.loc[team_totals == 0, f"{current_season} Rating %"] = 0
         
-        df["2025 Cap %"] = df["2025 Rating %"]
-        df["2025 Cap Value"] = (df["2025 Rating %"] / 100) * salary_cap
+        df[f"{current_season} Cap %"] = df[f"{current_season} Rating %"]
+        df[f"{current_season} Cap Value"] = (df[f"{current_season} Rating %"] / 100) * salary_cap
     
     # Last 2 years cap calculation (also using weighted formula)
     if "Last 2 Average" in df.columns and "Team" in df.columns:
@@ -512,13 +556,13 @@ if __name__ == "__main__":
     print("Computing player summary from raw CSV data...")
     
     try:
-        summary = compute_player_summary(current_season=2025)
+        summary = compute_player_summary(current_season=2026)
         print(f"\n✅ Computed summary for {len(summary)} players")
         print(f"\nColumns: {list(summary.columns)}")
         
         # Show sample
         print("\n=== Sample Data ===")
-        cols = ["Player", "Team", "Position", "Total Matches", "Career", "Last 2 Average", "2025 Rank"]
+        cols = ["Player", "Team", "Position", "Total Matches", "Career", "Last 2 Average", "2026 Rank"]
         available_cols = [c for c in cols if c in summary.columns]
         print(summary[available_cols].head(10).to_string())
         

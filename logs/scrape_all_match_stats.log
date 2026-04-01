@@ -1,0 +1,820 @@
+
+============================================================
+  Scraping season 2018
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2018
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 27 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 352 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 308 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 19 (round 19)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 20 (round 20)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 21 (round 21)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 22 (round 22)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 23 (round 23)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Finals Week 1 (round 24)
+    📥 Downloading all matches…
+    ✅ 176 rows
+
+  📋 Semi Finals (round 25)
+    📥 Downloading all matches…
+    ✅ 88 rows
+
+  📋 Preliminary Finals (round 26)
+    📥 Downloading all matches…
+    ✅ 88 rows
+
+  📋 Grand Final (round 27)
+    🏟  WC v Coll
+      ✅ 44 rows
+
+💾 Saved 9108 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/match_ratings_2018.csv
+
+============================================================
+  Scraping season 2019
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2019
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 27 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 11 (round 11)
+❌ Season 2019 failed: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: Unable to receive message from renderer
+  (Session info: chrome=146.0.7680.76); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+0   chromedriver                        0x0000000102b1f4e4 cxxbridge1$str$ptr + 3160724
+1   chromedriver                        0x0000000102b17578 cxxbridge1$str$ptr + 3128104
+2   chromedriver                        0x00000001025eb924 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 75032
+3   chromedriver                        0x00000001025d5e14 cxxbridge1$string$len + 4160
+4   chromedriver                        0x00000001025d5b34 cxxbridge1$string$len + 3424
+5   chromedriver                        0x00000001025d36f8 chromedriver + 227064
+6   chromedriver                        0x00000001025d42ec chromedriver + 230124
+7   chromedriver                        0x00000001025e1be0 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 34772
+8   chromedriver                        0x00000001025f85f0 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 127460
+9   chromedriver                        0x00000001025d4958 chromedriver + 231768
+10  chromedriver                        0x00000001025f7f88 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 125820
+11  chromedriver                        0x000000010267278c _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 627584
+12  chromedriver                        0x00000001026291b4 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 327080
+13  chromedriver                        0x0000000102adde80 cxxbridge1$str$ptr + 2892848
+14  chromedriver                        0x0000000102ae1570 cxxbridge1$str$ptr + 2906912
+15  chromedriver                        0x0000000102ac35dc cxxbridge1$str$ptr + 2784140
+16  chromedriver                        0x0000000102ae1df4 cxxbridge1$str$ptr + 2909092
+17  chromedriver                        0x0000000102ab406c cxxbridge1$str$ptr + 2721308
+18  chromedriver                        0x0000000102b069a8 cxxbridge1$str$ptr + 3059544
+19  chromedriver                        0x0000000102b06b24 cxxbridge1$str$ptr + 3059924
+20  chromedriver                        0x0000000102b171d0 cxxbridge1$str$ptr + 3127168
+21  libsystem_pthread.dylib             0x000000018ada1c08 _pthread_start + 136
+22  libsystem_pthread.dylib             0x000000018ad9cba8 thread_start + 8
+
+
+============================================================
+  Scraping season 2020
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2020
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 22 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 352 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 308 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 352 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 352 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 264 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 352 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 396 rows
+
+  📋 Finals Week 1 (round 19)
+    📥 Downloading all matches…
+    ✅ 176 rows
+
+  📋 Semi Finals (round 20)
+    📥 Downloading all matches…
+    ✅ 88 rows
+
+  📋 Preliminary Finals (round 21)
+    📥 Downloading all matches…
+    ✅ 88 rows
+
+  📋 Grand Final (round 22)
+    🏟  Rich v Geel
+      ✅ 44 rows
+
+💾 Saved 7128 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/match_ratings_2020.csv
+
+============================================================
+  Scraping season 2021
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2021
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 27 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 322 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 230 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 19 (round 19)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 20 (round 20)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 21 (round 21)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 22 (round 22)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 23 (round 23)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Finals Week 1 (round 24)
+    📥 Downloading all matches…
+    ✅ 184 rows
+
+  📋 Semi Finals (round 25)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Preliminary Finals (round 26)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Grand Final (round 27)
+    🏟  Melb v WB
+      ✅ 46 rows
+
+💾 Saved 9522 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/match_ratings_2021.csv
+
+============================================================
+  Scraping season 2022
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2022
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 27 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 13 (round 13)
+❌ Season 2022 failed: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: Unable to receive message from renderer
+  (Session info: chrome=146.0.7680.76); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+0   chromedriver                        0x000000010258b4e4 cxxbridge1$str$ptr + 3160724
+1   chromedriver                        0x0000000102583578 cxxbridge1$str$ptr + 3128104
+2   chromedriver                        0x0000000102057924 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 75032
+3   chromedriver                        0x0000000102041e14 cxxbridge1$string$len + 4160
+4   chromedriver                        0x0000000102041b34 cxxbridge1$string$len + 3424
+5   chromedriver                        0x00000001020409d0 chromedriver + 231888
+6   chromedriver                        0x0000000102063f88 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 125820
+7   chromedriver                        0x00000001020de78c _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 627584
+8   chromedriver                        0x00000001020951b4 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 327080
+9   chromedriver                        0x0000000102549e80 cxxbridge1$str$ptr + 2892848
+10  chromedriver                        0x000000010254d570 cxxbridge1$str$ptr + 2906912
+11  chromedriver                        0x000000010252f5dc cxxbridge1$str$ptr + 2784140
+12  chromedriver                        0x000000010254ddf4 cxxbridge1$str$ptr + 2909092
+13  chromedriver                        0x000000010252006c cxxbridge1$str$ptr + 2721308
+14  chromedriver                        0x00000001025729a8 cxxbridge1$str$ptr + 3059544
+15  chromedriver                        0x0000000102572b24 cxxbridge1$str$ptr + 3059924
+16  chromedriver                        0x00000001025831d0 cxxbridge1$str$ptr + 3127168
+17  libsystem_pthread.dylib             0x000000018ada1c08 _pthread_start + 136
+18  libsystem_pthread.dylib             0x000000018ad9cba8 thread_start + 8
+
+
+============================================================
+  Scraping season 2023
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2023
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 28 rounds: ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Round 24', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 322 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 19 (round 19)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 20 (round 20)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 21 (round 21)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 22 (round 22)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 23 (round 23)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 24 (round 24)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Finals Week 1 (round 25)
+    📥 Downloading all matches…
+    ✅ 184 rows
+
+  📋 Semi Finals (round 26)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Preliminary Finals (round 27)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Grand Final (round 28)
+    🏟  Coll v Bris
+      ✅ 46 rows
+
+💾 Saved 9936 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/match_ratings_2023.csv
+
+============================================================
+  Scraping season 2024
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2024
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 29 rounds: ['Opening Round', 'Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Round 24', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Opening Round (round 0)
+    📥 Downloading all matches…
+    ✅ 184 rows
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 4 (round 4)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 5 (round 5)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 6 (round 6)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 7 (round 7)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 8 (round 8)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 9 (round 9)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 10 (round 10)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 11 (round 11)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 12 (round 12)
+    📥 Downloading all matches…
+    ✅ 322 rows
+
+  📋 Round 13 (round 13)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 14 (round 14)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 15 (round 15)
+    📥 Downloading all matches…
+    ✅ 276 rows
+
+  📋 Round 16 (round 16)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 17 (round 17)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 18 (round 18)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 19 (round 19)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 20 (round 20)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 21 (round 21)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 22 (round 22)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 23 (round 23)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 24 (round 24)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Finals Week 1 (round 25)
+    📥 Downloading all matches…
+    ✅ 184 rows
+
+  📋 Semi Finals (round 26)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Preliminary Finals (round 27)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Grand Final (round 28)
+    🏟  Syd v Bris
+      ✅ 46 rows
+
+💾 Saved 9936 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/match_ratings_2024.csv
+
+============================================================
+  Scraping season 2025
+============================================================
+
+============================================================
+  WHEELO MATCH STATS SCRAPER — 2025
+============================================================
+🔧 Chrome driver attempt 1/3…
+✅ Chrome driver ready
+  📋 Found 29 rounds: ['Opening Round', 'Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Round 7', 'Round 8', 'Round 9', 'Round 10', 'Round 11', 'Round 12', 'Round 13', 'Round 14', 'Round 15', 'Round 16', 'Round 17', 'Round 18', 'Round 19', 'Round 20', 'Round 21', 'Round 22', 'Round 23', 'Round 24', 'Finals Week 1', 'Semi Finals', 'Preliminary Finals', 'Grand Final']
+
+  📋 Opening Round (round 0)
+    📥 Downloading all matches…
+    ✅ 92 rows
+
+  📋 Round 1 (round 1)
+    📥 Downloading all matches…
+    ✅ 414 rows
+
+  📋 Round 2 (round 2)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 3 (round 3)
+    📥 Downloading all matches…
+    ✅ 368 rows
+
+  📋 Round 4 (round 4)
+❌ Season 2025 failed: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: Unable to receive message from renderer
+  (Session info: chrome=146.0.7680.76); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+0   chromedriver                        0x0000000100baf4e4 cxxbridge1$str$ptr + 3160724
+1   chromedriver                        0x0000000100ba7578 cxxbridge1$str$ptr + 3128104
+2   chromedriver                        0x000000010067b924 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 75032
+3   chromedriver                        0x0000000100665e14 cxxbridge1$string$len + 4160
+4   chromedriver                        0x0000000100665b34 cxxbridge1$string$len + 3424
+5   chromedriver                        0x00000001006636f8 chromedriver + 227064
+6   chromedriver                        0x00000001006642ec chromedriver + 230124
+7   chromedriver                        0x0000000100671be0 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 34772
+8   chromedriver                        0x00000001006885f0 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 127460
+9   chromedriver                        0x0000000100664958 chromedriver + 231768
+10  chromedriver                        0x0000000100687f88 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 125820
+11  chromedriver                        0x000000010070278c _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 627584
+12  chromedriver                        0x00000001006b91b4 _RNvCskE0kXQ3GIWk_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 327080
+13  chromedriver                        0x0000000100b6de80 cxxbridge1$str$ptr + 2892848
+14  chromedriver                        0x0000000100b71570 cxxbridge1$str$ptr + 2906912
+15  chromedriver                        0x0000000100b535dc cxxbridge1$str$ptr + 2784140
+16  chromedriver                        0x0000000100b71df4 cxxbridge1$str$ptr + 2909092
+17  chromedriver                        0x0000000100b4406c cxxbridge1$str$ptr + 2721308
+18  chromedriver                        0x0000000100b969a8 cxxbridge1$str$ptr + 3059544
+19  chromedriver                        0x0000000100b96b24 cxxbridge1$str$ptr + 3059924
+20  chromedriver                        0x0000000100ba71d0 cxxbridge1$str$ptr + 3127168
+21  libsystem_pthread.dylib             0x000000018ada1c08 _pthread_start + 136
+22  libsystem_pthread.dylib             0x000000018ad9cba8 thread_start + 8
+

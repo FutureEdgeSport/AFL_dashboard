@@ -28,7 +28,7 @@ MASTER_FILE: str = "AFL_Master_2012_2025.xlsx"
 TEAM_FILE: str = "AFL Team Ratings.xlsx"
 PLAYER_FILE: str = "AFL Player Ratings.xlsx"
 TRAITS_FILE: str = "2025 Traits ENRICHED.xlsx"
-LADDERS_FILE: str = "afl_ladders_2011_2025.xlsx"
+LADDERS_FILE: str = "afl_ladders_2011_2026.xlsx"
 
 # Consolidated Historical Data (2012-2025) - Single source of truth
 HISTORICAL_FILE: str = "data/AFL_Historical_2012_2025.xlsx"
