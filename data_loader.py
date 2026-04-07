@@ -109,7 +109,16 @@ def _get_legacy_excel_file(file_type: str) -> Optional[pd.ExcelFile]:
         "traits": TRAITS_FILE,
         "ladders": LADDERS_FILE,
     }
-    filepath = base / file_map.get(file_type, "")
+    filename = file_map.get(file_type, "")
+    # For ladders, prefer the data/ subdirectory (where the scraper writes fresh data)
+    if file_type == "ladders":
+        data_subdir_path = base / "data" / filename
+        if data_subdir_path.exists():
+            try:
+                return pd.ExcelFile(data_subdir_path)
+            except Exception:
+                pass
+    filepath = base / filename
     if filepath.exists():
         try:
             return pd.ExcelFile(filepath)

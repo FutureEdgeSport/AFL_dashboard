@@ -2,8 +2,7 @@
 """
 Traits API Integration Module
 
-Scrapes DOBs from Wikipedia and uses them to query the Traits API
-for player ratings data.
+Queries the Traits API for player ratings data by name.
 """
 import requests
 import pandas as pd
@@ -248,10 +247,32 @@ def _is_rookie_dob(dob: str, cutoff_year: int = 2007) -> bool:
         return False
 
 
-def _query_traits_api_once(name, dob):
-    """Single attempt to query the Traits API (no name fallback)."""
+def _build_provider_id(name: str, dob: str) -> str | None:
+    """Construct a data_provider_id from a player name and DOB.
+
+    The Traits API uses the format ``FirstInitial.LastName DD/M/YYYY``.
+    *dob* should be in ``YYYY-MM-DD`` format (as stored in Footywire data).
+    Returns None if the inputs are invalid.
+    """
+    if not name or not dob:
+        return None
+    try:
+        parts = name.split(" ", 1)
+        if len(parts) < 2:
+            return None
+        first, last = parts
+        # Convert YYYY-MM-DD → D/M/YYYY (no leading zeros)
+        y, m, d = dob.split("-")
+        dob_fmt = f"{int(d)}/{int(m)}/{y}"
+        return f"{first[0]}.{last} {dob_fmt}"
+    except (ValueError, IndexError):
+        return None
+
+
+def _query_traits_api_once(provider_id: str):
+    """Single attempt to query the Traits API by data_provider_id."""
     url = f"{API_BASE}/profiles/participations/latest/ratings"
-    params = {'name': name, 'date_of_birth': dob}
+    params = {'data_provider_id': provider_id}
     headers = {'Authorization': f'Bearer {API_KEY}'}
 
     try:
@@ -259,64 +280,91 @@ def _query_traits_api_once(name, dob):
         if resp.status_code == 200:
             return resp.json()
         elif resp.status_code == 401:
-            print(f"API auth failed for {name} — check AFL_TRAITS_API_KEY")
+            print(f"API auth failed for {provider_id} — check AFL_TRAITS_API_KEY")
     except Exception as e:
-        print(f"API error for {name}: {e}")
+        print(f"API error for {provider_id}: {e}")
     return None
 
 
-def query_traits_api(name, dob):
+def _get_cached_provider_id(name: str) -> str | None:
+    """Look up a data_provider_id from the traits cache."""
+    cache = load_traits_cache()
+    entry = cache.get('players', {}).get(name, {})
+    return entry.get('data_provider_id')
+
+
+def query_traits_api(name, dob=None):
     """
     Query the Traits API for a single player.
+
+    Uses ``data_provider_id`` (not ``date_of_birth``) to identify
+    players.  If a cached provider-id exists it is used directly;
+    otherwise one is constructed from the Footywire DOB data.
 
     Tries the given *name* first, then automatically tries common
     name variants (e.g. "Thomas" ↔ "Tom") and drops middle initials
     (e.g. "Bailey J. Williams" → "Bailey Williams") before giving up.
 
-    Skips requests entirely for placeholder DOBs and first-year rookies.
-
     Args:
         name: Player full name
-        dob: Date of birth in YYYY-MM-DD format
+        dob:  Date of birth in YYYY-MM-DD format.  Used only to
+              construct the data_provider_id for players not yet
+              in the cache.
 
     Returns:
         API response dict, or None if not found
     """
-    if not dob:
+    # --- Resolve provider-id -------------------------------------------------
+    provider_id = _get_cached_provider_id(name)
+
+    if not provider_id and dob:
+        # Skip known-bad DOBs
+        if _is_placeholder_dob(dob):
+            return None
+        # Skip first-year draftees (born 2007+) — Traits won't have them yet
+        if _is_rookie_dob(dob):
+            return None
+        provider_id = _build_provider_id(name, dob)
+
+    if not provider_id:
         return None
 
-    # Skip known-bad DOBs
-    if _is_placeholder_dob(dob):
-        return None
-
-    # Skip first-year draftees (born 2007+) — Traits won't have them yet
-    if _is_rookie_dob(dob):
-        return None
-
-    # --- Try original name ---------------------------------------------------
-    result = _query_traits_api_once(name, dob)
+    # --- Try the resolved provider-id ----------------------------------------
+    result = _query_traits_api_once(provider_id)
     if result:
         return result
 
     # --- Try name variant (short ↔ full first name) --------------------------
     alt = _name_variant(name)
     if alt:
-        result = _query_traits_api_once(alt, dob)
-        if result:
-            return result
+        alt_pid = _get_cached_provider_id(alt) or (
+            _build_provider_id(alt, dob) if dob else None
+        )
+        if alt_pid:
+            result = _query_traits_api_once(alt_pid)
+            if result:
+                return result
 
     # --- Try dropping middle initial (e.g. "Bailey J. Williams") -------------
     no_mid = _has_middle_initial(name)
     if no_mid:
-        result = _query_traits_api_once(no_mid, dob)
-        if result:
-            return result
-        # Also try variant of the no-middle-initial form
-        alt2 = _name_variant(no_mid)
-        if alt2:
-            result = _query_traits_api_once(alt2, dob)
+        no_mid_pid = _get_cached_provider_id(no_mid) or (
+            _build_provider_id(no_mid, dob) if dob else None
+        )
+        if no_mid_pid:
+            result = _query_traits_api_once(no_mid_pid)
             if result:
                 return result
+            # Also try variant of the no-middle-initial form
+            alt2 = _name_variant(no_mid)
+            if alt2:
+                alt2_pid = _get_cached_provider_id(alt2) or (
+                    _build_provider_id(alt2, dob) if dob else None
+                )
+                if alt2_pid:
+                    result = _query_traits_api_once(alt2_pid)
+                    if result:
+                        return result
 
     return None
 
@@ -326,28 +374,42 @@ def parse_traits_response(api_response, competition="AFL"):
     Parse API response into a flat dict suitable for DataFrame.
     
     Prefers the requested competition (default AFL) over others (e.g. VFL).
-    If no participation matches the requested competition, returns None.
+    Falls back to state-league data (VFL, SANFL, WAFL) if no AFL
+    participation exists, so that fringe/rookie players still get ratings.
     
     Args:
         api_response: Raw API response dict
-        competition: Competition to filter for (default "AFL")
+        competition: Preferred competition (default "AFL")
         
     Returns:
-        Dict with trait ratings, or None if no matching participation
+        Dict with trait ratings, or None if no participation at all
     """
     if not api_response or 'participations' not in api_response:
         return None
     
     participations = api_response['participations']
     
-    # Find the participation matching the requested competition
+    # Find the participation matching the preferred competition
     participation = None
     for p in participations:
         if p.get('competition_name', '').upper() == competition.upper():
             participation = p
             break
     
-    # If no match for the requested competition, skip this player
+    # Fall back to state leagues (VFL > SANFL > WAFL > anything)
+    if participation is None:
+        fallback_order = ['VFL', 'SANFL', 'WAFL']
+        for fb in fallback_order:
+            for p in participations:
+                if p.get('competition_name', '').upper() == fb:
+                    participation = p
+                    break
+            if participation:
+                break
+        # Last resort: take the first participation
+        if participation is None and participations:
+            participation = participations[0]
+    
     if participation is None:
         return None
     
@@ -358,6 +420,7 @@ def parse_traits_response(api_response, competition="AFL"):
         'data_provider_id': api_response.get('data_provider_id'),
         'Team_API': participation.get('team_name'),
         'Competition': participation.get('competition_name'),
+        'Season_API': participation.get('season_name'),
         'Position_API': participation.get('position', {}).get('name'),
         'Overall_Rating': ratings.get('rating'),
     }
@@ -387,9 +450,9 @@ def fetch_all_traits(players_df, force_refresh=False, progress_callback=None):
     Returns:
         DataFrame with all traits data
     """
-    # First, ensure we have DOBs for all players
-    dob_cache = get_player_dobs(players_df)
-    
+    # Load DOB cache for constructing data_provider_id for uncached players
+    dob_cache = load_dob_cache()
+
     # Load traits cache
     traits_cache = load_traits_cache() if not force_refresh else {"timestamp": None, "players": {}}
     
@@ -401,25 +464,20 @@ def fetch_all_traits(players_df, force_refresh=False, progress_callback=None):
     api_calls = 0
     
     for idx, player_name in enumerate(player_names):
-        # Check traits cache first (skip VFL-only entries)
+        # Check traits cache first (re-query if cached data is from a previous season)
         if player_name in traits_cache.get('players', {}):
             cached_data = traits_cache['players'][player_name]
-            team_api = str(cached_data.get('Team_API', ''))
-            comp = str(cached_data.get('Competition', ''))
-            if 'VFL' not in team_api.upper() and comp.upper() != 'VFL':
+            cached_season = str(cached_data.get('Season_API', ''))
+            from config.constants import CURRENT_SEASON
+            is_current = str(CURRENT_SEASON) in cached_season
+            if is_current:
                 results.append(cached_data)
                 if progress_callback:
                     progress_callback(idx + 1, total, player_name, 'cached')
                 continue
         
-        # Get DOB
+        # Query API (pass DOB so data_provider_id can be constructed)
         dob = dob_cache.get(player_name)
-        if not dob:
-            if progress_callback:
-                progress_callback(idx + 1, total, player_name, 'no_dob')
-            continue
-        
-        # Query API
         response = query_traits_api(player_name, dob)
         api_calls += 1
         
@@ -454,36 +512,23 @@ def get_traits_for_player(player_name, dob=None):
     
     Args:
         player_name: Full player name
-        dob: Optional DOB (will look up if not provided)
+        dob: Optional DOB in YYYY-MM-DD format, used to construct
+             data_provider_id for uncached players.
         
     Returns:
         Dict with player traits, or None if not found
     """
-    # Try cache first (skip VFL-only entries)
+    # Try cache first
     traits_cache = load_traits_cache()
     if player_name in traits_cache.get('players', {}):
-        cached_data = traits_cache['players'][player_name]
-        team_api = str(cached_data.get('Team_API', ''))
-        comp = str(cached_data.get('Competition', ''))
-        if 'VFL' not in team_api.upper() and comp.upper() != 'VFL':
-            return cached_data
+        return traits_cache['players'][player_name]
     
-    # Get DOB if not provided
+    # Look up DOB from cache if not provided
     if not dob:
         dob_cache = load_dob_cache()
         dob = dob_cache.get(player_name)
-        
-        if not dob:
-            # Try Wikipedia
-            dob = get_dob_from_wikipedia(player_name)
-            if dob:
-                dob_cache[player_name] = dob
-                save_dob_cache(dob_cache)
     
-    if not dob:
-        return None
-    
-    # Query API
+    # Query API (DOB used to construct data_provider_id, NOT sent directly)
     response = query_traits_api(player_name, dob)
     if response:
         parsed = parse_traits_response(response, competition="AFL")

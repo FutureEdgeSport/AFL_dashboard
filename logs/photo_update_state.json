@@ -1,67 +1,7 @@
 {
-  "last_run": "2026-03-27T09:18:14.905336",
-  "total_downloaded": 151,
+  "last_run": "2026-04-07T09:44:10.117331",
+  "total_downloaded": 169,
   "failed_players": [
-    {
-      "name": "Zachary Merrett",
-      "team": "Essendon",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Josh Draper",
-      "team": "Fremantle",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Matt Johnson",
-      "team": "Fremantle",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Chris Scerri",
-      "team": "Fremantle",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Bradley Close",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Ollie Dempsey",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Nick Driscoll",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Lennox Hoffman",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Mitchell Knevitt",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Thomas Stewart",
-      "team": "Geelong",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Samuel Collins",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
-    {
-      "name": "Nicholas Holman",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
     {
       "name": "Leo Lombard",
       "team": "Gold Coast",
@@ -115,6 +55,66 @@
     {
       "name": "Joshua Weddle",
       "team": "Hawthorn",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Lachlan Jones",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Oliver Wines",
+      "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Samuel Grlj",
+      "team": "Richmond",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Daniel Butler",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Jackson Macrae",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Kobe McDonald",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Mitchito Owens",
+      "team": "St Kilda",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Will Edwards",
+      "team": "Sydney",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Will Green",
+      "team": "Sydney",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Matthew Roberts",
+      "team": "Sydney",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Matthew Flynn",
+      "team": "West Coast",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Matt Owies",
+      "team": "West Coast",
       "reason": "Not found in team data"
     },
     {
@@ -315,7 +315,7 @@
     "steele_sidebottom": "Collingwood",
     "jeremy_howe": "Collingwood",
     "will_hoskin-elliott": "Collingwood",
-    "brody_mihocek": "Collingwood",
+    "brody_mihocek": "Melbourne",
     "jamie_elliott": "Collingwood",
     "jack_crisp": "Collingwood",
     "tim_membrey": "Collingwood",
@@ -325,7 +325,7 @@
     "brayden_maynard": "Collingwood",
     "harry_perryman": "Collingwood",
     "brent_daniels": "GWS Giants",
-    "jacob_wehr": "Greater Western Sydney",
+    "jacob_wehr": "Port Adelaide",
     "sam_taylor": "GWS Giants",
     "xavier_ohalloran": "GWS Giants",
     "connor_idun": "GWS Giants",
@@ -348,10 +348,10 @@
     "josh_kelly": "Greater Western Sydney",
     "harry_himmelberg": "Greater Western Sydney",
     "harry_mckay": "Carlton",
-    "jack_silvagni": "Carlton",
+    "jack_silvagni": "St Kilda",
     "lachie_fogarty": "Carlton",
     "adam_cerra": "Carlton",
-    "tom_de_koning": "Carlton",
+    "tom_de_koning": "St Kilda",
     "sam_walsh": "Carlton",
     "matthew_cottrell": "Carlton",
     "brodie_kemp": "Carlton",
@@ -467,7 +467,7 @@
     "cam_rayner": "Brisbane",
     "zac_bailey": "Brisbane",
     "jack_payne": "Brisbane",
-    "brandon_starcevich": "Brisbane",
+    "brandon_starcevich": "West Coast",
     "noah_answerth": "Brisbane",
     "oscar_mcinerney": "Brisbane",
     "kai_lohmann": "Brisbane",
@@ -660,10 +660,10 @@
     "matt_flynn": "West Coast",
     "jayden_hunt": "West Coast",
     "jake_waterman": "West Coast",
-    "charlie_curnow": "Carlton",
+    "charlie_curnow": "Sydney",
     "lewis_young": "Carlton",
     "jack_gunston": "Hawthorn",
-    "changkuoth_jiath": "Hawthorn",
+    "changkuoth_jiath": "Melbourne",
     "jordan_de_goey": "Collingwood",
     "mason_cox": "Fremantle",
     "oskar_baker": "Western Bulldogs",
@@ -680,11 +680,11 @@
     "bruce_reville": "Brisbane",
     "will_mclachlan": "Brisbane",
     "sam_day": "Brisbane",
-    "liam_ryan": "West Coast",
+    "liam_ryan": "St Kilda",
     "bailey_j_williams": "West Coast",
     "jack_petruccelle": "West Coast",
     "clay_hall": "West Coast",
-    "charlie_spargo": "Melbourne",
+    "charlie_spargo": "North Melbourne",
     "taj_woewodin": "Melbourne",
     "daniel_turner": "Melbourne",
     "toby_pink": "North Melbourne",
@@ -699,7 +699,7 @@
     "tom_cochrane": "Port Adelaide",
     "ivan_soldo": "Port Adelaide",
     "jordan_boyd": "Carlton",
-    "sam_flanders": "Gold Coast",
+    "sam_flanders": "St Kilda",
     "mac_andrew": "Gold Coast",
     "jed_walter": "Gold Coast",
     "jake_melksham": "Melbourne",
@@ -731,7 +731,7 @@
     "zak_butters": "Port Adelaide",
     "ollie_lord": "Port Adelaide",
     "zac_taylor": "Adelaide",
-    "corey_durdin": "Carlton",
+    "corey_durdin": "Port Adelaide",
     "matthew_carroll": "Carlton",
     "zane_duursma": "North Melbourne",
     "zac_fisher": "North Melbourne",
@@ -784,7 +784,7 @@
     "mattaes_phillipou": "St Kilda",
     "lewis_hayes": "Essendon",
     "archer_day-wicks": "Essendon",
-    "malcolm_rosas": "Gold Coast",
+    "malcolm_rosas": "Sydney",
     "brayden_fiorini": "Essendon",
     "dante_visentini": "Port Adelaide",
     "thomas_sims": "Richmond",
@@ -802,7 +802,7 @@
     "harry_ofarrell": "Carlton",
     "leek_aleer": "GWS Giants",
     "harry_rowston": "GWS Giants",
-    "deven_robertson": "Brisbane",
+    "deven_robertson": "West Coast",
     "wil_parker": "Collingwood",
     "william_hayes": "Collingwood",
     "brandon_zerk-thatcher": "Port Adelaide",
@@ -857,7 +857,7 @@
     "brayden_cook": "Adelaide",
     "oskar_smartt": "Essendon",
     "jacob_koschitzke": "Richmond",
-    "tylar_young": "Richmond",
+    "tylar_young": "West Coast",
     "taj_hotton": "Richmond",
     "rhett_bazzo": "West Coast",
     "liam_mcmahon": "Essendon",
@@ -924,11 +924,11 @@
     "cameron_nairn": "Hawthorn",
     "aidan_schubert": "Hawthorn",
     "oscar_berry": "Melbourne",
-    "max_heath": "St Kilda",
+    "max_heath": "Melbourne",
     "thomas_matthews": "Melbourne",
     "riley_onley": "Melbourne",
     "latrelle_pickett": "Melbourne",
-    "jack_steele": "St Kilda",
+    "jack_steele": "Melbourne",
     "xavier_taylor": "Melbourne",
     "kalani_white": "Melbourne",
     "lachy_dovaston": "North Melbourne",
@@ -951,7 +951,7 @@
     "willem_duursma": "West Coast",
     "josh_lindsay": "West Coast",
     "fred_rodriguez": "West Coast",
-    "harry_schoenberg": "Adelaide",
+    "harry_schoenberg": "West Coast",
     "tylah_williams": "West Coast",
     "lachlan_carmichael": "Western Bulldogs",
     "will_darcy": "Western Bulldogs",

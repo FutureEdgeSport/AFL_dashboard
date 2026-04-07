@@ -40,7 +40,6 @@ from .compute_list_ladder import (
     compute_age_profile,
     compute_age_profile_2yr,
     compute_age_profile_1yr,
-    RATING_TIERS,
     POSITIONS,
     AGE_BANDS,
 )
@@ -73,7 +72,6 @@ __all__ = [
     "compute_age_profile",
     "compute_age_profile_2yr",
     "compute_age_profile_1yr",
-    "RATING_TIERS",
     "POSITIONS",
     "AGE_BANDS",
 ]

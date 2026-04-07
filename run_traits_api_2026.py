@@ -107,7 +107,7 @@ def run_traits_api_for_2026_players():
     
     for idx, row in df.iterrows():
         player = row['Player']
-        dob = row['DOB'] if pd.notna(row['DOB']) else dob_cache.get(player)
+        dob = row['DOB'] if pd.notna(row.get('DOB')) else dob_cache.get(player)
         
         # Progress indicator
         if (idx + 1) % 50 == 0 or idx == 0:
@@ -119,12 +119,7 @@ def run_traits_api_for_2026_players():
             cached_count += 1
             continue
         
-        # Skip if no DOB
-        if not dob:
-            no_dob += 1
-            continue
-        
-        # Query API
+        # Query API (DOB used to construct data_provider_id, not sent directly)
         try:
             response = query_traits_api(player, dob)
         except Exception as e:
@@ -188,6 +183,7 @@ def enhance_2026_dataset_with_traits(traits_results):
         'Overall_Rating',
         'data_provider_id',
         'Team_API',
+        'Season_API',
         'Position_API',
         # Individual trait ratings
         'Athleticism_Rating',
@@ -229,6 +225,7 @@ def enhance_2026_dataset_with_traits(traits_results):
     
     # Show top rated players
     print("\nTop 10 Overall Rated Players:")
+    df['Overall_Rating'] = pd.to_numeric(df['Overall_Rating'], errors='coerce')
     top_rated = df[df['Overall_Rating'].notna()].nlargest(10, 'Overall_Rating')[sample_cols]
     print(top_rated.to_string(index=False))
     

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Fetch traits from API for all players with DOBs.
+Fetch traits from API for all players.
 """
 import pandas as pd
 import time
 from traits_api import (
-    load_dob_cache, 
+    load_dob_cache,
     query_traits_api, 
     parse_traits_response,
     load_traits_cache,
@@ -17,7 +17,7 @@ def main():
     print("Loading player data...")
     df = pd.read_excel('AFL Player Ratings.xlsx', sheet_name='2025')
     
-    # Load DOB cache
+    # Load DOB cache (used to construct data_provider_id for uncached players)
     dob_cache = load_dob_cache()
     dobs_with_values = {k: v for k, v in dob_cache.items() if v}
     print(f"DOBs available: {len(dobs_with_values)}")
@@ -31,12 +31,12 @@ def main():
     players = df['Player'].unique()
     print(f"Total players to process: {len(players)}")
     
-    # Filter to those with DOBs and not cached
+    # Filter to those not cached
     to_fetch = []
     for player in players:
-        if player in dobs_with_values:
-            if player not in traits_cache.get('players', {}):
-                to_fetch.append((player, dobs_with_values[player]))
+        if player not in traits_cache.get('players', {}):
+            dob = dobs_with_values.get(player)
+            to_fetch.append((player, dob))
     
     print(f"Players to fetch: {len(to_fetch)}")
     

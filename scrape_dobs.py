@@ -11,13 +11,12 @@ API_KEY = os.environ.get("AFL_TRAITS_API_KEY", "sk_4PCTg45wYI_udETo5kT6ad6lU7977
 API_BASE = "https://partner-api.traitsinsights.app"
 
 
-def test_api_with_player(name, dob):
+def test_api_with_player(name, dob=None):
     """Test the Traits API with a player."""
     url = f"{API_BASE}/profiles/participations/latest/ratings"
     
     params = {
         'name': name,
-        'date_of_birth': dob
     }
     headers = {
         'Authorization': f'Bearer {API_KEY}'

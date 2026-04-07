@@ -1268,13 +1268,20 @@ def load_afl_ladder_positions() -> pd.DataFrame:
     if DATA_LOADER_AVAILABLE and master_workbook_available():
         df = load_ladder_positions()
 
-    # Always try the legacy ladder file — it may have fresher data
+    # Always try the legacy ladder file — it may have fresher data for CURRENT_SEASON
     try:
         legacy_df = pd.read_excel("afl_ladders_2011_2025.xlsx")
         legacy_df["Team"] = legacy_df["Team"].replace(team_name_mapping)
         if df.empty:
             return legacy_df
-        # Merge: add any seasons present in legacy but missing from master
+        # For CURRENT_SEASON, always prefer the scraped legacy file over
+        # the master workbook which may be stale (not rebuilt every round).
+        if "Season" in legacy_df.columns and CURRENT_SEASON in legacy_df["Season"].values:
+            df = df[df["Season"] != CURRENT_SEASON]
+            current_rows = legacy_df[legacy_df["Season"] == CURRENT_SEASON]
+            current_rows["Team"] = current_rows["Team"].replace(team_name_mapping)
+            df = pd.concat([df, current_rows], ignore_index=True)
+        # Merge: add any other seasons present in legacy but missing from master
         existing_seasons = set(df["Season"].unique())
         new_rows = legacy_df[~legacy_df["Season"].isin(existing_seasons)]
         if not new_rows.empty:
@@ -2066,6 +2073,10 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
     API data is considered more current/accurate when available.
     Falls back to Excel data for any missing values.
     
+    Skips API entries whose season_name doesn't match the current season
+    (the Traits API endpoint returns the *latest* rating, which may be
+    from a prior year if the player hasn't played ≥3 games yet).
+    
     Args:
         df: DataFrame from Excel with traits data
         api_cache: Dict of player_name -> traits dict from API
@@ -2133,6 +2144,13 @@ def _enhance_traits_with_api(df: pd.DataFrame, api_cache: dict) -> pd.DataFrame:
         if not api_data:
             continue
         
+        # Skip API data from a prior season — the /latest/ratings endpoint
+        # returns the most recent rating which may be from last year if the
+        # player hasn't played ≥3 games in the current season.
+        api_season = str(api_data.get('Season_API', '')).strip()
+        if api_season and api_season != str(CURRENT_SEASON):
+            continue
+        
         # Update each trait column from API if available
         for api_col, excel_col in API_TO_EXCEL.items():
             if api_col in api_data:
@@ -2184,8 +2202,12 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
     if "Rating" not in df.columns:
         return df
     missing_mask = df["Rating"].isna()
+    # Exclude players deliberately nulled by the 3-game minimum rule —
+    # they should NOT receive backfilled prior-season ratings.
+    if "_traits_under_min_games" in df.columns:
+        missing_mask = missing_mask & ~df["_traits_under_min_games"].fillna(False)
     if not missing_mask.any():
-        return df  # Everyone already has data
+        return df  # Everyone already has data (or is under the game threshold)
     
     # Load prior season CSV
     prior_csv = Path(__file__).parent / "data" / "raw" / "traits" / f"traits_{prior_season}.csv"
@@ -2398,6 +2420,40 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
             api_cache = _load_traits_api_cache()
             if api_cache:
                 df = _enhance_traits_with_api(df, api_cache)
+
+            # ── 3-game minimum rule ──────────────────────────────────
+            # Traits API returns the *latest* participation rating which
+            # may actually be from the prior season if the player has
+            # played <3 matches this year.  Null out trait ratings for
+            # any player who hasn't reached 3 games yet so stale prior-
+            # season numbers don't appear in the dashboard.
+            MIN_GAMES_FOR_TRAITS = 3
+            TRAIT_COLS = [
+                "Rating", "Ball Winning", "Ball Use", "Aerial", "Defence",
+                "Stoppage", "Contest", "Power", "Receives",
+                "Handballing", "Kicking", "Goal Kicking", "Connecting",
+                "Marking", "Contested", "Moks", "Ruck",
+                "Pressure", "Tackling", "Intercepting", "Neutralise",
+            ]
+            try:
+                mr_csv = Path(__file__).parent / "data" / "raw" / "player" / f"match_ratings_{actual_season}.csv"
+                if mr_csv.exists():
+                    mr_df = pd.read_csv(mr_csv)
+                    mr_df.columns = [str(c).strip() for c in mr_df.columns]
+                    # Count games per player (each row = 1 appearance)
+                    game_counts = mr_df.groupby("Player").size()
+                    # Mark players under the minimum so backfill skips them
+                    df["_traits_under_min_games"] = False
+                    for idx, row in df.iterrows():
+                        pname = row.get("Player_Full") or row.get("Player", "")
+                        games = game_counts.get(pname, 0)
+                        if games < MIN_GAMES_FOR_TRAITS:
+                            for col in TRAIT_COLS:
+                                if col in df.columns:
+                                    df.at[idx, col] = np.nan
+                            df.at[idx, "_traits_under_min_games"] = True
+            except Exception:
+                pass  # Graceful degradation — show all ratings if match data unavailable
 
         # Backfill missing trait values from prior season for current season
         # This ensures players who had ratings last year show data until new
@@ -8149,6 +8205,25 @@ elif page == "Club List":
     df["Team"] = df["Team"].astype(str).str.strip()
     df["Position"] = df["Position"].astype(str).str.strip()
 
+    # ---------- Enrich positions from Player_Summary ----------
+    # The full squad data has generic positions (Defender, Forward, Midfield).
+    # Player_Summary has granular positions (Key Defender, Gen. Forward, Wing, etc.)
+    try:
+        _summary_pos = load_player_summary()
+        if not _summary_pos.empty and "Position" in _summary_pos.columns:
+            _summary_pos = _summary_pos[["Player", "Team", "Position"]].copy()
+            _summary_pos.columns = ["Player", "Team", "_SummaryPos"]
+            _summary_pos["Player"] = _summary_pos["Player"].astype(str).str.strip()
+            _summary_pos["Team"] = _summary_pos["Team"].astype(str).str.strip()
+            _summary_pos = _summary_pos.drop_duplicates(subset=["Player", "Team"], keep="first")
+            df = df.merge(_summary_pos, on=["Player", "Team"], how="left")
+            # Use summary position where available, keep original as fallback
+            _has_summary = df["_SummaryPos"].notna() & (df["_SummaryPos"].astype(str).str.strip() != "")
+            df.loc[_has_summary, "Position"] = df.loc[_has_summary, "_SummaryPos"]
+            df = df.drop(columns=["_SummaryPos"])
+    except Exception:
+        pass  # Fall back to generic positions if summary unavailable
+
     df["RatingPoints_Avg"] = pd.to_numeric(df["RatingPoints_Avg"], errors="coerce")
 
     if "Age" in df.columns:
@@ -12838,19 +12913,21 @@ elif page == "List Breakdown - Traits":
             rank_val = team_row.iloc[0]["Rank"]
             total_teams = len(team_averages)
             
-            # Determine color based on rank percentile
-            percentile = 1 - (rank_val / total_teams)
-            if percentile >= 0.75:  # Top 25%
-                color = "#008000"  # Green
+            # Determine color based on rank - 5 tier system matching Traits List Ladder
+            if rank_val <= 4:
+                color = "#008000"   # Elite - Dark Green
                 text_color = "white"
-            elif percentile >= 0.50:  # Top 50%
-                color = "#90EE90"  # Light green
+            elif rank_val <= 7:
+                color = "#90EE90"   # Good - Light Green
                 text_color = "black"
-            elif percentile >= 0.25:  # Top 75%
-                color = "#FFA500"  # Orange
+            elif rank_val <= 11:
+                color = "#FFD700"   # Average - Gold
+                text_color = "black"
+            elif rank_val <= 15:
+                color = "#FFA500"   # Below Average - Orange
                 text_color = "white"
-            else:  # Bottom 25%
-                color = "#FF0000"  # Red
+            else:
+                color = "#FF0000"   # Poor - Red
                 text_color = "white"
             
             team_stats[trait_name] = {
@@ -14018,9 +14095,14 @@ elif page == "Contract Status":
             return "#4CAF50", "#FFFFFF"  # 5+ years
 
     for _, r in out.iterrows():
-        # Rating colors
+        # Rating colors - grey for 0-game players
         rating_val = r["RATING"]
-        bg_rating, fg_rating = rating_colour_for_value(rating_val, df[display_rating_col].dropna())
+        games_val = r["GAMES"]
+        has_played = not pd.isna(games_val) and int(games_val) > 0
+        if has_played:
+            bg_rating, fg_rating = rating_colour_for_value(rating_val, df[display_rating_col].dropna())
+        else:
+            bg_rating, fg_rating = "#444444", "#999999"
 
         age_val = r["AGE"]
         age_str = "—" if pd.isna(age_val) else f"{float(age_val):.1f}"
@@ -17466,12 +17548,10 @@ elif page == "Player Rating Matrix":
         _mr_use_votes = _mr_metric_choice == "Coaches Votes"
         _mr_use_brownlow = _mr_metric_choice == "Predicted Brownlow Votes"
 
-        # Load Brownlow data if needed
-        df_brownlow = pd.DataFrame()
-        if _mr_use_brownlow:
-            df_brownlow = load_brownlow_predictions(selected_season)
-            if df_brownlow.empty:
-                st.warning("No Brownlow prediction data available for this season. Run:\n\n```\npython scrape_wheelo_match_stats.py --brownlow-only --season " + str(selected_season) + "\n```")
+        # Load Brownlow data (always — needed for competition leaderboard + metric view)
+        df_brownlow = load_brownlow_predictions(selected_season)
+        if _mr_use_brownlow and df_brownlow.empty:
+            st.warning("No Brownlow prediction data available for this season. Run:\n\n```\npython scrape_wheelo_match_stats.py --brownlow-only --season " + str(selected_season) + "\n```")
 
         # Determine rating column
         rating_col = None
@@ -17805,24 +17885,88 @@ function _mrSort(ci) {{
                 # Summary stats
                 st.markdown("---")
                 top5 = pivot.nlargest(5, "Avg")
-                bot5 = pivot.nsmallest(5, "Avg")
 
-                def _leaderboard_card(title, icon_colour, data, ascending=False):
+                def _leaderboard_card(title, icon_colour, data):
                     rows = ""
                     for rank, (player, row) in enumerate(data.iterrows(), 1):
                         avg = row["Avg"]
                         bg = _matrix_colour(avg, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
                         tc = _text_colour(bg, v=avg, is_votes=_mr_use_votes, is_brownlow=_mr_use_brownlow)
-                        bar_w = max(10, min(100, avg / (data["Avg"].max() or 1) * 100)) if not ascending else max(10, min(100, (data["Avg"].max() - avg + data["Avg"].min()) / (data["Avg"].max() or 1) * 100))
+                        bar_w = max(10, min(100, avg / (data["Avg"].max() or 1) * 100))
                         rows += (
-                            f"<tr>"
-                            f"<td style='padding:10px 12px;font-size:18px;font-weight:900;color:{icon_colour};text-align:center;width:36px;'>{rank}</td>"
-                            f"<td style='padding:10px 8px;'>"
+                            f"<tr style='height:68px;'>"
+                            f"<td style='padding:10px 12px;font-size:18px;font-weight:900;color:{icon_colour};text-align:center;width:36px;vertical-align:middle;'>{rank}</td>"
+                            f"<td style='padding:10px 8px;vertical-align:middle;'>"
                             f"<div style='font-size:14px;font-weight:700;color:#fff;letter-spacing:0.01em;'>{player}</div>"
                             f"<div style='margin-top:6px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);'>"
                             f"<div style='height:100%;width:{bar_w:.0f}%;border-radius:2px;background:{bg};'></div></div>"
                             f"</td>"
-                            f"<td style='padding:10px 8px;text-align:right;'><span class='ct-pill' style='background:{bg};color:{tc};'>{_mr_fv_avg(avg)}</span></td>"
+                            f"<td style='padding:10px 8px;text-align:right;vertical-align:middle;'><span class='ct-pill' style='background:{bg};color:{tc};'>{_mr_fv_avg(avg)}</span></td>"
+                            f"</tr>"
+                        )
+                    return (
+                        f"<div style='background:linear-gradient(145deg,rgba(20,20,30,0.95),rgba(30,30,45,0.95));"
+                        f"border-radius:14px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;'>"
+                        f"<div style='padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);"
+                        f"background:linear-gradient(90deg,{icon_colour}18,transparent);'>"
+                        f"<h3 style='margin:0;color:#fff;font-size:16px;font-weight:800;letter-spacing:0.03em;'>"
+                        f"<span style='color:{icon_colour};'>●</span>&ensp;{title}</h3></div>"
+                        f"<table style='width:100%;border-collapse:collapse;'>{rows}</table></div>"
+                    )
+
+                # --- Top 5 Year-on-Year Differential (2026 vs 2025) ---
+                _prior_season = selected_season - 1
+                _df_prior = load_match_ratings(_prior_season)
+                _diff5 = pd.DataFrame()
+                if not _df_prior.empty:
+                    _diff_col = active_col
+                    if _diff_col and _diff_col in _df_prior.columns and _diff_col in df_filt.columns:
+                        _cur_avg = df_filt.groupby(player_col)[_diff_col].mean()
+                        _pri_avg = _df_prior.groupby("Player")[_diff_col].mean()
+                        _both = pd.DataFrame({"CurAvg": _cur_avg, "PriAvg": _pri_avg}).dropna()
+                        if not _both.empty:
+                            _both["Diff"] = _both["CurAvg"] - _both["PriAvg"]
+                            _diff5 = _both.nlargest(5, "Diff")
+
+                def _diff_card(title, icon_colour, data):
+                    """Build a differential leaderboard card."""
+                    if data.empty:
+                        return (
+                            f"<div style='background:rgba(20,20,30,0.95);border-radius:14px;"
+                            f"border:1px solid rgba(255,255,255,0.08);padding:20px;text-align:center;color:#666;'>"
+                            f"No prior-season data available</div>"
+                        )
+                    rows = ""
+                    max_diff = data["Diff"].abs().max() or 1
+                    for rank, (player, row) in enumerate(data.iterrows(), 1):
+                        diff = row["Diff"]
+                        cur = row["CurAvg"]
+                        pri = row["PriAvg"]
+                        sign = "+" if diff >= 0 else ""
+                        bar_w = max(10, min(100, abs(diff) / max_diff * 100))
+                        # Green for positive diff
+                        if diff >= 1.0:
+                            bg, tc = "#006400", "#fff"
+                        elif diff >= 0.5:
+                            bg, tc = "#228B22", "#fff"
+                        elif diff >= 0.2:
+                            bg, tc = "#3CB371", "#000"
+                        elif diff >= 0:
+                            bg, tc = "#90EE90", "#000"
+                        else:
+                            bg, tc = "#FF6347", "#fff"
+                        rows += (
+                            f"<tr style='height:68px;'>"
+                            f"<td style='padding:10px 12px;font-size:18px;font-weight:900;color:{icon_colour};text-align:center;width:36px;vertical-align:middle;'>{rank}</td>"
+                            f"<td style='padding:10px 8px;vertical-align:middle;'>"
+                            f"<div style='font-size:14px;font-weight:700;color:#fff;letter-spacing:0.01em;'>{player}</div>"
+                            f"<div style='font-size:11px;color:#888;margin-top:2px;'>"
+                            f"{_prior_season}: {_mr_fv_avg(pri)} → {selected_season}: {_mr_fv_avg(cur)}</div>"
+                            f"<div style='margin-top:4px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);'>"
+                            f"<div style='height:100%;width:{bar_w:.0f}%;border-radius:2px;background:{bg};'></div></div>"
+                            f"</td>"
+                            f"<td style='padding:10px 8px;text-align:right;vertical-align:middle;'>"
+                            f"<span class='ct-pill' style='background:{bg};color:{tc};'>{sign}{_mr_fv_avg(diff)}</span></td>"
                             f"</tr>"
                         )
                     return (
@@ -17836,10 +17980,136 @@ function _mrSort(ci) {{
                     )
 
                 _mr_label = "AVG PREDICTED BROWNLOW" if _mr_use_brownlow else ("AVG COACHES VOTES" if _mr_use_votes else "AVG RATING")
+                _diff_label = f"{selected_season} vs {_prior_season} DIFFERENTIAL"
                 c1, c2 = st.columns(2)
                 with c1:
                     st.markdown(_leaderboard_card(f"TOP 5 — {_mr_label}", "#008000", top5), unsafe_allow_html=True)
                 with c2:
-                    st.markdown(_leaderboard_card(f"BOTTOM 5 — {_mr_label}", "#FF0000", bot5, ascending=True), unsafe_allow_html=True)
+                    st.markdown(_diff_card(f"TOP 5 — {_diff_label}", "#1E90FF", _diff5), unsafe_allow_html=True)
+
+        # ============= COMPETITION LEADERBOARD (ALL TEAMS) =============
+        st.markdown("---")
+        st.markdown(f"<h2 style='color:#FFFFFF; margin-top:30px;'>{_svg_inline('trophy', 24)} Competition Leaderboard — All Teams</h2>"
+                    f"<p style='color:#999; font-size:0.85em; margin-bottom:20px;'>Top 25 across the entire competition for {selected_season}</p>",
+                    unsafe_allow_html=True)
+
+        # Build competition-wide data from unfiltered sources
+        _comp_ratings_df = df_mr.copy()
+        _comp_brownlow_df = df_brownlow.copy() if not df_brownlow.empty else pd.DataFrame()
+
+        # --- Player Ratings leaderboard ---
+        _comp_rating_col = rating_col
+        _comp_votes_col = votes_col
+
+        def _build_comp_leaderboard(source_df, val_col, top_n=25, sort_col="Avg"):
+            """Build top-N leaderboard from source across all teams."""
+            if source_df.empty or val_col is None or val_col not in source_df.columns:
+                return pd.DataFrame()
+            player_col = "Player" if "Player" in source_df.columns else source_df.columns[0]
+            team_col = "Team" if "Team" in source_df.columns else None
+            agg = source_df.groupby(player_col).agg(
+                Avg=(val_col, "mean"),
+                Tot=(val_col, "sum"),
+                GP=(val_col, "count"),
+            ).reset_index()
+            agg["Avg"] = agg["Avg"].round(1)
+            agg["Tot"] = agg["Tot"].round(1)
+            # Add team
+            if team_col:
+                team_map = source_df.drop_duplicates(subset=[player_col], keep="first").set_index(player_col)[team_col]
+                agg["Team"] = agg[player_col].map(team_map)
+            else:
+                agg["Team"] = ""
+            agg["_sort"] = sort_col  # tag which column to display
+            return agg.nlargest(top_n, sort_col)
+
+        _lb_ratings = _build_comp_leaderboard(_comp_ratings_df, _comp_rating_col)
+        _lb_votes = _build_comp_leaderboard(_comp_ratings_df, _comp_votes_col, sort_col="Tot") if _comp_votes_col else pd.DataFrame()
+        _lb_brownlow = _build_comp_leaderboard(_comp_brownlow_df, "Votes", sort_col="Tot") if not _comp_brownlow_df.empty and "Votes" in _comp_brownlow_df.columns else pd.DataFrame()
+
+        def _comp_leaderboard_html(title, icon_colour, df, val_fmt="1f", metric_label="Avg", all_values=None):
+            """Build a competition leaderboard card HTML.
+            all_values: optional full-population Series for percentile colouring."""
+            if df.empty:
+                return f"<div style='background:rgba(20,20,30,0.95);border-radius:14px;border:1px solid rgba(255,255,255,0.08);padding:20px;text-align:center;color:#666;'>No data available for {title}</div>"
+            player_col = [c for c in df.columns if c not in ("Avg", "Tot", "GP", "Team", "_sort")][0]
+            display_col = df["_sort"].iloc[0] if "_sort" in df.columns else "Avg"
+            rows = ""
+            max_val = df[display_col].max() or 1
+            for rank, (_, row) in enumerate(df.iterrows(), 1):
+                val = row[display_col]
+                team = row.get("Team", "")
+                bar_w = max(10, min(100, val / max_val * 100))
+                # Determine pill colour based on metric type
+                if icon_colour == "#FFD700":
+                    bg, tc = _bv_colour(val)
+                elif icon_colour == "#3CB371":
+                    bg, tc = _cv_colour(val)
+                else:
+                    _ref = all_values if all_values is not None else df[display_col]
+                    bg, tc = rating_colour_for_value(val, _ref)
+                fmt_val = f"{val:.0f}" if display_col == "Tot" else (f"{val:.{val_fmt[-2]}f}" if val_fmt else f"{val:.1f}")
+                rows += (
+                    f"<tr>"
+                    f"<td style='padding:7px 8px;font-size:15px;font-weight:900;color:{icon_colour};text-align:center;width:32px;'>{rank}</td>"
+                    f"<td style='padding:7px 6px;'>"
+                    f"<div style='font-size:13px;font-weight:700;color:#fff;'>{row[player_col]}</div>"
+                    f"<div style='font-size:11px;color:#888;'>{team}</div>"
+                    f"<div style='margin-top:4px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);'>"
+                    f"<div style='height:100%;width:{bar_w:.0f}%;border-radius:2px;background:{icon_colour};'></div></div>"
+                    f"</td>"
+                    f"<td style='padding:7px 8px;text-align:right;'><span class='ct-pill' style='background:{bg};color:{tc};font-size:0.85em;'>{fmt_val}</span></td>"
+                    f"</tr>"
+                )
+            return (
+                f"<div style='background:linear-gradient(145deg,rgba(20,20,30,0.95),rgba(30,30,45,0.95));"
+                f"border-radius:14px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;'>"
+                f"<div style='padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08);"
+                f"background:linear-gradient(90deg,{icon_colour}18,transparent);'>"
+                f"<h3 style='margin:0;color:#fff;font-size:15px;font-weight:800;letter-spacing:0.03em;'>"
+                f"<span style='color:{icon_colour};'>●</span>&ensp;{title}</h3></div>"
+                f"<div style='max-height:700px;overflow-y:auto;'>"
+                f"<table style='width:100%;border-collapse:collapse;'>{rows}</table></div></div>"
+            )
+
+        # --- Traits Rating leaderboard ---
+        _traits_df = load_traits(selected_season)
+        if not _traits_df.empty and "Rating" in _traits_df.columns:
+            _traits_df["Rating"] = pd.to_numeric(_traits_df["Rating"], errors="coerce")
+            _traits_lb = _traits_df.dropna(subset=["Rating"])[["Player_Full", "Team_Full", "Rating"]].copy()
+            _traits_lb.columns = ["Player", "Team", "Rating"]
+            # Only include players who have actually played an AFL match this season
+            _played_players = set(
+                _comp_ratings_df["Player"].astype(str).str.strip().unique()
+            ) if "Player" in _comp_ratings_df.columns else set()
+            if _played_players:
+                _traits_lb = _traits_lb[_traits_lb["Player"].isin(_played_players)]
+            _traits_lb = _traits_lb.sort_values("Rating", ascending=False).drop_duplicates(
+                subset=["Player", "Team"], keep="first"
+            )
+            _traits_lb = _traits_lb.nlargest(25, "Rating")
+            _traits_lb = _traits_lb.rename(columns={"Rating": "Avg"})
+            _traits_lb["Avg"] = _traits_lb["Avg"].round(2)
+            _traits_lb["Tot"] = _traits_lb["Avg"]
+            _traits_lb["GP"] = 0
+            _traits_lb["_sort"] = "Avg"
+        else:
+            _traits_lb = pd.DataFrame()
+
+        # Build full-population series for competition-wide percentile colouring
+        _all_rating_avgs = _comp_ratings_df.groupby("Player")[_comp_rating_col].mean() if _comp_rating_col and _comp_rating_col in _comp_ratings_df.columns else pd.Series(dtype=float)
+        _all_traits_vals = _traits_lb["Avg"] if not _traits_lb.empty else pd.Series(dtype=float)
+        if not _traits_df.empty and "Rating" in _traits_df.columns:
+            _all_traits_vals = pd.to_numeric(_traits_df["Rating"], errors="coerce").dropna()
+
+        _lb_c1, _lb_c2, _lb_c3, _lb_c4 = st.columns(4)
+        with _lb_c1:
+            st.markdown(_comp_leaderboard_html("TOP 25 — PLAYER RATINGS", "#008000", _lb_ratings, "1f", all_values=_all_rating_avgs), unsafe_allow_html=True)
+        with _lb_c2:
+            st.markdown(_comp_leaderboard_html("TOP 25 — COACHES VOTES", "#3CB371", _lb_votes, "1f"), unsafe_allow_html=True)
+        with _lb_c3:
+            st.markdown(_comp_leaderboard_html("TOP 25 — PREDICTED BROWNLOW", "#FFD700", _lb_brownlow, "1f"), unsafe_allow_html=True)
+        with _lb_c4:
+            st.markdown(_comp_leaderboard_html("TOP 25 — TRAITS RATING", "#9370DB", _traits_lb, "2f", all_values=_all_traits_vals), unsafe_allow_html=True)
 
     render_footer()

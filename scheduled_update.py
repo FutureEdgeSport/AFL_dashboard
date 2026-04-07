@@ -305,7 +305,10 @@ def run_inline_step(name, description):
             import pandas as pd
             from config.constants import MASTER_FILE, LADDERS_FILE
             master_path = BASE_DIR / MASTER_FILE
-            ladder_path = BASE_DIR / LADDERS_FILE
+            # Prefer scraped data from data/ directory (written by scrape_afl_ladders.py)
+            ladder_path = BASE_DIR / "data" / LADDERS_FILE
+            if not ladder_path.exists():
+                ladder_path = BASE_DIR / LADDERS_FILE
             if not master_path.exists():
                 logging.warning(f"  SKIP [{name}] – master workbook not found")
                 return True, None
@@ -613,6 +616,48 @@ def run_inline_step(name, description):
 
 
 # ============================================================================
+# STREAMLIT RESTART
+# ============================================================================
+def _restart_streamlit():
+    """Restart any running Streamlit app.py so its cache picks up fresh data."""
+    import signal
+    try:
+        # Find Streamlit processes serving app.py
+        result = subprocess.run(
+            ["pgrep", "-f", "streamlit run app.py"],
+            capture_output=True, text=True, timeout=5,
+        )
+        pids = result.stdout.strip().split("\n")
+        pids = [p.strip() for p in pids if p.strip()]
+        if not pids:
+            logging.info("No running Streamlit process found – skip restart.")
+            return
+
+        # Send SIGTERM to gracefully stop
+        for pid in pids:
+            try:
+                os.kill(int(pid), signal.SIGTERM)
+            except (ProcessLookupError, ValueError):
+                pass
+        logging.info(f"Stopped Streamlit (PIDs: {', '.join(pids)})")
+
+        # Wait briefly for cleanup
+        time.sleep(2)
+
+        # Restart in background
+        subprocess.Popen(
+            [sys.executable, "-m", "streamlit", "run", "app.py"],
+            cwd=str(BASE_DIR),
+            stdout=open(BASE_DIR / "logs" / "streamlit.log", "a"),
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        logging.info("Restarted Streamlit app.")
+    except Exception as e:
+        logging.warning(f"Could not restart Streamlit: {e}")
+
+
+# ============================================================================
 # STEP RUNNER
 # ============================================================================
 def run_step(name, script, args, description, python_exe):
@@ -784,6 +829,9 @@ def main():
 
     # Log rotation
     rotate_logs()
+
+    # Restart Streamlit so its in-memory cache picks up fresh data
+    _restart_streamlit()
 
     if failed > 0:
         msg = f"{failed} step(s) failed. Check log for details."

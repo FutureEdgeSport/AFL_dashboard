@@ -158,6 +158,14 @@ def main():
     # Save to Excel (atomic write with backup)
     safe_excel_write(combined_df, output_file)
     safe_excel_write(combined_df, legacy_file)
+    # Also save to root-level file matching LADDERS_FILE name so data_loader picks it up
+    root_current = Path(f'afl_ladders_2011_{end_year}.xlsx')
+    if root_current != legacy_file:
+        safe_excel_write(combined_df, root_current)
+    # Also save to root-level file matching LADDERS_FILE name so data_loader picks it up
+    root_current = Path(f'afl_ladders_2011_{end_year}.xlsx')
+    if root_current != legacy_file:
+        safe_excel_write(combined_df, root_current)
     
     n_seasons = combined_df['Season'].nunique()
     yr_min = int(combined_df['Season'].min())
