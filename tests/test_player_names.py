@@ -38,18 +38,18 @@ class TestResolver:
         assert result == "Harry Morrison"
 
     def test_nickname_variant(self, resolver):
-        """Formal names should resolve to the canonical (informal) form."""
-        # Summary uses "Zach Merrett" not "Zachary Merrett"
+        """Formal names should resolve to the canonical form from summary."""
+        # Summary uses "Zachary Merrett" as canonical
         result = resolver.resolve("Zachary Merrett", "Essendon")
-        assert result == "Zach Merrett"
+        assert result == "Zachary Merrett"
 
     def test_nickname_variant_lachie(self, resolver):
         result = resolver.resolve("Lachlan Ash", "GWS Giants")
-        assert result == "Lachie Ash"
+        assert result == "Lachlan Ash"
 
     def test_nickname_variant_tim(self, resolver):
         result = resolver.resolve("Timothy English", "Western Bulldogs")
-        assert result == "Tim English"
+        assert result == "Timothy English"
 
     def test_abbreviated_name(self, resolver):
         """A. Cadman should resolve to Aaron Cadman."""
@@ -81,6 +81,6 @@ class TestResolver:
             "Team": ["Essendon", "GWS Giants", "Hawthorn"],
         })
         result = resolver.resolve_df(df, "Player", "Team")
-        assert result.iloc[0] == "Zach Merrett"
+        assert result.iloc[0] == "Zachary Merrett"
         assert result.iloc[1] == "Aaron Cadman"
         assert result.iloc[2] == "Harry Morrison"
