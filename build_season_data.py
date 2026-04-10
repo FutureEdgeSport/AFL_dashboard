@@ -154,6 +154,30 @@ def build_2026_data():
             safe_csv_write(traits_subset, traits_out_path)
             has_traits = traits_subset["Overall_Rating"].notna().sum() if "Overall_Rating" in traits_subset.columns else 0
             print(f"   Saved traits_{SEASON}.csv: {has_traits} players with trait ratings")
+
+            # ---- 7b. Snapshot traits per round (for Trait Rating Matrix) ----
+            match_ratings_path = BASE_DIR / "data" / "raw" / "player" / f"match_ratings_{SEASON}.csv"
+            if match_ratings_path.exists() and "Overall_Rating" in traits_subset.columns:
+                mr_df = pd.read_csv(match_ratings_path)
+                current_round = int(mr_df["Round"].max()) if "Round" in mr_df.columns and not mr_df.empty else None
+                if current_round is not None and current_round > 0:
+                    history_path = BASE_DIR / "data" / "raw" / "traits" / f"traits_history_{SEASON}.csv"
+                    # Load existing history
+                    if history_path.exists():
+                        history_df = pd.read_csv(history_path)
+                    else:
+                        history_df = pd.DataFrame(columns=["Player", "Team", "Round", "Overall_Rating"])
+                    # Only add snapshot if this round hasn't been recorded yet
+                    existing_rounds = set(history_df["Round"].unique()) if not history_df.empty else set()
+                    if current_round not in existing_rounds:
+                        snapshot = traits_subset[["Player", "Team", "Overall_Rating"]].copy()
+                        snapshot["Round"] = current_round
+                        snapshot = snapshot[snapshot["Overall_Rating"].notna()]
+                        history_df = pd.concat([history_df, snapshot], ignore_index=True)
+                        safe_csv_write(history_df, history_path)
+                        print(f"   Saved traits_history_{SEASON}.csv: snapshotted R{current_round} ({len(snapshot)} players)")
+                    else:
+                        print(f"   traits_history_{SEASON}.csv: R{current_round} already snapshotted, skipping")
     else:
         print(f"   ⚠️ No traits data found for {SEASON}")
     
