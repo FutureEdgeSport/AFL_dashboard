@@ -14385,44 +14385,38 @@ elif page == "Team Selection Ratings":
                             hovertemplate=f"<b>{_row['Team']}</b><br>This Round: {_v:+.2f}<extra></extra>",
                         ))
 
-                    # Season average — clean line tick with value label
+                    # Season average — clean line tick
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonAvg"],
                         y=_rd_team_avg["Team"],
-                        mode="markers+text",
+                        mode="markers",
                         marker=dict(
                             symbol="line-ns",
                             size=20,
                             line=dict(width=2.5, color="rgba(255,255,255,0.75)"),
                             color="rgba(255,255,255,0.75)",
                         ),
-                        text=[f"{v:+.1f}" if pd.notna(v) else "" for v in _rd_team_avg["SeasonAvg"]],
-                        textposition="top center",
-                        textfont=dict(size=9, color="rgba(255,255,255,0.55)", family="SF Pro Display, -apple-system, Arial"),
                         name="Season Avg",
                         hovertemplate="%{y}: %{x:+.1f}<extra>Season Avg</extra>",
                     ))
 
-                    # Season best — small diamond with round label
-                    _best_labels = [
-                        f"{v:+.1f} ({r})" if pd.notna(v) and r else (f"{v:+.1f}" if pd.notna(v) else "")
-                        for v, r in zip(_rd_team_avg["SeasonBest"], _rd_team_avg["SeasonBestRound"])
+                    # Season best — small diamond
+                    _best_hover = [
+                        f"<b>%{{y}}</b>: %{{x:+.1f}} ({r})<extra>Season Best</extra>" if r else "<b>%{y}</b>: %{x:+.1f}<extra>Season Best</extra>"
+                        for r in _rd_team_avg["SeasonBestRound"]
                     ]
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonBest"],
                         y=_rd_team_avg["Team"],
-                        mode="markers+text",
+                        mode="markers",
                         marker=dict(
                             symbol="diamond",
                             size=8,
                             color="#FFD700",
                             line=dict(width=0.8, color="rgba(0,0,0,0.5)"),
                         ),
-                        text=_best_labels,
-                        textposition="middle right",
-                        textfont=dict(size=9, color="rgba(255,215,0,0.75)", family="SF Pro Display, -apple-system, Arial"),
                         name="Season Best",
-                        hovertemplate="%{y}: %{x:+.1f}<extra>Season Best</extra>",
+                        hovertemplate=_best_hover,
                     ))
 
                     _fig.update_layout(
