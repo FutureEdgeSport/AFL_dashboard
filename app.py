@@ -13145,6 +13145,200 @@ elif page == "Best 23":
     _render_position("Gen. Forward", n_left=4, n_right=4)    # includes Mid-Forwards here
 
     # =====================================================
+    # MATCH DAY 23
+    # =====================================================
+    st.markdown("---")
+    st.header("Match Day 23")
+    st.caption("Select a round and game to see the actual match-day squads with current season ratings.")
+
+    _md_file = f"data/raw/player/match_ratings_{season}.csv"
+    if os.path.exists(_md_file):
+        _md_raw = pd.read_csv(_md_file)
+        _md_raw["Team"] = _md_raw["Team"].replace({"Greater Western Sydney": "GWS Giants"})
+
+        _md_rounds = sorted(_md_raw["Round"].unique())
+        _md_round_labels = {r: "Opening Round" if r == 0 else f"Round {r}" for r in _md_rounds}
+
+        md_round = st.selectbox(
+            "Round",
+            _md_rounds,
+            format_func=lambda r: _md_round_labels[r],
+            key="md_round_sel",
+        )
+
+        _md_round_df = _md_raw[_md_raw["Round"] == md_round]
+
+        # Build game list from match data
+        _md_games = {}
+        for mid in sorted(_md_round_df["MatchId"].unique()):
+            _mdf = _md_round_df[_md_round_df["MatchId"] == mid]
+            _mteams = sorted(_mdf["Team"].unique())
+            if len(_mteams) == 2:
+                _md_games[f"{_mteams[0]} vs {_mteams[1]}"] = mid
+
+        if _md_games:
+            md_game_label = st.selectbox("Game", list(_md_games.keys()), key="md_game_sel")
+            md_match_id = _md_games[md_game_label]
+
+            _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
+            _md_match_teams = sorted(_md_match_df["Team"].unique())
+
+            if len(_md_match_teams) == 2:
+                md_team_a_name = _md_match_teams[0]
+                md_team_b_name = _md_match_teams[1]
+
+                _md_players_a = _md_match_df[_md_match_df["Team"] == md_team_a_name][["Player", "RatingPoints"]].copy()
+                _md_players_b = _md_match_df[_md_match_df["Team"] == md_team_b_name][["Player", "RatingPoints"]].copy()
+
+                def _resolve_match_players(match_players_df, team_name):
+                    """Join match players to merged_all for Position, Jumper, Rating.
+                    Falls back to nickname variants then match-level data."""
+                    rows = []
+                    for _, mp in match_players_df.iterrows():
+                        pname = mp["Player"]
+                        match_rating = mp["RatingPoints"]
+
+                        # Exact match in merged_all
+                        found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == pname)]
+
+                        # Nickname variants
+                        if found.empty:
+                            for v in build_player_name_variants(pname):
+                                if v == pname:
+                                    continue
+                                found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == v)]
+                                if not found.empty:
+                                    break
+
+                        if not found.empty:
+                            r = found.iloc[0]
+                            rows.append({
+                                "Player": r["Player"],
+                                "Position": r["Position"],
+                                "Jumper": r.get("Jumper", ""),
+                                "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _safe_float(match_rating),
+                                "Team": team_name,
+                                "IsBench": False,
+                            })
+                        else:
+                            # Fallback: check summary for position/jumper
+                            pos = "Midfielder"
+                            jumper = ""
+                            s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == pname)]
+                            if s_match.empty:
+                                for v in build_player_name_variants(pname):
+                                    if v == pname:
+                                        continue
+                                    s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == v)]
+                                    if not s_match.empty:
+                                        break
+                            if not s_match.empty:
+                                sr = s_match.iloc[0]
+                                pos = sr.get("Position", "Midfielder") or "Midfielder"
+                                jumper = sr.get("Jumper", "")
+
+                            rows.append({
+                                "Player": pname,
+                                "Position": pos,
+                                "Jumper": jumper,
+                                "Rating": _safe_float(match_rating),
+                                "Team": team_name,
+                                "IsBench": False,
+                            })
+
+                    return pd.DataFrame(rows)
+
+                md_best_a = _resolve_match_players(_md_players_a, md_team_a_name)
+                md_best_b = _resolve_match_players(_md_players_b, md_team_b_name)
+
+                md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
+                md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
+
+                # Header with logos and overall averages
+                md_overall_a = avg_rating(md_best_a)
+                md_overall_b = avg_rating(md_best_b)
+                md_net = None
+                if md_overall_a is not None and md_overall_b is not None:
+                    md_net = md_overall_a - md_overall_b
+
+                md_logo_a_path = get_team_logo_path(md_team_a_name) if "get_team_logo_path" in globals() else None
+                md_logo_b_path = get_team_logo_path(md_team_b_name) if "get_team_logo_path" in globals() else None
+                md_logo_a_b64 = _img_to_b64(md_logo_a_path) if md_logo_a_path else ""
+                md_logo_b_b64 = _img_to_b64(md_logo_b_path) if md_logo_b_path else ""
+
+                md_a_str = "" if md_overall_a is None else f"{md_overall_a:.2f}"
+                md_b_str = "" if md_overall_b is None else f"{md_overall_b:.2f}"
+
+                md_header_html = f"""
+                <div class="b23Header">
+                <div class="teamCol">
+                    {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
+                    <div class="teamName">{md_team_a_name}</div>
+                    <div class="label">MATCH DAY 23 RATING</div>
+                    {_pill(md_a_str if md_a_str else "—", big=True)}
+                </div>
+                <div class="midCol">
+                    <div class="vsPill">VS</div>
+                    <div class="netLabel">NET (A − B)</div>
+                    {_diff_pill(md_net)}
+                    <div class="subNote">Positive = Team A higher</div>
+                </div>
+                <div class="teamCol">
+                    {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
+                    <div class="teamName">{md_team_b_name}</div>
+                    <div class="label">MATCH DAY 23 RATING</div>
+                    {_pill(md_b_str if md_b_str else "—", big=True)}
+                </div>
+                </div>
+                """
+
+                components.html(md_header_html.strip(), height=400, scrolling=False)
+                st.caption("Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
+
+                def _render_md_position(cat_name, a_df, b_df, a_series, b_series):
+                    left_df = cat_df(a_df, cat_name)
+                    right_df = cat_df(b_df, cat_name)
+                    left_df = left_df.sort_values("Rating", ascending=False)
+                    right_df = right_df.sort_values("Rating", ascending=False)
+
+                    lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
+                    with lcol:
+                        st.markdown(f"**{cat_name}**")
+                        if left_df.empty:
+                            st.caption("—")
+                        else:
+                            for _, row in left_df.iterrows():
+                                st.markdown(_magnet_html(row, a_series), unsafe_allow_html=True)
+                    with ccol:
+                        _centre_stats(left_df, right_df, cat_name)
+                    with rcol:
+                        st.markdown(f"**{cat_name}**")
+                        if right_df.empty:
+                            st.caption("—")
+                        else:
+                            for _, row in right_df.iterrows():
+                                st.markdown(_magnet_html(row, b_series), unsafe_allow_html=True)
+
+                st.markdown("---")
+                _render_md_position("Key Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Gen. Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Midfielder", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Wing", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Ruck", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Key Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Gen. Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+        else:
+            st.info("No games found for this round.")
+    else:
+        st.info(f"No match ratings data available for {season}.")
+
+    # =====================================================
     # MANUAL SELECTION (Pick your own Best 23)
     # =====================================================
     st.markdown("---")
