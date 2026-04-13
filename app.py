@@ -13976,8 +13976,12 @@ elif page == "Team Selection Ratings":
                     md_best_a["Rating"] = md_best_a["TraitRating"]
                     md_best_b["Rating"] = md_best_b["TraitRating"]
 
-                md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
-                md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
+                if _use_trait_rating and _traits_df is not None:
+                    md_team_a_series = _traits_df.loc[_traits_df["Team"] == md_team_a_name, "TraitRating"]
+                    md_team_b_series = _traits_df.loc[_traits_df["Team"] == md_team_b_name, "TraitRating"]
+                else:
+                    md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
+                    md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
 
                 md_overall_a = _tsr_avg_rating(md_best_a)
                 md_overall_b = _tsr_avg_rating(md_best_b)
@@ -14232,7 +14236,7 @@ elif page == "Team Selection Ratings":
                 if _use_trait_rating and _traits_df is not None:
                     # --- Trait-based strength chart ---
                     st.caption(
-                        "Average trait rating per selected player, relative to the round average. "
+                        "Average trait rating per selected player, relative to the season average. "
                         "Strongest selected side on the left, weakest on the right."
                     )
                     # For each team in this round, resolve trait ratings for their 23
@@ -14254,11 +14258,11 @@ elif page == "Team Selection Ratings":
                         if _t_vals:
                             _trait_team_avgs.append({"Team": _t_name, "AvgRating": sum(_t_vals) / len(_t_vals)})
                     _rd_team_avg = pd.DataFrame(_trait_team_avgs)
-                    _x_label = "Trait Rating vs Round Average"
+                    _x_label = "Trait Rating vs Season Average"
                 else:
                     # --- RatingPoints-based strength chart ---
                     st.caption(
-                        "Average rating points per selected player, relative to the round average. "
+                        "Average rating points per selected player, relative to the season average. "
                         "Strongest selected side on the left, weakest on the right."
                     )
                     _rd_team_avg = (
@@ -14268,16 +14272,11 @@ elif page == "Team Selection Ratings":
                         .reset_index()
                         .rename(columns={"RatingPoints": "AvgRating"})
                     )
-                    _x_label = "Rating vs Round Average"
+                    _x_label = "Rating vs Season Average"
 
                 if not _rd_team_avg.empty:
-                    _league_avg = _rd_team_avg["AvgRating"].mean()
-                    _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _league_avg
-                    _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
-
-                    # --- Compute season-wide benchmarks per team ---
-                    # For each round, compute each team's relative strength
-                    _all_round_rel = []
+                    # Compute season-wide team averages for the baseline
+                    _all_round_avgs = []
                     for _rnd in _md_raw["Round"].unique():
                         _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
                         _rnd_avgs = (
@@ -14286,14 +14285,22 @@ elif page == "Team Selection Ratings":
                             .reset_index()
                             .rename(columns={"RatingPoints": "AvgRating"})
                         )
-                        _rnd_league = _rnd_avgs["AvgRating"].mean()
-                        _rnd_avgs["RelStrength"] = _rnd_avgs["AvgRating"] - _rnd_league
                         _rnd_avgs["Round"] = _rnd
-                        _all_round_rel.append(_rnd_avgs)
+                        _all_round_avgs.append(_rnd_avgs)
 
-                    _season_rel = pd.concat(_all_round_rel, ignore_index=True)
-                    _season_avg = _season_rel.groupby("Team")["RelStrength"].mean().to_dict()
-                    _season_best = _season_rel.groupby("Team")["RelStrength"].max().to_dict()
+                    _season_all = pd.concat(_all_round_avgs, ignore_index=True)
+                    _season_team_avg = _season_all.groupby("Team")["AvgRating"].mean()
+                    _season_league_avg = _season_team_avg.mean()
+
+                    # This round's bars are relative to the season league average
+                    _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _season_league_avg
+                    _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
+
+                    # --- Compute season-wide benchmarks per team ---
+                    # Season avg & best relative to the same season-wide baseline
+                    _season_all["RelStrength"] = _season_all["AvgRating"] - _season_league_avg
+                    _season_avg = _season_all.groupby("Team")["RelStrength"].mean().to_dict()
+                    _season_best = _season_all.groupby("Team")["RelStrength"].max().to_dict()
 
                     # Map season values to the sorted team order
                     _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
