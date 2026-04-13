@@ -5,7 +5,7 @@ AFL Dashboard – Scheduled Data Update
 Runs all scrapers and processing steps to keep the dashboard current
 during the 2026 AFL season.
 
-Designed to be executed automatically via cron/launchd every Monday and Friday,
+Designed to be executed automatically via cron/launchd every morning,
 or manually at any time.
 
 Usage:
@@ -179,6 +179,13 @@ STEP_DEPENDENCIES = {
     "refresh_master_ladders":["afl_ladders", "regenerate_ratings"],
     "validate_schemas":      ["build_season"],
     "data_diff_check":       ["build_season"],
+}
+
+# Day-of-week restrictions for specific steps.
+# Keys are step names, values are sets of allowed weekdays (Monday=0 … Sunday=6).
+# Steps not listed here run every day. Overridden when using --only.
+STEP_DAY_RESTRICTIONS = {
+    "traits_api": {6, 0, 1},  # Sunday, Monday, Tuesday
 }
 
 # Maximum number of scheduled log files to keep
@@ -794,6 +801,21 @@ def main():
             results[name] = {"success": False, "error": reason}
             skipped[name] = True
             continue
+
+        # ── Day-of-week restriction (ignored when using --only) ───
+        if not args.only:
+            allowed_days = STEP_DAY_RESTRICTIONS.get(name)
+            if allowed_days is not None:
+                today = datetime.now().weekday()  # Mon=0 … Sun=6
+                if today not in allowed_days:
+                    day_names = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu",
+                                 4: "Fri", 5: "Sat", 6: "Sun"}
+                    allowed_str = ", ".join(day_names[d] for d in sorted(allowed_days))
+                    reason = f"Skipped: only runs on {allowed_str}"
+                    logging.info(f"  SKIP [{name}] – {reason}")
+                    results[name] = {"success": True, "error": reason}
+                    skipped[name] = True
+                    continue
 
         success, error = run_step(name, script, step_args, desc, python_exe)
         results[name] = {"success": success, "error": error}

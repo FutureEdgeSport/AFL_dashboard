@@ -4,7 +4,7 @@
 <!--
   AFL Dashboard – macOS LaunchAgent
   ==================================
-  Runs the scheduled data update every Monday and Friday at 7:00 AM.
+  Runs the scheduled data update every morning at 7:00 AM.
   If the Mac was asleep at the scheduled time, it runs as soon as it wakes.
 
   INSTALL:
@@ -35,26 +35,14 @@
     <key>WorkingDirectory</key>
     <string>/Users/marcuswagner/coding/AFL_dashboard</string>
 
-    <!-- Monday (1) and Friday (5) at 07:00 -->
+    <!-- Every day at 07:00 -->
     <key>StartCalendarInterval</key>
-    <array>
-        <dict>
-            <key>Weekday</key>
-            <integer>1</integer>
-            <key>Hour</key>
-            <integer>7</integer>
-            <key>Minute</key>
-            <integer>0</integer>
-        </dict>
-        <dict>
-            <key>Weekday</key>
-            <integer>5</integer>
-            <key>Hour</key>
-            <integer>7</integer>
-            <key>Minute</key>
-            <integer>0</integer>
-        </dict>
-    </array>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
 
     <!-- Redirect stdout/stderr to log files -->
     <key>StandardOutPath</key>

@@ -4,8 +4,8 @@
 # This script is called by cron or launchd to run the scheduled update.
 # It handles conda activation and environment setup.
 #
-# Cron entry (Mon & Fri at 7:00 AM):
-#   0 7 * * 1,5 /Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh
+# Cron entry (every day at 7:00 AM):
+#   0 7 * * * /Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh
 #
 # To install:
 #   chmod +x /Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh
