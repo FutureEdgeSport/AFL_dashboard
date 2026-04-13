@@ -14386,6 +14386,10 @@ elif page == "Team Selection Ratings":
                         ))
 
                     # Season average — clean line tick
+                    _avg_hover = [
+                        f"<b>{t}</b>: {v:+.1f}<extra>Season Avg</extra>" if pd.notna(v) else ""
+                        for t, v in zip(_rd_team_avg["Team"], _rd_team_avg["SeasonAvg"])
+                    ]
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonAvg"],
                         y=_rd_team_avg["Team"],
@@ -14397,13 +14401,14 @@ elif page == "Team Selection Ratings":
                             color="rgba(255,255,255,0.75)",
                         ),
                         name="Season Avg",
-                        hovertemplate="%{y}: %{x:+.1f}<extra>Season Avg</extra>",
+                        hovertemplate=_avg_hover,
                     ))
 
                     # Season best — small diamond
                     _best_hover = [
-                        f"<b>%{{y}}</b>: %{{x:+.1f}} ({r})<extra>Season Best</extra>" if r else "<b>%{y}</b>: %{x:+.1f}<extra>Season Best</extra>"
-                        for r in _rd_team_avg["SeasonBestRound"]
+                        f"<b>{t}</b>: {v:+.1f} ({r})<extra>Season Best</extra>" if pd.notna(v) and r
+                        else (f"<b>{t}</b>: {v:+.1f}<extra>Season Best</extra>" if pd.notna(v) else "")
+                        for t, v, r in zip(_rd_team_avg["Team"], _rd_team_avg["SeasonBest"], _rd_team_avg["SeasonBestRound"])
                     ]
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonBest"],
