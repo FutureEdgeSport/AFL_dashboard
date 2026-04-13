@@ -13290,6 +13290,95 @@ elif page == "Best 23":
                     {_pill(md_b_str if md_b_str else "—", big=True)}
                 </div>
                 </div>
+
+                <style>
+                .b23Header {{
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 0.55fr 1fr;
+                gap: 18px;
+                align-items: center;
+                padding: 10px 8px 18px 8px;
+                border-radius: 16px;
+                background: rgba(255,255,255,0.02);
+                }}
+                .teamCol {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 340px;
+                }}
+                .logo {{
+                width: 420px;
+                max-width: 90%;
+                height: 220px;
+                object-fit: contain;
+                margin-top: 8px;
+                margin-bottom: 10px;
+                filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
+                }}
+                .logoFallback {{
+                width: 420px;
+                max-width: 90%;
+                height: 220px;
+                border-radius: 18px;
+                background: rgba(255,255,255,0.04);
+                margin-top: 8px;
+                margin-bottom: 10px;
+                }}
+                .teamName {{
+                font-size: 22px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                color: #fff;
+                margin-bottom: 6px;
+                }}
+                .label {{
+                font-size: 11px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                color: rgba(255,255,255,0.55);
+                margin-bottom: 8px;
+                text-align: center;
+                }}
+                .midCol {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 340px;
+                }}
+                .vsPill {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 22px;
+                border-radius: 999px;
+                background: rgba(255,255,255,0.06);
+                color: rgba(255,255,255,0.90);
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                box-shadow: 0 10px 26px rgba(0,0,0,.28);
+                margin-bottom: 18px;
+                }}
+                .netLabel {{
+                font-size: 11px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                color: rgba(255,255,255,0.55);
+                margin-bottom: 10px;
+                }}
+                .subNote {{
+                margin-top: 10px;
+                font-size: 12px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                color: rgba(255,255,255,0.55);
+                }}
+                </style>
                 """
 
                 components.html(md_header_html.strip(), height=400, scrolling=False)
