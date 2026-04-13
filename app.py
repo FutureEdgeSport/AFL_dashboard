@@ -13180,6 +13180,14 @@ elif page == "Best 23":
             md_game_label = st.selectbox("Game", list(_md_games.keys()), key="md_game_sel")
             md_match_id = _md_games[md_game_label]
 
+            md_rating_mode = st.radio(
+                "Rating Display",
+                ["Current Season Rating", "Game Rating"],
+                horizontal=True,
+                key="md_rating_mode",
+            )
+            _use_game_rating = (md_rating_mode == "Game Rating")
+
             _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
             _md_match_teams = sorted(_md_match_df["Team"].unique())
 
@@ -13217,6 +13225,7 @@ elif page == "Best 23":
                                 "Position": r["Position"],
                                 "Jumper": r.get("Jumper", ""),
                                 "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _safe_float(match_rating),
+                                "GameRating": _safe_float(match_rating),
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13242,6 +13251,7 @@ elif page == "Best 23":
                                 "Position": pos,
                                 "Jumper": jumper,
                                 "Rating": _safe_float(match_rating),
+                                "GameRating": _safe_float(match_rating),
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13250,6 +13260,11 @@ elif page == "Best 23":
 
                 md_best_a = _resolve_match_players(_md_players_a, md_team_a_name)
                 md_best_b = _resolve_match_players(_md_players_b, md_team_b_name)
+
+                # Swap Rating column when Game Rating toggle is active
+                if _use_game_rating:
+                    md_best_a["Rating"] = md_best_a["GameRating"]
+                    md_best_b["Rating"] = md_best_b["GameRating"]
 
                 md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
                 md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
@@ -13274,7 +13289,7 @@ elif page == "Best 23":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_a_name}</div>
-                    <div class="label">MATCH DAY 23 RATING</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
                     {_pill(md_a_str if md_a_str else "—", big=True)}
                 </div>
                 <div class="midCol">
@@ -13286,7 +13301,7 @@ elif page == "Best 23":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_b_name}</div>
-                    <div class="label">MATCH DAY 23 RATING</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
                     {_pill(md_b_str if md_b_str else "—", big=True)}
                 </div>
                 </div>
@@ -13382,7 +13397,7 @@ elif page == "Best 23":
                 """
 
                 components.html(md_header_html.strip(), height=400, scrolling=False)
-                st.caption("Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
+                st.caption("Game rating points shown for each player this match." if _use_game_rating else "Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
 
                 def _render_md_position(cat_name, a_df, b_df, a_series, b_series):
                     left_df = cat_df(a_df, cat_name)
