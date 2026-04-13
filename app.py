@@ -14275,12 +14275,39 @@ elif page == "Team Selection Ratings":
                     _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _league_avg
                     _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
 
+                    # --- Compute season-wide benchmarks per team ---
+                    # For each round, compute each team's relative strength
+                    _all_round_rel = []
+                    for _rnd in _md_raw["Round"].unique():
+                        _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
+                        _rnd_avgs = (
+                            _rnd_df.groupby("Team")["RatingPoints"]
+                            .mean()
+                            .reset_index()
+                            .rename(columns={"RatingPoints": "AvgRating"})
+                        )
+                        _rnd_league = _rnd_avgs["AvgRating"].mean()
+                        _rnd_avgs["RelStrength"] = _rnd_avgs["AvgRating"] - _rnd_league
+                        _rnd_avgs["Round"] = _rnd
+                        _all_round_rel.append(_rnd_avgs)
+
+                    _season_rel = pd.concat(_all_round_rel, ignore_index=True)
+                    _season_avg = _season_rel.groupby("Team")["RelStrength"].mean().to_dict()
+                    _season_best = _season_rel.groupby("Team")["RelStrength"].max().to_dict()
+
+                    # Map season values to the sorted team order
+                    _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
+                    _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
+
                     _bar_colours = [
                         "rgba(0,180,90,0.75)" if v >= 0 else "rgba(220,60,60,0.75)"
                         for v in _rd_team_avg["RelStrength"]
                     ]
 
-                    _fig = go.Figure(go.Bar(
+                    _fig = go.Figure()
+
+                    # Bars — this round's relative strength
+                    _fig.add_trace(go.Bar(
                         x=_rd_team_avg["RelStrength"],
                         y=_rd_team_avg["Team"],
                         orientation="h",
@@ -14288,6 +14315,35 @@ elif page == "Team Selection Ratings":
                         text=[f"{v:+.2f}" for v in _rd_team_avg["RelStrength"]],
                         textposition="outside",
                         textfont=dict(size=13, family="Arial Black", color="white"),
+                        name="This Round",
+                    ))
+
+                    # Season average — vertical line marker on each bar
+                    _fig.add_trace(go.Scatter(
+                        x=_rd_team_avg["SeasonAvg"],
+                        y=_rd_team_avg["Team"],
+                        mode="markers",
+                        marker=dict(
+                            symbol="line-ns",
+                            size=18,
+                            line=dict(width=3, color="rgba(255,255,255,0.85)"),
+                            color="rgba(255,255,255,0.85)",
+                        ),
+                        name="Season Avg",
+                    ))
+
+                    # Season best — dot
+                    _fig.add_trace(go.Scatter(
+                        x=_rd_team_avg["SeasonBest"],
+                        y=_rd_team_avg["Team"],
+                        mode="markers",
+                        marker=dict(
+                            symbol="diamond",
+                            size=10,
+                            color="rgba(255,215,0,0.90)",
+                            line=dict(width=1, color="rgba(0,0,0,0.4)"),
+                        ),
+                        name="Season Best",
                     ))
 
                     _fig.update_layout(
@@ -14309,6 +14365,15 @@ elif page == "Team Selection Ratings":
                             tickfont=dict(size=13, family="Arial"),
                         ),
                         font=dict(color="white"),
+                        legend=dict(
+                            orientation="h",
+                            yanchor="bottom",
+                            y=1.02,
+                            xanchor="center",
+                            x=0.5,
+                            font=dict(size=12, color="white"),
+                        ),
+                        barmode="overlay",
                     )
 
                     st.plotly_chart(_fig, use_container_width=True)
