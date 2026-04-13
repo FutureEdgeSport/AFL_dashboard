@@ -14225,13 +14225,12 @@ elif page == "Team Selection Ratings":
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
                     xaxis=dict(
-                        title="Rating vs Round Average",
+                        title=dict(text="Rating vs Round Average", font=dict(size=12)),
                         zeroline=True,
                         zerolinecolor="rgba(255,255,255,0.35)",
                         zerolinewidth=2,
                         gridcolor="rgba(255,255,255,0.08)",
                         color="rgba(255,255,255,0.7)",
-                        titlefont=dict(size=12),
                     ),
                     yaxis=dict(
                         autorange="reversed",
