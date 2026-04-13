@@ -855,18 +855,39 @@ def main():
     # Restart Streamlit so its in-memory cache picks up fresh data
     _restart_streamlit()
 
+    # Build detailed step summary for notification
+    _step_lines = []
+    for name, result in results.items():
+        _desc = next((s[3] for s in UPDATE_STEPS if s[0] == name), name)
+        if name in skipped:
+            _step_lines.append(f"⊘  {name} — {result['error']}")
+        elif result["success"]:
+            _step_lines.append(f"✅  {name} — OK")
+        else:
+            _step_lines.append(f"❌  {name} — {result['error']}")
+    _step_report = "\n".join(_step_lines)
+    _summary_body = (
+        f"Date: {datetime.now():%A %d %B %Y %H:%M}\n"
+        f"Results: {passed} passed, {failed} failed, {skip_count} skipped\n"
+        f"Total time: {total_time:.0f}s ({total_time/60:.1f} min)\n"
+        f"\n{'—' * 40}\n"
+        f"{_step_report}\n"
+        f"{'—' * 40}\n"
+    )
+
     if failed > 0:
-        msg = f"{failed} step(s) failed. Check log for details."
-        logging.warning(f"\n⚠️  {msg}")
-        _notify("AFL Dashboard Update", f"⚠️ {msg}", is_error=True)
+        msg = f"{failed} step(s) failed.\n\n{_summary_body}"
+        logging.warning(f"\n⚠️  {failed} step(s) failed. Check log for details.")
+        _notify("AFL Dashboard Update", msg, is_error=True)
         sys.exit(1)
     elif skip_count > 0:
-        msg = f"Completed with {skip_count} skipped step(s)."
-        logging.warning(f"\n⚠️  {msg}")
+        msg = f"Completed with {skip_count} skipped step(s).\n\n{_summary_body}"
+        logging.warning(f"\n⚠️  Completed with {skip_count} skipped step(s).")
         _notify("AFL Dashboard Update", msg)
     else:
+        msg = f"All steps completed successfully!\n\n{_summary_body}"
         logging.info("\n✅ All steps completed successfully!")
-        _notify("AFL Dashboard Update", "✅ All steps completed successfully!")
+        _notify("AFL Dashboard Update", msg)
 
 
 if __name__ == "__main__":

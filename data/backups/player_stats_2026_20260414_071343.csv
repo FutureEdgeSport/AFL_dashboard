@@ -14,7 +14,7 @@ Sid Draper,Adelaide,5,MidfieldForward,182.0,2006-07-05,19.0,0
 Charlie Edwards,Adelaide,11,DefenderMidfield,191.0,2005-05-18,20.0,0
 Darcy Fogarty,Adelaide,32,Forward,192.0,1999-09-25,26.0,0
 Mitchell Hinge,Adelaide,20,Defender,187.0,1998-06-28,27.0,0
-Chayce Jones,Adelaide,1,Midfield,180.0,2000-01-14,26.0,0
+Chayce Jones,Adelaide,1,DefenderMidfield,180.0,2000-01-14,26.0,0
 Mark Keane,Adelaide,48,Defender,194.0,2000-03-17,26.0,0
 Ben Keays,Adelaide,2,Forward,185.0,1997-02-23,29.0,0
 Rory Laird,Adelaide,29,Defender,178.0,1993-12-29,32.0,0
@@ -31,7 +31,7 @@ Alex Neal-Bullen,Adelaide,28,Forward,182.0,1996-01-09,30.0,0
 Reilly O'Brien,Adelaide,43,Ruck,201.0,1995-08-20,30.0,0
 James Peatling,Adelaide,25,Midfield,186.0,2000-08-21,25.0,0
 Luke Pedlar,Adelaide,10,Forward,183.0,2002-05-17,23.0,0
-Josh Rachele,Adelaide,8,Forward,180.0,2003-04-11,22.0,0
+Josh Rachele,Adelaide,8,MidfieldForward,180.0,2003-04-11,23.0,0
 Izak Rankine,Adelaide,23,MidfieldForward,179.0,2000-04-23,25.0,0
 Oscar Ryan,Adelaide,22,Defender,187.0,2005-05-15,20.0,0
 Lachlan Sholl,Adelaide,38,Midfield,186.0,2000-03-07,26.0,0
@@ -40,7 +40,7 @@ Zac Taylor,Adelaide,19,Forward,180.0,2003-01-31,23.0,0
 Riley Thilthorpe,Adelaide,7,Forward,201.0,2002-07-07,23.0,0
 Taylor Walker,Adelaide,13,Forward,192.0,1990-04-25,35.0,0
 Tyler Welsh,Adelaide,17,Forward,191.0,2006-08-15,19.0,0
-Josh Worrell,Adelaide,24,Defender,195.0,2001-04-11,24.0,0
+Josh Worrell,Adelaide,24,Defender,195.0,2001-04-11,25.0,0
 Oscar Allen,Brisbane,4,Forward,196.0,1999-03-19,27.0,0
 Harris Andrews,Brisbane,31,Defender,200.0,1996-12-11,29.0,0
 Daniel Annable,Brisbane,14,Midfield,184.0,2007-04-05,19.0,0
@@ -60,7 +60,7 @@ Josh Dunkley,Brisbane,5,Midfield,191.0,1997-01-09,29.0,0
 Koby Evans,Brisbane,24,Midfield,187.0,2007-09-08,18.0,0
 Jaspa Fletcher,Brisbane,3,Defender,184.0,2004-02-24,22.0,0
 Darcy Fort,Brisbane,32,Ruck,204.0,1993-08-06,32.0,0
-Ty Gallop,Brisbane,22,Forward,194.0,2006-02-09,20.0,0
+Ty Gallop,Brisbane,22,DefenderForward,194.0,2006-02-09,20.0,0
 Darcy Gardiner,Brisbane,27,Defender,192.0,1995-09-22,30.0,0
 Tai Hayes,Brisbane,42,MidfieldForward,190.0,2004-11-18,21.0,0
 Eric Hipwood,Brisbane,30,Forward,204.0,1997-09-13,28.0,0
@@ -72,7 +72,7 @@ Sam Marshall,Brisbane,20,Midfield,185.0,2006-01-19,20.0,0
 Lincoln McCarthy,Brisbane,11,Forward,176.0,1993-10-22,32.0,0
 Hugh McCluggage,Brisbane,6,Midfield,187.0,1998-03-03,28.0,0
 Conor McKenna,Brisbane,26,Forward,184.0,1996-03-28,30.0,0
-Will McLachlan,Brisbane,28,Forward,185.0,2005-04-13,20.0,0
+Will McLachlan,Brisbane,28,Forward,185.0,2005-04-13,21.0,0
 Logan Morris,Brisbane,13,Forward,191.0,2005-05-10,20.0,0
 Ben Murphy,Brisbane,39,Defender,191.0,,,0
 Lachie Neale,Brisbane,9,Midfield,177.0,1993-05-24,32.0,0
@@ -91,7 +91,7 @@ Jordan Boyd,Carlton,37,Defender,182.0,1998-09-22,27.0,0
 Talor Byrne,Carlton,39,MidfieldForward,174.0,2007-11-14,18.0,0
 Ben Camporeale,Carlton,16,Midfield,186.0,2006-07-21,19.0,0
 Lucas Camporeale,Carlton,21,Midfield,184.0,2006-07-21,19.0,0
-Matt Carroll,Carlton,32,Defender,188.0,2005-11-28,20.0,0
+Matt Carroll,Carlton,32,DefenderMidfield,188.0,2005-11-28,20.0,0
 Adam Cerra,Carlton,5,Midfield,188.0,1999-10-07,26.0,0
 Harry Charleson,Carlton,28,DefenderMidfield,183.0,2006-06-26,19.0,0
 Campbell Chesser,Carlton,31,Midfield,186.0,2003-04-27,22.0,0
@@ -102,31 +102,31 @@ Harry Dean,Carlton,35,Defender,194.0,2007-11-13,18.0,0
 Wade Derksen,Carlton,47,Defender,194.0,2001-06-18,24.0,0
 Matt Duffy,Carlton,41,Defender,194.0,2004-01-02,22.0,0
 Francis Evans,Carlton,44,Forward,182.0,2001-08-23,24.0,0
-Oliver Florent,Carlton,14,Midfield,184.0,1998-07-22,27.0,0
+Oliver Florent,Carlton,14,DefenderMidfield,184.0,1998-07-22,27.0,0
 Lachlan Fogarty,Carlton,8,Forward,180.0,1999-04-01,27.0,0
 Nick Haynes,Carlton,26,Defender,192.0,1992-05-18,33.0,0
 Will Hayward,Carlton,19,Forward,186.0,1998-10-26,27.0,0
 George Hewett,Carlton,29,Midfield,187.0,1995-12-29,30.0,0
-Elijah Hollands,Carlton,20,Forward,189.0,2002-04-25,23.0,0
+Elijah Hollands,Carlton,20,MidfieldForward,189.0,2002-04-25,23.0,0
 Oliver Hollands,Carlton,4,Defender,184.0,2004-01-16,22.0,0
 Jack Ison,Carlton,30,Midfield,192.0,2007-03-26,19.0,0
 Brodie Kemp,Carlton,17,Forward,192.0,2001-05-01,24.0,0
 Cooper Lord,Carlton,36,Midfield,184.0,2005-03-20,21.0,0
-Mitch McGovern,Carlton,11,Defender,190.0,1994-10-11,31.0,0
+Mitch McGovern,Carlton,11,DefenderForward,190.0,1994-10-11,31.0,0
 Harry McKay,Carlton,10,Forward,200.0,1997-12-24,28.0,0
 Ashton Moir,Carlton,43,Forward,188.0,2005-04-15,20.0,0
 Rob Monahan,Carlton,34,Forward,194.0,2004-06-29,21.0,0
 Jesse Motlop,Carlton,3,Forward,180.0,2003-11-23,22.0,0
 Nic Newman,Carlton,24,Defender,186.0,1993-01-15,33.0,0
 Harry O'Farrell,Carlton,22,Defender,196.0,2006-05-03,19.0,0
-Hudson O'Keeffe,Carlton,40,Forward,202.0,2004-12-16,21.0,0
+Hudson O'Keeffe,Carlton,40,ForwardRuck,202.0,2004-12-16,21.0,0
 Marc Pittonet,Carlton,27,Ruck,202.0,1996-06-03,29.0,0
 Liam Reidy,Carlton,25,ForwardRuck,204.0,2000-06-14,25.0,0
 Adam Saad,Carlton,42,Defender,178.0,1994-07-23,31.0,0
 Jagga Smith,Carlton,7,Midfield,182.0,2006-01-28,20.0,0
 Sam Walsh,Carlton,18,Midfield,184.0,2000-07-02,25.0,0
 Jacob Weitering,Carlton,23,Defender,195.0,1997-11-23,28.0,0
-Zachary Williams,Carlton,6,Forward,186.0,1994-09-20,31.0,0
+Zachary Williams,Carlton,6,DefenderForward,186.0,1994-09-20,31.0,0
 Billy Wilson,Carlton,15,Defender,183.0,2005-06-16,20.0,0
 Flynn Young,Carlton,45,Forward,181.0,2002-02-03,24.0,0
 Lewis Young,Carlton,33,Defender,202.0,1998-12-20,27.0,0
@@ -173,15 +173,15 @@ Oscar Steene,Collingwood,21,ForwardRuck,201.0,2003-08-23,22.0,0
 Lachie Sullivan,Collingwood,33,Forward,180.0,1997-09-25,28.0,0
 Samuel Swadling,Collingwood,32,Midfield,189.0,2007-01-16,19.0,0
 Charlie West,Collingwood,29,Forward,194.0,2006-02-01,20.0,0
-Lachlan Blakiston,Essendon,46,Defender,203.0,1998-09-09,27.0,0
+Lachlan Blakiston,Essendon,46,DefenderRuck,203.0,1998-09-09,27.0,0
 Cillian Bourke,Essendon,39,Defender,190.0,2006-06-07,19.0,0
 Nick Bryan,Essendon,24,Ruck,203.0,2001-10-22,24.0,0
 Nate Caddy,Essendon,30,Forward,193.0,2005-07-14,20.0,0
 Jye Caldwell,Essendon,6,Midfield,183.0,2000-09-28,25.0,0
 Angus Clarke,Essendon,36,DefenderMidfield,188.0,2006-05-08,19.0,0
 Nikolas Cox,Essendon,13,Midfield,200.0,2002-01-15,24.0,0
-Archer Day-Wicks,Essendon,44,Forward,186.0,2006-05-13,19.0,0
-Sam Durham,Essendon,22,Midfield,185.0,2001-07-09,24.0,0
+Archer Day-Wicks,Essendon,44,MidfieldForward,186.0,2006-05-13,19.0,0
+Sam Durham,Essendon,22,MidfieldForward,185.0,2001-07-09,24.0,0
 Xavier Duursma,Essendon,28,Midfield,186.0,2000-07-07,25.0,0
 Tom Edwards,Essendon,45,Forward,191.0,2000-05-20,25.0,0
 Hussien El Achkar,Essendon,33,Forward,171.0,2007-04-02,19.0,0
@@ -196,7 +196,7 @@ Zak Johnson,Essendon,40,Defender,185.0,2006-12-24,19.0,0
 Harrison Jones,Essendon,23,MidfieldForward,196.0,2001-02-25,25.0,0
 Isaac Kako,Essendon,10,Forward,175.0,2006-03-07,20.0,0
 Max Kondogiannis,Essendon,29,Defender,191.0,2007-11-14,18.0,0
-Kyle Langford,Essendon,4,Forward,192.0,1996-12-01,29.0,0
+Kyle Langford,Essendon,4,MidfieldForward,192.0,1996-12-01,29.0,0
 Nicholas Martin,Essendon,37,MidfieldForward,192.0,2001-04-03,25.0,0
 Archie May,Essendon,26,Forward,198.0,2004-08-27,21.0,0
 Andrew McGrath,Essendon,1,Defender,180.0,1998-06-02,27.0,0
@@ -217,7 +217,7 @@ Dyson Sharp,Essendon,15,Midfield,187.0,2007-05-23,18.0,0
 Elijah Tsatas,Essendon,5,Midfield,187.0,2004-10-18,21.0,0
 Rhys Unwin,Essendon,38,Forward,179.0,2006-10-11,19.0,0
 Vigo Visentini,Essendon,17,Ruck,203.0,2005-09-05,20.0,0
-Peter Wright,Essendon,20,Forward,203.0,1996-09-08,29.0,0
+Peter Wright,Essendon,20,ForwardRuck,203.0,1996-09-08,29.0,0
 Jye Amiss,Fremantle,24,Forward,196.0,2003-07-31,22.0,0
 Bailey Banfield,Fremantle,41,Defender,190.0,1998-02-26,28.0,0
 Shai Bolton,Fremantle,10,MidfieldForward,176.0,1998-12-08,27.0,0
@@ -261,7 +261,7 @@ Corey Wagner,Fremantle,34,Midfield,181.0,1997-03-23,29.0,0
 Brandon Walker,Fremantle,31,Defender,186.0,2002-10-17,23.0,0
 Toby Whan,Fremantle,27,Midfield,184.0,2007-05-09,18.0,0
 Karl Worner,Fremantle,23,Defender,188.0,2002-06-16,23.0,0
-Hayden Young,Fremantle,26,Midfield,189.0,2001-04-11,24.0,0
+Hayden Young,Fremantle,26,Midfield,189.0,2001-04-11,25.0,0
 Tom Atkins,Geelong,30,Midfield,180.0,1995-09-18,30.0,0
 Harley Barker,Geelong,26,Midfield,188.0,2007-05-02,18.0,0
 Jed Bews,Geelong,24,Defender,186.0,1993-12-14,32.0,0
@@ -270,7 +270,7 @@ Jack Bowes,Geelong,12,Midfield,189.0,1998-01-26,28.0,0
 Tanner Bruhn,Geelong,4,Midfield,184.0,2002-05-27,23.0,0
 Cillian Burke,Geelong,41,Defender,192.0,2003-03-29,23.0,0
 Jeremy Cameron,Geelong,5,Forward,196.0,1993-04-01,33.0,0
-Jhye Clark,Geelong,13,Midfield,181.0,2004-07-23,21.0,0
+Jhye Clark,Geelong,13,MidfieldForward,181.0,2004-07-23,21.0,0
 Bradley Close,Geelong,45,Forward,183.0,1998-07-30,27.0,0
 Toby Conway,Geelong,6,Ruck,206.0,2003-04-24,22.0,0
 Patrick Dangerfield,Geelong,35,Forward,189.0,1990-04-05,36.0,0
@@ -295,7 +295,7 @@ Gryan Miers,Geelong,32,Forward,179.0,1999-03-30,27.0,0
 Jacob Molier,Geelong,20,Ruck,201.0,2006-10-11,19.0,0
 Oisin Mullin,Geelong,34,DefenderMidfield,182.0,2000-02-11,26.0,0
 Shannon Neale,Geelong,33,Forward,203.0,2002-07-25,23.0,0
-Mark O'Connor,Geelong,42,Defender,189.0,1997-01-17,29.0,0
+Mark O'Connor,Geelong,42,DefenderMidfield,189.0,1997-01-17,29.0,0
 Connor O'Sullivan,Geelong,14,Defender,198.0,2005-05-19,20.0,0
 Joe Pike,Geelong,37,Ruck,203.0,2005-05-17,20.0,0
 Jay Polkinghorne,Geelong,2,Forward,191.0,2006-06-02,19.0,0
@@ -320,7 +320,7 @@ Asher Eastham,Gold Coast,42,Forward,190.0,2006-05-13,19.0,0
 Zak Evans,Gold Coast,36,Midfield,190.0,2000-03-26,26.0,0
 Jy Farrar,Gold Coast,50,Forward,190.0,1996-12-07,29.0,0
 Caleb Graham,Gold Coast,46,Defender,194.0,2000-09-12,25.0,0
-Will Graham,Gold Coast,26,Forward,186.0,2005-07-27,20.0,0
+Will Graham,Gold Coast,26,MidfieldForward,186.0,2005-07-27,20.0,0
 Lachlan Gulbin,Gold Coast,39,Forward,187.0,2006-11-24,19.0,0
 Elliott Himmelberg,Gold Coast,12,Forward,196.0,1998-06-04,27.0,0
 Nicholas Holman,Gold Coast,7,MidfieldForward,188.0,1995-05-29,30.0,0
@@ -332,13 +332,13 @@ Max Knobel,Gold Coast,37,Ruck,206.0,2004-06-27,21.0,0
 Caleb Lewis,Gold Coast,45,Forward,198.0,2003-09-29,22.0,0
 Leo Lombard,Gold Coast,8,Forward,179.0,2006-10-05,19.0,0
 Ben Long,Gold Coast,22,Forward,186.0,1997-08-21,28.0,0
-Touk Miller,Gold Coast,11,Midfield,178.0,1996-02-22,30.0,0
+Touk Miller,Gold Coast,11,MidfieldForward,178.0,1996-02-22,30.0,0
 Ned Moyle,Gold Coast,23,Ruck,206.0,2002-02-15,24.0,0
 Jai Murray,Gold Coast,35,Midfield,185.0,2007-03-09,19.0,0
 John Noble,Gold Coast,2,Defender,180.0,1997-03-25,29.0,0
 Dylan Patterson,Gold Coast,30,Defender,184.0,2007-09-01,18.0,0
 Christian Petracca,Gold Coast,3,MidfieldForward,187.0,1996-01-04,30.0,0
-Wil Powell,Gold Coast,27,Defender,188.0,1999-08-26,26.0,0
+Wil Powell,Gold Coast,27,DefenderMidfield,188.0,1999-08-26,26.0,0
 Ethan Read,Gold Coast,20,Forward,202.0,2005-07-07,20.0,0
 Daniel Rioli,Gold Coast,17,Defender,179.0,1997-04-16,28.0,0
 Jake Rogers,Gold Coast,29,Forward,172.0,2005-03-02,21.0,0
@@ -360,14 +360,14 @@ Callum Brown,GWS Giants,46,Forward,188.0,2000-08-15,25.0,0
 Jack Buckley,GWS Giants,44,Defender,195.0,1997-12-17,28.0,0
 Aaron Cadman,GWS Giants,5,Forward,195.0,2004-03-03,22.0,0
 Finn Callaghan,GWS Giants,17,Midfield,192.0,2003-04-26,22.0,0
-Stephen Coniglio,GWS Giants,3,Midfield,182.0,1993-12-15,32.0,0
+Stephen Coniglio,GWS Giants,3,MidfieldForward,182.0,1993-12-15,32.0,0
 Brent Daniels,GWS Giants,16,Forward,172.0,1999-03-09,27.0,0
 Finnegan Davis,GWS Giants,45,Defender,188.0,2007-01-21,19.0,0
 Josaia Delana,GWS Giants,38,Forward,176.0,2006-07-01,19.0,0
 Joseph Fonti,GWS Giants,37,Defender,189.0,2004-12-24,21.0,0
 Phoenix Gothard,GWS Giants,11,Forward,179.0,2005-09-07,20.0,0
 Tom Green,GWS Giants,12,Midfield,192.0,2001-01-23,25.0,0
-Toby Greene,GWS Giants,4,Forward,182.0,1993-09-25,32.0,0
+Toby Greene,GWS Giants,4,MidfieldForward,182.0,1993-09-25,32.0,0
 Max Gruzewski,GWS Giants,35,Forward,192.0,2004-07-21,21.0,0
 Riley Hamilton,GWS Giants,43,MidfieldForward,189.0,2006-08-15,19.0,0
 Oliver Hannaford,GWS Giants,13,MidfieldForward,180.0,2006-09-01,19.0,0
@@ -376,11 +376,11 @@ Jesse Hogan,GWS Giants,23,Forward,196.0,1995-02-12,31.0,0
 Connor Idun,GWS Giants,39,Defender,193.0,2000-07-29,25.0,0
 Darcy Jones,GWS Giants,2,Forward,175.0,2004-04-03,22.0,0
 Joshua Kelly,GWS Giants,22,Midfield,184.0,1995-02-12,31.0,0
-Jayden Laverde,GWS Giants,25,Defender,193.0,1996-04-12,29.0,0
+Jayden Laverde,GWS Giants,25,Defender,193.0,1996-04-12,30.0,0
 James Leake,GWS Giants,30,DefenderForward,188.0,2005-10-02,20.0,0
 Nick Madden,GWS Giants,41,Ruck,204.0,2004-05-17,21.0,0
 Toby McMullin,GWS Giants,31,Midfield,183.0,2004-08-06,21.0,0
-Xavier O'Halloran,GWS Giants,33,Midfield,187.0,2000-07-11,25.0,0
+Xavier O'Halloran,GWS Giants,33,MidfieldForward,187.0,2000-07-11,25.0,0
 Clayton Oliver,GWS Giants,10,Midfield,189.0,1997-07-22,28.0,0
 Harrison Oliver,GWS Giants,19,Defender,181.0,2006-06-15,19.0,0
 Jack Ough,GWS Giants,28,Midfield,194.0,2006-12-15,19.0,0
@@ -391,7 +391,7 @@ Conor Stone,GWS Giants,18,Defender,189.0,2002-04-22,23.0,0
 Jake Stringer,GWS Giants,20,Forward,192.0,1994-04-25,31.0,0
 Oskar Taylor,GWS Giants,34,Defender,182.0,2007-08-01,18.0,0
 Sam Taylor,GWS Giants,15,Defender,198.0,1999-05-05,26.0,0
-Harvey Thomas,GWS Giants,1,Forward,176.0,2005-08-08,20.0,0
+Harvey Thomas,GWS Giants,1,MidfieldForward,176.0,2005-08-08,20.0,0
 Nathan Wardius,GWS Giants,42,Forward,181.0,2004-10-12,21.0,0
 Lachie Whitfield,GWS Giants,6,Defender,185.0,1994-07-18,31.0,0
 Karl Amon,Hawthorn,10,Defender,181.0,1995-08-19,30.0,0
@@ -436,7 +436,7 @@ James Sicily,Hawthorn,6,Defender,188.0,1995-01-06,31.0,0
 Jaime Uhr-Henry,Hawthorn,43,Ruck,209.0,2003-03-12,23.0,0
 Josh Ward,Hawthorn,25,Midfield,183.0,2003-08-15,22.0,0
 Nick Watson,Hawthorn,5,Forward,170.0,2005-02-24,21.0,0
-Joshua Weddle,Hawthorn,23,Defender,191.0,2004-05-25,21.0,0
+Joshua Weddle,Hawthorn,23,DefenderMidfield,191.0,2004-05-25,21.0,0
 Jed Adams,Melbourne,26,Defender,196.0,2004-05-14,21.0,0
 Oscar Berry,Melbourne,38,Defender,196.0,,,0
 Jake Bowey,Melbourne,17,Defender,175.0,2002-09-12,23.0,0
@@ -457,7 +457,7 @@ Ed Langdon,Melbourne,15,MidfieldForward,182.0,1996-02-01,30.0,0
 Harvey Langford,Melbourne,4,Midfield,191.0,2006-03-15,20.0,0
 Bailey Laurie,Melbourne,16,Forward,179.0,2002-03-24,24.0,0
 Jake Lever,Melbourne,8,Defender,194.0,1996-03-05,30.0,0
-Xavier Lindsay,Melbourne,5,Midfield,183.0,2006-08-03,19.0,0
+Xavier Lindsay,Melbourne,5,DefenderMidfield,183.0,2006-08-03,19.0,0
 Thomas Matthews,Melbourne,20,Forward,171.0,2007-02-28,19.0,0
 Steven May,Melbourne,1,Defender,193.0,1992-01-10,34.0,0
 Shane McAdam,Melbourne,23,Forward,186.0,1995-05-28,30.0,0
@@ -467,24 +467,24 @@ Ricky Mentha,Melbourne,39,DefenderForward,178.0,2006-09-04,19.0,0
 Brody Mihocek,Melbourne,28,Forward,192.0,1993-02-04,33.0,0
 Andy Moniz-Wakefield,Melbourne,45,Defender,182.0,2003-10-26,22.0,0
 Riley Onley,Melbourne,40,Midfield,,2000-01-01,26.0,0
-Harrison Petty,Melbourne,35,Forward,197.0,1999-11-12,26.0,0
+Harrison Petty,Melbourne,35,DefenderForward,197.0,1999-11-12,26.0,0
 Kysaiah Pickett,Melbourne,36,MidfieldForward,171.0,2001-06-02,24.0,0
 Latrelle Pickett,Melbourne,33,Forward,182.0,2005-12-28,20.0,0
 Trent Rivers,Melbourne,24,Defender,188.0,2001-07-30,24.0,0
 Christian Salem,Melbourne,3,Defender,184.0,1995-07-15,30.0,0
 Harry Sharp,Melbourne,30,Forward,182.0,2002-12-17,23.0,0
-Tom Sparrow,Melbourne,32,Forward,183.0,2000-05-31,25.0,0
+Tom Sparrow,Melbourne,32,MidfieldForward,183.0,2000-05-31,25.0,0
 Jack Steele,Melbourne,9,Midfield,187.0,1995-12-13,30.0,0
 Xavier Taylor,Melbourne,19,Defender,192.0,2007-01-30,19.0,0
-Koltyn Tholstrup,Melbourne,12,Forward,186.0,2005-06-28,20.0,0
+Koltyn Tholstrup,Melbourne,12,DefenderForward,186.0,2005-06-28,20.0,0
 Daniel Turner,Melbourne,10,Defender,194.0,2002-01-28,24.0,0
 Jacob Van Rooyen,Melbourne,2,Forward,193.0,2003-04-16,22.0,0
-Jack Viney,Melbourne,7,Midfield,179.0,1994-04-13,31.0,0
+Jack Viney,Melbourne,7,Midfield,179.0,1994-04-13,32.0,0
 Kalani White,Melbourne,34,ForwardRuck,201.0,2007-05-05,18.0,0
-Caleb Windsor,Melbourne,6,Defender,185.0,2005-06-09,20.0,0
+Caleb Windsor,Melbourne,6,DefenderMidfield,185.0,2005-06-09,20.0,0
 Jackson Archer,North Melbourne,34,Defender,187.0,2003-01-09,23.0,0
 Zac Banch,North Melbourne,45,Forward,175.0,2003-07-21,22.0,0
-Tom Blamires,North Melbourne,39,Midfield,181.0,2002-08-13,23.0,0
+Tom Blamires,North Melbourne,39,DefenderMidfield,181.0,2002-08-13,23.0,0
 Callum Coleman-Jones,North Melbourne,21,Ruck,200.0,1999-06-13,26.0,0
 Charlie Comben,North Melbourne,30,Defender,199.0,2001-07-20,24.0,0
 Aidan Corr,North Melbourne,4,Defender,195.0,1994-05-17,31.0,0
@@ -504,14 +504,14 @@ Riley Hardeman,North Melbourne,17,Defender,184.0,2005-02-27,21.0,0
 Cooper Harvey,North Melbourne,37,Forward,180.0,2004-07-12,21.0,0
 Jacob Konstanty,North Melbourne,41,Forward,177.0,2004-11-09,21.0,0
 Nick Larkey,North Melbourne,20,Forward,198.0,1998-06-06,27.0,0
-Griffin Logue,North Melbourne,19,Defender,193.0,1998-04-13,27.0,0
+Griffin Logue,North Melbourne,19,Defender,193.0,1998-04-13,28.0,0
 Luke McDonald,North Melbourne,11,Defender,189.0,1995-02-09,31.0,0
-Colby McKercher,North Melbourne,10,Defender,182.0,2005-04-12,20.0,0
+Colby McKercher,North Melbourne,10,Defender,182.0,2005-04-12,21.0,0
 Hugo Mikunda,North Melbourne,28,MidfieldForward,180.0,2007-03-13,19.0,0
 Finn O'Sullivan,North Melbourne,2,DefenderMidfield,182.0,2006-05-30,19.0,0
-Luke Parker,North Melbourne,26,Midfield,183.0,1992-10-25,33.0,0
+Luke Parker,North Melbourne,26,DefenderMidfield,183.0,1992-10-25,33.0,0
 Toby Pink,North Melbourne,32,Defender,194.0,1998-08-11,27.0,0
-Tom Powell,North Melbourne,24,Midfield,184.0,2002-03-02,24.0,0
+Tom Powell,North Melbourne,24,MidfieldForward,184.0,2002-03-02,24.0,0
 Bailey Scott,North Melbourne,8,Midfield,186.0,2000-07-09,25.0,0
 Harry Sheezel,North Melbourne,3,MidfieldForward,185.0,2004-10-13,21.0,0
 Jy Simpkin,North Melbourne,12,MidfieldForward,183.0,1998-03-05,28.0,0
@@ -533,22 +533,22 @@ Joe Berry,Port Adelaide,5,Forward,181.0,2006-04-18,19.0,0
 Will Brodie,Port Adelaide,23,Midfield,190.0,1998-08-23,27.0,0
 Jase Burgoyne,Port Adelaide,7,DefenderMidfield,186.0,2003-07-15,22.0,0
 Zak Butters,Port Adelaide,9,Midfield,181.0,2000-09-08,25.0,0
-Darcy Byrne-Jones,Port Adelaide,33,Forward,181.0,1995-09-20,30.0,0
+Darcy Byrne-Jones,Port Adelaide,33,DefenderForward,181.0,1995-09-20,30.0,0
 Tom Cochrane,Port Adelaide,26,Forward,182.0,2006-01-27,20.0,0
 Willem Drew,Port Adelaide,28,Midfield,188.0,1998-10-01,27.0,0
 Corey Durdin,Port Adelaide,44,Forward,173.0,2002-04-14,23.0,0
 Logan Evans,Port Adelaide,22,Defender,189.0,2005-10-07,20.0,0
 Kane Farrell,Port Adelaide,6,Defender,182.0,1999-03-17,27.0,0
 Mitch Georgiades,Port Adelaide,19,Forward,192.0,2001-09-28,24.0,0
-Jason Horne-Francis,Port Adelaide,18,Midfield,185.0,2003-06-21,22.0,0
+Jason Horne-Francis,Port Adelaide,18,MidfieldForward,185.0,2003-06-21,22.0,0
 Lachlan Jones,Port Adelaide,34,Defender,186.0,2002-04-09,24.0,0
-Josh Lai,Port Adelaide,43,Midfield,185.0,2005-10-01,20.0,0
+Josh Lai,Port Adelaide,43,DefenderMidfield,185.0,2005-10-01,20.0,0
 Mani Liddy,Port Adelaide,50,Midfield,181.0,2002-02-20,24.0,0
 Ollie Lord,Port Adelaide,30,Forward,197.0,2002-01-02,24.0,0
 Will Lorenz,Port Adelaide,36,Midfield,186.0,2005-02-19,21.0,0
 Jack Lukosius,Port Adelaide,12,Forward,195.0,2000-08-09,25.0,0
 Ewan Mackinlay,Port Adelaide,31,Midfield,182.0,2003-07-18,22.0,0
-Todd Marshall,Port Adelaide,4,Forward,198.0,1998-10-08,27.0,0
+Todd Marshall,Port Adelaide,4,DefenderForward,198.0,1998-10-08,27.0,0
 Jackson Mead,Port Adelaide,3,Midfield,184.0,2001-09-30,24.0,0
 Christian Moraes,Port Adelaide,11,Midfield,183.0,2006-11-08,19.0,0
 Jacob Moss,Port Adelaide,42,Defender,198.0,2004-12-22,21.0,0
@@ -563,7 +563,7 @@ Ivan Soldo,Port Adelaide,13,ForwardRuck,204.0,1996-04-14,29.0,0
 Jordon Sweet,Port Adelaide,24,Ruck,206.0,1998-02-02,28.0,0
 Dante Visentini,Port Adelaide,38,Ruck,202.0,2003-02-13,23.0,0
 Xavier Walsh,Port Adelaide,45,Forward,195.0,2005-09-06,20.0,0
-Jack Watkins,Port Adelaide,37,Midfield,,2000-01-01,26.0,0
+Jack Watkins,Port Adelaide,37,MidfieldForward,,2000-01-01,26.0,0
 Jacob Wehr,Port Adelaide,15,DefenderMidfield,185.0,1998-07-05,27.0,0
 Jack Whitlock,Port Adelaide,17,Forward,200.0,2006-05-16,19.0,0
 Oliver Wines,Port Adelaide,16,Midfield,187.0,1994-10-07,31.0,0
@@ -572,7 +572,7 @@ Brandon Zerk-Thatcher,Port Adelaide,25,Defender,195.0,1998-08-25,27.0,0
 Jasper Alger,Richmond,29,Forward,183.0,2006-12-17,19.0,0
 Harry Armstrong,Richmond,34,Forward,195.0,2006-06-14,19.0,0
 Noah Balta,Richmond,21,DefenderForward,194.0,1999-10-23,26.0,0
-Sam Banks,Richmond,6,Defender,187.0,2003-04-02,23.0,0
+Sam Banks,Richmond,6,DefenderMidfield,187.0,2003-04-02,23.0,0
 Nathan Broad,Richmond,35,Defender,192.0,1993-04-15,32.0,0
 Tom Brown,Richmond,30,Defender,193.0,2003-07-30,22.0,0
 Seth Campbell,Richmond,44,Forward,182.0,2004-12-29,21.0,0
@@ -581,13 +581,13 @@ Sam Cumming,Richmond,22,Midfield,184.0,2007-07-27,18.0,0
 Jonty Faull,Richmond,8,Forward,195.0,2006-02-01,20.0,0
 Liam Fawcett,Richmond,43,Forward,197.0,2005-04-22,20.0,0
 Josh Gibcus,Richmond,18,Defender,196.0,2003-04-04,23.0,0
-Campbell Gray,Richmond,50,Defender,195.0,2003-08-01,22.0,0
+Campbell Gray,Richmond,50,DefenderRuck,195.0,2003-08-01,22.0,0
 Steely Green,Richmond,48,Forward,179.0,2004-01-09,22.0,0
 Samuel Grlj,Richmond,24,DefenderMidfield,182.0,2007-07-26,18.0,0
 Oliver Hayes-Brown,Richmond,47,Ruck,208.0,2000-04-28,25.0,0
 Jacob Hopper,Richmond,2,Midfield,187.0,1997-02-06,29.0,0
 Taj Hotton,Richmond,10,Forward,182.0,2006-06-17,19.0,0
-Sam Lalor,Richmond,4,Forward,188.0,2006-08-30,19.0,0
+Sam Lalor,Richmond,4,MidfieldForward,188.0,2006-08-30,19.0,0
 Mykelti Lefau,Richmond,42,Forward,195.0,1998-06-22,27.0,0
 Tom Lynch,Richmond,19,Forward,199.0,1992-10-31,33.0,0
 Rhyan Mansell,Richmond,7,Forward,180.0,2000-06-04,25.0,0
@@ -595,7 +595,7 @@ Kane McAuliffe,Richmond,28,Midfield,187.0,2005-03-01,21.0,0
 Ben Miller,Richmond,12,Defender,198.0,1999-08-31,26.0,0
 Toby Nankervis,Richmond,25,Ruck,199.0,1994-08-12,31.0,0
 Zane Peucker,Richmond,26,MidfieldForward,180.0,2007-12-04,18.0,0
-Dion Prestia,Richmond,3,Midfield,175.0,1992-10-12,33.0,0
+Dion Prestia,Richmond,3,MidfieldForward,175.0,1992-10-12,33.0,0
 Hugo Ralphsmith,Richmond,13,Midfield,187.0,2001-11-09,24.0,0
 Patrick Retschko,Richmond,33,Midfield,186.0,2006-02-28,20.0,0
 Maurice Rioli,Richmond,17,Forward,179.0,2002-09-01,23.0,0
@@ -608,7 +608,7 @@ Josh Smillie,Richmond,16,Midfield,195.0,2006-05-17,19.0,0
 Kaleb Smith,Richmond,49,Defender,181.0,2004-11-20,21.0,0
 Tyler Sonsie,Richmond,40,MidfieldForward,181.0,2003-01-27,23.0,0
 Tim Taranto,Richmond,14,Midfield,188.0,1998-01-28,28.0,0
-Luke Trainor,Richmond,11,Defender,193.0,2006-04-10,19.0,0
+Luke Trainor,Richmond,11,Defender,193.0,2006-04-10,20.0,0
 James Trezise,Richmond,36,Midfield,188.0,2002-06-15,23.0,0
 Nick Vlastuin,Richmond,1,Defender,187.0,1994-04-19,31.0,0
 Eamonn Armstrong,St Kilda,46,Defender,191.0,2006-07-26,19.0,0
@@ -618,14 +618,14 @@ Hugh Boxshall,St Kilda,38,Midfield,188.0,2006-07-11,19.0,0
 Daniel Butler,St Kilda,16,Forward,182.0,1996-06-03,29.0,0
 Ryan Byrnes,St Kilda,13,Defender,181.0,2001-05-03,24.0,0
 Anthony Caminiti,St Kilda,47,Defender,196.0,2003-12-09,22.0,0
-Jack Carroll,St Kilda,18,Midfield,188.0,2002-12-20,23.0,0
+Jack Carroll,St Kilda,18,DefenderMidfield,188.0,2002-12-20,23.0,0
 Hunter Clark,St Kilda,11,Midfield,186.0,1999-03-26,27.0,0
 Lance Collard,St Kilda,4,Forward,185.0,2005-03-26,21.0,0
 Tom De Koning,St Kilda,21,Ruck,201.0,1999-07-16,26.0,0
 Alex Dodson,St Kilda,30,Forward,203.0,2006-06-15,19.0,0
 Paddy Dow,St Kilda,15,Midfield,184.0,1999-10-16,26.0,0
 Kye Fincher,St Kilda,37,DefenderMidfield,186.0,2007-11-18,18.0,0
-Sam Flanders,St Kilda,9,Forward,183.0,2001-07-24,24.0,0
+Sam Flanders,St Kilda,9,MidfieldForward,183.0,2001-07-24,24.0,0
 Hugo Garcia,St Kilda,34,Midfield,185.0,2005-05-22,20.0,0
 Max Hall,St Kilda,40,Forward,183.0,2002-04-15,23.0,0
 Angus Hastie,St Kilda,24,Defender,190.0,2005-09-19,20.0,0
@@ -636,23 +636,23 @@ Dougal Howard,St Kilda,20,Defender,199.0,1996-03-25,30.0,0
 Isaac Keeler,St Kilda,17,Forward,198.0,2004-04-23,21.0,0
 Max King,St Kilda,12,Forward,202.0,2000-07-07,25.0,0
 Jackson Macrae,St Kilda,6,Midfield,192.0,1994-08-03,31.0,0
-Rowan Marshall,St Kilda,19,Ruck,201.0,1995-11-24,30.0,0
+Rowan Marshall,St Kilda,19,ForwardRuck,201.0,1995-11-24,30.0,0
 Kobe McDonald,St Kilda,42,Defender,193.0,2007-12-08,18.0,0
 Liam O'Connell,St Kilda,45,Defender,189.0,2003-03-04,23.0,0
 Mitchito Owens,St Kilda,10,Forward,191.0,2003-09-24,22.0,0
-Mattaes Phillipou,St Kilda,25,Forward,190.0,2004-12-27,21.0,0
+Mattaes Phillipou,St Kilda,25,MidfieldForward,190.0,2004-12-27,21.0,0
 Liam Ryan,St Kilda,31,Forward,181.0,1996-10-02,29.0,0
 Patrick Said,St Kilda,33,MidfieldForward,180.0,2006-04-24,19.0,0
 Cooper Sharman,St Kilda,43,Forward,193.0,2000-07-25,25.0,0
 Jack Silvagni,St Kilda,3,Defender,194.0,1997-12-17,28.0,0
 Jack Sinclair,St Kilda,35,Defender,181.0,1995-02-12,31.0,0
 Liam Stocker,St Kilda,14,Defender,184.0,2000-01-23,26.0,0
-Alix Tauru,St Kilda,26,Defender,193.0,2006-11-16,19.0,0
+Alix Tauru,St Kilda,26,DefenderForward,193.0,2006-11-16,19.0,0
 Tobie Travaglia,St Kilda,5,DefenderMidfield,187.0,2006-10-26,19.0,0
-Nasiah Wanganeen-Milera,St Kilda,7,Defender,187.0,2003-02-22,23.0,0
+Nasiah Wanganeen-Milera,St Kilda,7,DefenderMidfield,187.0,2003-02-22,23.0,0
 Callum Wilkie,St Kilda,44,Defender,191.0,1996-03-10,30.0,0
 Darcy Wilson,St Kilda,22,MidfieldForward,185.0,2005-08-18,20.0,0
-Marcus Windhager,St Kilda,2,Midfield,185.0,2003-05-16,22.0,0
+Marcus Windhager,St Kilda,2,DefenderMidfield,185.0,2003-05-16,22.0,0
 Mason Wood,St Kilda,32,MidfieldForward,192.0,1993-09-13,32.0,0
 Taylor Adams,Sydney,3,Forward,181.0,1993-09-20,32.0,0
 Joel Amartey,Sydney,36,Forward,195.0,1999-09-02,26.0,0
@@ -675,11 +675,11 @@ Joel Hamling,Sydney,29,Defender,194.0,1993-04-09,33.0,0
 Tom Hanily,Sydney,40,Forward,179.0,2005-05-31,20.0,0
 Isaac Heeney,Sydney,5,Midfield,185.0,1996-05-05,29.0,0
 Liam Hetherton,Sydney,39,Forward,198.0,2007-05-02,18.0,0
-James Jordon,Sydney,17,Midfield,187.0,2000-12-20,25.0,0
+James Jordon,Sydney,17,MidfieldForward,187.0,2000-12-20,25.0,0
 Max King,Sydney,31,Forward,192.0,2007-01-09,19.0,0
 Harry Kyle,Sydney,32,DefenderMidfield,188.0,2007-07-16,18.0,0
 Peter Ladhams,Sydney,19,ForwardRuck,204.0,1998-01-14,28.0,0
-Jake Lloyd,Sydney,44,Midfield,182.0,1993-09-20,32.0,0
+Jake Lloyd,Sydney,44,MidfieldForward,182.0,1993-09-20,32.0,0
 Tom McCartin,Sydney,30,Defender,194.0,1999-12-30,26.0,0
 Logan McDonald,Sydney,6,Forward,195.0,2002-04-04,24.0,0
 Justin McInerney,Sydney,27,MidfieldForward,189.0,2000-08-18,25.0,0
@@ -689,16 +689,16 @@ Callum Mills,Sydney,14,Defender,188.0,1997-04-02,29.0,0
 Tom Papley,Sydney,11,Forward,177.0,1996-07-13,29.0,0
 Jevan Phillipou,Sydney,18,Midfield,183.0,2007-03-30,19.0,0
 Dane Rampe,Sydney,24,Defender,187.0,1990-06-02,35.0,0
-Matthew Roberts,Sydney,34,Defender,184.0,2003-07-31,22.0,0
+Matthew Roberts,Sydney,34,DefenderMidfield,184.0,2003-07-31,22.0,0
 Malcolm Rosas,Sydney,10,Forward,180.0,2001-06-27,24.0,0
 James Rowbottom,Sydney,8,Midfield,186.0,2000-09-19,25.0,0
-Jai Serong,Sydney,13,Defender,193.0,2003-02-16,23.0,0
+Jai Serong,Sydney,13,DefenderMidfield,193.0,2003-02-16,23.0,0
 Angus Sheldrick,Sydney,12,Midfield,178.0,2003-11-07,22.0,0
 Patrick Snell,Sydney,41,DefenderForward,194.0,2005-07-18,20.0,0
-Chad Warner,Sydney,1,Midfield,185.0,2001-05-19,24.0,0
+Chad Warner,Sydney,1,MidfieldForward,185.0,2001-05-19,24.0,0
 Corey Warner,Sydney,37,MidfieldForward,182.0,2003-10-07,22.0,0
 Sam Wicks,Sydney,15,Defender,181.0,1999-09-14,26.0,0
-Bo Allan,West Coast,26,Defender,191.0,2006-02-16,20.0,0
+Bo Allan,West Coast,26,DefenderMidfield,191.0,2006-02-16,20.0,0
 Sam Allen,West Coast,12,MidfieldForward,184.0,2007-01-13,19.0,0
 Liam Baker,West Coast,3,Defender,173.0,1998-01-27,28.0,0
 Harry Barnett,West Coast,30,Ruck,203.0,2004-01-22,22.0,0
@@ -735,21 +735,21 @@ Jacob Newton,West Coast,46,Forward,179.0,2006-03-20,20.0,0
 Matt Owies,West Coast,16,Forward,179.0,1997-03-19,29.0,0
 Archer Reid,West Coast,22,Forward,203.0,2005-09-19,20.0,0
 Harley Reid,West Coast,9,Midfield,187.0,2005-04-17,20.0,0
-Deven Robertson,West Coast,40,Forward,185.0,2001-06-30,24.0,0
+Deven Robertson,West Coast,40,MidfieldForward,185.0,2001-06-30,24.0,0
 Fred Rodriguez,West Coast,39,Forward,,2000-01-01,26.0,0
-Harry Schoenberg,West Coast,48,Midfield,180.0,2001-02-21,25.0,0
+Harry Schoenberg,West Coast,48,MidfieldForward,180.0,2001-02-21,25.0,0
 Jobe Shanahan,West Coast,35,Forward,195.0,2006-08-02,19.0,0
 Brandon Starcevich,West Coast,4,Defender,188.0,1999-07-24,26.0,0
 Jake Waterman,West Coast,2,Forward,192.0,1998-05-06,27.0,0
 Bailey J. Williams,West Coast,32,ForwardRuck,201.0,2000-04-17,25.0,0
 Jack Williams,West Coast,34,Forward,198.0,2003-12-01,22.0,0
 Tylah Williams,West Coast,36,MidfieldForward,176.0,2007-02-22,19.0,0
-Elliot Yeo,West Coast,6,Midfield,191.0,1993-10-01,32.0,0
+Elliot Yeo,West Coast,6,MidfieldForward,191.0,1993-10-01,32.0,0
 Tylar Young,West Coast,20,Defender,196.0,1998-09-05,27.0,0
-Oskar Baker,Western Bulldogs,13,DefenderMidfield,184.0,1998-05-25,27.0,0
+Oskar Baker,Western Bulldogs,13,DefenderMidfieldForward,184.0,1998-05-25,27.0,0
 Marcus Bontempelli,Western Bulldogs,4,Midfield,194.0,1995-11-24,30.0,0
-Lachlan Bramble,Western Bulldogs,29,Defender,182.0,1998-04-19,27.0,0
-Connor Budarick,Western Bulldogs,19,Forward,175.0,2001-04-06,25.0,0
+Lachlan Bramble,Western Bulldogs,29,DefenderForward,182.0,1998-04-19,27.0,0
+Connor Budarick,Western Bulldogs,19,DefenderForward,175.0,2001-04-06,25.0,0
 Jedd Busslinger,Western Bulldogs,5,Defender,198.0,2004-03-11,22.0,0
 Lachlan Carmichael,Western Bulldogs,2,DefenderMidfield,184.0,2007-08-27,18.0,0
 Luke Cleary,Western Bulldogs,36,Defender,191.0,2002-03-05,24.0,0
@@ -758,7 +758,7 @@ Jordan Croft,Western Bulldogs,16,Forward,201.0,2005-05-12,20.0,0
 Bailey Dale,Western Bulldogs,31,Defender,188.0,1996-07-22,29.0,0
 Sam Darcy,Western Bulldogs,10,Forward,208.0,2003-07-19,22.0,0
 Will Darcy,Western Bulldogs,15,DefenderForward,196.0,2007-03-14,19.0,0
-Sam Davidson,Western Bulldogs,42,Midfield,190.0,2001-12-13,24.0,0
+Sam Davidson,Western Bulldogs,42,MidfieldForward,190.0,2001-12-13,24.0,0
 Josh Dolan,Western Bulldogs,26,Forward,177.0,2006-11-11,19.0,0
 Louis Emmett,Western Bulldogs,25,Ruck,200.0,2007-03-23,19.0,0
 Timothy English,Western Bulldogs,44,Ruck,208.0,1997-08-10,28.0,0
