@@ -14271,32 +14271,55 @@ elif page == "Team Selection Ratings":
                     _x_label = "Rating vs Season Avg"
 
                 if not _rd_team_avg.empty:
-                    # Compute season-wide team averages for the baseline
-                    _all_round_avgs = []
-                    for _rnd in _md_raw["Round"].unique():
-                        _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
-                        _rnd_avgs = (
-                            _rnd_df.groupby("Team")["RatingPoints"]
+                    if _use_trait_rating and _traits_df is not None:
+                        # Trait mode: baseline is mean of this round's trait team averages
+                        _trait_league_avg = _rd_team_avg["AvgRating"].mean()
+                        _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _trait_league_avg
+                        _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
+
+                        # No per-round trait history — compute season avg/best from
+                        # the full traits_df per team as a proxy
+                        _trait_all_teams = (
+                            _traits_df.groupby("Team")["TraitRating"]
                             .mean()
                             .reset_index()
-                            .rename(columns={"RatingPoints": "AvgRating"})
+                            .rename(columns={"TraitRating": "AvgRating"})
                         )
-                        _rnd_avgs["Round"] = _rnd
-                        _all_round_avgs.append(_rnd_avgs)
+                        _trait_all_league = _trait_all_teams["AvgRating"].mean()
+                        _trait_all_teams["RelStrength"] = _trait_all_teams["AvgRating"] - _trait_all_league
+                        _season_avg = _trait_all_teams.set_index("Team")["RelStrength"].to_dict()
+                        # No round-level history for traits, so season best = season avg
+                        _season_best = _season_avg.copy()
 
-                    _season_all = pd.concat(_all_round_avgs, ignore_index=True)
-                    _season_team_avg = _season_all.groupby("Team")["AvgRating"].mean()
-                    _season_league_avg = _season_team_avg.mean()
+                        _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
+                        _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
+                    else:
+                        # RatingPoints mode: baseline is season-wide league average
+                        _all_round_avgs = []
+                        for _rnd in _md_raw["Round"].unique():
+                            _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
+                            _rnd_avgs = (
+                                _rnd_df.groupby("Team")["RatingPoints"]
+                                .mean()
+                                .reset_index()
+                                .rename(columns={"RatingPoints": "AvgRating"})
+                            )
+                            _rnd_avgs["Round"] = _rnd
+                            _all_round_avgs.append(_rnd_avgs)
 
-                    _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _season_league_avg
-                    _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
+                        _season_all = pd.concat(_all_round_avgs, ignore_index=True)
+                        _season_team_avg = _season_all.groupby("Team")["AvgRating"].mean()
+                        _season_league_avg = _season_team_avg.mean()
 
-                    _season_all["RelStrength"] = _season_all["AvgRating"] - _season_league_avg
-                    _season_avg = _season_all.groupby("Team")["RelStrength"].mean().to_dict()
-                    _season_best = _season_all.groupby("Team")["RelStrength"].max().to_dict()
+                        _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _season_league_avg
+                        _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
 
-                    _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
-                    _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
+                        _season_all["RelStrength"] = _season_all["AvgRating"] - _season_league_avg
+                        _season_avg = _season_all.groupby("Team")["RelStrength"].mean().to_dict()
+                        _season_best = _season_all.groupby("Team")["RelStrength"].max().to_dict()
+
+                        _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
+                        _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
 
                     # --- Build team logo b64 lookup ---
                     _logo_b64_map = {}
