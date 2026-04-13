@@ -3945,7 +3945,7 @@ def predict_player_trajectory(
 PAGE_GROUPS = {
     "Home": ["Home"],
     "List Management & Recruiting": ["Club List", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "List Breakdown - Traits", "Contract Status"],
-    "Team Performance": ["Overview", "Team Breakdown", "Team Compare", "Game Trends", "Game Predictor", "Game Model Scorecard", "Best 23", "Ladder"],
+    "Team Performance": ["Overview", "Team Breakdown", "Team Compare", "Game Trends", "Game Predictor", "Game Model Scorecard", "Best 23", "Team Selection Ratings", "Ladder"],
     "Individual Performance": ["Player Profile", "IDP", "Custom Player Comparison", "Player Rating Matrix"],
 }
 
@@ -13145,304 +13145,6 @@ elif page == "Best 23":
     _render_position("Gen. Forward", n_left=4, n_right=4)    # includes Mid-Forwards here
 
     # =====================================================
-    # MATCH DAY 23
-    # =====================================================
-    st.markdown("---")
-    st.header("Match Day 23")
-    st.caption("Select a round and game to see the actual match-day squads with current season ratings.")
-
-    _md_file = f"data/raw/player/match_ratings_{season}.csv"
-    if os.path.exists(_md_file):
-        _md_raw = pd.read_csv(_md_file)
-        _md_raw["Team"] = _md_raw["Team"].replace({"Greater Western Sydney": "GWS Giants"})
-
-        _md_rounds = sorted(_md_raw["Round"].unique())
-        _md_round_labels = {r: "Opening Round" if r == 0 else f"Round {r}" for r in _md_rounds}
-
-        md_round = st.selectbox(
-            "Round",
-            _md_rounds,
-            format_func=lambda r: _md_round_labels[r],
-            key="md_round_sel",
-        )
-
-        _md_round_df = _md_raw[_md_raw["Round"] == md_round]
-
-        # Build game list from match data
-        _md_games = {}
-        for mid in sorted(_md_round_df["MatchId"].unique()):
-            _mdf = _md_round_df[_md_round_df["MatchId"] == mid]
-            _mteams = sorted(_mdf["Team"].unique())
-            if len(_mteams) == 2:
-                _md_games[f"{_mteams[0]} vs {_mteams[1]}"] = mid
-
-        if _md_games:
-            md_game_label = st.selectbox("Game", list(_md_games.keys()), key="md_game_sel")
-            md_match_id = _md_games[md_game_label]
-
-            md_rating_mode = st.radio(
-                "Rating Display",
-                ["Current Season Rating", "Game Rating"],
-                horizontal=True,
-                key="md_rating_mode",
-            )
-            _use_game_rating = (md_rating_mode == "Game Rating")
-
-            _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
-            _md_match_teams = sorted(_md_match_df["Team"].unique())
-
-            if len(_md_match_teams) == 2:
-                md_team_a_name = _md_match_teams[0]
-                md_team_b_name = _md_match_teams[1]
-
-                _md_players_a = _md_match_df[_md_match_df["Team"] == md_team_a_name][["Player", "RatingPoints"]].copy()
-                _md_players_b = _md_match_df[_md_match_df["Team"] == md_team_b_name][["Player", "RatingPoints"]].copy()
-
-                def _resolve_match_players(match_players_df, team_name):
-                    """Join match players to merged_all for Position, Jumper, Rating.
-                    Falls back to nickname variants then match-level data."""
-                    rows = []
-                    for _, mp in match_players_df.iterrows():
-                        pname = mp["Player"]
-                        match_rating = mp["RatingPoints"]
-
-                        # Exact match in merged_all
-                        found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == pname)]
-
-                        # Nickname variants
-                        if found.empty:
-                            for v in build_player_name_variants(pname):
-                                if v == pname:
-                                    continue
-                                found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == v)]
-                                if not found.empty:
-                                    break
-
-                        if not found.empty:
-                            r = found.iloc[0]
-                            rows.append({
-                                "Player": r["Player"],
-                                "Position": r["Position"],
-                                "Jumper": r.get("Jumper", ""),
-                                "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _safe_float(match_rating),
-                                "GameRating": _safe_float(match_rating),
-                                "Team": team_name,
-                                "IsBench": False,
-                            })
-                        else:
-                            # Fallback: check summary for position/jumper
-                            pos = "Midfielder"
-                            jumper = ""
-                            s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == pname)]
-                            if s_match.empty:
-                                for v in build_player_name_variants(pname):
-                                    if v == pname:
-                                        continue
-                                    s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == v)]
-                                    if not s_match.empty:
-                                        break
-                            if not s_match.empty:
-                                sr = s_match.iloc[0]
-                                pos = sr.get("Position", "Midfielder") or "Midfielder"
-                                jumper = sr.get("Jumper", "")
-
-                            rows.append({
-                                "Player": pname,
-                                "Position": pos,
-                                "Jumper": jumper,
-                                "Rating": _safe_float(match_rating),
-                                "GameRating": _safe_float(match_rating),
-                                "Team": team_name,
-                                "IsBench": False,
-                            })
-
-                    return pd.DataFrame(rows)
-
-                md_best_a = _resolve_match_players(_md_players_a, md_team_a_name)
-                md_best_b = _resolve_match_players(_md_players_b, md_team_b_name)
-
-                # Swap Rating column when Game Rating toggle is active
-                if _use_game_rating:
-                    md_best_a["Rating"] = md_best_a["GameRating"]
-                    md_best_b["Rating"] = md_best_b["GameRating"]
-
-                md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
-                md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
-
-                # Header with logos and overall averages
-                md_overall_a = avg_rating(md_best_a)
-                md_overall_b = avg_rating(md_best_b)
-                md_net = None
-                if md_overall_a is not None and md_overall_b is not None:
-                    md_net = md_overall_a - md_overall_b
-
-                md_logo_a_path = get_team_logo_path(md_team_a_name) if "get_team_logo_path" in globals() else None
-                md_logo_b_path = get_team_logo_path(md_team_b_name) if "get_team_logo_path" in globals() else None
-                md_logo_a_b64 = _img_to_b64(md_logo_a_path) if md_logo_a_path else ""
-                md_logo_b_b64 = _img_to_b64(md_logo_b_path) if md_logo_b_path else ""
-
-                md_a_str = "" if md_overall_a is None else f"{md_overall_a:.2f}"
-                md_b_str = "" if md_overall_b is None else f"{md_overall_b:.2f}"
-
-                md_header_html = f"""
-                <div class="b23Header">
-                <div class="teamCol">
-                    {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
-                    <div class="teamName">{md_team_a_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
-                    {_pill(md_a_str if md_a_str else "—", big=True)}
-                </div>
-                <div class="midCol">
-                    <div class="vsPill">VS</div>
-                    <div class="netLabel">NET (A − B)</div>
-                    {_diff_pill(md_net)}
-                    <div class="subNote">Positive = Team A higher</div>
-                </div>
-                <div class="teamCol">
-                    {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
-                    <div class="teamName">{md_team_b_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
-                    {_pill(md_b_str if md_b_str else "—", big=True)}
-                </div>
-                </div>
-
-                <style>
-                .b23Header {{
-                width: 100%;
-                display: grid;
-                grid-template-columns: 1fr 0.55fr 1fr;
-                gap: 18px;
-                align-items: center;
-                padding: 10px 8px 18px 8px;
-                border-radius: 16px;
-                background: rgba(255,255,255,0.02);
-                }}
-                .teamCol {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                min-height: 340px;
-                }}
-                .logo {{
-                width: 420px;
-                max-width: 90%;
-                height: 220px;
-                object-fit: contain;
-                margin-top: 8px;
-                margin-bottom: 10px;
-                filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
-                }}
-                .logoFallback {{
-                width: 420px;
-                max-width: 90%;
-                height: 220px;
-                border-radius: 18px;
-                background: rgba(255,255,255,0.04);
-                margin-top: 8px;
-                margin-bottom: 10px;
-                }}
-                .teamName {{
-                font-size: 22px;
-                font-weight: 900;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                color: #fff;
-                margin-bottom: 6px;
-                }}
-                .label {{
-                font-size: 11px;
-                font-weight: 900;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                letter-spacing: 0.18em;
-                color: rgba(255,255,255,0.55);
-                margin-bottom: 8px;
-                text-align: center;
-                }}
-                .midCol {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-height: 340px;
-                }}
-                .vsPill {{
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: 10px 22px;
-                border-radius: 999px;
-                background: rgba(255,255,255,0.06);
-                color: rgba(255,255,255,0.90);
-                font-weight: 900;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                letter-spacing: 0.18em;
-                box-shadow: 0 10px 26px rgba(0,0,0,.28);
-                margin-bottom: 18px;
-                }}
-                .netLabel {{
-                font-size: 11px;
-                font-weight: 900;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                letter-spacing: 0.18em;
-                color: rgba(255,255,255,0.55);
-                margin-bottom: 10px;
-                }}
-                .subNote {{
-                margin-top: 10px;
-                font-size: 12px;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                color: rgba(255,255,255,0.55);
-                }}
-                </style>
-                """
-
-                components.html(md_header_html.strip(), height=400, scrolling=False)
-                st.caption("Game rating points shown for each player this match." if _use_game_rating else "Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
-
-                def _render_md_position(cat_name, a_df, b_df, a_series, b_series):
-                    left_df = cat_df(a_df, cat_name)
-                    right_df = cat_df(b_df, cat_name)
-                    left_df = left_df.sort_values("Rating", ascending=False)
-                    right_df = right_df.sort_values("Rating", ascending=False)
-
-                    lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
-                    with lcol:
-                        st.markdown(f"**{cat_name}**")
-                        if left_df.empty:
-                            st.caption("—")
-                        else:
-                            for _, row in left_df.iterrows():
-                                st.markdown(_magnet_html(row, a_series), unsafe_allow_html=True)
-                    with ccol:
-                        _centre_stats(left_df, right_df, cat_name)
-                    with rcol:
-                        st.markdown(f"**{cat_name}**")
-                        if right_df.empty:
-                            st.caption("—")
-                        else:
-                            for _, row in right_df.iterrows():
-                                st.markdown(_magnet_html(row, b_series), unsafe_allow_html=True)
-
-                st.markdown("---")
-                _render_md_position("Key Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Gen. Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Midfielder", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Wing", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Ruck", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Key Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-                st.markdown("---")
-                _render_md_position("Gen. Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
-        else:
-            st.info("No games found for this round.")
-    else:
-        st.info(f"No match ratings data available for {season}.")
-
-    # =====================================================
     # MANUAL SELECTION (Pick your own Best 23)
     # =====================================================
     st.markdown("---")
@@ -13882,6 +13584,605 @@ elif page == "Best 23":
         st.info(f"Select **{ms_expected} players** for both teams to see the comparison. (Team A: {ms_count_a}/23, Team B: {ms_count_b}/23)")
 
     # Professional footer
+    render_footer()
+
+
+# ================= TEAM SELECTION RATINGS =================
+
+elif page == "Team Selection Ratings":
+
+    import base64
+    import textwrap
+    import pandas as pd
+    import streamlit.components.v1 as components
+
+    render_page_header("Team Selection Ratings", "Match-day squads with season & game ratings", "trophy")
+    render_breadcrumb([("Home", "Home"), ("Best 23", "Best 23"), ("Team Selection Ratings", None)])
+
+    # =====================================================
+    # HELPERS
+    # =====================================================
+    def _tsr_norm(s):
+        return "".join(c for c in str(s).lower().strip() if c.isalnum())
+
+    def _tsr_find_col(df, keys):
+        for c in df.columns:
+            if all(k in _tsr_norm(c) for k in [_tsr_norm(x) for x in keys]):
+                return c
+        return None
+
+    def _tsr_split_name(n):
+        p = str(n).split()
+        return p[0], p[-1] if len(p) > 1 else ""
+
+    def _tsr_pos_group(p):
+        p = str(p).lower()
+        if "defend" in p: return "def"
+        if "mid" in p: return "mid"
+        if "wing" in p or "gen. forward" in p: return "wingfwd"
+        if "ruck" in p or "key forward" in p: return "ruckkf"
+        return "other"
+
+    def _tsr_rating_percentile(val, series) -> float:
+        try:
+            if val is None:
+                return 0.0
+            s = pd.to_numeric(series, errors="coerce")
+            s = s[~pd.isna(s)]
+            if s.empty:
+                return 0.0
+            return float((s <= float(val)).mean())
+        except Exception:
+            return 0.0
+
+    def _tsr_rating_style(val, series):
+        bg, fg = "#ffffff", "#000000"
+        try:
+            c = rating_colour_for_value(val, series)
+            if isinstance(c, (tuple, list)) and len(c) >= 2:
+                bg, fg = str(c[0]), str(c[1])
+            else:
+                bg, fg = str(c), "#000000"
+        except Exception:
+            pass
+        pct = _tsr_rating_percentile(val, series)
+        bri = 0.85 + (0.35 * pct)
+        return bg, fg, bri
+
+    def _tsr_safe_float(x):
+        try:
+            return float(x)
+        except Exception:
+            return None
+
+    CATEGORY_MAP = {
+        "Key Defender": ["Key Defender"],
+        "Gen. Defender": ["Gen. Defender"],
+        "Wing": ["Wing"],
+        "Midfielder": ["Midfielder"],
+        "Ruck": ["Ruck"],
+        "Key Forward": ["Key Forward"],
+        "Gen. Forward": ["Gen. Forward", "Mid-Forward"],
+    }
+
+    def _tsr_cat_df(df, cat_name):
+        pos_list = CATEGORY_MAP[cat_name]
+        if df.empty:
+            return df
+        return df[df["Position"].isin(pos_list)].copy()
+
+    def _tsr_avg_rating(df):
+        if df is None or df.empty:
+            return None
+        return float(pd.to_numeric(df["Rating"], errors="coerce").mean())
+
+    def _tsr_img_to_b64(path: str) -> str:
+        try:
+            with open(path, "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+        except Exception:
+            return ""
+
+    def _tsr_pill(val: str, bg="rgba(255,255,255,0.08)", fg="#FFFFFF", big=False):
+        fs = "34px" if big else "16px"
+        pad = "16px 22px" if big else "10px 14px"
+        br = "18px"
+        minw = "220px" if big else "120px"
+        return (
+            f"<div style=\""
+            f"display:inline-flex;"
+            f"align-items:center;"
+            f"justify-content:center;"
+            f"padding:{pad};"
+            f"border-radius:{br};"
+            f"background:{bg};"
+            f"color:{fg};"
+            f"font-weight:900;"
+            f"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;"
+            f"font-size:{fs};"
+            f"min-width:{minw};"
+            f"box-shadow:0 12px 30px rgba(0,0,0,.35);"
+            f"letter-spacing:0.05em;"
+            f"\">{val}</div>"
+        )
+
+    def _tsr_diff_pill(d):
+        if d is None:
+            return _tsr_pill("—", bg="rgba(255,255,255,0.06)", big=True)
+        if d > 0:
+            return _tsr_pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
+        if d < 0:
+            return _tsr_pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
+        return _tsr_pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
+
+    def _tsr_magnet_html(row, series_for_colour, dim=False):
+        first, last = _tsr_split_name(row["Player"])
+        num = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
+        rating_val = _tsr_safe_float(row.get("Rating", None))
+        rat = "" if rating_val is None else f"{rating_val:.1f}"
+        grp = _tsr_pos_group(row.get("Position", ""))
+        bgc, fgc, bri = _tsr_rating_style(rating_val, series_for_colour)
+        fade = "opacity:0.55;" if dim else ""
+        return f"""
+        <div class="magRow" style="{fade}">
+        <div class="mag {grp}">
+            <div class="magNum">{num}</div>
+            <div class="magName">
+            <div class="magFirst">{first}</div>
+            <div class="magLast">{last}</div>
+            </div>
+            <div class="magRating"
+            style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">
+            {rat}
+            </div>
+        </div>
+        </div>
+        """
+
+    def _tsr_centre_stats(a_df, b_df, label):
+        a = _tsr_avg_rating(a_df)
+        b = _tsr_avg_rating(b_df)
+        d = None if (a is None or b is None) else (a - b)
+        hdr = f"""
+        <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;">
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">TEAM A AVG</div>
+            {_tsr_pill("—" if a is None else f"{a:.1f}")}
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">NET (A−B)</div>
+            {_tsr_diff_pill(None if d is None else round(d,1))}
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px;opacity:0.65;letter-spacing:0.05em;margin-bottom:6px;font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">TEAM B AVG</div>
+            {_tsr_pill("—" if b is None else f"{b:.1f}")}
+        </div>
+        </div>
+        """
+        st.markdown(textwrap.dedent(hdr).strip(), unsafe_allow_html=True)
+
+    # =====================================================
+    # LOAD & MERGE DATA
+    # =====================================================
+    summary = load_player_summary()
+    seasons = sorted(get_player_seasons(), reverse=True)
+    season = st.selectbox("Season", seasons, index=0, key="tsr_season")
+
+    if season is None:
+        st.error("No season data available.")
+        st.stop()
+
+    ratings = load_players(season)
+
+    s_name = _tsr_find_col(summary, ["player"]) or _tsr_find_col(summary, ["name"])
+    s_pos  = _tsr_find_col(summary, ["position"])
+    s_num  = _tsr_find_col(summary, ["jumper"]) or _tsr_find_col(summary, ["guernsey"])
+    r_name = _tsr_find_col(ratings, ["player"]) or _tsr_find_col(ratings, ["name"])
+    r_val  = _tsr_find_col(ratings, ["rating"])
+
+    if not all([s_name, s_pos, r_name, r_val]):
+        st.error("Required columns missing in Summary or Ratings sheets.")
+        st.stop()
+
+    summary = summary.rename(columns={s_name: "Player", s_pos: "Position"})
+    ratings = ratings.rename(columns={r_name: "Player", r_val: "Rating"})
+    summary["Jumper"] = summary[s_num] if s_num else ""
+
+    def _tsr_make_key(df):
+        return df["Team"].astype(str).str.lower().str.strip() + "||" + df["Player"].astype(str).str.lower().str.strip()
+
+    summary["__k"] = _tsr_make_key(summary)
+    ratings["__k"] = _tsr_make_key(ratings)
+
+    merged_all = summary.merge(
+        ratings[["__k", "Rating"]],
+        on="__k",
+        how="left"
+    )
+    merged_all["Rating"] = pd.to_numeric(merged_all["Rating"], errors="coerce")
+    merged_all = merged_all.dropna(subset=["Rating"])
+
+    # Reclassify Wing players
+    try:
+        _wings_df = pd.read_excel(
+            "data/AFL_Historical_2012_2025.xlsx", sheet_name="Wings"
+        )
+        _wing_keys = set()
+        for _, _wr in _wings_df.iterrows():
+            _pn = _wr.get("Player", "")
+            _tm = _wr.get("Team", "")
+            if pd.notna(_pn) and pd.notna(_tm):
+                _wing_keys.add(
+                    (str(_pn).strip().lower(), str(_tm).strip().lower())
+                )
+
+        def _is_wing(row):
+            pn = str(row.get("Player", "")).strip().lower()
+            tm = str(row.get("Team", "")).strip().lower()
+            return (pn, tm) in _wing_keys
+
+        _mask = merged_all.apply(_is_wing, axis=1)
+        merged_all.loc[_mask, "Position"] = "Wing"
+    except Exception:
+        pass
+
+    # =====================================================
+    # MATCH DAY GAME SELECTOR
+    # =====================================================
+    st.caption("Select a round and game to see the actual match-day squads with current season ratings.")
+
+    _md_file = f"data/raw/player/match_ratings_{season}.csv"
+    if os.path.exists(_md_file):
+        _md_raw = pd.read_csv(_md_file)
+        _md_raw["Team"] = _md_raw["Team"].replace({"Greater Western Sydney": "GWS Giants"})
+
+        _md_rounds = sorted(_md_raw["Round"].unique())
+        _md_round_labels = {r: "Opening Round" if r == 0 else f"Round {r}" for r in _md_rounds}
+
+        md_round = st.selectbox(
+            "Round",
+            _md_rounds,
+            format_func=lambda r: _md_round_labels[r],
+            key="tsr_round_sel",
+        )
+
+        _md_round_df = _md_raw[_md_raw["Round"] == md_round]
+
+        _md_games = {}
+        for mid in sorted(_md_round_df["MatchId"].unique()):
+            _mdf = _md_round_df[_md_round_df["MatchId"] == mid]
+            _mteams = sorted(_mdf["Team"].unique())
+            if len(_mteams) == 2:
+                _md_games[f"{_mteams[0]} vs {_mteams[1]}"] = mid
+
+        if _md_games:
+            md_game_label = st.selectbox("Game", list(_md_games.keys()), key="tsr_game_sel")
+            md_match_id = _md_games[md_game_label]
+
+            md_rating_mode = st.radio(
+                "Rating Display",
+                ["Current Season Rating", "Game Rating"],
+                horizontal=True,
+                key="tsr_rating_mode",
+            )
+            _use_game_rating = (md_rating_mode == "Game Rating")
+
+            _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
+            _md_match_teams = sorted(_md_match_df["Team"].unique())
+
+            if len(_md_match_teams) == 2:
+                md_team_a_name = _md_match_teams[0]
+                md_team_b_name = _md_match_teams[1]
+
+                _md_players_a = _md_match_df[_md_match_df["Team"] == md_team_a_name][["Player", "RatingPoints"]].copy()
+                _md_players_b = _md_match_df[_md_match_df["Team"] == md_team_b_name][["Player", "RatingPoints"]].copy()
+
+                def _resolve_match_players(match_players_df, team_name):
+                    rows = []
+                    for _, mp in match_players_df.iterrows():
+                        pname = mp["Player"]
+                        match_rating = mp["RatingPoints"]
+
+                        found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == pname)]
+
+                        if found.empty:
+                            for v in build_player_name_variants(pname):
+                                if v == pname:
+                                    continue
+                                found = merged_all[(merged_all["Team"] == team_name) & (merged_all["Player"] == v)]
+                                if not found.empty:
+                                    break
+
+                        if not found.empty:
+                            r = found.iloc[0]
+                            rows.append({
+                                "Player": r["Player"],
+                                "Position": r["Position"],
+                                "Jumper": r.get("Jumper", ""),
+                                "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _tsr_safe_float(match_rating),
+                                "GameRating": _tsr_safe_float(match_rating),
+                                "Team": team_name,
+                                "IsBench": False,
+                            })
+                        else:
+                            pos = "Midfielder"
+                            jumper = ""
+                            s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == pname)]
+                            if s_match.empty:
+                                for v in build_player_name_variants(pname):
+                                    if v == pname:
+                                        continue
+                                    s_match = summary[(summary["Team"] == team_name) & (summary["Player"] == v)]
+                                    if not s_match.empty:
+                                        break
+                            if not s_match.empty:
+                                sr = s_match.iloc[0]
+                                pos = sr.get("Position", "Midfielder") or "Midfielder"
+                                jumper = sr.get("Jumper", "")
+
+                            rows.append({
+                                "Player": pname,
+                                "Position": pos,
+                                "Jumper": jumper,
+                                "Rating": _tsr_safe_float(match_rating),
+                                "GameRating": _tsr_safe_float(match_rating),
+                                "Team": team_name,
+                                "IsBench": False,
+                            })
+
+                    return pd.DataFrame(rows)
+
+                md_best_a = _resolve_match_players(_md_players_a, md_team_a_name)
+                md_best_b = _resolve_match_players(_md_players_b, md_team_b_name)
+
+                if _use_game_rating:
+                    md_best_a["Rating"] = md_best_a["GameRating"]
+                    md_best_b["Rating"] = md_best_b["GameRating"]
+
+                md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
+                md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
+
+                md_overall_a = _tsr_avg_rating(md_best_a)
+                md_overall_b = _tsr_avg_rating(md_best_b)
+                md_net = None
+                if md_overall_a is not None and md_overall_b is not None:
+                    md_net = md_overall_a - md_overall_b
+
+                md_logo_a_path = get_team_logo_path(md_team_a_name) if "get_team_logo_path" in globals() else None
+                md_logo_b_path = get_team_logo_path(md_team_b_name) if "get_team_logo_path" in globals() else None
+                md_logo_a_b64 = _tsr_img_to_b64(md_logo_a_path) if md_logo_a_path else ""
+                md_logo_b_b64 = _tsr_img_to_b64(md_logo_b_path) if md_logo_b_path else ""
+
+                md_a_str = "" if md_overall_a is None else f"{md_overall_a:.2f}"
+                md_b_str = "" if md_overall_b is None else f"{md_overall_b:.2f}"
+
+                md_header_html = f"""
+                <div class="b23Header">
+                <div class="teamCol">
+                    {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
+                    <div class="teamName">{md_team_a_name}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
+                    {_tsr_pill(md_a_str if md_a_str else "—", big=True)}
+                </div>
+                <div class="midCol">
+                    <div class="vsPill">VS</div>
+                    <div class="netLabel">NET (A − B)</div>
+                    {_tsr_diff_pill(md_net)}
+                    <div class="subNote">Positive = Team A higher</div>
+                </div>
+                <div class="teamCol">
+                    {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
+                    <div class="teamName">{md_team_b_name}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
+                    {_tsr_pill(md_b_str if md_b_str else "—", big=True)}
+                </div>
+                </div>
+
+                <style>
+                .b23Header {{
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 0.55fr 1fr;
+                gap: 18px;
+                align-items: center;
+                padding: 10px 8px 18px 8px;
+                border-radius: 16px;
+                background: rgba(255,255,255,0.02);
+                }}
+                .teamCol {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 340px;
+                }}
+                .logo {{
+                width: 420px;
+                max-width: 90%;
+                height: 220px;
+                object-fit: contain;
+                margin-top: 8px;
+                margin-bottom: 10px;
+                filter: drop-shadow(0 18px 40px rgba(0,0,0,0.45));
+                }}
+                .logoFallback {{
+                width: 420px;
+                max-width: 90%;
+                height: 220px;
+                border-radius: 18px;
+                background: rgba(255,255,255,0.04);
+                margin-top: 8px;
+                margin-bottom: 10px;
+                }}
+                .teamName {{
+                font-size: 22px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                color: #fff;
+                margin-bottom: 6px;
+                }}
+                .label {{
+                font-size: 11px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                color: rgba(255,255,255,0.55);
+                margin-bottom: 8px;
+                text-align: center;
+                }}
+                .midCol {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 340px;
+                }}
+                .vsPill {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 22px;
+                border-radius: 999px;
+                background: rgba(255,255,255,0.06);
+                color: rgba(255,255,255,0.90);
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                box-shadow: 0 10px 26px rgba(0,0,0,.28);
+                margin-bottom: 18px;
+                }}
+                .netLabel {{
+                font-size: 11px;
+                font-weight: 900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                letter-spacing: 0.18em;
+                color: rgba(255,255,255,0.55);
+                margin-bottom: 10px;
+                }}
+                .subNote {{
+                margin-top: 10px;
+                font-size: 12px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                color: rgba(255,255,255,0.55);
+                }}
+                </style>
+                """
+
+                components.html(md_header_html.strip(), height=400, scrolling=False)
+                st.caption("Game rating points shown for each player this match." if _use_game_rating else "Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
+
+                # Magnet CSS
+                mag_css = """
+                <style>
+                .mag {
+                width:100%;
+                min-height:54px;
+                display:flex;
+                align-items:center;
+                gap:12px;
+                padding:10px 14px;
+                border-radius:18px;
+                color:#fff;
+                font-weight:900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                box-shadow:0 10px 26px rgba(0,0,0,.28);
+                overflow:hidden;
+                }
+                .magNum{
+                width:44px;
+                text-align:center;
+                font-size:15px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                opacity:0.95;
+                flex:0 0 auto;
+                }
+                .magName{
+                display:flex;
+                flex-direction:column;
+                line-height:1.05;
+                min-width:0;
+                flex:1 1 auto;
+                }
+                .magFirst{
+                font-size:10px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                opacity:0.85;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                }
+                .magLast{
+                font-size:15px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                }
+                .magRating{
+                margin-left:auto;
+                width:54px;
+                height:34px;
+                border-radius:12px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:14px;
+                font-weight:900;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                flex:0 0 auto;
+                }
+                .def{background:#c62828;}
+                .mid{background:#2e7d32;}
+                .wingfwd{background:#ef6c00;}
+                .ruckkf{background:#1565c0;}
+                .other{background:#333;}
+                </style>
+                """
+                st.markdown(mag_css, unsafe_allow_html=True)
+
+                def _render_md_position(cat_name, a_df, b_df, a_series, b_series):
+                    left_df = _tsr_cat_df(a_df, cat_name)
+                    right_df = _tsr_cat_df(b_df, cat_name)
+                    left_df = left_df.sort_values("Rating", ascending=False)
+                    right_df = right_df.sort_values("Rating", ascending=False)
+
+                    lcol, ccol, rcol = st.columns([4.5, 3.0, 4.5], gap="large")
+                    with lcol:
+                        st.markdown(f"**{cat_name}**")
+                        if left_df.empty:
+                            st.caption("—")
+                        else:
+                            for _, row in left_df.iterrows():
+                                st.markdown(_tsr_magnet_html(row, a_series), unsafe_allow_html=True)
+                    with ccol:
+                        _tsr_centre_stats(left_df, right_df, cat_name)
+                    with rcol:
+                        st.markdown(f"**{cat_name}**")
+                        if right_df.empty:
+                            st.caption("—")
+                        else:
+                            for _, row in right_df.iterrows():
+                                st.markdown(_tsr_magnet_html(row, b_series), unsafe_allow_html=True)
+
+                st.markdown("---")
+                _render_md_position("Key Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Gen. Defender", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Midfielder", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Wing", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Ruck", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Key Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+                st.markdown("---")
+                _render_md_position("Gen. Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+        else:
+            st.info("No games found for this round.")
+    else:
+        st.info(f"No match ratings data available for {season}.")
+
     render_footer()
 
 
