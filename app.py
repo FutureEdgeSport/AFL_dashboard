@@ -13861,11 +13861,21 @@ elif page == "Team Selection Ratings":
 
             md_rating_mode = st.radio(
                 "Rating Display",
-                ["Current Season Rating", "Game Rating"],
+                ["Current Season Rating", "Game Rating", "Trait Rating"],
                 horizontal=True,
                 key="tsr_rating_mode",
             )
             _use_game_rating = (md_rating_mode == "Game Rating")
+            _use_trait_rating = (md_rating_mode == "Trait Rating")
+
+            # Load traits data
+            _traits_file = f"data/raw/traits/traits_{season}.csv"
+            _traits_df = None
+            if os.path.exists(_traits_file):
+                _traits_df = pd.read_csv(_traits_file)
+                _trait_col = "Overall_Rating" if "Overall_Rating" in _traits_df.columns else "Rating"
+                _traits_df = _traits_df.rename(columns={_trait_col: "TraitRating"})
+                _traits_df["TraitRating"] = pd.to_numeric(_traits_df["TraitRating"], errors="coerce")
 
             _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
             _md_match_teams = sorted(_md_match_df["Team"].unique())
@@ -13895,12 +13905,24 @@ elif page == "Team Selection Ratings":
 
                         if not found.empty:
                             r = found.iloc[0]
+                            # Lookup trait rating
+                            _tr = None
+                            if _traits_df is not None:
+                                _tf = _traits_df[(_traits_df["Team"] == team_name) & (_traits_df["Player"] == r["Player"])]
+                                if _tf.empty:
+                                    for _tv in build_player_name_variants(r["Player"]):
+                                        _tf = _traits_df[(_traits_df["Team"] == team_name) & (_traits_df["Player"] == _tv)]
+                                        if not _tf.empty:
+                                            break
+                                if not _tf.empty:
+                                    _tr = _tsr_safe_float(_tf.iloc[0]["TraitRating"])
                             rows.append({
                                 "Player": r["Player"],
                                 "Position": r["Position"],
                                 "Jumper": r.get("Jumper", ""),
                                 "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _tsr_safe_float(match_rating),
                                 "GameRating": _tsr_safe_float(match_rating),
+                                "TraitRating": _tr,
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13920,12 +13942,24 @@ elif page == "Team Selection Ratings":
                                 pos = sr.get("Position", "Midfielder") or "Midfielder"
                                 jumper = sr.get("Jumper", "")
 
+                            # Lookup trait rating for fallback path
+                            _tr2 = None
+                            if _traits_df is not None:
+                                _tf2 = _traits_df[(_traits_df["Team"] == team_name) & (_traits_df["Player"] == pname)]
+                                if _tf2.empty:
+                                    for _tv2 in build_player_name_variants(pname):
+                                        _tf2 = _traits_df[(_traits_df["Team"] == team_name) & (_traits_df["Player"] == _tv2)]
+                                        if not _tf2.empty:
+                                            break
+                                if not _tf2.empty:
+                                    _tr2 = _tsr_safe_float(_tf2.iloc[0]["TraitRating"])
                             rows.append({
                                 "Player": pname,
                                 "Position": pos,
                                 "Jumper": jumper,
                                 "Rating": _tsr_safe_float(match_rating),
                                 "GameRating": _tsr_safe_float(match_rating),
+                                "TraitRating": _tr2,
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13938,6 +13972,9 @@ elif page == "Team Selection Ratings":
                 if _use_game_rating:
                     md_best_a["Rating"] = md_best_a["GameRating"]
                     md_best_b["Rating"] = md_best_b["GameRating"]
+                elif _use_trait_rating:
+                    md_best_a["Rating"] = md_best_a["TraitRating"]
+                    md_best_b["Rating"] = md_best_b["TraitRating"]
 
                 md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
                 md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
@@ -13961,7 +13998,7 @@ elif page == "Team Selection Ratings":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_a_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "MATCH DAY 23 RATING"}</div>
                     {_tsr_pill(md_a_str if md_a_str else "—", big=True)}
                 </div>
                 <div class="midCol">
@@ -13973,7 +14010,7 @@ elif page == "Team Selection Ratings":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_b_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "MATCH DAY 23 RATING"}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "MATCH DAY 23 RATING"}</div>
                     {_tsr_pill(md_b_str if md_b_str else "—", big=True)}
                 </div>
                 </div>
@@ -14069,7 +14106,12 @@ elif page == "Team Selection Ratings":
                 """
 
                 components.html(md_header_html.strip(), height=400, scrolling=False)
-                st.caption("Game rating points shown for each player this match." if _use_game_rating else "Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
+                if _use_game_rating:
+                    st.caption("Game rating points shown for each player this match.")
+                elif _use_trait_rating:
+                    st.caption("Season trait ratings from Traits Insights. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
+                else:
+                    st.caption("Players' current season ratings shown. Order: Team A magnets • A avg • Net (A–B) • B avg • Team B magnets.")
 
                 # Magnet CSS
                 mag_css = """
@@ -14182,65 +14224,94 @@ elif page == "Team Selection Ratings":
                 # =====================================================
                 # ROUND STRENGTH CONTINUUM
                 # =====================================================
-                st.markdown("---")
-                st.subheader(f"Team Strength – {_md_round_labels[md_round]}")
-                st.caption(
-                    "Average rating points per selected player, relative to the round average. "
-                    "Strongest selected side on the left, weakest on the right."
-                )
-
-                # Compute average RatingPoints per team for this round
-                _rd_team_avg = (
-                    _md_round_df
-                    .groupby("Team")["RatingPoints"]
-                    .mean()
-                    .reset_index()
-                    .rename(columns={"RatingPoints": "AvgRating"})
-                )
-                _league_avg = _rd_team_avg["AvgRating"].mean()
-                _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _league_avg
-                _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
-
-                # Build horizontal diverging bar chart via Plotly
                 import plotly.graph_objects as go
 
-                _bar_colours = [
-                    "rgba(0,180,90,0.75)" if v >= 0 else "rgba(220,60,60,0.75)"
-                    for v in _rd_team_avg["RelStrength"]
-                ]
+                st.markdown("---")
+                st.subheader(f"Team Strength – {_md_round_labels[md_round]}")
 
-                _fig = go.Figure(go.Bar(
-                    x=_rd_team_avg["RelStrength"],
-                    y=_rd_team_avg["Team"],
-                    orientation="h",
-                    marker_color=_bar_colours,
-                    text=[f"{v:+.2f}" for v in _rd_team_avg["RelStrength"]],
-                    textposition="outside",
-                    textfont=dict(size=13, family="Arial Black", color="white"),
-                ))
+                if _use_trait_rating and _traits_df is not None:
+                    # --- Trait-based strength chart ---
+                    st.caption(
+                        "Average trait rating per selected player, relative to the round average. "
+                        "Strongest selected side on the left, weakest on the right."
+                    )
+                    # For each team in this round, resolve trait ratings for their 23
+                    _trait_team_avgs = []
+                    for _t_name in sorted(_md_round_df["Team"].unique()):
+                        _t_players = _md_round_df[_md_round_df["Team"] == _t_name]["Player"].tolist()
+                        _t_vals = []
+                        for _tp in _t_players:
+                            _tmatch = _traits_df[(_traits_df["Team"] == _t_name) & (_traits_df["Player"] == _tp)]
+                            if _tmatch.empty:
+                                for _tv in build_player_name_variants(_tp):
+                                    _tmatch = _traits_df[(_traits_df["Team"] == _t_name) & (_traits_df["Player"] == _tv)]
+                                    if not _tmatch.empty:
+                                        break
+                            if not _tmatch.empty:
+                                _v = _tsr_safe_float(_tmatch.iloc[0]["TraitRating"])
+                                if _v is not None:
+                                    _t_vals.append(_v)
+                        if _t_vals:
+                            _trait_team_avgs.append({"Team": _t_name, "AvgRating": sum(_t_vals) / len(_t_vals)})
+                    _rd_team_avg = pd.DataFrame(_trait_team_avgs)
+                    _x_label = "Trait Rating vs Round Average"
+                else:
+                    # --- RatingPoints-based strength chart ---
+                    st.caption(
+                        "Average rating points per selected player, relative to the round average. "
+                        "Strongest selected side on the left, weakest on the right."
+                    )
+                    _rd_team_avg = (
+                        _md_round_df
+                        .groupby("Team")["RatingPoints"]
+                        .mean()
+                        .reset_index()
+                        .rename(columns={"RatingPoints": "AvgRating"})
+                    )
+                    _x_label = "Rating vs Round Average"
 
-                _fig.update_layout(
-                    height=max(420, len(_rd_team_avg) * 38),
-                    margin=dict(l=10, r=30, t=10, b=30),
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    xaxis=dict(
-                        title=dict(text="Rating vs Round Average", font=dict(size=12)),
-                        zeroline=True,
-                        zerolinecolor="rgba(255,255,255,0.35)",
-                        zerolinewidth=2,
-                        gridcolor="rgba(255,255,255,0.08)",
-                        color="rgba(255,255,255,0.7)",
-                    ),
-                    yaxis=dict(
-                        autorange="reversed",
-                        color="rgba(255,255,255,0.9)",
-                        tickfont=dict(size=13, family="Arial"),
-                    ),
-                    font=dict(color="white"),
-                )
+                if not _rd_team_avg.empty:
+                    _league_avg = _rd_team_avg["AvgRating"].mean()
+                    _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _league_avg
+                    _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
 
-                st.plotly_chart(_fig, use_container_width=True)
+                    _bar_colours = [
+                        "rgba(0,180,90,0.75)" if v >= 0 else "rgba(220,60,60,0.75)"
+                        for v in _rd_team_avg["RelStrength"]
+                    ]
+
+                    _fig = go.Figure(go.Bar(
+                        x=_rd_team_avg["RelStrength"],
+                        y=_rd_team_avg["Team"],
+                        orientation="h",
+                        marker_color=_bar_colours,
+                        text=[f"{v:+.2f}" for v in _rd_team_avg["RelStrength"]],
+                        textposition="outside",
+                        textfont=dict(size=13, family="Arial Black", color="white"),
+                    ))
+
+                    _fig.update_layout(
+                        height=max(420, len(_rd_team_avg) * 38),
+                        margin=dict(l=10, r=30, t=10, b=30),
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        xaxis=dict(
+                            title=dict(text=_x_label, font=dict(size=12)),
+                            zeroline=True,
+                            zerolinecolor="rgba(255,255,255,0.35)",
+                            zerolinewidth=2,
+                            gridcolor="rgba(255,255,255,0.08)",
+                            color="rgba(255,255,255,0.7)",
+                        ),
+                        yaxis=dict(
+                            autorange="reversed",
+                            color="rgba(255,255,255,0.9)",
+                            tickfont=dict(size=13, family="Arial"),
+                        ),
+                        font=dict(color="white"),
+                    )
+
+                    st.plotly_chart(_fig, use_container_width=True)
 
         else:
             st.info("No games found for this round.")
