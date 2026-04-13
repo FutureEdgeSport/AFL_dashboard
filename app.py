@@ -14178,6 +14178,71 @@ elif page == "Team Selection Ratings":
                 _render_md_position("Key Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
                 st.markdown("---")
                 _render_md_position("Gen. Forward", md_best_a, md_best_b, md_team_a_series, md_team_b_series)
+
+                # =====================================================
+                # ROUND STRENGTH CONTINUUM
+                # =====================================================
+                st.markdown("---")
+                st.subheader(f"Team Strength – {_md_round_labels[md_round]}")
+                st.caption(
+                    "Average rating points per selected player, relative to the round average. "
+                    "Strongest selected side on the left, weakest on the right."
+                )
+
+                # Compute average RatingPoints per team for this round
+                _rd_team_avg = (
+                    _md_round_df
+                    .groupby("Team")["RatingPoints"]
+                    .mean()
+                    .reset_index()
+                    .rename(columns={"RatingPoints": "AvgRating"})
+                )
+                _league_avg = _rd_team_avg["AvgRating"].mean()
+                _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _league_avg
+                _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
+
+                # Build horizontal diverging bar chart via Plotly
+                import plotly.graph_objects as go
+
+                _bar_colours = [
+                    "rgba(0,180,90,0.75)" if v >= 0 else "rgba(220,60,60,0.75)"
+                    for v in _rd_team_avg["RelStrength"]
+                ]
+
+                _fig = go.Figure(go.Bar(
+                    x=_rd_team_avg["RelStrength"],
+                    y=_rd_team_avg["Team"],
+                    orientation="h",
+                    marker_color=_bar_colours,
+                    text=[f"{v:+.2f}" for v in _rd_team_avg["RelStrength"]],
+                    textposition="outside",
+                    textfont=dict(size=13, family="Arial Black", color="white"),
+                ))
+
+                _fig.update_layout(
+                    height=max(420, len(_rd_team_avg) * 38),
+                    margin=dict(l=10, r=30, t=10, b=30),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    xaxis=dict(
+                        title="Rating vs Round Average",
+                        zeroline=True,
+                        zerolinecolor="rgba(255,255,255,0.35)",
+                        zerolinewidth=2,
+                        gridcolor="rgba(255,255,255,0.08)",
+                        color="rgba(255,255,255,0.7)",
+                        titlefont=dict(size=12),
+                    ),
+                    yaxis=dict(
+                        autorange="reversed",
+                        color="rgba(255,255,255,0.9)",
+                        tickfont=dict(size=13, family="Arial"),
+                    ),
+                    font=dict(color="white"),
+                )
+
+                st.plotly_chart(_fig, use_container_width=True)
+
         else:
             st.info("No games found for this round.")
     else:
