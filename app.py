@@ -14231,15 +14231,12 @@ elif page == "Team Selection Ratings":
                 import plotly.graph_objects as go
 
                 st.markdown("---")
-                st.subheader(f"Team Strength – {_md_round_labels[md_round]}")
 
                 if _use_trait_rating and _traits_df is not None:
                     # --- Trait-based strength chart ---
-                    st.caption(
-                        "Average trait rating per selected player, relative to the season average. "
-                        "Strongest selected side on the left, weakest on the right."
+                    _strength_caption = (
+                        "Average trait rating per selected player, relative to the season average."
                     )
-                    # For each team in this round, resolve trait ratings for their 23
                     _trait_team_avgs = []
                     for _t_name in sorted(_md_round_df["Team"].unique()):
                         _t_players = _md_round_df[_md_round_df["Team"] == _t_name]["Player"].tolist()
@@ -14258,12 +14255,11 @@ elif page == "Team Selection Ratings":
                         if _t_vals:
                             _trait_team_avgs.append({"Team": _t_name, "AvgRating": sum(_t_vals) / len(_t_vals)})
                     _rd_team_avg = pd.DataFrame(_trait_team_avgs)
-                    _x_label = "Trait Rating vs Season Average"
+                    _x_label = "Trait Rating vs Season Avg"
                 else:
                     # --- RatingPoints-based strength chart ---
-                    st.caption(
-                        "Average rating points per selected player, relative to the season average. "
-                        "Strongest selected side on the left, weakest on the right."
+                    _strength_caption = (
+                        "Average rating points per selected player, relative to the season average."
                     )
                     _rd_team_avg = (
                         _md_round_df
@@ -14272,7 +14268,7 @@ elif page == "Team Selection Ratings":
                         .reset_index()
                         .rename(columns={"RatingPoints": "AvgRating"})
                     )
-                    _x_label = "Rating vs Season Average"
+                    _x_label = "Rating vs Season Avg"
 
                 if not _rd_team_avg.empty:
                     # Compute season-wide team averages for the baseline
@@ -14292,98 +14288,183 @@ elif page == "Team Selection Ratings":
                     _season_team_avg = _season_all.groupby("Team")["AvgRating"].mean()
                     _season_league_avg = _season_team_avg.mean()
 
-                    # This round's bars are relative to the season league average
                     _rd_team_avg["RelStrength"] = _rd_team_avg["AvgRating"] - _season_league_avg
                     _rd_team_avg = _rd_team_avg.sort_values("RelStrength", ascending=False)
 
-                    # --- Compute season-wide benchmarks per team ---
-                    # Season avg & best relative to the same season-wide baseline
                     _season_all["RelStrength"] = _season_all["AvgRating"] - _season_league_avg
                     _season_avg = _season_all.groupby("Team")["RelStrength"].mean().to_dict()
                     _season_best = _season_all.groupby("Team")["RelStrength"].max().to_dict()
 
-                    # Map season values to the sorted team order
                     _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
                     _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
 
-                    _bar_colours = [
-                        "rgba(0,180,90,0.75)" if v >= 0 else "rgba(220,60,60,0.75)"
-                        for v in _rd_team_avg["RelStrength"]
-                    ]
+                    # --- Build team logo b64 lookup ---
+                    _logo_b64_map = {}
+                    for _t in _rd_team_avg["Team"]:
+                        _lp = get_team_logo_path(_t)
+                        if _lp:
+                            _logo_b64_map[_t] = _tsr_img_to_b64(_lp)
 
+                    _teams_list = _rd_team_avg["Team"].tolist()
+                    _n_teams = len(_teams_list)
+                    _max_abs = max(abs(_rd_team_avg["RelStrength"].max()), abs(_rd_team_avg["RelStrength"].min()), 0.5)
+                    # extend range slightly for text
+                    _x_range = [-_max_abs * 1.35, _max_abs * 1.35]
+
+                    # --- Build Plotly figure with refined styling ---
                     _fig = go.Figure()
 
-                    # Bars — this round's relative strength
-                    _fig.add_trace(go.Bar(
-                        x=_rd_team_avg["RelStrength"],
-                        y=_rd_team_avg["Team"],
-                        orientation="h",
-                        marker_color=_bar_colours,
-                        text=[f"{v:+.2f}" for v in _rd_team_avg["RelStrength"]],
-                        textposition="outside",
-                        textfont=dict(size=13, family="Arial Black", color="white"),
-                        name="This Round",
+                    # Invisible scatter for y-axis ordering (ensures correct team order)
+                    _fig.add_trace(go.Scatter(
+                        x=[0] * _n_teams,
+                        y=_teams_list,
+                        mode="markers",
+                        marker=dict(size=0.1, opacity=0),
+                        showlegend=False,
+                        hoverinfo="skip",
                     ))
 
-                    # Season average — vertical line marker on each bar
+                    # Bars — team-coloured with rounded appearance
+                    for _idx, _row in _rd_team_avg.iterrows():
+                        _pal = TEAM_COLOUR_PALETTES.get(_row["Team"], {"primary": "#555555"})
+                        _primary = _pal["primary"]
+                        _v = _row["RelStrength"]
+                        # Lighten for positive, darken for negative
+                        _alpha = 0.88
+                        _fig.add_trace(go.Bar(
+                            x=[_v],
+                            y=[_row["Team"]],
+                            orientation="h",
+                            marker=dict(
+                                color=_primary,
+                                opacity=_alpha,
+                                line=dict(width=0),
+                            ),
+                            text=f"{_v:+.2f}",
+                            textposition="outside",
+                            textfont=dict(
+                                size=12,
+                                family="SF Pro Display, -apple-system, Arial",
+                                color="rgba(255,255,255,0.9)",
+                            ),
+                            width=0.62,
+                            showlegend=False,
+                            hovertemplate=f"<b>{_row['Team']}</b><br>This Round: {_v:+.2f}<extra></extra>",
+                        ))
+
+                    # Season average — clean line tick
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonAvg"],
                         y=_rd_team_avg["Team"],
                         mode="markers",
                         marker=dict(
                             symbol="line-ns",
-                            size=18,
-                            line=dict(width=3, color="rgba(255,255,255,0.85)"),
-                            color="rgba(255,255,255,0.85)",
+                            size=20,
+                            line=dict(width=2.5, color="rgba(255,255,255,0.75)"),
+                            color="rgba(255,255,255,0.75)",
                         ),
                         name="Season Avg",
+                        hovertemplate="%{y}: %{x:+.2f}<extra>Season Avg</extra>",
                     ))
 
-                    # Season best — dot
+                    # Season best — small diamond
                     _fig.add_trace(go.Scatter(
                         x=_rd_team_avg["SeasonBest"],
                         y=_rd_team_avg["Team"],
                         mode="markers",
                         marker=dict(
                             symbol="diamond",
-                            size=10,
-                            color="rgba(255,215,0,0.90)",
-                            line=dict(width=1, color="rgba(0,0,0,0.4)"),
+                            size=8,
+                            color="#FFD700",
+                            line=dict(width=0.8, color="rgba(0,0,0,0.5)"),
                         ),
                         name="Season Best",
+                        hovertemplate="%{y}: %{x:+.2f}<extra>Season Best</extra>",
                     ))
 
                     _fig.update_layout(
-                        height=max(420, len(_rd_team_avg) * 38),
-                        margin=dict(l=10, r=30, t=10, b=30),
+                        height=max(380, _n_teams * 44),
+                        margin=dict(l=0, r=20, t=0, b=28),
                         paper_bgcolor="rgba(0,0,0,0)",
                         plot_bgcolor="rgba(0,0,0,0)",
                         xaxis=dict(
-                            title=dict(text=_x_label, font=dict(size=12)),
+                            title=dict(
+                                text=_x_label,
+                                font=dict(size=11, color="rgba(255,255,255,0.45)", family="SF Pro Display, -apple-system, Arial"),
+                            ),
+                            range=_x_range,
                             zeroline=True,
-                            zerolinecolor="rgba(255,255,255,0.35)",
-                            zerolinewidth=2,
-                            gridcolor="rgba(255,255,255,0.08)",
-                            color="rgba(255,255,255,0.7)",
+                            zerolinecolor="rgba(255,255,255,0.18)",
+                            zerolinewidth=1.5,
+                            showgrid=True,
+                            gridcolor="rgba(255,255,255,0.04)",
+                            gridwidth=1,
+                            color="rgba(255,255,255,0.45)",
+                            tickfont=dict(size=10, color="rgba(255,255,255,0.4)"),
+                            dtick=0.5 if _max_abs < 3 else 1,
                         ),
                         yaxis=dict(
                             autorange="reversed",
                             color="rgba(255,255,255,0.9)",
-                            tickfont=dict(size=13, family="Arial"),
+                            tickfont=dict(size=13, family="SF Pro Display, -apple-system, Arial", color="rgba(255,255,255,0.9)"),
+                            showgrid=False,
                         ),
-                        font=dict(color="white"),
+                        font=dict(color="white", family="SF Pro Display, -apple-system, Arial"),
                         legend=dict(
                             orientation="h",
                             yanchor="bottom",
-                            y=1.02,
+                            y=1.0,
                             xanchor="center",
                             x=0.5,
-                            font=dict(size=12, color="white"),
+                            font=dict(size=11, color="rgba(255,255,255,0.7)"),
+                            bgcolor="rgba(0,0,0,0)",
+                            itemsizing="constant",
                         ),
                         barmode="overlay",
+                        hoverlabel=dict(
+                            bgcolor="rgba(20,20,25,0.95)",
+                            bordercolor="rgba(255,255,255,0.15)",
+                            font=dict(size=12, color="white", family="SF Pro Display, -apple-system, Arial"),
+                        ),
                     )
 
-                    st.plotly_chart(_fig, use_container_width=True)
+                    # --- Render header + chart inside styled container ---
+                    _round_label = _md_round_labels[md_round]
+                    _sc_html = f"""
+                    <div style="
+                        background: linear-gradient(135deg, rgba(20,20,28,0.95) 0%, rgba(12,12,18,0.98) 100%);
+                        border: 1px solid rgba(255,255,255,0.06);
+                        border-radius: 16px;
+                        padding: 28px 24px 12px 24px;
+                        margin: 8px 0 20px 0;
+                    ">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                            <div style="
+                                font-size:20px;
+                                font-weight:700;
+                                font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                color:rgba(255,255,255,0.95);
+                                letter-spacing:-0.02em;
+                            ">Team Strength</div>
+                            <div style="
+                                font-size:13px;
+                                font-weight:500;
+                                font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                color:rgba(255,255,255,0.40);
+                                letter-spacing:0.02em;
+                            ">{_round_label}</div>
+                        </div>
+                        <div style="
+                            font-size:12px;
+                            color:rgba(255,255,255,0.35);
+                            font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                            margin-bottom:16px;
+                            letter-spacing:0.01em;
+                        ">{_strength_caption}</div>
+                    </div>
+                    """
+                    st.markdown(_sc_html, unsafe_allow_html=True)
+                    st.plotly_chart(_fig, use_container_width=True, config={"displayModeBar": False})
 
         else:
             st.info("No games found for this round.")
