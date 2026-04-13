@@ -14291,10 +14291,14 @@ elif page == "Team Selection Ratings":
                         # No round-level history for traits, so season best = season avg
                         _season_best = _season_avg.copy()
                         _season_best_rnd = {t: "" for t in _season_avg}
+                        _season_worst = _season_avg.copy()
+                        _season_worst_rnd = {t: "" for t in _season_avg}
 
                         _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
                         _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
                         _rd_team_avg["SeasonBestRound"] = _rd_team_avg["Team"].map(_season_best_rnd)
+                        _rd_team_avg["SeasonWorst"] = _rd_team_avg["Team"].map(_season_worst)
+                        _rd_team_avg["SeasonWorstRound"] = _rd_team_avg["Team"].map(_season_worst_rnd)
                     else:
                         # RatingPoints mode: baseline is season-wide league average
                         _all_round_avgs = []
@@ -14327,9 +14331,18 @@ elif page == "Team Selection Ratings":
                             _best_row = _t_rows.loc[_t_rows["RelStrength"].idxmax()]
                             _season_best_rnd[_t] = f"Rd {int(_best_row['Round'])}"
 
+                        _season_worst = _season_all.groupby("Team")["RelStrength"].min().to_dict()
+                        _season_worst_rnd = {}
+                        for _t, _wv in _season_worst.items():
+                            _t_rows = _season_all[_season_all["Team"] == _t]
+                            _worst_row = _t_rows.loc[_t_rows["RelStrength"].idxmin()]
+                            _season_worst_rnd[_t] = f"Rd {int(_worst_row['Round'])}"
+
                         _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
                         _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
                         _rd_team_avg["SeasonBestRound"] = _rd_team_avg["Team"].map(_season_best_rnd)
+                        _rd_team_avg["SeasonWorst"] = _rd_team_avg["Team"].map(_season_worst)
+                        _rd_team_avg["SeasonWorstRound"] = _rd_team_avg["Team"].map(_season_worst_rnd)
 
                     # --- Build team logo b64 lookup ---
                     _logo_b64_map = {}
@@ -14422,6 +14435,26 @@ elif page == "Team Selection Ratings":
                         ),
                         name="Season Best",
                         hovertemplate=_best_hover,
+                    ))
+
+                    # Season worst — small diamond (red)
+                    _worst_hover = [
+                        f"<b>{t}</b>: {v:+.1f} ({r})<extra>Season Worst</extra>" if pd.notna(v) and r
+                        else (f"<b>{t}</b>: {v:+.1f}<extra>Season Worst</extra>" if pd.notna(v) else "")
+                        for t, v, r in zip(_rd_team_avg["Team"], _rd_team_avg["SeasonWorst"], _rd_team_avg["SeasonWorstRound"])
+                    ]
+                    _fig.add_trace(go.Scatter(
+                        x=_rd_team_avg["SeasonWorst"],
+                        y=_rd_team_avg["Team"],
+                        mode="markers",
+                        marker=dict(
+                            symbol="diamond",
+                            size=8,
+                            color="#FF4444",
+                            line=dict(width=0.8, color="rgba(0,0,0,0.5)"),
+                        ),
+                        name="Season Worst",
+                        hovertemplate=_worst_hover,
                     ))
 
                     _fig.update_layout(
