@@ -278,6 +278,56 @@ def main():
     else:
         print("\nNo traits data retrieved!")
 
+    # Step 4: Snapshot traits for the current round (for Trait Rating Matrix)
+    try:
+        snapshot_traits_to_history()
+    except Exception as e:
+        print(f"\n⚠️  Traits snapshot failed: {e}")
+
+
+def snapshot_traits_to_history():
+    """Save current traits as a per-round snapshot for the Trait Rating Matrix.
+
+    Overwrites the snapshot for the current round so re-running the API
+    with fresh Champion Data values updates the history correctly.
+    """
+    match_ratings_path = Path(f"data/raw/player/match_ratings_{SEASON}.csv")
+    traits_path = Path(f"data/raw/traits/traits_{SEASON}.csv")
+
+    if not match_ratings_path.exists() or not traits_path.exists():
+        print("\nSnapshot: Missing match_ratings or traits file, skipping")
+        return
+
+    mr = pd.read_csv(match_ratings_path)
+    if "Round" not in mr.columns or mr.empty:
+        print("\nSnapshot: No round data in match_ratings, skipping")
+        return
+    current_round = int(mr["Round"].max())
+    if current_round <= 0:
+        return
+
+    traits = pd.read_csv(traits_path)
+    if "Overall_Rating" not in traits.columns:
+        print("\nSnapshot: No Overall_Rating in traits file, skipping")
+        return
+
+    history_path = Path(f"data/raw/traits/traits_history_{SEASON}.csv")
+    if history_path.exists():
+        history = pd.read_csv(history_path)
+    else:
+        history = pd.DataFrame(columns=["Player", "Team", "Round", "Overall_Rating"])
+
+    # Remove existing snapshot for current round (overwrite with fresh data)
+    history = history[history["Round"] != current_round]
+
+    snapshot = traits[["Player", "Team", "Overall_Rating"]].copy()
+    snapshot["Round"] = current_round
+    snapshot = snapshot[snapshot["Overall_Rating"].notna()]
+
+    history = pd.concat([history, snapshot], ignore_index=True)
+    safe_csv_write(history, history_path)
+    print(f"\nSnapshot: Saved traits_history_{SEASON}.csv for R{current_round} ({len(snapshot)} players)")
+
 
 if __name__ == "__main__":
     main()

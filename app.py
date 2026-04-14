@@ -20161,12 +20161,14 @@ elif page == "Player Rating Matrix":
                             _th_team = _th_team.copy()
                             _th_team["Overall_Rating"] = pd.to_numeric(_th_team["Overall_Rating"], errors="coerce")
                             _hist_lookup = {(r["Player"], int(r["Round"])): r["Overall_Rating"] for _, r in _th_team.iterrows() if pd.notna(r["Overall_Rating"])}
-                            # For the current/latest round, fall back to _trait_map if not yet in history
-                            _max_hist_round = int(_th_team["Round"].max()) if not _th_team.empty else 0
+                            # Latest round in the match data always uses live traits
+                            _latest_data_round = int(df_filt["Round"].max())
                             _rdata["_tr"] = _rdata.apply(
-                                lambda r: _hist_lookup.get((r[player_col], int(r["Round"])),
-                                    _trait_map.get(r[player_col]) if int(r["Round"]) > _max_hist_round and r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col])) else float("nan")
-                                ) if r["_cg"] >= 3 else float("nan"), axis=1
+                                lambda r: (
+                                    _trait_map.get(r[player_col]) if int(r["Round"]) == _latest_data_round and r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col]))
+                                    else _hist_lookup.get((r[player_col], int(r["Round"])), float("nan")) if r["_cg"] >= 3
+                                    else float("nan")
+                                ), axis=1
                             )
                         else:
                             # No history: use current trait rating for all rounds >= 3 games (fallback)
