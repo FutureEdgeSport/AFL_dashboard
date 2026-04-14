@@ -20147,10 +20147,26 @@ elif page == "Player Rating Matrix":
                         # Filter traits to selected team
                         _t_team = _traits_df[_traits_df["Team"] == selected_team] if selected_team and "Team" in _traits_df.columns else _traits_df
                         _trait_map = dict(zip(_t_team["Player"], pd.to_numeric(_t_team["Overall_Rating"], errors="coerce")))
+                        # Keep only players that actually have a trait rating
+                        _trait_map = {p: v for p, v in _trait_map.items() if pd.notna(v)}
 
-                        # Cumulative games per player per round
-                        _rdata = df_filt[[player_col, "Round"]].drop_duplicates().sort_values("Round")
-                        _rdata["_cg"] = _rdata.groupby(player_col).cumcount() + 1
+                        # Build grid: ALL players with trait ratings × ALL rounds in range
+                        _all_rounds = sorted(df_filt["Round"].dropna().unique())
+                        _all_trait_players = sorted(_trait_map.keys())
+                        _rdata = pd.DataFrame([(p, rd) for p in _all_trait_players for rd in _all_rounds], columns=[player_col, "Round"])
+
+                        # Cumulative games per player from match data
+                        _match_games = df_filt[[player_col, "Round"]].drop_duplicates().sort_values("Round")
+                        _match_games["_cg"] = _match_games.groupby(player_col).cumcount() + 1
+                        _cg_lookup = {(r[player_col], int(r["Round"])): r["_cg"] for _, r in _match_games.iterrows()}
+                        # For each player-round, carry forward the last known cumulative game count
+                        def _get_cum_games(player, rd):
+                            if (player, rd) in _cg_lookup:
+                                return _cg_lookup[(player, rd)]
+                            # Player didn't play this round — carry forward from the most recent earlier round
+                            prev = [_cg_lookup[(player, r)] for r in _all_rounds if r < rd and (player, r) in _cg_lookup]
+                            return prev[-1] if prev else 0
+                        _rdata["_cg"] = _rdata.apply(lambda r: _get_cum_games(r[player_col], int(r["Round"])), axis=1)
 
                         if _has_history:
                             # Build per-round lookup: {(player, round): rating}
@@ -20177,8 +20193,6 @@ elif page == "Player Rating Matrix":
                             )
 
                         pivot = _rdata.pivot_table(index=player_col, columns="Round", values="_tr", aggfunc="first")
-                        # Ensure all rounds from the filtered data appear as columns
-                        _all_rounds = sorted(df_filt["Round"].dropna().unique())
                         pivot = pivot.reindex(columns=_all_rounds)
                         pivot.columns = [("OR" if int(c) == 0 else f"R{int(c)}") for c in pivot.columns]
 
