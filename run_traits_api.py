@@ -289,11 +289,38 @@ def main():
         print(f"\n⚠️  Traits snapshot failed: {e}")
 
 
-def snapshot_traits_to_history():
-    """Save current traits as a per-round snapshot for the Trait Rating Matrix.
+# ---------------------------------------------------------------------------
+# Snapshot stability thresholds
+# ---------------------------------------------------------------------------
+# After a round, Traits Insights ratings take 1-2 days to settle.  We save
+# each API fetch as a "pending" snapshot and only promote it to the
+# official traits_history once two consecutive fetches are consistent.
+#
+# Schedule context:  traits_api runs Sun / Mon / Tue (STEP_DAY_RESTRICTIONS).
+# Typical flow for Round N:
+#   Sunday  — first fetch after the round → saved as pending (no prior to compare)
+#   Monday  — second fetch → compared against Sunday's pending
+#   Tuesday — third fetch  → compared against Monday's; if stable → promoted
+#
+# A snapshot is considered "stable" when:
+#   1. The mean |Δ Overall_Rating| across all matched players is below
+#      STABILITY_MEAN_THRESHOLD, AND
+#   2. The max |Δ Overall_Rating| for any single player is below
+#      STABILITY_MAX_THRESHOLD, AND
+#   3. At least STABILITY_MIN_PLAYERS players are present.
+STABILITY_MEAN_THRESHOLD = 0.03   # avg movement ≤ 0.03 rating points
+STABILITY_MAX_THRESHOLD  = 0.20   # no single player moved > 0.20
+STABILITY_MIN_PLAYERS    = 300    # minimum players with a rating
 
-    Overwrites the snapshot for the current round so re-running the API
-    with fresh Traits Insights values updates the history correctly.
+
+def snapshot_traits_to_history():
+    """Validate trait data stability before committing a per-round snapshot.
+
+    On each run:
+      1. Build a fresh snapshot from the just-updated traits file.
+      2. Compare it to the pending snapshot from the previous run (if any).
+      3. If the data has stabilised → promote to traits_history (final).
+         If not → save as the new pending and wait for the next run.
     """
     match_ratings_path = Path(f"data/raw/player/match_ratings_{SEASON}.csv")
     traits_path = Path(f"data/raw/traits/traits_{SEASON}.csv")
@@ -315,22 +342,102 @@ def snapshot_traits_to_history():
         print("\nSnapshot: No Overall_Rating in traits file, skipping")
         return
 
+    # Build the candidate snapshot from the fresh fetch
+    candidate = traits[["Player", "Team", "Overall_Rating"]].copy()
+    candidate["Overall_Rating"] = pd.to_numeric(candidate["Overall_Rating"], errors="coerce")
+    candidate = candidate[candidate["Overall_Rating"].notna()].reset_index(drop=True)
+
+    if len(candidate) < STABILITY_MIN_PLAYERS:
+        print(f"\nSnapshot: Only {len(candidate)} players with ratings "
+              f"(need {STABILITY_MIN_PLAYERS}), skipping")
+        return
+
+    # ---- Check for an existing pending snapshot ----------------------------
+    pending_dir = Path(f"data/raw/traits/pending")
+    pending_dir.mkdir(parents=True, exist_ok=True)
+    pending_path = pending_dir / f"traits_pending_{SEASON}_R{current_round}.csv"
+
     history_path = Path(f"data/raw/traits/traits_history_{SEASON}.csv")
+
+    # Check if this round is already finalised in history
     if history_path.exists():
         history = pd.read_csv(history_path)
+        finalised_rounds = set(history["Round"].unique()) if not history.empty else set()
     else:
         history = pd.DataFrame(columns=["Player", "Team", "Round", "Overall_Rating"])
+        finalised_rounds = set()
 
-    # Remove existing snapshot for current round (overwrite with fresh data)
+    if current_round in finalised_rounds:
+        # Already have a final snapshot for this round — update it silently
+        # (handles re-runs after promotion)
+        _write_final_snapshot(candidate, current_round, history, history_path)
+        print(f"\nSnapshot: R{current_round} already finalised — updated with latest values")
+        return
+
+    if not pending_path.exists():
+        # First fetch for this round — save as pending, nothing to compare yet
+        safe_csv_write(candidate, pending_path)
+        print(f"\nSnapshot: R{current_round} — first fetch saved as pending "
+              f"({len(candidate)} players). Will validate on next run.")
+        return
+
+    # ---- Compare candidate vs prior pending --------------------------------
+    prior = pd.read_csv(pending_path)
+    prior["Overall_Rating"] = pd.to_numeric(prior["Overall_Rating"], errors="coerce")
+
+    merged = candidate.merge(prior, on=["Player", "Team"], suffixes=("_new", "_old"),
+                             how="inner")
+    merged = merged[merged["Overall_Rating_old"].notna() & merged["Overall_Rating_new"].notna()]
+
+    if merged.empty:
+        safe_csv_write(candidate, pending_path)
+        print(f"\nSnapshot: R{current_round} — no overlap with prior pending, "
+              f"saved fresh pending ({len(candidate)} players)")
+        return
+
+    merged["_delta"] = (merged["Overall_Rating_new"] - merged["Overall_Rating_old"]).abs()
+    mean_delta = merged["_delta"].mean()
+    max_delta  = merged["_delta"].max()
+    pct_moved  = (merged["_delta"] > 0.001).mean() * 100
+    n_matched  = len(merged)
+
+    print(f"\nSnapshot validation for R{current_round}:")
+    print(f"  Players compared : {n_matched}")
+    print(f"  Mean |Δ rating|  : {mean_delta:.4f}  (threshold: {STABILITY_MEAN_THRESHOLD})")
+    print(f"  Max  |Δ rating|  : {max_delta:.4f}  (threshold: {STABILITY_MAX_THRESHOLD})")
+    print(f"  % players moved  : {pct_moved:.1f}%")
+
+    is_stable = (mean_delta <= STABILITY_MEAN_THRESHOLD
+                 and max_delta <= STABILITY_MAX_THRESHOLD)
+
+    if is_stable:
+        # Data has settled — promote to final history
+        _write_final_snapshot(candidate, current_round, history, history_path)
+        # Clean up pending file
+        pending_path.unlink(missing_ok=True)
+        print(f"  ✅ STABLE — promoted R{current_round} snapshot to traits_history "
+              f"({len(candidate)} players)")
+    else:
+        # Still moving — overwrite pending with latest and wait
+        safe_csv_write(candidate, pending_path)
+        # Show the biggest movers for debugging
+        top_movers = merged.nlargest(5, "_delta")[["Player", "Team",
+                                                    "Overall_Rating_old",
+                                                    "Overall_Rating_new", "_delta"]]
+        print(f"  ⏳ NOT STABLE — saved as pending. Top movers:")
+        for _, row in top_movers.iterrows():
+            print(f"     {row['Player']:30s}  "
+                  f"{row['Overall_Rating_old']:.2f} → {row['Overall_Rating_new']:.2f}  "
+                  f"(Δ {row['_delta']:.2f})")
+
+
+def _write_final_snapshot(candidate, current_round, history, history_path):
+    """Write a validated snapshot into traits_history."""
     history = history[history["Round"] != current_round]
-
-    snapshot = traits[["Player", "Team", "Overall_Rating"]].copy()
+    snapshot = candidate.copy()
     snapshot["Round"] = current_round
-    snapshot = snapshot[snapshot["Overall_Rating"].notna()]
-
     history = pd.concat([history, snapshot], ignore_index=True)
     safe_csv_write(history, history_path)
-    print(f"\nSnapshot: Saved traits_history_{SEASON}.csv for R{current_round} ({len(snapshot)} players)")
 
 
 if __name__ == "__main__":
