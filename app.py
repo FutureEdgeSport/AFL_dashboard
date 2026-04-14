@@ -14232,6 +14232,54 @@ elif page == "Team Selection Ratings":
 
                 st.markdown("---")
 
+                # --- 2-season toggle ---
+                _use_2_seasons = st.checkbox("Include previous season", key="tsr_2seasons")
+                _prev_season = season - 1
+                _md_raw_prev = pd.DataFrame()
+                _sr_lkp_prev = {}
+                if _use_2_seasons:
+                    _prev_md_file = f"data/raw/player/match_ratings_{_prev_season}.csv"
+                    if os.path.exists(_prev_md_file):
+                        _md_raw_prev = pd.read_csv(_prev_md_file)
+                        _md_raw_prev["Team"] = _md_raw_prev["Team"].replace({"Greater Western Sydney": "GWS Giants"})
+                    if not (_use_game_rating or _use_trait_rating) and not _md_raw_prev.empty:
+                        _prev_ratings = load_players(_prev_season)
+                        _prev_r_val = _tsr_find_col(_prev_ratings, ["rating"])
+                        if _prev_r_val:
+                            _prev_ratings = _prev_ratings.rename(columns={_prev_r_val: "Rating"})
+                            _prev_ratings["Rating"] = pd.to_numeric(_prev_ratings["Rating"], errors="coerce")
+                            for _, _pr in _prev_ratings.dropna(subset=["Rating"]).iterrows():
+                                _sr_lkp_prev[(str(_pr["Team"]).lower().strip(), str(_pr["Player"]).lower().strip())] = float(_pr["Rating"])
+
+                # --- Helper: compute team averages using a season-rating lookup ---
+                def _tsr_team_avg_from_sr(rnd_df, lkp):
+                    avgs = []
+                    for t in rnd_df["Team"].unique():
+                        players = rnd_df[rnd_df["Team"] == t]["Player"].tolist()
+                        vals = []
+                        for p in players:
+                            k = (t.lower().strip(), p.lower().strip())
+                            if k in lkp:
+                                vals.append(lkp[k])
+                            else:
+                                for v in build_player_name_variants(p):
+                                    vk = (t.lower().strip(), v.lower().strip())
+                                    if vk in lkp:
+                                        vals.append(lkp[vk])
+                                        break
+                        if vals:
+                            avgs.append({"Team": t, "AvgRating": sum(vals) / len(vals)})
+                    return avgs
+
+                # --- Build season-rating lookup from merged_all ---
+                _sr_lkp = {}
+                if not (_use_game_rating or _use_trait_rating):
+                    for _, _sr_r in merged_all.iterrows():
+                        _sr_lkp[(str(_sr_r["Team"]).lower().strip(), str(_sr_r["Player"]).lower().strip())] = float(_sr_r["Rating"])
+
+                # =====================================================
+                # STEP 1 — Compute this round's team averages
+                # =====================================================
                 if _use_trait_rating and _traits_df is not None:
                     # --- Trait-based strength chart ---
                     _strength_caption = (
@@ -14256,10 +14304,10 @@ elif page == "Team Selection Ratings":
                             _trait_team_avgs.append({"Team": _t_name, "AvgRating": sum(_t_vals) / len(_t_vals)})
                     _rd_team_avg = pd.DataFrame(_trait_team_avgs)
                     _x_label = "Trait Rating vs Season Avg"
-                else:
-                    # --- RatingPoints-based strength chart ---
+                elif _use_game_rating:
+                    # --- Game Rating (RatingPoints) strength chart ---
                     _strength_caption = (
-                        "Average rating points per selected player, relative to the season average."
+                        "Average game rating points per selected player, relative to the season average."
                     )
                     _rd_team_avg = (
                         _md_round_df
@@ -14268,8 +14316,20 @@ elif page == "Team Selection Ratings":
                         .reset_index()
                         .rename(columns={"RatingPoints": "AvgRating"})
                     )
-                    _x_label = "Rating vs Season Avg"
+                    _x_label = "Game Rating vs Season Avg"
+                else:
+                    # --- Season Rating strength chart ---
+                    _strength_caption = (
+                        "Average season rating per selected player, relative to the season average."
+                    )
+                    _rd_team_avg = pd.DataFrame(
+                        _tsr_team_avg_from_sr(_md_round_df, _sr_lkp)
+                    )
+                    _x_label = "Season Rating vs Avg"
 
+                # =====================================================
+                # STEP 2 — Baseline & season markers
+                # =====================================================
                 if not _rd_team_avg.empty:
                     if _use_trait_rating and _traits_df is not None:
                         # Trait mode: baseline is mean of this round's trait team averages
@@ -14300,18 +14360,52 @@ elif page == "Team Selection Ratings":
                         _rd_team_avg["SeasonWorst"] = _rd_team_avg["Team"].map(_season_worst)
                         _rd_team_avg["SeasonWorstRound"] = _rd_team_avg["Team"].map(_season_worst_rnd)
                     else:
-                        # RatingPoints mode: baseline is season-wide league average
+                        # Game Rating / Season Rating baseline
                         _all_round_avgs = []
-                        for _rnd in _md_raw["Round"].unique():
-                            _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
-                            _rnd_avgs = (
-                                _rnd_df.groupby("Team")["RatingPoints"]
-                                .mean()
-                                .reset_index()
-                                .rename(columns={"RatingPoints": "AvgRating"})
-                            )
-                            _rnd_avgs["Round"] = _rnd
-                            _all_round_avgs.append(_rnd_avgs)
+
+                        if _use_game_rating:
+                            # RatingPoints from match_ratings
+                            for _rnd in _md_raw["Round"].unique():
+                                _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
+                                _rnd_avgs = (
+                                    _rnd_df.groupby("Team")["RatingPoints"]
+                                    .mean()
+                                    .reset_index()
+                                    .rename(columns={"RatingPoints": "AvgRating"})
+                                )
+                                _rnd_avgs["Round"] = _rnd
+                                _rnd_avgs["Season"] = season
+                                _all_round_avgs.append(_rnd_avgs)
+                            if _use_2_seasons and not _md_raw_prev.empty:
+                                for _rnd in _md_raw_prev["Round"].unique():
+                                    _rnd_df = _md_raw_prev[_md_raw_prev["Round"] == _rnd]
+                                    _rnd_avgs = (
+                                        _rnd_df.groupby("Team")["RatingPoints"]
+                                        .mean()
+                                        .reset_index()
+                                        .rename(columns={"RatingPoints": "AvgRating"})
+                                    )
+                                    _rnd_avgs["Round"] = _rnd
+                                    _rnd_avgs["Season"] = _prev_season
+                                    _all_round_avgs.append(_rnd_avgs)
+                        else:
+                            # Season ratings looked up per round
+                            for _rnd in _md_raw["Round"].unique():
+                                _rnd_df = _md_raw[_md_raw["Round"] == _rnd]
+                                _avgs = _tsr_team_avg_from_sr(_rnd_df, _sr_lkp)
+                                for _a in _avgs:
+                                    _a["Round"] = _rnd
+                                    _a["Season"] = season
+                                _all_round_avgs.append(pd.DataFrame(_avgs))
+                            if _use_2_seasons and not _md_raw_prev.empty:
+                                _prev_lkp = _sr_lkp_prev if _sr_lkp_prev else _sr_lkp
+                                for _rnd in _md_raw_prev["Round"].unique():
+                                    _rnd_df = _md_raw_prev[_md_raw_prev["Round"] == _rnd]
+                                    _avgs = _tsr_team_avg_from_sr(_rnd_df, _prev_lkp)
+                                    for _a in _avgs:
+                                        _a["Round"] = _rnd
+                                        _a["Season"] = _prev_season
+                                    _all_round_avgs.append(pd.DataFrame(_avgs))
 
                         _season_all = pd.concat(_all_round_avgs, ignore_index=True)
                         _season_team_avg = _season_all.groupby("Team")["AvgRating"].mean()
@@ -14329,14 +14423,18 @@ elif page == "Team Selection Ratings":
                         for _t, _bv in _season_best.items():
                             _t_rows = _season_all[_season_all["Team"] == _t]
                             _best_row = _t_rows.loc[_t_rows["RelStrength"].idxmax()]
-                            _season_best_rnd[_t] = f"Rd {int(_best_row['Round'])}"
+                            _br = int(_best_row["Round"])
+                            _bs = int(_best_row["Season"])
+                            _season_best_rnd[_t] = f"Rd {_br}" if _bs == season else f"{_bs} Rd {_br}"
 
                         _season_worst = _season_all.groupby("Team")["RelStrength"].min().to_dict()
                         _season_worst_rnd = {}
                         for _t, _wv in _season_worst.items():
                             _t_rows = _season_all[_season_all["Team"] == _t]
                             _worst_row = _t_rows.loc[_t_rows["RelStrength"].idxmin()]
-                            _season_worst_rnd[_t] = f"Rd {int(_worst_row['Round'])}"
+                            _wr = int(_worst_row["Round"])
+                            _ws = int(_worst_row["Season"])
+                            _season_worst_rnd[_t] = f"Rd {_wr}" if _ws == season else f"{_ws} Rd {_wr}"
 
                         _rd_team_avg["SeasonAvg"] = _rd_team_avg["Team"].map(_season_avg)
                         _rd_team_avg["SeasonBest"] = _rd_team_avg["Team"].map(_season_best)
@@ -14505,6 +14603,7 @@ elif page == "Team Selection Ratings":
 
                     # --- Render header + chart inside styled container ---
                     _round_label = _md_round_labels[md_round]
+                    _scope_label = f"{_prev_season}–{season}" if _use_2_seasons and not _md_raw_prev.empty else str(season)
                     _sc_html = f"""
                     <div style="
                         background: linear-gradient(135deg, rgba(20,20,28,0.95) 0%, rgba(12,12,18,0.98) 100%);
@@ -14527,7 +14626,7 @@ elif page == "Team Selection Ratings":
                                 font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
                                 color:rgba(255,255,255,0.40);
                                 letter-spacing:0.02em;
-                            ">{_round_label}</div>
+                            ">{_round_label} · {_scope_label}</div>
                         </div>
                         <div style="
                             font-size:12px;
