@@ -1723,6 +1723,51 @@ def _compute_age_decimal_from_dob(df: pd.DataFrame, season: int = None) -> pd.Da
     return df
 
 
+def _enrich_from_match_ratings(df: pd.DataFrame, season: int) -> pd.DataFrame:
+    """Enrich player DataFrame with stats from match_ratings CSV when columns are missing/zero.
+
+    Computes per-player: RatingPoints_Avg, CoachesVotes_Avg, Matches, TimeOnGround
+    from the per-round match_ratings file.  Only overwrites a column when it is
+    missing or entirely zero/NaN.
+    """
+    if df.empty:
+        return df
+    mr_path = Path(__file__).parent / "data" / "raw" / "player" / f"match_ratings_{int(season)}.csv"
+    if not mr_path.exists():
+        return df
+    try:
+        mr = pd.read_csv(mr_path)
+        if "Player" not in mr.columns:
+            return df
+        mr["Player"] = mr["Player"].astype(str).str.strip()
+        per_player = mr.groupby("Player").agg(
+            _mr_matches=("Player", "size"),
+            _mr_rating=("RatingPoints", "mean"),
+            _mr_coaches=("CoachesVotes", "mean"),
+            _mr_tog=("TimeOnGround", "mean"),
+        )
+        df["Player"] = df["Player"].astype(str).str.strip()
+
+        # Matches: overwrite if missing or all zero
+        if "Matches" not in df.columns or pd.to_numeric(df["Matches"], errors="coerce").fillna(0).sum() == 0:
+            df["Matches"] = df["Player"].map(per_player["_mr_matches"]).fillna(0).astype(int)
+
+        # RatingPoints_Avg
+        if "RatingPoints_Avg" not in df.columns or df["RatingPoints_Avg"].dropna().empty:
+            df["RatingPoints_Avg"] = df["Player"].map(per_player["_mr_rating"])
+
+        # CoachesVotes_Avg
+        if "CoachesVotes_Avg" not in df.columns or df["CoachesVotes_Avg"].dropna().empty:
+            df["CoachesVotes_Avg"] = df["Player"].map(per_player["_mr_coaches"])
+
+        # TimeOnGround
+        if "TimeOnGround" not in df.columns or df["TimeOnGround"].dropna().empty:
+            df["TimeOnGround"] = df["Player"].map(per_player["_mr_tog"])
+    except Exception:
+        pass
+    return df
+
+
 @st.cache_data(show_spinner=False, ttl=3600)
 def load_players(season: int) -> pd.DataFrame:
     """
@@ -1870,7 +1915,7 @@ def load_players(season: int) -> pd.DataFrame:
             except Exception:
                 pass
     
-    return df
+    return _enrich_from_match_ratings(df, season)
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
@@ -1929,7 +1974,7 @@ def load_full_squad(season: int) -> pd.DataFrame:
             # Compute exact Age_Decimal from DOB
             df = _compute_age_decimal_from_dob(df, season)
             
-            return df
+            return _enrich_from_match_ratings(df, season)
     
     # Fallback to legacy method
     try:
@@ -1996,7 +2041,7 @@ def load_full_squad(season: int) -> pd.DataFrame:
         # Compute exact Age_Decimal from DOB
         df = _compute_age_decimal_from_dob(df, season)
 
-        return df
+        return _enrich_from_match_ratings(df, season)
     except FileNotFoundError:
         st.error(f"❌ Player ratings file not found: {PLAYER_FILE}")
         return pd.DataFrame()
@@ -2398,6 +2443,16 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         # Map API-format column names to expected names (2026+ CSVs use different schema)
         if "Overall_Rating" in df.columns and "Rating" not in df.columns:
             df["Rating"] = df["Overall_Rating"]
+        # Map pillar _Rating columns to short names
+        _pillar_remap = {
+            "Ball Winning_Rating": "Ball Winning",
+            "Ball Use_Rating": "Ball Use",
+            "Aerial_Rating": "Aerial",
+            "Defence_Rating": "Defence",
+        }
+        for long_name, short_name in _pillar_remap.items():
+            if long_name in df.columns and short_name not in df.columns:
+                df[short_name] = df[long_name]
 
         # Ensure core trait columns always exist (may be NaN until API data arrives)
         for core_col in ["Rating", "Ball Winning", "Ball Use", "Aerial", "Defence"]:
@@ -10715,9 +10770,13 @@ elif page == "Depth Chart":
                 _sq = _compute_age_decimal_from_dob(_sq, CURRENT_SEASON)
                 # Rename columns to match Summary schema
                 _matches_col = f"{CURRENT_SEASON} Matches"
-                _rn = {"Matches_Career": "Total Matches", "Age_Decimal": "Age_Dec",
-                       "Matches_Current": _matches_col}
+                _rn = {"Matches_Career": "Total Matches", "Age_Decimal": "Age_Dec"}
+                # Note: Matches_Current NOT renamed here — the summary merge provides
+                # the real '2026 Matches' column with actual game counts.
                 _sq = _sq.rename(columns={k: v for k, v in _rn.items() if k in _sq.columns})
+                # Drop Matches_Current so it doesn't shadow the summary column
+                if "Matches_Current" in _sq.columns:
+                    _sq.drop(columns=["Matches_Current"], inplace=True)
                 if "Jumper" not in _sq.columns and "JumperNumber" in _sq.columns:
                     _sq = _sq.rename(columns={"JumperNumber": "Jumper"})
                 # Convert string Age like "24yr, 152d" to numeric
@@ -15935,9 +15994,19 @@ elif page == "List Breakdown - Traits":
             _leaders_season_df = load_players(int(selected_leaders_season))
             if not _leaders_season_df.empty and "Matches" in _leaders_season_df.columns and "Player" in _leaders_season_df.columns:
                 _played = _leaders_season_df[_leaders_season_df["Matches"] > 0]["Player"].unique()
-                _before = len(leaders_traits_df)
-                leaders_traits_df = leaders_traits_df[leaders_traits_df["Player_Full"].isin(_played)]
-                leaders_traits_df = leaders_traits_df.reset_index(drop=True)
+                if len(_played) > 0:
+                    leaders_traits_df = leaders_traits_df[leaders_traits_df["Player_Full"].isin(_played)]
+                    leaders_traits_df = leaders_traits_df.reset_index(drop=True)
+                else:
+                    # Matches column is all 0 — fall back to match ratings CSV
+                    _mr_path = Path(__file__).parent / "data" / "raw" / "player" / f"match_ratings_{int(selected_leaders_season)}.csv"
+                    if _mr_path.exists():
+                        _mr_df = pd.read_csv(_mr_path)
+                        if "Player" in _mr_df.columns:
+                            _played_mr = _mr_df["Player"].dropna().unique()
+                            if len(_played_mr) > 0:
+                                leaders_traits_df = leaders_traits_df[leaders_traits_df["Player_Full"].isin(_played_mr)]
+                                leaders_traits_df = leaders_traits_df.reset_index(drop=True)
         except Exception:
             pass  # If season data unavailable, show all players
         
@@ -16177,7 +16246,7 @@ elif page == "List Breakdown - Traits":
                 formatted_value = str(convert_trait_to_fc_rating(value)) if fc_mode else f"{value:.2f}"
                 
                 # Render rank card
-                st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;margin-left: 12px;white-space: nowrap;">{formatted_value}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background: rgba(20,20,30,0.6);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;padding: 12px 14px;margin-bottom: 8px;display: flex;align-items: center;justify-content: space-between;"><div style="display: flex;align-items: center;flex: 1;min-width: 0;">{logo_html}<div style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"><span style="font-size: 14px;font-weight: 700;color: #FFFFFF;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{full_name}</span></div></div><div style="display:flex;align-items:center;margin-left:12px;white-space:nowrap;"><span style="font-size: 20px;font-weight: 900;color: {rating_color};font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;">{formatted_value}</span></div></div>', unsafe_allow_html=True)
             
             # Add spacing before expander
             st.markdown("<div style='margin-top: 16px;'></div>", unsafe_allow_html=True)
@@ -20524,27 +20593,54 @@ Scale: 1.0 – 5.0
                         f"<table style='width:100%;border-collapse:collapse;'>{rows}</table></div>"
                     )
 
-                # --- Top 5 Year-on-Year Differential (2026 vs 2025) ---
+                # --- Top 5 Differential ---
                 _prior_season = selected_season - 1
-                _df_prior = load_match_ratings(_prior_season)
                 _diff5 = pd.DataFrame()
-                if not _df_prior.empty:
-                    _diff_col = active_col
-                    if _diff_col and _diff_col in _df_prior.columns and _diff_col in df_filt.columns:
-                        _cur_avg = df_filt.groupby(player_col)[_diff_col].mean()
-                        _pri_avg = _df_prior.groupby("Player")[_diff_col].mean()
-                        _both = pd.DataFrame({"CurAvg": _cur_avg, "PriAvg": _pri_avg}).dropna()
-                        if not _both.empty:
-                            _both["Diff"] = _both["CurAvg"] - _both["PriAvg"]
-                            _diff5 = _both.nlargest(5, "Diff")
 
-                def _diff_card(title, icon_colour, data):
+                if _mr_use_traits:
+                    # Start-of-season differential: earliest snapshot → current
+                    _sos_hist_path = Path(__file__).parent / "data" / "raw" / "traits" / f"traits_history_{selected_season}.csv"
+                    if _sos_hist_path.exists():
+                        _sos_hist = pd.read_csv(_sos_hist_path)
+                        # Filter to selected team if applicable
+                        if selected_team and "Team" in _sos_hist.columns:
+                            _sos_hist = _sos_hist[_sos_hist["Team"] == selected_team]
+                        if not _sos_hist.empty and "Round" in _sos_hist.columns and "Overall_Rating" in _sos_hist.columns:
+                            _sos_hist["Overall_Rating"] = pd.to_numeric(_sos_hist["Overall_Rating"], errors="coerce")
+                            _earliest_rnd = _sos_hist["Round"].min()
+                            _start_snap = _sos_hist[_sos_hist["Round"] == _earliest_rnd].dropna(subset=["Overall_Rating"])
+                            _start_snap = _start_snap.set_index("Player")["Overall_Rating"]
+                            # Current values from pivot (which has "Avg" per player)
+                            _cur_vals = pivot["Avg"]
+                            _both = pd.DataFrame({"CurAvg": _cur_vals, "PriAvg": _start_snap}).dropna()
+                            if not _both.empty:
+                                _both["Diff"] = _both["CurAvg"] - _both["PriAvg"]
+                                _diff5 = _both.nlargest(5, "Diff")
+                    _diff_label = "SEASON CHANGE"
+                    try:
+                        _diff_label = f"SEASON CHANGE (R{int(_earliest_rnd)} → NOW)"
+                    except (NameError, ValueError):
+                        pass
+                else:
+                    _df_prior = load_match_ratings(_prior_season)
+                    if not _df_prior.empty:
+                        _diff_col = active_col
+                        if _diff_col and _diff_col in _df_prior.columns and _diff_col in df_filt.columns:
+                            _cur_avg = df_filt.groupby(player_col)[_diff_col].mean()
+                            _pri_avg = _df_prior.groupby("Player")[_diff_col].mean()
+                            _both = pd.DataFrame({"CurAvg": _cur_avg, "PriAvg": _pri_avg}).dropna()
+                            if not _both.empty:
+                                _both["Diff"] = _both["CurAvg"] - _both["PriAvg"]
+                                _diff5 = _both.nlargest(5, "Diff")
+                    _diff_label = f"{selected_season} vs {_prior_season} DIFFERENTIAL"
+
+                def _diff_card(title, icon_colour, data, is_trait_mode=False, start_label="", end_label=""):
                     """Build a differential leaderboard card."""
                     if data.empty:
                         return (
                             f"<div style='background:rgba(20,20,30,0.95);border-radius:14px;"
                             f"border:1px solid rgba(255,255,255,0.08);padding:20px;text-align:center;color:#666;'>"
-                            f"No prior-season data available</div>"
+                            f"No data available yet</div>"
                         )
                     rows = ""
                     max_diff = data["Diff"].abs().max() or 1
@@ -20565,13 +20661,15 @@ Scale: 1.0 – 5.0
                             bg, tc = "#90EE90", "#000"
                         else:
                             bg, tc = "#FF6347", "#fff"
+                        _lbl_start = start_label if start_label else str(_prior_season)
+                        _lbl_end = end_label if end_label else str(selected_season)
                         rows += (
                             f"<tr style='height:68px;'>"
                             f"<td style='padding:10px 12px;font-size:18px;font-weight:900;color:{icon_colour};text-align:center;width:36px;vertical-align:middle;'>{rank}</td>"
                             f"<td style='padding:10px 8px;vertical-align:middle;'>"
                             f"<div style='font-size:14px;font-weight:700;color:#fff;letter-spacing:0.01em;'>{player}</div>"
                             f"<div style='font-size:11px;color:#888;margin-top:2px;'>"
-                            f"{_prior_season}: {_mr_fv_avg(pri)} → {selected_season}: {_mr_fv_avg(cur)}</div>"
+                            f"{_lbl_start}: {_mr_fv_avg(pri)} → {_lbl_end}: {_mr_fv_avg(cur)}</div>"
                             f"<div style='margin-top:4px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);'>"
                             f"<div style='height:100%;width:{bar_w:.0f}%;border-radius:2px;background:{bg};'></div></div>"
                             f"</td>"
@@ -20590,12 +20688,18 @@ Scale: 1.0 – 5.0
                     )
 
                 _mr_label = "AVG PREDICTED BROWNLOW" if _mr_use_brownlow else ("AVG COACHES VOTES" if _mr_use_votes else ("TRAIT RATING" if _mr_use_traits else "AVG RATING"))
-                _diff_label = f"{selected_season} vs {_prior_season} DIFFERENTIAL"
                 c1, c2 = st.columns(2)
                 with c1:
                     st.markdown(_leaderboard_card(f"TOP 5 — {_mr_label}", "#008000", top5), unsafe_allow_html=True)
                 with c2:
-                    st.markdown(_diff_card(f"TOP 5 — {_diff_label}", "#1E90FF", _diff5), unsafe_allow_html=True)
+                    if _mr_use_traits:
+                        try:
+                            _sos_start_lbl = f"R{int(_earliest_rnd)}"
+                        except (NameError, ValueError):
+                            _sos_start_lbl = "Start"
+                        st.markdown(_diff_card(f"TOP 5 — {_diff_label}", "#1E90FF", _diff5, is_trait_mode=True, start_label=_sos_start_lbl, end_label="Now"), unsafe_allow_html=True)
+                    else:
+                        st.markdown(_diff_card(f"TOP 5 — {_diff_label}", "#1E90FF", _diff5), unsafe_allow_html=True)
 
         # ============= COMPETITION LEADERBOARD (ALL TEAMS) =============
         st.markdown("---")

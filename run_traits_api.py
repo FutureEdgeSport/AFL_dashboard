@@ -199,6 +199,11 @@ def enhance_dataset_with_traits(traits_results):
         'Team_API',
         'Season_API',
         'Position_API',
+        # Pillar ratings
+        'Ball Winning_Rating',
+        'Ball Use_Rating',
+        'Aerial_Rating',
+        'Defence_Rating',
         # Individual trait ratings
         'Athleticism_Rating',
         'Kicking_Rating', 
@@ -343,8 +348,16 @@ def snapshot_traits_to_history():
         return
 
     # Build the candidate snapshot from the fresh fetch
-    candidate = traits[["Player", "Team", "Overall_Rating"]].copy()
+    # Include pillar ratings if available in the traits CSV
+    snapshot_cols = ["Player", "Team", "Overall_Rating"]
+    pillar_cols = ["Ball Winning_Rating", "Ball Use_Rating", "Aerial_Rating", "Defence_Rating"]
+    available_pillars = [c for c in pillar_cols if c in traits.columns]
+    snapshot_cols.extend(available_pillars)
+
+    candidate = traits[snapshot_cols].copy()
     candidate["Overall_Rating"] = pd.to_numeric(candidate["Overall_Rating"], errors="coerce")
+    for pc in available_pillars:
+        candidate[pc] = pd.to_numeric(candidate[pc], errors="coerce")
     candidate = candidate[candidate["Overall_Rating"].notna()].reset_index(drop=True)
 
     if len(candidate) < STABILITY_MIN_PLAYERS:
@@ -364,7 +377,9 @@ def snapshot_traits_to_history():
         history = pd.read_csv(history_path)
         finalised_rounds = set(history["Round"].unique()) if not history.empty else set()
     else:
-        history = pd.DataFrame(columns=["Player", "Team", "Round", "Overall_Rating"])
+        history = pd.DataFrame(columns=["Player", "Team", "Round", "Overall_Rating",
+                                          "Ball Winning_Rating", "Ball Use_Rating",
+                                          "Aerial_Rating", "Defence_Rating"])
         finalised_rounds = set()
 
     if current_round in finalised_rounds:
