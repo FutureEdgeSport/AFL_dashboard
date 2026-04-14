@@ -289,7 +289,7 @@ def snapshot_traits_to_history():
     """Save current traits as a per-round snapshot for the Trait Rating Matrix.
 
     Overwrites the snapshot for the current round so re-running the API
-    with fresh Champion Data values updates the history correctly.
+    with fresh Traits Insights values updates the history correctly.
     """
     match_ratings_path = Path(f"data/raw/player/match_ratings_{SEASON}.csv")
     traits_path = Path(f"data/raw/traits/traits_{SEASON}.csv")
