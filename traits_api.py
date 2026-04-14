@@ -464,17 +464,20 @@ def fetch_all_traits(players_df, force_refresh=False, progress_callback=None):
     api_calls = 0
     
     for idx, player_name in enumerate(player_names):
-        # Check traits cache first (re-query if cached data is from a previous season)
+        # Always re-query current-season players — Traits Insights ratings
+        # update week-to-week.  Only use cache for previous-season data.
         if player_name in traits_cache.get('players', {}):
             cached_data = traits_cache['players'][player_name]
             cached_season = str(cached_data.get('Season_API', ''))
             from config.constants import CURRENT_SEASON
             is_current = str(CURRENT_SEASON) in cached_season
-            if is_current:
+            if not is_current:
+                # Old-season data — still valid, use it
                 results.append(cached_data)
                 if progress_callback:
                     progress_callback(idx + 1, total, player_name, 'cached')
                 continue
+            # Same season — fall through to re-query for fresh data
         
         # Query API (pass DOB so data_provider_id can be constructed)
         dob = dob_cache.get(player_name)

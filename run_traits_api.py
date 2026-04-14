@@ -121,14 +121,18 @@ def run_traits_api_for_season():
             print(f"  Progress: {idx + 1}/{total} ({(idx+1)/total*100:.1f}%)")
         
         # Check traits cache first — but re-query if cached data is from a previous season
+        # NOTE: Within the same season we ALWAYS re-query because Traits Insights
+        # ratings update week-to-week.  The cache only avoids re-querying across
+        # seasons (where old season data never changes).
         if player in traits_cache.get('players', {}):
             cached = traits_cache['players'][player]
             cached_season = str(cached.get('Season_API', ''))
-            if str(SEASON) in cached_season:
-                results[player] = cached
-                cached_count += 1
-                continue
-            # Stale season — fall through to re-query
+            if str(SEASON) not in cached_season:
+                # Different season entirely — cached data is still valid for that old season
+                # but we need fresh data for the current season, so fall through
+                pass
+            # Same season — fall through to re-query with fresh API data
+
         
         # Query API (DOB used to construct data_provider_id, not sent directly)
         try:
