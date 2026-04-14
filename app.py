@@ -13883,6 +13883,40 @@ elif page == "Team Selection Ratings":
             _use_last2 = (md_rating_mode == "Last 2 Seasons")
             _use_career = (md_rating_mode == "Career")
 
+            # --- Rating mode explainer ---
+            _rating_explainer = (
+                "<div style='background:linear-gradient(135deg,rgba(20,20,28,0.92) 0%,rgba(14,14,20,0.96) 100%);"
+                "border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px 16px 22px;"
+                "margin:8px 0 18px 0;font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;'>"
+                "<div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;'>"
+                "<span style='font-size:14px;'>ℹ️</span>"
+                "<span style='font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.03em;'>"
+                "RATING MODES</span></div>"
+                "<table style='width:100%;border-collapse:collapse;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;'>"
+                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;width:140px;'>Current Season</td>"
+                "<td style='padding:6px 0;'>Each player&#39;s average rating across all games played this season (RatingPoints_Avg). "
+                "Reflects sustained form over the full campaign.</td></tr>"
+                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Game Rating</td>"
+                "<td style='padding:6px 0;'>Each player&#39;s rating from that specific round only (RatingPoints). "
+                "Shows how the squad actually performed on match day.</td></tr>"
+                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Trait Rating</td>"
+                "<td style='padding:6px 0;'>Player-level trait assessment from the Champion Data model (Overall_Rating). "
+                "A holistic evaluation, not per-game output.</td></tr>"
+                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Last 2 Seasons</td>"
+                "<td style='padding:6px 0;'>Match-weighted average of the current and previous season&#39;s ratings. "
+                "Only seasons with 5+ games count. Smooths single-season variance.</td></tr>"
+                "<tr>"
+                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Career</td>"
+                "<td style='padding:6px 0;'>Match-weighted average across all seasons on record (min 5 games per season). "
+                "Rewards consistency and longevity.</td></tr>"
+                "</table></div>"
+            )
+            st.markdown(_rating_explainer, unsafe_allow_html=True)
+
             # Load traits data
             _traits_file = f"data/raw/traits/traits_{season}.csv"
             _traits_df = None
@@ -14651,6 +14685,54 @@ elif page == "Team Selection Ratings":
                             font=dict(size=12, color="white", family="SF Pro Display, -apple-system, Arial"),
                         ),
                     )
+
+                    # --- Chart methodology explainer ---
+                    _chart_scope = "across all rounds"
+                    if _use_2_seasons and not _md_raw_prev.empty:
+                        _chart_scope = f"across all rounds in {_prev_season} and {season}"
+                    _chart_explainer = (
+                        "<div style='background:linear-gradient(135deg,rgba(20,20,28,0.92) 0%,rgba(14,14,20,0.96) 100%);"
+                        "border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px 16px 22px;"
+                        "margin:8px 0 14px 0;font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;'>"
+                        "<div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;'>"
+                        "<span style='font-size:14px;'>📊</span>"
+                        "<span style='font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.03em;'>"
+                        "HOW THE CHART WORKS</span></div>"
+                        "<table style='width:100%;border-collapse:collapse;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;'>"
+                        "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                        "<td style='padding:6px 10px 6px 0;vertical-align:top;width:20px;'>"
+                        "<span style='display:inline-block;width:14px;height:14px;background:#6a89cc;border-radius:3px;'></span></td>"
+                        "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;width:110px;'>Bar (This Round)</td>"
+                        f"<td style='padding:6px 0;'>Average the selected rating for each player in the team&#39;s round squad, "
+                        f"then subtract the <b style=\"color:rgba(255,255,255,0.8);\">league baseline</b> (mean of all team averages "
+                        f"{_chart_scope}). Positive = above average.</td></tr>"
+                        "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                        "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                        "<span style='display:inline-block;width:14px;height:2px;background:rgba(255,255,255,0.75);margin-top:7px;'></span></td>"
+                        "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Zero Line</td>"
+                        f"<td style='padding:6px 0;'>The league average baseline — computed as the mean of all team averages "
+                        f"{_chart_scope}. A team on the zero line is exactly league-average.</td></tr>"
+                        "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                        "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                        "<span style='font-size:11px;color:rgba(255,255,255,0.75);'>⎯ &#124;</span></td>"
+                        "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Avg</td>"
+                        "<td style='padding:6px 0;'>Mean of this team&#39;s relative strength across all rounds "
+                        "(white tick marker). Shows where the team typically sits.</td></tr>"
+                        "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                        "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                        "<span style='color:#FFD700;font-size:13px;'>◆</span></td>"
+                        "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Best</td>"
+                        "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the highest relative strength. "
+                        "Hover to see which round.</td></tr>"
+                        "<tr>"
+                        "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                        "<span style='color:#FF4444;font-size:13px;'>◆</span></td>"
+                        "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Worst</td>"
+                        "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the lowest relative strength. "
+                        "Hover to see which round.</td></tr>"
+                        "</table></div>"
+                    )
+                    st.markdown(_chart_explainer, unsafe_allow_html=True)
 
                     # --- Render header + chart inside styled container ---
                     _round_label = _md_round_labels[md_round]
