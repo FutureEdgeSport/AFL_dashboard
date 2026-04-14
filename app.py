@@ -13794,13 +13794,21 @@ elif page == "Team Selection Ratings":
     summary["__k"] = _tsr_make_key(summary)
     ratings["__k"] = _tsr_make_key(ratings)
 
+    # Columns to merge from ratings
+    _rating_merge_cols = ["__k", "Rating"]
+
     merged_all = summary.merge(
-        ratings[["__k", "Rating"]],
+        ratings[[c for c in _rating_merge_cols if c in ratings.columns]],
         on="__k",
         how="left"
     )
     merged_all["Rating"] = pd.to_numeric(merged_all["Rating"], errors="coerce")
     merged_all = merged_all.dropna(subset=["Rating"])
+
+    # Bring in Last 2 Average / Career from player_summary if present
+    for _ms_col in ["Last 2 Average", "Career"]:
+        if _ms_col in summary.columns:
+            merged_all[_ms_col] = pd.to_numeric(merged_all[_ms_col], errors="coerce")
 
     # Reclassify Wing players
     try:
@@ -13859,14 +13867,21 @@ elif page == "Team Selection Ratings":
             md_game_label = st.selectbox("Game", list(_md_games.keys()), key="tsr_game_sel")
             md_match_id = _md_games[md_game_label]
 
+            _tsr_rating_options = ["Current Season Rating", "Game Rating", "Trait Rating"]
+            if "Last 2 Average" in merged_all.columns:
+                _tsr_rating_options.append("Last 2 Seasons")
+            if "Career" in merged_all.columns:
+                _tsr_rating_options.append("Career")
             md_rating_mode = st.radio(
                 "Rating Display",
-                ["Current Season Rating", "Game Rating", "Trait Rating"],
+                _tsr_rating_options,
                 horizontal=True,
                 key="tsr_rating_mode",
             )
             _use_game_rating = (md_rating_mode == "Game Rating")
             _use_trait_rating = (md_rating_mode == "Trait Rating")
+            _use_last2 = (md_rating_mode == "Last 2 Seasons")
+            _use_career = (md_rating_mode == "Career")
 
             # Load traits data
             _traits_file = f"data/raw/traits/traits_{season}.csv"
@@ -13923,6 +13938,8 @@ elif page == "Team Selection Ratings":
                                 "Rating": float(r["Rating"]) if pd.notna(r.get("Rating")) else _tsr_safe_float(match_rating),
                                 "GameRating": _tsr_safe_float(match_rating),
                                 "TraitRating": _tr,
+                                "Last2Rating": _tsr_safe_float(r.get("Last 2 Average")),
+                                "CareerRating": _tsr_safe_float(r.get("Career")),
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13960,6 +13977,8 @@ elif page == "Team Selection Ratings":
                                 "Rating": _tsr_safe_float(match_rating),
                                 "GameRating": _tsr_safe_float(match_rating),
                                 "TraitRating": _tr2,
+                                "Last2Rating": None,
+                                "CareerRating": None,
                                 "Team": team_name,
                                 "IsBench": False,
                             })
@@ -13975,10 +13994,22 @@ elif page == "Team Selection Ratings":
                 elif _use_trait_rating:
                     md_best_a["Rating"] = md_best_a["TraitRating"]
                     md_best_b["Rating"] = md_best_b["TraitRating"]
+                elif _use_last2:
+                    md_best_a["Rating"] = md_best_a["Last2Rating"]
+                    md_best_b["Rating"] = md_best_b["Last2Rating"]
+                elif _use_career:
+                    md_best_a["Rating"] = md_best_a["CareerRating"]
+                    md_best_b["Rating"] = md_best_b["CareerRating"]
 
                 if _use_trait_rating and _traits_df is not None:
                     md_team_a_series = _traits_df.loc[_traits_df["Team"] == md_team_a_name, "TraitRating"]
                     md_team_b_series = _traits_df.loc[_traits_df["Team"] == md_team_b_name, "TraitRating"]
+                elif _use_last2 and "Last 2 Average" in merged_all.columns:
+                    md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Last 2 Average"]
+                    md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Last 2 Average"]
+                elif _use_career and "Career" in merged_all.columns:
+                    md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Career"]
+                    md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Career"]
                 else:
                     md_team_a_series = merged_all.loc[merged_all["Team"] == md_team_a_name, "Rating"]
                     md_team_b_series = merged_all.loc[merged_all["Team"] == md_team_b_name, "Rating"]
@@ -14002,7 +14033,7 @@ elif page == "Team Selection Ratings":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_a_b64 + "' />" if md_logo_a_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_a_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "MATCH DAY 23 RATING"}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "LAST 2 SEASONS" if _use_last2 else "CAREER RATING" if _use_career else "MATCH DAY 23 RATING"}</div>
                     {_tsr_pill(md_a_str if md_a_str else "—", big=True)}
                 </div>
                 <div class="midCol">
@@ -14014,7 +14045,7 @@ elif page == "Team Selection Ratings":
                 <div class="teamCol">
                     {"<img class='logo' src='data:image/png;base64," + md_logo_b_b64 + "' />" if md_logo_b_b64 else "<div class='logoFallback'></div>"}
                     <div class="teamName">{md_team_b_name}</div>
-                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "MATCH DAY 23 RATING"}</div>
+                    <div class="label">{"GAME RATING" if _use_game_rating else "TRAIT RATING" if _use_trait_rating else "LAST 2 SEASONS" if _use_last2 else "CAREER RATING" if _use_career else "MATCH DAY 23 RATING"}</div>
                     {_tsr_pill(md_b_str if md_b_str else "—", big=True)}
                 </div>
                 </div>
@@ -14242,7 +14273,7 @@ elif page == "Team Selection Ratings":
                     if os.path.exists(_prev_md_file):
                         _md_raw_prev = pd.read_csv(_prev_md_file)
                         _md_raw_prev["Team"] = _md_raw_prev["Team"].replace({"Greater Western Sydney": "GWS Giants"})
-                    if not (_use_game_rating or _use_trait_rating) and not _md_raw_prev.empty:
+                    if not (_use_game_rating or _use_trait_rating) and not (_use_last2 or _use_career) and not _md_raw_prev.empty:
                         _prev_ratings = load_players(_prev_season)
                         _prev_r_val = _tsr_find_col(_prev_ratings, ["rating"])
                         if _prev_r_val:
@@ -14274,8 +14305,10 @@ elif page == "Team Selection Ratings":
                 # --- Build season-rating lookup from merged_all ---
                 _sr_lkp = {}
                 if not (_use_game_rating or _use_trait_rating):
-                    for _, _sr_r in merged_all.iterrows():
-                        _sr_lkp[(str(_sr_r["Team"]).lower().strip(), str(_sr_r["Player"]).lower().strip())] = float(_sr_r["Rating"])
+                    _sr_col = "Last 2 Average" if _use_last2 else "Career" if _use_career else "Rating"
+                    if _sr_col in merged_all.columns:
+                        for _, _sr_r in merged_all.dropna(subset=[_sr_col]).iterrows():
+                            _sr_lkp[(str(_sr_r["Team"]).lower().strip(), str(_sr_r["Player"]).lower().strip())] = float(_sr_r[_sr_col])
 
                 # =====================================================
                 # STEP 1 — Compute this round's team averages
@@ -14317,6 +14350,24 @@ elif page == "Team Selection Ratings":
                         .rename(columns={"RatingPoints": "AvgRating"})
                     )
                     _x_label = "Game Rating vs Season Avg"
+                elif _use_last2:
+                    # --- Last 2 Seasons strength chart ---
+                    _strength_caption = (
+                        "Average last-2-season rating per selected player, relative to the league average."
+                    )
+                    _rd_team_avg = pd.DataFrame(
+                        _tsr_team_avg_from_sr(_md_round_df, _sr_lkp)
+                    )
+                    _x_label = "Last 2 Seasons vs Avg"
+                elif _use_career:
+                    # --- Career strength chart ---
+                    _strength_caption = (
+                        "Average career rating per selected player, relative to the league average."
+                    )
+                    _rd_team_avg = pd.DataFrame(
+                        _tsr_team_avg_from_sr(_md_round_df, _sr_lkp)
+                    )
+                    _x_label = "Career Rating vs Avg"
                 else:
                     # --- Season Rating strength chart ---
                     _strength_caption = (
