@@ -17243,6 +17243,10 @@ elif page == "IDP":
         # Trait rating summary card (below name card, still right of photo)
         _rating_display = format_trait_val(_player_rating) if _player_rating is not None else "—"
         _rating_bg, _rating_text = rating_colour_for_value(_player_rating, _all_ratings) if _player_rating is not None else ("#333333", "white")
+        if fc_mode and _player_rating is not None:
+            _tier_label = get_fc_rating_label(convert_trait_to_fc_rating(_player_rating))
+        else:
+            _tier_label, _ = get_trait_tier(_player_rating)
         _overall_rank_str = f"#{_overall_rank}" if _overall_rank is not None else "—"
         _pos_rank_str = f"#{_pos_rank}" if _pos_rank is not None else "—"
         st.markdown(f"""
@@ -17251,6 +17255,7 @@ elif page == "IDP":
                 <div style="text-align:center;min-width:200px;">
                     <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Trait Rating</div>
                     <div style="background:{_rating_bg};color:{_rating_text};font-size:42px;font-weight:900;line-height:1;padding:24px 40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">{_rating_display}</div>
+                    <div style="color:{_rating_bg};font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;">{_tier_label}</div>
                 </div>
                 <div style="flex:1;display:flex;gap:12px;">
                     <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:12px 8px;text-align:center;">
