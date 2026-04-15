@@ -14,7 +14,7 @@ Adelaide,5,Sid Draper,2006-07-05,182.0,MidfieldForward,10,19yr 9mth,South Adelai
 Adelaide,11,Charlie Edwards,2005-05-18,191.0,DefenderMidfield,0,20yr 10mth,Sandringham Dragons,2026.0,Non-Free Agent,2023.0,National,1.0,21.0
 Adelaide,32,Darcy Fogarty,1999-09-25,192.0,Forward,129,26yr 6mth,Glenelg,2031.0,Unrestricted Free Agent,2017.0,National,1.0,12.0
 Adelaide,20,Mitchell Hinge,1998-06-28,187.0,Defender,90,27yr 9mth,Glenelg,2026.0,Unrestricted Free Agent,2016.0,Rookie,2.0,20.0
-Adelaide,1,Chayce Jones,2000-01-14,180.0,DefenderMidfield,100,26yr 2mth,Launceston,2026.0,Restricted Free Agent,2018.0,National,1.0,9.0
+Adelaide,1,Chayce Jones,2000-01-14,180.0,DefenderMidfield,100,26yr 3mth,Launceston,2026.0,Restricted Free Agent,2018.0,National,1.0,9.0
 Adelaide,48,Mark Keane,2000-03-17,194.0,Defender,56,26yr,Cork,2028.0,Non-Free Agent,,,,
 Adelaide,2,Ben Keays,1997-02-23,185.0,Forward,166,29yr 1mth,Brisbane Reserves,2027.0,Unrestricted Free Agent,2019.0,Rookie,1.0,7.0
 Adelaide,29,Rory Laird,1993-12-29,178.0,Defender,272,32yr 3mth,West Adelaide,2027.0,Unrestricted Free Agent,2013.0,National,6.0,86.0
@@ -23,7 +23,7 @@ Adelaide,36,Finnbar Maley,2003-07-18,197.0,Forward,10,22yr 8mth,Northern Bullant
 Adelaide,26,Mitchell Marsh,2007-02-15,192.0,Forward,0,19yr 1mth,West Adelaide,2027.0,Unknown,2025.0,National,1.0,22.0
 Adelaide,42,Lachlan McAndrew,2000-05-26,209.0,Ruck,7,25yr 10mth,Sydney,2027.0,Unrestricted Free Agent,2021.0,Mid-Season,1.0,12.0
 Adelaide,16,Max Michalanney,2004-02-26,190.0,Defender,71,22yr 1mth,Norwood,2030.0,Restricted Free Agent,2022.0,National,1.0,17.0
-Adelaide,30,Wayne Milera,1997-09-14,185.0,Defender,128,28yr 6mth,Central District,2028.0,Unrestricted Free Agent,2015.0,National,1.0,11.0
+Adelaide,30,Wayne Milera,1997-09-14,185.0,Defender,128,28yr 7mth,Central District,2028.0,Unrestricted Free Agent,2015.0,National,1.0,11.0
 Adelaide,9,Nick Murray,2000-12-18,195.0,Defender,72,25yr 3mth,Allies,2028.0,Restricted Free Agent,,,,
 Adelaide,39,Toby Murray,2003-11-03,200.0,Forward,1,22yr 5mth,Adelaide SANFL,2027.0,Non-Free Agent,2024.0,Mid-Season,1.0,7.0
 Adelaide,27,Luke Nankervis,2003-05-25,189.0,Midfield,33,22yr 10mth,Sandringham Dragons,2027.0,Non-Free Agent,2021.0,Pre-Season,1.0,2.0
@@ -50,7 +50,7 @@ Brisbane,8,Will Ashcroft,2004-05-06,182.0,Midfield,63,21yr 11mth,Sandringham Dra
 Brisbane,33,Zac Bailey,1999-09-23,181.0,MidfieldForward,170,26yr 6mth,Norwood,2026.0,Restricted Free Agent,2017.0,National,1.0,15.0
 Brisbane,17,Luke Beecken,2001-04-18,185.0,Midfield,1,24yr 11mth,Woodville-West Torrens,2026.0,Non-Free Agent,2024.0,Mid-Season,2.0,17.0
 Brisbane,7,Jarrod Berry,1998-02-05,193.0,Midfield,189,28yr 2mth,North Ballarat Rebels,2029.0,Unrestricted Free Agent,2016.0,National,1.0,17.0
-Brisbane,34,Shadeau Brain,2004-02-13,183.0,Defender,9,22yr 1mth,Noosa,2027.0,Non-Free Agent,,,,
+Brisbane,34,Shadeau Brain,2004-02-13,183.0,Defender,9,22yr 2mth,Noosa,2027.0,Non-Free Agent,,,,
 Brisbane,23,Charlie Cameron,1994-07-05,180.0,Forward,259,31yr 9mth,Swan Districts,2028.0,Unrestricted Free Agent,2013.0,Rookie,1.0,7.0
 Brisbane,18,Keidean Coleman,2000-03-31,182.0,Defender,71,26yr,Brisbane,2027.0,Restricted Free Agent,2019.0,National,2.0,37.0
 Brisbane,37,Cody Curtin,2007-05-18,200.0,Forward,0,18yr 10mth,Claremont,2027.0,Unknown,2025.0,National,3.0,43.0
@@ -63,7 +63,7 @@ Brisbane,32,Darcy Fort,1993-08-06,204.0,Ruck,62,32yr 8mth,Central District,2026.
 Brisbane,22,Ty Gallop,2006-02-09,194.0,DefenderForward,11,20yr 2mth,Maroochydore,2029.0,Non-Free Agent,2024.0,National,3.0,42.0
 Brisbane,27,Darcy Gardiner,1995-09-22,192.0,Defender,185,30yr 6mth,Geelong Falcons,2026.0,Unrestricted Free Agent,2013.0,National,2.0,22.0
 Brisbane,42,Tai Hayes,2004-11-18,190.0,MidfieldForward,0,21yr 4mth,Southport Sharks,2027.0,Unknown,2025.0,National,3.0,44.0
-Brisbane,30,Eric Hipwood,1997-09-13,204.0,Forward,199,28yr 6mth,Aspley,2029.0,Unrestricted Free Agent,2015.0,National,1.0,14.0
+Brisbane,30,Eric Hipwood,1997-09-13,204.0,Forward,199,28yr 7mth,Aspley,2029.0,Unrestricted Free Agent,2015.0,National,1.0,14.0
 Brisbane,41,Darragh Joyce,1997-04-23,195.0,Defender,25,28yr 11mth,Kilkenny,2026.0,Unrestricted Free Agent,2024.0,Rookie,1.0,15.0
 Brisbane,35,Ryan Lester,1992-08-26,190.0,Defender,238,33yr 7mth,Oakleigh Chargers,2026.0,Unrestricted Free Agent,2022.0,Rookie,1.0,15.0
 Brisbane,19,Luke Lloyd,2005-08-08,193.0,Forward,0,20yr 8mth,Sandringham Dragons,2026.0,Non-Free Agent,2023.0,National,2.0,42.0
@@ -72,7 +72,7 @@ Brisbane,20,Sam Marshall,2006-01-19,185.0,Midfield,11,20yr 2mth,Sandringham Drag
 Brisbane,11,Lincoln McCarthy,1993-10-22,176.0,Forward,155,32yr 5mth,Glenelg,2026.0,Restricted Free Agent,2025.0,Rookie,1.0,14.0
 Brisbane,6,Hugh McCluggage,1998-03-03,187.0,Midfield,211,28yr 1mth,North Ballarat Rebels,2031.0,Unrestricted Free Agent,2016.0,National,1.0,3.0
 Brisbane,26,Conor McKenna,1996-03-28,184.0,Forward,128,30yr,"Eglish, Tyrone",2026.0,Non-Free Agent,,,,
-Brisbane,28,Will McLachlan,2005-04-13,185.0,Forward,6,20yr 11mth,Geelong Falcons,2026.0,Non-Free Agent,2024.0,Mid-Season,1.0,6.0
+Brisbane,28,Will McLachlan,2005-04-13,185.0,Forward,6,21yr,Geelong Falcons,2026.0,Non-Free Agent,2024.0,Mid-Season,1.0,6.0
 Brisbane,13,Logan Morris,2005-05-10,191.0,Forward,49,20yr 11mth,Western Jets,2027.0,Non-Free Agent,2023.0,National,2.0,31.0
 Brisbane,39,Ben Murphy,,191.0,Defender,0,,Kerry GAA,2027.0,Unknown,,,,
 Brisbane,9,Lachie Neale,1993-05-24,177.0,Midfield,299,32yr 10mth,Glenelg,2026.0,Restricted Free Agent,2011.0,National,3.0,58.0
@@ -83,12 +83,12 @@ Brisbane,25,Henry Smith,2002-09-24,202.0,Forward,6,23yr 6mth,Woodville-west Torr
 Brisbane,36,Reece Torrent,2005-08-03,184.0,Midfield,0,20yr 8mth,Peel Thunder,2026.0,Non-Free Agent,2023.0,National,5.0,64.0
 Brisbane,29,James Tunstill,2003-07-18,187.0,Midfield,14,22yr 8mth,East Perth,2026.0,Non-Free Agent,2021.0,National,3.0,41.0
 Brisbane,44,Darcy Wilmot,2003-12-31,183.0,Defender,88,22yr 3mth,Northern Knights,2029.0,Restricted Free Agent,2021.0,National,1.0,16.0
-Brisbane,21,Zane Zakostelsky,2005-12-14,196.0,DefenderRuck,2,20yr 3mth,Claremont,2026.0,Non-Free Agent,2023.0,National,3.0,51.0
+Brisbane,21,Zane Zakostelsky,2005-12-14,196.0,DefenderRuck,2,20yr 4mth,Claremont,2026.0,Non-Free Agent,2023.0,National,3.0,51.0
 Brisbane,15,Dayne Zorko,1989-02-09,175.0,Defender,309,37yr 2mth,Broadbeach,2026.0,Unrestricted Free Agent,,,,
 Carlton,13,Blake Acres,1995-10-07,193.0,Midfield,187,30yr 6mth,West Perth,2027.0,Non-Free Agent,2013.0,National,1.0,19.0
 Carlton,12,Ben Ainsworth,1998-02-10,178.0,Forward,163,28yr 2mth,Gippsland Power,2029.0,Unrestricted Free Agent,2016.0,National,1.0,4.0
 Carlton,37,Jordan Boyd,1998-09-22,182.0,Defender,40,27yr 6mth,Footscray,2026.0,Non-Free Agent,2021.0,Mid-Season,2.0,19.0
-Carlton,39,Talor Byrne,2007-11-14,174.0,MidfieldForward,3,18yr 4mth,GWV Rebels,2027.0,Unknown,2025.0,National,3.0,45.0
+Carlton,39,Talor Byrne,2007-11-14,174.0,MidfieldForward,3,18yr 5mth,GWV Rebels,2027.0,Unknown,2025.0,National,3.0,45.0
 Carlton,16,Ben Camporeale,2006-07-21,186.0,Midfield,0,19yr 8mth,Glenelg,2026.0,Non-Free Agent,2024.0,National,3.0,43.0
 Carlton,21,Lucas Camporeale,2006-07-21,184.0,Midfield,3,19yr 8mth,Glenelg,2026.0,Non-Free Agent,2024.0,National,3.0,54.0
 Carlton,32,Matt Carroll,2005-11-28,188.0,DefenderMidfield,21,20yr 4mth,Sandringham Dragons,2027.0,Unrestricted Free Agent,2023.0,Rookie,1.0,15.0
@@ -98,7 +98,7 @@ Carlton,31,Campbell Chesser,2003-04-27,186.0,Midfield,39,22yr 11mth,Sandringham 
 Carlton,46,Matt Cottrell,2000-02-29,184.0,MidfieldForward,74,26yr 1mth,Dandenong Stingrays,2027.0,Unrestricted Free Agent,2021.0,Rookie,2.0,24.0
 Carlton,2,Lachlan Cowan,2004-12-01,188.0,Defender,42,21yr 4mth,Tasmania Devils,2028.0,Non-Free Agent,2022.0,National,2.0,30.0
 Carlton,9,Patrick Cripps,1995-03-18,195.0,Midfield,235,31yr,East Fremantle,2027.0,Unrestricted Free Agent,2013.0,National,1.0,13.0
-Carlton,35,Harry Dean,2007-11-13,194.0,Defender,3,18yr 4mth,Murray Bushrangers,2028.0,Unknown,2025.0,National,1.0,3.0
+Carlton,35,Harry Dean,2007-11-13,194.0,Defender,3,18yr 5mth,Murray Bushrangers,2028.0,Unknown,2025.0,National,1.0,3.0
 Carlton,47,Wade Derksen,2001-06-18,194.0,Defender,2,24yr 9mth,Peel Thunder,2026.0,Unrestricted Free Agent,2022.0,Mid-Season,1.0,5.0
 Carlton,41,Matt Duffy,2004-01-02,194.0,Defender,0,22yr 3mth,Longford GAA,2026.0,Non-Free Agent,,,,
 Carlton,44,Francis Evans,2001-08-23,182.0,Forward,47,24yr 7mth,Calder Cannons,2026.0,Unrestricted Free Agent,2019.0,National,2.0,41.0
@@ -121,7 +121,7 @@ Carlton,24,Nic Newman,1993-01-15,186.0,Defender,136,33yr 2mth,Frankston,2026.0,R
 Carlton,22,Harry O'Farrell,2006-05-03,196.0,Defender,6,19yr 11mth,Calder Cannons,2027.0,Non-Free Agent,2024.0,National,2.0,40.0
 Carlton,40,Hudson O'Keeffe,2004-12-16,202.0,ForwardRuck,8,21yr 3mth,Oakleigh Chargers,2026.0,Non-Free Agent,,,,
 Carlton,27,Marc Pittonet,1996-06-03,202.0,Ruck,85,29yr 10mth,Oakleigh Chargers,2027.0,Restricted Free Agent,2014.0,National,3.0,50.0
-Carlton,25,Liam Reidy,2000-06-14,204.0,ForwardRuck,4,25yr 9mth,Frankston Dolphins,2028.0,Non-Free Agent,2022.0,Rookie,1.0,13.0
+Carlton,25,Liam Reidy,2000-06-14,204.0,ForwardRuck,4,25yr 10mth,Frankston Dolphins,2028.0,Non-Free Agent,2022.0,Rookie,1.0,13.0
 Carlton,42,Adam Saad,1994-07-23,178.0,Defender,217,31yr 8mth,Coburg,2026.0,Non-Free Agent,2014.0,Rookie,2.0,25.0
 Carlton,7,Jagga Smith,2006-01-28,182.0,Midfield,5,20yr 2mth,Oakleigh Chargers,2030.0,Non-Free Agent,2024.0,National,1.0,3.0
 Carlton,18,Sam Walsh,2000-07-02,184.0,Midfield,138,25yr 9mth,Geelong Falcons,2034.0,Unrestricted Free Agent,2018.0,National,1.0,1.0
@@ -176,11 +176,11 @@ Collingwood,29,Charlie West,2006-02-01,194.0,Forward,1,20yr 2mth,Woodville-West 
 Essendon,46,Lachlan Blakiston,1998-09-09,203.0,DefenderRuck,16,27yr 7mth,East Fremantle,2028.0,Non-Free Agent,2025.0,Mid-Season,1.0,13.0
 Essendon,39,Cillian Bourke,2006-06-07,190.0,Defender,0,19yr 10mth,County Offaly,2027.0,Unknown,,,,
 Essendon,24,Nick Bryan,2001-10-22,203.0,Ruck,23,24yr 5mth,Oakleigh Chargers,2027.0,Restricted Free Agent,2019.0,National,2.0,38.0
-Essendon,30,Nate Caddy,2005-07-14,193.0,Forward,31,20yr 8mth,Northern Knights,2028.0,Non-Free Agent,2023.0,National,1.0,10.0
+Essendon,30,Nate Caddy,2005-07-14,193.0,Forward,31,20yr 9mth,Northern Knights,2028.0,Non-Free Agent,2023.0,National,1.0,10.0
 Essendon,6,Jye Caldwell,2000-09-28,183.0,Midfield,94,25yr 6mth,Bendigo Pioneers,2028.0,Restricted Free Agent,2018.0,National,1.0,11.0
 Essendon,36,Angus Clarke,2006-05-08,188.0,DefenderMidfield,14,19yr 11mth,Glenelg,2028.0,Non-Free Agent,2024.0,National,2.0,39.0
 Essendon,13,Nikolas Cox,2002-01-15,200.0,Midfield,53,24yr 2mth,Northern Knights,2026.0,Non-Free Agent,2020.0,National,1.0,8.0
-Essendon,44,Archer Day-Wicks,2006-05-13,186.0,MidfieldForward,8,19yr 10mth,Bendigo Pioneers,2026.0,Non-Free Agent,2024.0,Rookie,1.0,6.0
+Essendon,44,Archer Day-Wicks,2006-05-13,186.0,MidfieldForward,8,19yr 11mth,Bendigo Pioneers,2026.0,Non-Free Agent,2024.0,Rookie,1.0,6.0
 Essendon,22,Sam Durham,2001-07-09,185.0,MidfieldForward,96,24yr 9mth,Richmond,2032.0,Unrestricted Free Agent,2021.0,Mid-Season,1.0,9.0
 Essendon,28,Xavier Duursma,2000-07-07,186.0,Midfield,115,25yr 9mth,Gippsland Power,2027.0,Non-Free Agent,2018.0,National,1.0,18.0
 Essendon,45,Tom Edwards,2000-05-20,191.0,Forward,4,25yr 10mth,Swan Districts,2026.0,Non-Free Agent,,,,
@@ -190,15 +190,15 @@ Essendon,2,Jacob Farrow,2007-09-21,188.0,DefenderMidfield,3,18yr 6mth,West Perth
 Essendon,8,Brayden Fiorini,1997-08-22,187.0,Midfield,125,28yr 7mth,Northern Knights,2029.0,Unrestricted Free Agent,2015.0,National,1.0,20.0
 Essendon,19,Kayle Gerreyn,2006-05-10,199.0,Ruck,0,19yr 11mth,West Perth,2026.0,Non-Free Agent,2024.0,National,2.0,37.0
 Essendon,11,Jade Gresham,1997-08-24,177.0,Forward,180,28yr 7mth,Northern Knights,2026.0,Unrestricted Free Agent,2015.0,National,1.0,18.0
-Essendon,35,Matt Guelfi,1997-08-14,184.0,Forward,123,28yr 7mth,Claremont,2026.0,Restricted Free Agent,2017.0,National,5.0,76.0
+Essendon,35,Matt Guelfi,1997-08-14,184.0,Forward,123,28yr 8mth,Claremont,2026.0,Restricted Free Agent,2017.0,National,5.0,76.0
 Essendon,18,Lewis Hayes,2004-12-17,199.0,Defender,1,21yr 3mth,Eastern Ranges,2026.0,Non-Free Agent,2022.0,National,2.0,25.0
 Essendon,40,Zak Johnson,2006-12-24,185.0,Defender,13,19yr 3mth,Northern Knights,2026.0,Non-Free Agent,2024.0,National,5.0,70.0
 Essendon,23,Harrison Jones,2001-02-25,196.0,MidfieldForward,59,25yr 1mth,Calder Cannons,2027.0,Restricted Free Agent,2019.0,National,2.0,30.0
 Essendon,10,Isaac Kako,2006-03-07,175.0,Forward,27,20yr 1mth,Calder Cannons,2029.0,Non-Free Agent,2024.0,National,1.0,13.0
-Essendon,29,Max Kondogiannis,2007-11-14,191.0,Defender,2,18yr 4mth,Oakleigh Chargers,2027.0,Unknown,2025.0,National,2.0,36.0
+Essendon,29,Max Kondogiannis,2007-11-14,191.0,Defender,2,18yr 5mth,Oakleigh Chargers,2027.0,Unknown,2025.0,National,2.0,36.0
 Essendon,4,Kyle Langford,1996-12-01,192.0,MidfieldForward,167,29yr 4mth,Northern Knights,2027.0,Unrestricted Free Agent,2014.0,National,1.0,17.0
 Essendon,37,Nicholas Martin,2001-04-03,192.0,MidfieldForward,83,25yr,Colts,2027.0,Non-Free Agent,,,,
-Essendon,26,Archie May,2004-08-27,198.0,Forward,11,21yr 7mth,Subiaco,2026.0,Non-Free Agent,2025.0,Mid-Season,1.0,6.0
+Essendon,26,Archie May,2004-08-27,198.0,Forward,11,21yr 7mth,Subiaco,2028.0,Non-Free Agent,2025.0,Mid-Season,1.0,6.0
 Essendon,1,Andrew McGrath,1998-06-02,180.0,Defender,185,27yr 10mth,Sandringham Dragons,2030.0,Unrestricted Free Agent,2016.0,National,1.0,1.0
 Essendon,32,Ben McKay,1997-12-24,202.0,Defender,109,28yr 3mth,Gippsland Power,2029.0,Non-Free Agent,2015.0,National,1.0,21.0
 Essendon,48,Liam McMahon,2002-05-02,197.0,Forward,7,23yr 11mth,Northern Knights,2026.0,Unrestricted Free Agent,2020.0,National,2.0,31.0
@@ -225,8 +225,8 @@ Fremantle,8,Andrew Brayshaw,1999-11-08,185.0,Midfield,175,26yr 5mth,Sandringham 
 Fremantle,38,Jaren Carr,2004-01-27,191.0,Forward,0,22yr 2mth,South Fremantle,2026.0,Non-Free Agent,2024.0,National,4.0,63.0
 Fremantle,5,Heath Chapman,2002-01-31,193.0,Defender,70,24yr 2mth,West Perth,2027.0,Non-Free Agent,2020.0,National,1.0,14.0
 Fremantle,6,Jordan Clark,2000-10-16,185.0,Defender,131,25yr 5mth,Claremont,2028.0,Non-Free Agent,2018.0,National,1.0,15.0
-Fremantle,36,Brennan Cox,1998-08-13,195.0,Defender,138,27yr 7mth,Woodville-West Torrens,2030.0,Unrestricted Free Agent,2016.0,National,2.0,41.0
-Fremantle,18,Mason Cox,1991-03-14,211.0,ForwardRuck,139,35yr,Oklahoma State,2027.0,Unrestricted Free Agent,,,,
+Fremantle,36,Brennan Cox,1998-08-13,195.0,Defender,138,27yr 8mth,Woodville-West Torrens,2030.0,Unrestricted Free Agent,2016.0,National,2.0,41.0
+Fremantle,18,Mason Cox,1991-03-14,211.0,ForwardRuck,139,35yr 1mth,Oklahoma State,2027.0,Unrestricted Free Agent,,,,
 Fremantle,4,Sean Darcy,1998-06-12,203.0,Ruck,132,27yr 10mth,Geelong Falcons,2030.0,Unrestricted Free Agent,2016.0,National,2.0,38.0
 Fremantle,12,Hugh Davies,2004-09-28,196.0,Defender,2,21yr 6mth,Claremont,2026.0,Non-Free Agent,2022.0,National,2.0,33.0
 Fremantle,37,Josh Draper,2004-02-08,197.0,Defender,31,22yr 2mth,Peel Thunder,2027.0,Non-Free Agent,,,,
@@ -250,10 +250,10 @@ Fremantle,42,Aiden Riddle,2005-12-27,200.0,Ruck,0,20yr 3mth,Claremont,2026.0,Non
 Fremantle,13,Luke Ryan,1996-02-06,186.0,Defender,183,30yr 2mth,Coburg,2027.0,Unrestricted Free Agent,2016.0,National,4.0,66.0
 Fremantle,45,Chris Scerri,2003-07-06,177.0,MidfieldForward,4,22yr 9mth,Northern Bullants,2026.0,Unknown,,,,
 Fremantle,3,Caleb Serong,2001-02-09,180.0,Midfield,132,25yr 2mth,Gippsland Power,2034.0,Unrestricted Free Agent,2019.0,National,1.0,8.0
-Fremantle,14,Jeremy Sharp,2001-08-13,189.0,Midfield,60,24yr 7mth,East Fremantle,2027.0,Unrestricted Free Agent,2019.0,National,2.0,27.0
-Fremantle,29,Cooper Simpson,2005-02-13,182.0,Defender,5,21yr 1mth,Dandenong Stringrays,2027.0,Non-Free Agent,2023.0,National,2.0,35.0
+Fremantle,14,Jeremy Sharp,2001-08-13,189.0,Midfield,60,24yr 8mth,East Fremantle,2027.0,Unrestricted Free Agent,2019.0,National,2.0,27.0
+Fremantle,29,Cooper Simpson,2005-02-13,182.0,Defender,5,21yr 2mth,Dandenong Stringrays,2027.0,Non-Free Agent,2023.0,National,2.0,35.0
 Fremantle,1,Sam Sturt,2000-05-12,190.0,Forward,31,25yr 11mth,Dandenong Stingrays,2026.0,Restricted Free Agent,2018.0,National,1.0,17.0
-Fremantle,15,Adam Sweid,2007-09-14,176.0,Midfield,0,18yr 6mth,Calder Cannons,2028.0,Non-Free Agent,2025.0,National,1.0,25.0
+Fremantle,15,Adam Sweid,2007-09-14,176.0,Midfield,0,18yr 7mth,Calder Cannons,2028.0,Non-Free Agent,2025.0,National,1.0,25.0
 Fremantle,39,Sam Switkowski,1996-11-20,179.0,Forward,110,29yr 4mth,Box Hill Hawks,2026.0,Restricted Free Agent,2017.0,National,5.0,73.0
 Fremantle,35,Josh Treacy,2002-08-04,195.0,Forward,85,23yr 8mth,Bendigo Pioneers,2030.0,Unrestricted Free Agent,2020.0,Rookie,1.0,7.0
 Fremantle,20,Patrick Voss,2003-06-29,195.0,Forward,32,22yr 9mth,Giants Academy,2030.0,Unrestricted Free Agent,2021.0,Rookie,1.0,11.0
@@ -264,7 +264,7 @@ Fremantle,23,Karl Worner,2002-06-16,188.0,Defender,36,23yr 9mth,Oakleigh Charger
 Fremantle,26,Hayden Young,2001-04-11,189.0,Midfield,90,25yr,Dandenong Stingrays,2033.0,Unrestricted Free Agent,2019.0,National,1.0,7.0
 Geelong,30,Tom Atkins,1995-09-18,180.0,Midfield,158,30yr 6mth,Geelong,2027.0,Restricted Free Agent,2018.0,Rookie,1.0,11.0
 Geelong,26,Harley Barker,2007-05-02,188.0,Midfield,0,18yr 11mth,Sturt,2027.0,Unknown,2025.0,National,1.0,24.0
-Geelong,24,Jed Bews,1993-12-14,186.0,Defender,175,32yr 3mth,Geelong Falcons,2026.0,Unrestricted Free Agent,2011.0,National,5.0,86.0
+Geelong,24,Jed Bews,1993-12-14,186.0,Defender,175,32yr 4mth,Geelong Falcons,2026.0,Unrestricted Free Agent,2011.0,National,5.0,86.0
 Geelong,46,Mark Blicavs,1991-03-28,198.0,Ruck,299,35yr,Geelong Vfl,2026.0,Unrestricted Free Agent,2011.0,Rookie,3.0,54.0
 Geelong,12,Jack Bowes,1998-01-26,189.0,Midfield,145,28yr 2mth,Cairns,2026.0,Non-Free Agent,2016.0,National,1.0,10.0
 Geelong,4,Tanner Bruhn,2002-05-27,184.0,Midfield,71,23yr 10mth,Geelong Falcons,2027.0,Non-Free Agent,2020.0,National,1.0,12.0
@@ -302,7 +302,7 @@ Geelong,2,Jay Polkinghorne,2006-06-02,191.0,Forward,0,19yr 10mth,Norwood,2026.0,
 Geelong,3,Bailey Smith,2000-12-07,185.0,Midfield,131,25yr 4mth,Sandringham Dragons,2031.0,Non-Free Agent,2018.0,National,1.0,7.0
 Geelong,1,Rhys Stanley,1990-12-01,200.0,Ruck,229,35yr 4mth,West Adelaide,2026.0,Unrestricted Free Agent,2008.0,National,3.0,47.0
 Geelong,18,Tyson Stengle,1998-10-19,175.0,Forward,109,27yr 5mth,Woodville West Torrens,2029.0,Unrestricted Free Agent,2016.0,Rookie,1.0,6.0
-Geelong,15,George Stevens,2005-04-14,189.0,Midfield,2,20yr 11mth,Greater Western Victoria Rebels,2026.0,Unrestricted Free Agent,2025.0,Rookie,1.0,13.0
+Geelong,15,George Stevens,2005-04-14,189.0,Midfield,2,21yr,Greater Western Victoria Rebels,2026.0,Unrestricted Free Agent,2025.0,Rookie,1.0,13.0
 Geelong,44,Thomas Stewart,1993-03-15,190.0,Defender,196,33yr,Geelong Vfl,2027.0,Unrestricted Free Agent,2016.0,National,2.0,40.0
 Geelong,21,Oliver Wiltshire,2002-09-15,180.0,Forward,5,23yr 6mth,Barwon Heads,2026.0,Non-Free Agent,2023.0,National,5.0,61.0
 Geelong,29,James Worpel,1999-01-24,186.0,Midfield,150,27yr 2mth,Geelong Falcons,2029.0,Unrestricted Free Agent,2017.0,National,3.0,45.0
@@ -316,7 +316,7 @@ Gold Coast,33,Sam Clohesy,2002-12-12,189.0,Midfield,39,23yr 4mth,Werribee,2028.0
 Gold Coast,25,Samuel Collins,1994-06-15,194.0,Defender,154,31yr 9mth,Box Hill Hawks,2028.0,Unrestricted Free Agent,2015.0,National,4.0,55.0
 Gold Coast,43,Koby Coulson,2007-07-31,180.0,Midfield,0,18yr 8mth,Gold Coast Suns Academy,2027.0,Unknown,2025.0,National,3.0,46.0
 Gold Coast,5,Alex Davies,2002-03-18,193.0,Midfield,44,24yr,Suns Academy,2026.0,Non-Free Agent,,,,
-Gold Coast,42,Asher Eastham,2006-05-13,190.0,Forward,0,19yr 10mth,Gippsland Power,2026.0,Non-Free Agent,2024.0,Rookie,2.0,17.0
+Gold Coast,42,Asher Eastham,2006-05-13,190.0,Forward,0,19yr 11mth,Gippsland Power,2026.0,Non-Free Agent,2024.0,Rookie,2.0,17.0
 Gold Coast,36,Zak Evans,2000-03-26,190.0,Midfield,0,26yr,Melbourne Renegades,2026.0,Non-Free Agent,,,,
 Gold Coast,50,Jy Farrar,1996-12-07,190.0,Forward,44,29yr 4mth,Scotch OC,2026.0,Non-Free Agent,2019.0,National,4.0,60.0
 Gold Coast,46,Caleb Graham,2000-09-12,194.0,Defender,37,25yr 7mth,Gold Coast Academy,2026.0,Restricted Free Agent,2018.0,National,5.0,71.0
@@ -349,7 +349,7 @@ Gold Coast,6,Bodhi Uwland,2003-07-25,188.0,Defender,54,22yr 8mth,Allies,2026.0,N
 Gold Coast,32,Zeke Uwland,2007-04-24,179.0,DefenderMidfield,5,18yr 11mth,Gold Coast Suns Academy,2028.0,Unknown,2025.0,National,1.0,2.0
 Gold Coast,4,Jed Walter,2005-06-08,195.0,Forward,32,20yr 10mth,Palm Beach Currumbin AFC,2026.0,Non-Free Agent,2023.0,National,1.0,3.0
 Gold Coast,14,Lachlan Weller,1996-02-23,182.0,Midfield,166,30yr 1mth,Southport,2026.0,Restricted Free Agent,2014.0,National,1.0,13.0
-Gold Coast,28,Jarrod Witts,1992-09-13,209.0,Ruck,210,33yr 6mth,Sydney University,2026.0,Unrestricted Free Agent,2011.0,National,4.0,67.0
+Gold Coast,28,Jarrod Witts,1992-09-13,209.0,Ruck,210,33yr 7mth,Sydney University,2026.0,Unrestricted Free Agent,2011.0,National,4.0,67.0
 GWS Giants,21,Leek Aleer,2001-08-21,194.0,Defender,25,24yr 7mth,Central District,2027.0,Non-Free Agent,2021.0,National,1.0,15.0
 GWS Giants,29,Cody Angove,2006-05-28,182.0,Forward,4,19yr 10mth,Claremont,2028.0,Non-Free Agent,2024.0,National,1.0,24.0
 GWS Giants,9,Ryan Angwin,2002-12-12,185.0,Midfield,35,23yr 4mth,Gippsland Power,2028.0,Restricted Free Agent,2020.0,National,1.0,18.0
@@ -413,8 +413,8 @@ Hawthorn,41,Matt Hill,2004-01-01,187.0,Defender,0,22yr 3mth,Melbourne Storm,2026
 Hawthorn,44,Henry Hustwaite,2004-07-20,195.0,Midfield,10,21yr 8mth,Dandenong Stingrays,2026.0,Non-Free Agent,2022.0,National,2.0,37.0
 Hawthorn,4,Jarman Impey,1995-07-09,178.0,Defender,226,30yr 9mth,Murray Bushrangers,2026.0,Restricted Free Agent,2013.0,National,2.0,21.0
 Hawthorn,31,Matthew LeRay,2007-02-22,188.0,Midfield,0,19yr 1mth,Central District,2027.0,Unknown,2025.0,National,4.0,56.0
-Hawthorn,2,Mitchell Lewis,1998-10-14,199.0,Forward,83,27yr 5mth,Calder Cannons,2026.0,Unrestricted Free Agent,2016.0,National,5.0,76.0
-Hawthorn,9,Connor MacDonald,2003-01-13,185.0,Forward,95,23yr 2mth,Dandenong Stingrays,2029.0,Restricted Free Agent,2021.0,National,2.0,26.0
+Hawthorn,2,Mitchell Lewis,1998-10-14,199.0,Forward,83,27yr 6mth,Calder Cannons,2026.0,Unrestricted Free Agent,2016.0,National,5.0,76.0
+Hawthorn,9,Connor MacDonald,2003-01-13,185.0,Forward,95,23yr 3mth,Dandenong Stingrays,2029.0,Restricted Free Agent,2021.0,National,2.0,26.0
 Hawthorn,42,Bailey Macdonald,2004-08-04,182.0,Defender,8,21yr 8mth,Oakleigh Chargers,2026.0,Non-Free Agent,2022.0,National,3.0,51.0
 Hawthorn,28,Cameron Mackenzie,2004-01-21,188.0,Midfield,49,22yr 2mth,Sandringham Dragons,2026.0,Non-Free Agent,2022.0,National,1.0,7.0
 Hawthorn,20,Finn Maginness,2001-02-23,189.0,Forward,59,25yr 1mth,Sandringham Dragons,2027.0,Restricted Free Agent,2019.0,National,2.0,29.0
@@ -437,12 +437,12 @@ Hawthorn,43,Jaime Uhr-Henry,2003-03-12,209.0,Ruck,0,23yr 1mth,Dandenong Rangers,
 Hawthorn,25,Josh Ward,2003-08-15,183.0,Midfield,72,22yr 7mth,Northern Knights,2029.0,Restricted Free Agent,2021.0,National,1.0,7.0
 Hawthorn,5,Nick Watson,2005-02-24,170.0,Forward,48,21yr 1mth,Eastern Ranges,2029.0,Non-Free Agent,2023.0,National,1.0,5.0
 Hawthorn,23,Joshua Weddle,2004-05-25,191.0,DefenderMidfield,65,21yr 10mth,Oakleigh Chargers,2030.0,Restricted Free Agent,2022.0,National,1.0,18.0
-Melbourne,26,Jed Adams,2004-05-14,196.0,Defender,1,21yr 10mth,Peel Thunder,2026.0,Non-Free Agent,2022.0,National,2.0,38.0
+Melbourne,26,Jed Adams,2004-05-14,196.0,Defender,1,21yr 11mth,Peel Thunder,2026.0,Non-Free Agent,2022.0,National,2.0,38.0
 Melbourne,38,Oscar Berry,,196.0,Defender,0,,North Florida Ospreys,2027.0,Unknown,,,,
 Melbourne,17,Jake Bowey,2002-09-12,175.0,Defender,84,23yr 7mth,Sandringham Dragons,2028.0,Restricted Free Agent,2020.0,National,1.0,21.0
 Melbourne,29,Tom Campbell,1991-11-02,201.0,Ruck,58,34yr 5mth,Bendigo Bombers,2026.0,Unrestricted Free Agent,2012.0,National,6.0,98.0
-Melbourne,37,Kade Chandler,2000-01-13,175.0,Forward,84,26yr 2mth,Norwood,2026.0,Restricted Free Agent,2018.0,Rookie,1.0,15.0
-Melbourne,41,Paddy Cross,2003-02-14,181.0,Forward,1,23yr 1mth,Casey VFL,2026.0,Unknown,,,,
+Melbourne,37,Kade Chandler,2000-01-13,175.0,Forward,84,26yr 3mth,Norwood,2026.0,Restricted Free Agent,2018.0,Rookie,1.0,15.0
+Melbourne,41,Paddy Cross,2003-02-14,181.0,Forward,1,23yr 2mth,Casey VFL,2026.0,Unknown,,,,
 Melbourne,13,Jai Culley,2003-02-24,194.0,Midfield,21,23yr 1mth,Dandenong Stingrays,2028.0,Unrestricted Free Agent,2022.0,Mid-Season,1.0,1.0
 Melbourne,31,Bayley Fritsch,1996-12-06,188.0,Forward,175,29yr 4mth,Casey Demons,2026.0,Restricted Free Agent,2017.0,National,2.0,31.0
 Melbourne,11,Max Gawn,1991-12-30,209.0,Ruck,252,34yr 3mth,Sandringham Dragons,2027.0,Unrestricted Free Agent,2009.0,National,3.0,34.0
@@ -450,7 +450,7 @@ Melbourne,27,Max Heath,2002-10-24,204.0,ForwardRuck,4,23yr 5mth,Sandringham Drag
 Melbourne,43,Jack Henderson,1999-10-01,176.0,Forward,5,26yr 6mth,Werribee,2026.0,Non-Free Agent,,,,
 Melbourne,22,Blake Howes,2003-04-07,191.0,Defender,33,23yr,Sandringham Dragons,2027.0,Non-Free Agent,2021.0,National,2.0,39.0
 Melbourne,21,Matthew Jefferson,2004-03-08,195.0,Forward,7,22yr 1mth,Oakleigh Chargers,2026.0,Non-Free Agent,2022.0,National,1.0,15.0
-Melbourne,14,Changkuoth Jiath,1999-06-13,185.0,Defender,79,26yr 9mth,Ethiopia,2028.0,Non-Free Agent,,,,
+Melbourne,14,Changkuoth Jiath,1999-06-13,185.0,Defender,79,26yr 10mth,Ethiopia,2028.0,Non-Free Agent,,,,
 Melbourne,42,Aidan Johnson,2000-03-09,193.0,Forward,5,26yr 1mth,Werribee,2026.0,Non-Free Agent,2024.0,National,5.0,68.0
 Melbourne,44,Luker Kentfield,2005-09-10,194.0,Forward,0,20yr 7mth,Subiaco,2026.0,Non-Free Agent,2024.0,Mid-Season,1.0,11.0
 Melbourne,15,Ed Langdon,1996-02-01,182.0,MidfieldForward,207,30yr 2mth,Sandringham Dragons,2028.0,Restricted Free Agent,2014.0,National,3.0,54.0
@@ -474,46 +474,46 @@ Melbourne,24,Trent Rivers,2001-07-30,188.0,Defender,125,24yr 8mth,East Fremantle
 Melbourne,3,Christian Salem,1995-07-15,184.0,Defender,204,30yr 8mth,Sandringham Dragons,2026.0,Unrestricted Free Agent,2013.0,National,1.0,9.0
 Melbourne,30,Harry Sharp,2002-12-17,182.0,Forward,39,23yr 3mth,Gwv Rebels,2027.0,Non-Free Agent,2020.0,National,3.0,43.0
 Melbourne,32,Tom Sparrow,2000-05-31,183.0,MidfieldForward,122,25yr 10mth,South Adelaide,2026.0,Restricted Free Agent,2018.0,National,2.0,27.0
-Melbourne,9,Jack Steele,1995-12-13,187.0,Midfield,207,30yr 3mth,Belconnen,2028.0,Non-Free Agent,2014.0,National,2.0,24.0
+Melbourne,9,Jack Steele,1995-12-13,187.0,Midfield,207,30yr 4mth,Belconnen,2028.0,Non-Free Agent,2014.0,National,2.0,24.0
 Melbourne,19,Xavier Taylor,2007-01-30,192.0,Defender,0,19yr 2mth,Eastern Ranges,2028.0,Unknown,2025.0,National,1.0,11.0
 Melbourne,12,Koltyn Tholstrup,2005-06-28,186.0,DefenderForward,24,20yr 9mth,Subiaco,2028.0,Non-Free Agent,2023.0,National,1.0,13.0
 Melbourne,10,Daniel Turner,2002-01-28,194.0,Defender,41,24yr 2mth,Murray Bushrangers,2030.0,Unrestricted Free Agent,2021.0,Mid-Season,2.0,22.0
 Melbourne,2,Jacob Van Rooyen,2003-04-16,193.0,Forward,62,22yr 11mth,Claremont,2029.0,Restricted Free Agent,2021.0,National,1.0,19.0
-Melbourne,7,Jack Viney,1994-04-13,179.0,Midfield,237,31yr 11mth,Oakleigh Chargers,2028.0,Unrestricted Free Agent,2012.0,National,2.0,26.0
+Melbourne,7,Jack Viney,1994-04-13,179.0,Midfield,237,32yr,Oakleigh Chargers,2028.0,Unrestricted Free Agent,2012.0,National,2.0,26.0
 Melbourne,34,Kalani White,2007-05-05,201.0,ForwardRuck,0,18yr 11mth,Casey Demons,2026.0,Non-Free Agent,,,,
 Melbourne,6,Caleb Windsor,2005-06-09,185.0,DefenderMidfield,41,20yr 10mth,Eastern Ranges,2028.0,Non-Free Agent,2023.0,National,1.0,7.0
 North Melbourne,34,Jackson Archer,2003-01-09,187.0,Defender,26,23yr 3mth,Northern Knights,2028.0,Non-Free Agent,2021.0,National,4.0,59.0
 North Melbourne,45,Zac Banch,2003-07-21,175.0,Forward,6,22yr 8mth,Werribee,2026.0,Non-Free Agent,2025.0,Mid-Season,1.0,2.0
-North Melbourne,39,Tom Blamires,2002-08-13,181.0,DefenderMidfield,5,23yr 7mth,Frankston VFL,2026.0,Unknown,,,,
-North Melbourne,21,Callum Coleman-Jones,1999-06-13,200.0,Ruck,35,26yr 9mth,Sturt,2026.0,Non-Free Agent,2017.0,National,2.0,20.0
+North Melbourne,39,Tom Blamires,2002-08-13,181.0,DefenderMidfield,5,23yr 8mth,Frankston VFL,2026.0,Unknown,,,,
+North Melbourne,21,Callum Coleman-Jones,1999-06-13,200.0,Ruck,35,26yr 10mth,Sturt,2026.0,Non-Free Agent,2017.0,National,2.0,20.0
 North Melbourne,30,Charlie Comben,2001-07-20,199.0,Defender,53,24yr 8mth,Gippsland Power,2027.0,Restricted Free Agent,2019.0,National,2.0,31.0
 North Melbourne,4,Aidan Corr,1994-05-17,195.0,Defender,175,31yr 10mth,Northern Knights,2026.0,Unrestricted Free Agent,2012.0,National,1.0,14.0
 North Melbourne,25,Paul Curtis,2003-03-04,185.0,Forward,83,23yr 1mth,Western Jets,2028.0,Non-Free Agent,2021.0,National,2.0,35.0
 North Melbourne,5,Caleb Daniel,1996-07-07,171.0,Defender,220,29yr 9mth,South Adelaide,2028.0,Unrestricted Free Agent,2014.0,National,3.0,46.0
-North Melbourne,27,Jack Darling,1992-06-13,191.0,Forward,324,33yr 9mth,West Perth,2027.0,Unrestricted Free Agent,,,,
+North Melbourne,27,Jack Darling,1992-06-13,191.0,Forward,324,33yr 10mth,West Perth,2027.0,Unrestricted Free Agent,,,,
 North Melbourne,9,Luke Davies-Uniacke,1999-06-08,188.0,Midfield,135,26yr 10mth,Dandenong Stingrays,2032.0,Unrestricted Free Agent,2017.0,National,1.0,4.0
 North Melbourne,18,Wil Dawson,2005-12-20,200.0,Defender,8,20yr 3mth,Gipplands Power,2026.0,Non-Free Agent,2023.0,National,1.0,22.0
 North Melbourne,1,Lachy Dovaston,2007-05-29,178.0,Forward,3,18yr 10mth,Eastern Ranges,2028.0,Unknown,2025.0,National,1.0,16.0
 North Melbourne,7,Zane Duursma,2005-08-28,190.0,DefenderForward,28,20yr 7mth,Gippsland Power,2026.0,Non-Free Agent,2023.0,National,1.0,4.0
 North Melbourne,16,Zac Fisher,1998-06-15,175.0,Forward,132,27yr 9mth,Perth,2027.0,Non-Free Agent,2016.0,National,2.0,27.0
-North Melbourne,33,Brayden George,2004-01-13,187.0,Forward,0,22yr 2mth,Murray Bushrangers,2026.0,Non-Free Agent,2022.0,National,2.0,26.0
+North Melbourne,33,Brayden George,2004-01-13,187.0,Forward,0,22yr 3mth,Murray Bushrangers,2026.0,Non-Free Agent,2022.0,National,2.0,26.0
 North Melbourne,22,Taylor Goad,2005-04-28,207.0,Ruck,0,20yr 11mth,South Adelaide,2028.0,Non-Free Agent,2023.0,National,1.0,20.0
 North Melbourne,31,Josh Goater,2003-06-02,190.0,Defender,12,22yr 10mth,Calder Cannons,2026.0,Non-Free Agent,2021.0,National,2.0,22.0
-North Melbourne,46,Robert Hansen,2004-03-13,182.0,MidfieldForward,20,22yr,Subiaco,2026.0,Non-Free Agent,2023.0,Mid-Season,1.0,2.0
+North Melbourne,46,Robert Hansen,2004-03-13,182.0,MidfieldForward,20,22yr 1mth,Subiaco,2026.0,Non-Free Agent,2023.0,Mid-Season,1.0,2.0
 North Melbourne,17,Riley Hardeman,2005-02-27,184.0,Defender,20,21yr 1mth,Swan Districts,2026.0,Non-Free Agent,2023.0,National,1.0,23.0
 North Melbourne,37,Cooper Harvey,2004-07-12,180.0,Forward,10,21yr 9mth,Northern Knights,2026.0,Non-Free Agent,2022.0,National,4.0,56.0
 North Melbourne,41,Jacob Konstanty,2004-11-09,177.0,Forward,25,21yr 5mth,Gippsland Power,2028.0,Non-Free Agent,2022.0,National,1.0,20.0
 North Melbourne,20,Nick Larkey,1998-06-06,198.0,Forward,139,27yr 10mth,Oakleigh Chargers,2029.0,Unrestricted Free Agent,2016.0,National,5.0,73.0
-North Melbourne,19,Griffin Logue,1998-04-13,193.0,Defender,100,27yr 11mth,Swan Districts,2027.0,Non-Free Agent,2016.0,National,1.0,8.0
+North Melbourne,19,Griffin Logue,1998-04-13,193.0,Defender,100,28yr,Swan Districts,2027.0,Non-Free Agent,2016.0,National,1.0,8.0
 North Melbourne,11,Luke McDonald,1995-02-09,189.0,Defender,223,31yr 2mth,Werribee,2026.0,Unrestricted Free Agent,2013.0,National,1.0,8.0
 North Melbourne,10,Colby McKercher,2005-04-12,182.0,Defender,44,21yr,Tasmania Devils,2028.0,Non-Free Agent,2023.0,National,1.0,2.0
-North Melbourne,28,Hugo Mikunda,2007-03-13,180.0,MidfieldForward,0,19yr,Geelong Falcons,2027.0,Unknown,2025.0,National,3.0,48.0
+North Melbourne,28,Hugo Mikunda,2007-03-13,180.0,MidfieldForward,0,19yr 1mth,Geelong Falcons,2027.0,Unknown,2025.0,National,3.0,48.0
 North Melbourne,2,Finn O'Sullivan,2006-05-30,182.0,DefenderMidfield,26,19yr 10mth,Oakleigh Chargers,2027.0,Non-Free Agent,2024.0,National,1.0,2.0
 North Melbourne,26,Luke Parker,1992-10-25,183.0,DefenderMidfield,320,33yr 5mth,Dandenong Stingrays,2026.0,Unrestricted Free Agent,2010.0,National,2.0,40.0
 North Melbourne,32,Toby Pink,1998-08-11,194.0,Defender,36,27yr 8mth,Glenelg,2026.0,Unrestricted Free Agent,2024.0,Rookie,1.0,1.0
 North Melbourne,24,Tom Powell,2002-03-02,184.0,MidfieldForward,96,24yr 1mth,Sturt,2028.0,Restricted Free Agent,2020.0,National,1.0,13.0
 North Melbourne,8,Bailey Scott,2000-07-09,186.0,Midfield,113,25yr 9mth,Gc Suns Academy,2026.0,Restricted Free Agent,2018.0,National,3.0,49.0
-North Melbourne,3,Harry Sheezel,2004-10-13,185.0,MidfieldForward,72,21yr 5mth,Sandringham Dragons,2030.0,Restricted Free Agent,2022.0,National,1.0,3.0
+North Melbourne,3,Harry Sheezel,2004-10-13,185.0,MidfieldForward,72,21yr 6mth,Sandringham Dragons,2030.0,Restricted Free Agent,2022.0,National,1.0,3.0
 North Melbourne,12,Jy Simpkin,1998-03-05,183.0,MidfieldForward,178,28yr 1mth,Murray Bushrangers,2029.0,Unrestricted Free Agent,2016.0,National,1.0,12.0
 North Melbourne,13,Charlie Spargo,1999-11-25,172.0,Forward,109,26yr 4mth,Murray Bushrangers,2028.0,Non-Free Agent,2017.0,National,2.0,29.0
 North Melbourne,15,Dylan Stephens,2001-01-08,184.0,Midfield,86,25yr 3mth,Norwood,2027.0,Non-Free Agent,2019.0,National,1.0,5.0
@@ -536,7 +536,7 @@ Port Adelaide,9,Zak Butters,2000-09-08,181.0,Midfield,144,25yr 7mth,Western Jets
 Port Adelaide,33,Darcy Byrne-Jones,1995-09-20,181.0,DefenderForward,226,30yr 6mth,Oakleigh Chargers,2026.0,Unrestricted Free Agent,2013.0,National,3.0,52.0
 Port Adelaide,26,Tom Cochrane,2006-01-27,182.0,Forward,3,20yr 2mth,Central District,2027.0,Non-Free Agent,2024.0,Rookie,1.0,13.0
 Port Adelaide,28,Willem Drew,1998-10-01,188.0,Midfield,135,27yr 6mth,North Ballarat Rebels,2028.0,Unrestricted Free Agent,2016.0,National,2.0,33.0
-Port Adelaide,44,Corey Durdin,2002-04-14,173.0,Forward,69,23yr 11mth,Central Districts,2027.0,Non-Free Agent,2020.0,National,2.0,37.0
+Port Adelaide,44,Corey Durdin,2002-04-14,173.0,Forward,69,24yr,Central Districts,2027.0,Non-Free Agent,2020.0,National,2.0,37.0
 Port Adelaide,22,Logan Evans,2005-10-07,189.0,Defender,28,20yr 6mth,Port Adelaide,2028.0,Non-Free Agent,2024.0,Mid-Season,1.0,12.0
 Port Adelaide,6,Kane Farrell,1999-03-17,182.0,Defender,119,27yr,Bendigo Pioneers,2030.0,Unrestricted Free Agent,2017.0,National,3.0,51.0
 Port Adelaide,19,Mitch Georgiades,2001-09-28,192.0,Forward,97,24yr 6mth,Subiaco,2027.0,Restricted Free Agent,2019.0,National,1.0,18.0
@@ -559,9 +559,9 @@ Port Adelaide,27,Esava Ratugolea,1998-07-24,197.0,Defender,114,27yr 8mth,Murray 
 Port Adelaide,35,Joe Richards,1999-11-23,177.0,Forward,36,26yr 4mth,Wangaratta,2027.0,Non-Free Agent,2022.0,National,3.0,48.0
 Port Adelaide,1,Connor Rozee,2000-01-22,185.0,DefenderMidfield,152,26yr 2mth,North Adelaide,2032.0,Unrestricted Free Agent,2018.0,National,1.0,5.0
 Port Adelaide,8,Josh Sinn,2003-01-07,187.0,Defender,30,23yr 3mth,Sandringham Dragons,2027.0,Non-Free Agent,2021.0,National,1.0,12.0
-Port Adelaide,13,Ivan Soldo,1996-04-14,204.0,ForwardRuck,66,29yr 11mth,Daramalan College,2026.0,Non-Free Agent,,,,
+Port Adelaide,13,Ivan Soldo,1996-04-14,204.0,ForwardRuck,66,30yr,Daramalan College,2026.0,Non-Free Agent,,,,
 Port Adelaide,24,Jordon Sweet,1998-02-02,206.0,Ruck,51,28yr 2mth,North Adelaide,2026.0,Non-Free Agent,2018.0,Rookie,2.0,23.0
-Port Adelaide,38,Dante Visentini,2003-02-13,202.0,Ruck,15,23yr 1mth,Sandringham Dragons,2027.0,Non-Free Agent,2021.0,National,4.0,56.0
+Port Adelaide,38,Dante Visentini,2003-02-13,202.0,Ruck,15,23yr 2mth,Sandringham Dragons,2027.0,Non-Free Agent,2021.0,National,4.0,56.0
 Port Adelaide,45,Xavier Walsh,2005-09-06,195.0,Forward,0,20yr 7mth,East Perth,2026.0,Non-Free Agent,2023.0,Rookie,1.0,13.0
 Port Adelaide,37,Jack Watkins,2000-01-01,,MidfieldForward,5,26yr 3mth,Port Adelaide,2026.0,Unknown,2025.0,Rookie,1.0,4.0
 Port Adelaide,15,Jacob Wehr,1998-07-05,185.0,DefenderMidfield,44,27yr 9mth,Woodville-west Torrens,2028.0,Unrestricted Free Agent,2024.0,Rookie,2.0,22.0
@@ -570,7 +570,7 @@ Port Adelaide,16,Oliver Wines,1994-10-07,187.0,Midfield,275,31yr 6mth,Bendigo Pi
 Port Adelaide,39,Mitch Zadow,2004-03-11,180.0,Forward,1,22yr 1mth,East Fremantle,2026.0,Unknown,,,,
 Port Adelaide,25,Brandon Zerk-Thatcher,1998-08-25,195.0,Defender,90,27yr 7mth,Sturt,2026.0,Non-Free Agent,2017.0,National,4.0,66.0
 Richmond,29,Jasper Alger,2006-12-17,183.0,Forward,5,19yr 3mth,Oakleigh Chargers,2026.0,Non-Free Agent,2024.0,National,4.0,58.0
-Richmond,34,Harry Armstrong,2006-06-14,195.0,Forward,11,19yr 9mth,Sandringham Dragons,2027.0,Non-Free Agent,2024.0,National,1.0,23.0
+Richmond,34,Harry Armstrong,2006-06-14,195.0,Forward,11,19yr 10mth,Sandringham Dragons,2027.0,Non-Free Agent,2024.0,National,1.0,23.0
 Richmond,21,Noah Balta,1999-10-23,194.0,DefenderForward,121,26yr 5mth,Calder Cannons,2032.0,Unrestricted Free Agent,2017.0,National,2.0,25.0
 Richmond,6,Sam Banks,2003-04-02,187.0,DefenderMidfield,48,23yr,Tasmania Devils,2027.0,Non-Free Agent,2021.0,National,2.0,29.0
 Richmond,35,Nathan Broad,1993-04-15,192.0,Defender,174,32yr 11mth,Swan Districts,2026.0,Unrestricted Free Agent,2015.0,National,5.0,67.0
@@ -653,7 +653,7 @@ St Kilda,7,Nasiah Wanganeen-Milera,2003-02-22,187.0,DefenderMidfield,91,23yr 1mt
 St Kilda,44,Callum Wilkie,1996-03-10,191.0,Defender,160,30yr 1mth,North Adelaide,2029.0,Unrestricted Free Agent,2018.0,Rookie,1.0,3.0
 St Kilda,22,Darcy Wilson,2005-08-18,185.0,MidfieldForward,46,20yr 7mth,Murray Bushrangers,2026.0,Non-Free Agent,2023.0,National,1.0,18.0
 St Kilda,2,Marcus Windhager,2003-05-16,185.0,DefenderMidfield,80,22yr 10mth,Sandringham Dragons,2029.0,Restricted Free Agent,2021.0,National,3.0,47.0
-St Kilda,32,Mason Wood,1993-09-13,192.0,MidfieldForward,161,32yr 6mth,Geelong Falcons,2027.0,Unrestricted Free Agent,2012.0,National,2.0,41.0
+St Kilda,32,Mason Wood,1993-09-13,192.0,MidfieldForward,161,32yr 7mth,Geelong Falcons,2027.0,Unrestricted Free Agent,2012.0,National,2.0,41.0
 Sydney,3,Taylor Adams,1993-09-20,181.0,Forward,229,32yr 6mth,Geelong Falcons,2026.0,Non-Free Agent,2011.0,National,1.0,13.0
 Sydney,36,Joel Amartey,1999-09-02,195.0,Forward,66,26yr 7mth,Sandringham Dragons,2026.0,Restricted Free Agent,2017.0,Rookie,2.0,28.0
 Sydney,20,Riak Andrew,2005-02-17,193.0,Defender,0,21yr 1mth,Dandenong Stingrays,2027.0,Non-Free Agent,2024.0,National,3.0,55.0
@@ -678,7 +678,7 @@ Sydney,39,Liam Hetherton,2007-05-02,198.0,Forward,0,18yr 11mth,Murray Bushranger
 Sydney,17,James Jordon,2000-12-20,187.0,MidfieldForward,119,25yr 3mth,Oakleigh Chargers,2027.0,Non-Free Agent,2018.0,National,2.0,33.0
 Sydney,31,Max King,2007-01-09,192.0,Forward,0,19yr 3mth,Sydney Swans Academy,2027.0,Unknown,2018.0,National,1.0,4.0
 Sydney,32,Harry Kyle,2007-07-16,188.0,DefenderMidfield,0,18yr 8mth,Sydney Swans Academy,2028.0,Unknown,2025.0,National,1.0,14.0
-Sydney,19,Peter Ladhams,1998-01-14,204.0,ForwardRuck,63,28yr 2mth,Norwood,2027.0,Non-Free Agent,2016.0,Rookie,1.0,9.0
+Sydney,19,Peter Ladhams,1998-01-14,204.0,ForwardRuck,63,28yr 3mth,Norwood,2027.0,Non-Free Agent,2016.0,Rookie,1.0,9.0
 Sydney,44,Jake Lloyd,1993-09-20,182.0,MidfieldForward,276,32yr 6mth,North Ballarat Rebels,2026.0,Unrestricted Free Agent,2025.0,Rookie,1.0,7.0
 Sydney,30,Tom McCartin,1999-12-30,194.0,Defender,157,26yr 3mth,Geelong Falcons,2027.0,Unrestricted Free Agent,2017.0,National,2.0,33.0
 Sydney,6,Logan McDonald,2002-04-04,195.0,Forward,75,24yr,Perth Fc,2028.0,Restricted Free Agent,2020.0,National,1.0,4.0
@@ -686,7 +686,7 @@ Sydney,27,Justin McInerney,2000-08-18,189.0,MidfieldForward,114,25yr 7mth,Northe
 Sydney,2,Hayden McLean,1999-01-20,197.0,Forward,98,27yr 2mth,Sandringham,2027.0,Restricted Free Agent,,,,
 Sydney,43,Lewis Melican,1996-11-04,194.0,Defender,105,29yr 5mth,Geelong Falcons,2027.0,Unrestricted Free Agent,2014.0,Rookie,3.0,52.0
 Sydney,14,Callum Mills,1997-04-02,188.0,Defender,179,29yr,North Shore,2029.0,Unrestricted Free Agent,2015.0,National,1.0,3.0
-Sydney,11,Tom Papley,1996-07-13,177.0,Forward,201,29yr 8mth,Gippsland Power,2028.0,Unrestricted Free Agent,2015.0,Rookie,1.0,14.0
+Sydney,11,Tom Papley,1996-07-13,177.0,Forward,201,29yr 9mth,Gippsland Power,2028.0,Unrestricted Free Agent,2015.0,Rookie,1.0,14.0
 Sydney,18,Jevan Phillipou,2007-03-30,183.0,Midfield,0,19yr,Woodville-West Torrens,2027.0,Unknown,2025.0,National,2.0,35.0
 Sydney,24,Dane Rampe,1990-06-02,187.0,Defender,277,35yr 10mth,Williamstown,2026.0,Unrestricted Free Agent,2025.0,Rookie,2.0,18.0
 Sydney,34,Matthew Roberts,2003-07-31,184.0,DefenderMidfield,53,22yr 8mth,South Adelaide,2027.0,Non-Free Agent,2021.0,National,2.0,34.0
@@ -697,13 +697,13 @@ Sydney,12,Angus Sheldrick,2003-11-07,178.0,Midfield,33,22yr 5mth,Claremont,2027.
 Sydney,41,Patrick Snell,2005-07-18,194.0,DefenderForward,0,20yr 8mth,Wilston Grange,2027.0,Non-Free Agent,2023.0,National,4.0,53.0
 Sydney,1,Chad Warner,2001-05-19,185.0,MidfieldForward,113,24yr 10mth,East Fremantle,2027.0,Restricted Free Agent,2019.0,National,2.0,39.0
 Sydney,37,Corey Warner,2003-10-07,182.0,MidfieldForward,26,22yr 6mth,East Fremantle,2027.0,Non-Free Agent,2021.0,National,3.0,40.0
-Sydney,15,Sam Wicks,1999-09-14,181.0,Defender,92,26yr 6mth,Swans Academy,2028.0,Unrestricted Free Agent,,,,
+Sydney,15,Sam Wicks,1999-09-14,181.0,Defender,92,26yr 7mth,Swans Academy,2028.0,Unrestricted Free Agent,,,,
 West Coast,26,Bo Allan,2006-02-16,191.0,DefenderMidfield,11,20yr 1mth,Peel Thunder,2028.0,Non-Free Agent,2024.0,National,1.0,16.0
-West Coast,12,Sam Allen,2007-01-13,184.0,MidfieldForward,0,19yr 2mth,Oakleigh Chargers,2027.0,Unknown,2025.0,National,2.0,29.0
+West Coast,12,Sam Allen,2007-01-13,184.0,MidfieldForward,0,19yr 3mth,Oakleigh Chargers,2027.0,Unknown,2025.0,National,2.0,29.0
 West Coast,3,Liam Baker,1998-01-27,173.0,Defender,155,28yr 2mth,Subiaco,2029.0,Non-Free Agent,2017.0,Rookie,1.0,18.0
 West Coast,30,Harry Barnett,2004-01-22,203.0,Ruck,2,22yr 2mth,West Adelaide,2026.0,Non-Free Agent,2022.0,National,2.0,23.0
 West Coast,33,Rhett Bazzo,2003-10-17,195.0,Defender,28,22yr 5mth,Swan Districts,2026.0,Non-Free Agent,2021.0,National,2.0,37.0
-West Coast,41,Sandy Brock,2002-12-14,198.0,Defender,16,23yr 3mth,Peel Thunder,2027.0,Unrestricted Free Agent,,,,
+West Coast,41,Sandy Brock,2002-12-14,198.0,Defender,16,23yr 4mth,Peel Thunder,2027.0,Unrestricted Free Agent,,,,
 West Coast,10,Tyler Brockman,2002-11-22,180.0,Forward,56,23yr 4mth,Subiaco,2026.0,Non-Free Agent,2020.0,National,3.0,46.0
 West Coast,37,Malakai Champion,2006-05-17,172.0,Forward,3,19yr 10mth,Subiaco,2026.0,Non-Free Agent,,,,
 West Coast,28,Tom Cole,1997-05-28,188.0,Defender,132,28yr 10mth,Sandhurst Football Netball Club,2026.0,Unrestricted Free Agent,2015.0,National,2.0,36.0
@@ -714,7 +714,7 @@ West Coast,21,Cooper Duff-Tytler,2007-08-22,201.0,ForwardRuck,5,18yr 7mth,Calder
 West Coast,14,Liam Duggan,1996-12-11,186.0,Defender,205,29yr 4mth,Western Jets,2028.0,Unrestricted Free Agent,2014.0,National,1.0,11.0
 West Coast,1,Willem Duursma,2007-06-21,193.0,Midfield,5,18yr 9mth,Gippsland Power,2028.0,Unknown,2025.0,National,1.0,1.0
 West Coast,42,Harry Edwards,2000-10-01,200.0,Defender,56,25yr 6mth,Swan Districts,2027.0,Restricted Free Agent,2018.0,Rookie,1.0,18.0
-West Coast,25,Matthew Flynn,1997-09-13,202.0,Ruck,59,28yr 6mth,Narrandera,2026.0,Unrestricted Free Agent,2015.0,National,3.0,41.0
+West Coast,25,Matthew Flynn,1997-09-13,202.0,Ruck,59,28yr 7mth,Narrandera,2026.0,Unrestricted Free Agent,2015.0,National,3.0,41.0
 West Coast,7,Reuben Ginbey,2004-09-10,191.0,Defender,68,21yr 7mth,East Perth,2027.0,Non-Free Agent,2022.0,National,1.0,9.0
 West Coast,17,Jack Graham,1998-02-25,181.0,MidfieldForward,154,28yr 1mth,North Adelaide,2028.0,Non-Free Agent,2016.0,National,3.0,53.0
 West Coast,31,Lucca Grego,2006-08-15,184.0,Defender,1,19yr 7mth,Western Jets,2027.0,Non-Free Agent,2024.0,National,3.0,48.0
@@ -727,7 +727,7 @@ West Coast,24,Harvey Johnston,2005-08-18,185.0,Defender,6,20yr 7mth,Sandringham 
 West Coast,11,Tim Kelly,1994-07-26,184.0,MidfieldForward,168,31yr 8mth,South Fremantle,2027.0,Restricted Free Agent,2017.0,National,2.0,24.0
 West Coast,5,Josh Lindsay,2007-04-07,183.0,Defender,4,19yr,Geelong Falcons,2028.0,Unknown,2025.0,National,1.0,19.0
 West Coast,13,Noah Long,2004-08-23,179.0,Forward,36,21yr 7mth,Bendigo Pioneeers,2026.0,Non-Free Agent,2022.0,National,5.0,58.0
-West Coast,45,Finlay Macrae,2002-03-13,188.0,MidfieldForward,21,24yr,Oakleigh Chargers,2026.0,Unrestricted Free Agent,2020.0,National,1.0,19.0
+West Coast,45,Finlay Macrae,2002-03-13,188.0,MidfieldForward,21,24yr 1mth,Oakleigh Chargers,2026.0,Unrestricted Free Agent,2020.0,National,1.0,19.0
 West Coast,23,Ryan Maric,2004-09-06,196.0,Defender,52,21yr 7mth,Gippsland Power,2026.0,Non-Free Agent,2023.0,Mid-Season,1.0,1.0
 West Coast,18,Tom McCarthy,2000-07-12,188.0,Defender,15,25yr 9mth,Richmond VFL,2028.0,Non-Free Agent,2025.0,Mid-Season,1.0,1.0
 West Coast,47,Milan Murdock,2000-06-30,180.0,Midfield,2,25yr 9mth,East Fremantle,2026.0,Unknown,,,,
@@ -757,12 +757,12 @@ Western Bulldogs,17,Nicholas Coffield,1999-10-23,191.0,Defender,64,26yr 5mth,Nor
 Western Bulldogs,16,Jordan Croft,2005-05-12,201.0,Forward,6,20yr 11mth,Calder Cannons,2029.0,Non-Free Agent,2023.0,National,1.0,15.0
 Western Bulldogs,31,Bailey Dale,1996-07-22,188.0,Defender,183,29yr 8mth,Dandenong Stingrays,2029.0,Unrestricted Free Agent,2014.0,National,3.0,45.0
 Western Bulldogs,10,Sam Darcy,2003-07-19,208.0,Forward,50,22yr 8mth,Oakleigh Chargers,2029.0,Restricted Free Agent,2021.0,National,1.0,2.0
-Western Bulldogs,15,Will Darcy,2007-03-14,196.0,DefenderForward,0,19yr,Oakleigh Chargers,2027.0,Unknown,2025.0,National,8.0,60.0
-Western Bulldogs,42,Sam Davidson,2001-12-13,190.0,MidfieldForward,24,24yr 3mth,Richmond,2028.0,Non-Free Agent,2024.0,National,3.0,51.0
+Western Bulldogs,15,Will Darcy,2007-03-14,196.0,DefenderForward,0,19yr 1mth,Oakleigh Chargers,2027.0,Unknown,2025.0,National,8.0,60.0
+Western Bulldogs,42,Sam Davidson,2001-12-13,190.0,MidfieldForward,24,24yr 4mth,Richmond,2028.0,Non-Free Agent,2024.0,National,3.0,51.0
 Western Bulldogs,26,Josh Dolan,2006-11-11,177.0,Forward,13,19yr 5mth,Sandringham Dragons,2028.0,Non-Free Agent,2024.0,National,2.0,31.0
 Western Bulldogs,25,Louis Emmett,2007-03-23,200.0,Ruck,1,19yr,Oakleigh Chargers,2027.0,Unknown,2025.0,National,2.0,27.0
 Western Bulldogs,44,Timothy English,1997-08-10,208.0,Ruck,158,28yr 8mth,South Fremantle,2029.0,Unrestricted Free Agent,2016.0,National,1.0,19.0
-Western Bulldogs,27,Joel Freijah,2005-11-14,191.0,MidfieldForward,41,20yr 4mth,Greater Western Victoria Rebels,2029.0,Non-Free Agent,2023.0,National,3.0,45.0
+Western Bulldogs,27,Joel Freijah,2005-11-14,191.0,MidfieldForward,41,20yr 5mth,Greater Western Victoria Rebels,2029.0,Non-Free Agent,2023.0,National,3.0,45.0
 Western Bulldogs,12,Harvey Gallagher,2003-09-26,181.0,Defender,26,22yr 6mth,Bendigo Pioneers,2026.0,Non-Free Agent,2022.0,National,3.0,39.0
 Western Bulldogs,38,Riley Garcia,2001-01-30,178.0,MidfieldForward,39,25yr 2mth,Swan Districts,2027.0,Restricted Free Agent,2019.0,National,4.0,62.0
 Western Bulldogs,43,Ryan Gardner,1997-06-01,197.0,Defender,54,28yr 10mth,Burnie Dockers,2026.0,Unrestricted Free Agent,2015.0,National,4.0,59.0

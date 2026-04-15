@@ -14,7 +14,7 @@ Adelaide,5,Sid Draper,2006-07-05,182.0,MidfieldForward,10,19yr 9mth,South Adelai
 Adelaide,11,Charlie Edwards,2005-05-18,191.0,DefenderMidfield,0,20yr 10mth,Sandringham Dragons
 Adelaide,32,Darcy Fogarty,1999-09-25,192.0,Forward,129,26yr 6mth,Glenelg
 Adelaide,20,Mitchell Hinge,1998-06-28,187.0,Defender,90,27yr 9mth,Glenelg
-Adelaide,1,Chayce Jones,2000-01-14,180.0,DefenderMidfield,100,26yr 3mth,Launceston
+Adelaide,1,Chayce Jones,2000-01-14,180.0,DefenderMidfield,100,26yr 2mth,Launceston
 Adelaide,48,Mark Keane,2000-03-17,194.0,Defender,56,26yr,Cork
 Adelaide,2,Ben Keays,1997-02-23,185.0,Forward,166,29yr 1mth,Brisbane Reserves
 Adelaide,29,Rory Laird,1993-12-29,178.0,Defender,272,32yr 3mth,West Adelaide
@@ -23,7 +23,7 @@ Adelaide,36,Finnbar Maley,2003-07-18,197.0,Forward,10,22yr 8mth,Northern Bullant
 Adelaide,26,Mitchell Marsh,2007-02-15,192.0,Forward,0,19yr 1mth,West Adelaide
 Adelaide,42,Lachlan McAndrew,2000-05-26,209.0,Ruck,7,25yr 10mth,Sydney
 Adelaide,16,Max Michalanney,2004-02-26,190.0,Defender,71,22yr 1mth,Norwood
-Adelaide,30,Wayne Milera,1997-09-14,185.0,Defender,128,28yr 7mth,Central District
+Adelaide,30,Wayne Milera,1997-09-14,185.0,Defender,128,28yr 6mth,Central District
 Adelaide,9,Nick Murray,2000-12-18,195.0,Defender,72,25yr 3mth,Allies
 Adelaide,39,Toby Murray,2003-11-03,200.0,Forward,1,22yr 5mth,Adelaide SANFL
 Adelaide,27,Luke Nankervis,2003-05-25,189.0,Midfield,33,22yr 10mth,Sandringham Dragons
@@ -83,12 +83,12 @@ Brisbane,25,Henry Smith,2002-09-24,202.0,Forward,6,23yr 6mth,Woodville-west Torr
 Brisbane,36,Reece Torrent,2005-08-03,184.0,Midfield,0,20yr 8mth,Peel Thunder
 Brisbane,29,James Tunstill,2003-07-18,187.0,Midfield,14,22yr 8mth,East Perth
 Brisbane,44,Darcy Wilmot,2003-12-31,183.0,Defender,88,22yr 3mth,Northern Knights
-Brisbane,21,Zane Zakostelsky,2005-12-14,196.0,DefenderRuck,2,20yr 4mth,Claremont
+Brisbane,21,Zane Zakostelsky,2005-12-14,196.0,DefenderRuck,2,20yr 3mth,Claremont
 Brisbane,15,Dayne Zorko,1989-02-09,175.0,Defender,309,37yr 2mth,Broadbeach
 Carlton,13,Blake Acres,1995-10-07,193.0,Midfield,187,30yr 6mth,West Perth
 Carlton,12,Ben Ainsworth,1998-02-10,178.0,Forward,163,28yr 2mth,Gippsland Power
 Carlton,37,Jordan Boyd,1998-09-22,182.0,Defender,40,27yr 6mth,Footscray
-Carlton,39,Talor Byrne,2007-11-14,174.0,MidfieldForward,3,18yr 5mth,GWV Rebels
+Carlton,39,Talor Byrne,2007-11-14,174.0,MidfieldForward,3,18yr 4mth,GWV Rebels
 Carlton,16,Ben Camporeale,2006-07-21,186.0,Midfield,0,19yr 8mth,Glenelg
 Carlton,21,Lucas Camporeale,2006-07-21,184.0,Midfield,3,19yr 8mth,Glenelg
 Carlton,32,Matt Carroll,2005-11-28,188.0,DefenderMidfield,21,20yr 4mth,Sandringham Dragons
@@ -121,7 +121,7 @@ Carlton,24,Nic Newman,1993-01-15,186.0,Defender,136,33yr 2mth,Frankston
 Carlton,22,Harry O'Farrell,2006-05-03,196.0,Defender,6,19yr 11mth,Calder Cannons
 Carlton,40,Hudson O'Keeffe,2004-12-16,202.0,ForwardRuck,8,21yr 3mth,Oakleigh Chargers
 Carlton,27,Marc Pittonet,1996-06-03,202.0,Ruck,85,29yr 10mth,Oakleigh Chargers
-Carlton,25,Liam Reidy,2000-06-14,204.0,ForwardRuck,4,25yr 10mth,Frankston Dolphins
+Carlton,25,Liam Reidy,2000-06-14,204.0,ForwardRuck,4,25yr 9mth,Frankston Dolphins
 Carlton,42,Adam Saad,1994-07-23,178.0,Defender,217,31yr 8mth,Coburg
 Carlton,7,Jagga Smith,2006-01-28,182.0,Midfield,5,20yr 2mth,Oakleigh Chargers
 Carlton,18,Sam Walsh,2000-07-02,184.0,Midfield,138,25yr 9mth,Geelong Falcons
@@ -176,7 +176,7 @@ Collingwood,29,Charlie West,2006-02-01,194.0,Forward,1,20yr 2mth,Woodville-West 
 Essendon,46,Lachlan Blakiston,1998-09-09,203.0,DefenderRuck,16,27yr 7mth,East Fremantle
 Essendon,39,Cillian Bourke,2006-06-07,190.0,Defender,0,19yr 10mth,County Offaly
 Essendon,24,Nick Bryan,2001-10-22,203.0,Ruck,23,24yr 5mth,Oakleigh Chargers
-Essendon,30,Nate Caddy,2005-07-14,193.0,Forward,31,20yr 9mth,Northern Knights
+Essendon,30,Nate Caddy,2005-07-14,193.0,Forward,31,20yr 8mth,Northern Knights
 Essendon,6,Jye Caldwell,2000-09-28,183.0,Midfield,94,25yr 6mth,Bendigo Pioneers
 Essendon,36,Angus Clarke,2006-05-08,188.0,DefenderMidfield,14,19yr 11mth,Glenelg
 Essendon,13,Nikolas Cox,2002-01-15,200.0,Midfield,53,24yr 2mth,Northern Knights
@@ -190,12 +190,12 @@ Essendon,2,Jacob Farrow,2007-09-21,188.0,DefenderMidfield,3,18yr 6mth,West Perth
 Essendon,8,Brayden Fiorini,1997-08-22,187.0,Midfield,125,28yr 7mth,Northern Knights
 Essendon,19,Kayle Gerreyn,2006-05-10,199.0,Ruck,0,19yr 11mth,West Perth
 Essendon,11,Jade Gresham,1997-08-24,177.0,Forward,180,28yr 7mth,Northern Knights
-Essendon,35,Matt Guelfi,1997-08-14,184.0,Forward,123,28yr 8mth,Claremont
+Essendon,35,Matt Guelfi,1997-08-14,184.0,Forward,123,28yr 7mth,Claremont
 Essendon,18,Lewis Hayes,2004-12-17,199.0,Defender,1,21yr 3mth,Eastern Ranges
 Essendon,40,Zak Johnson,2006-12-24,185.0,Defender,13,19yr 3mth,Northern Knights
 Essendon,23,Harrison Jones,2001-02-25,196.0,MidfieldForward,59,25yr 1mth,Calder Cannons
 Essendon,10,Isaac Kako,2006-03-07,175.0,Forward,27,20yr 1mth,Calder Cannons
-Essendon,29,Max Kondogiannis,2007-11-14,191.0,Defender,2,18yr 5mth,Oakleigh Chargers
+Essendon,29,Max Kondogiannis,2007-11-14,191.0,Defender,2,18yr 4mth,Oakleigh Chargers
 Essendon,4,Kyle Langford,1996-12-01,192.0,MidfieldForward,167,29yr 4mth,Northern Knights
 Essendon,37,Nicholas Martin,2001-04-03,192.0,MidfieldForward,83,25yr,Colts
 Essendon,26,Archie May,2004-08-27,198.0,Forward,11,21yr 7mth,Subiaco
@@ -226,7 +226,7 @@ Fremantle,38,Jaren Carr,2004-01-27,191.0,Forward,0,22yr 2mth,South Fremantle
 Fremantle,5,Heath Chapman,2002-01-31,193.0,Defender,70,24yr 2mth,West Perth
 Fremantle,6,Jordan Clark,2000-10-16,185.0,Defender,131,25yr 5mth,Claremont
 Fremantle,36,Brennan Cox,1998-08-13,195.0,Defender,138,27yr 8mth,Woodville-West Torrens
-Fremantle,18,Mason Cox,1991-03-14,211.0,ForwardRuck,139,35yr 1mth,Oklahoma State
+Fremantle,18,Mason Cox,1991-03-14,211.0,ForwardRuck,139,35yr,Oklahoma State
 Fremantle,4,Sean Darcy,1998-06-12,203.0,Ruck,132,27yr 10mth,Geelong Falcons
 Fremantle,12,Hugh Davies,2004-09-28,196.0,Defender,2,21yr 6mth,Claremont
 Fremantle,37,Josh Draper,2004-02-08,197.0,Defender,31,22yr 2mth,Peel Thunder
@@ -253,7 +253,7 @@ Fremantle,3,Caleb Serong,2001-02-09,180.0,Midfield,132,25yr 2mth,Gippsland Power
 Fremantle,14,Jeremy Sharp,2001-08-13,189.0,Midfield,60,24yr 8mth,East Fremantle
 Fremantle,29,Cooper Simpson,2005-02-13,182.0,Defender,5,21yr 2mth,Dandenong Stringrays
 Fremantle,1,Sam Sturt,2000-05-12,190.0,Forward,31,25yr 11mth,Dandenong Stingrays
-Fremantle,15,Adam Sweid,2007-09-14,176.0,Midfield,0,18yr 7mth,Calder Cannons
+Fremantle,15,Adam Sweid,2007-09-14,176.0,Midfield,0,18yr 6mth,Calder Cannons
 Fremantle,39,Sam Switkowski,1996-11-20,179.0,Forward,110,29yr 4mth,Box Hill Hawks
 Fremantle,35,Josh Treacy,2002-08-04,195.0,Forward,85,23yr 8mth,Bendigo Pioneers
 Fremantle,20,Patrick Voss,2003-06-29,195.0,Forward,32,22yr 9mth,Giants Academy
@@ -264,7 +264,7 @@ Fremantle,23,Karl Worner,2002-06-16,188.0,Defender,36,23yr 9mth,Oakleigh Charger
 Fremantle,26,Hayden Young,2001-04-11,189.0,Midfield,90,25yr,Dandenong Stingrays
 Geelong,30,Tom Atkins,1995-09-18,180.0,Midfield,158,30yr 6mth,Geelong
 Geelong,26,Harley Barker,2007-05-02,188.0,Midfield,0,18yr 11mth,Sturt
-Geelong,24,Jed Bews,1993-12-14,186.0,Defender,175,32yr 4mth,Geelong Falcons
+Geelong,24,Jed Bews,1993-12-14,186.0,Defender,175,32yr 3mth,Geelong Falcons
 Geelong,46,Mark Blicavs,1991-03-28,198.0,Ruck,299,35yr,Geelong Vfl
 Geelong,12,Jack Bowes,1998-01-26,189.0,Midfield,145,28yr 2mth,Cairns
 Geelong,4,Tanner Bruhn,2002-05-27,184.0,Midfield,71,23yr 10mth,Geelong Falcons
@@ -302,7 +302,7 @@ Geelong,2,Jay Polkinghorne,2006-06-02,191.0,Forward,0,19yr 10mth,Norwood
 Geelong,3,Bailey Smith,2000-12-07,185.0,Midfield,131,25yr 4mth,Sandringham Dragons
 Geelong,1,Rhys Stanley,1990-12-01,200.0,Ruck,229,35yr 4mth,West Adelaide
 Geelong,18,Tyson Stengle,1998-10-19,175.0,Forward,109,27yr 5mth,Woodville West Torrens
-Geelong,15,George Stevens,2005-04-14,189.0,Midfield,2,21yr,Greater Western Victoria Rebels
+Geelong,15,George Stevens,2005-04-14,189.0,Midfield,2,20yr 11mth,Greater Western Victoria Rebels
 Geelong,44,Thomas Stewart,1993-03-15,190.0,Defender,196,33yr,Geelong Vfl
 Geelong,21,Oliver Wiltshire,2002-09-15,180.0,Forward,5,23yr 6mth,Barwon Heads
 Geelong,29,James Worpel,1999-01-24,186.0,Midfield,150,27yr 2mth,Geelong Falcons
@@ -413,7 +413,7 @@ Hawthorn,41,Matt Hill,2004-01-01,187.0,Defender,0,22yr 3mth,Melbourne Storm
 Hawthorn,44,Henry Hustwaite,2004-07-20,195.0,Midfield,10,21yr 8mth,Dandenong Stingrays
 Hawthorn,4,Jarman Impey,1995-07-09,178.0,Defender,226,30yr 9mth,Murray Bushrangers
 Hawthorn,31,Matthew LeRay,2007-02-22,188.0,Midfield,0,19yr 1mth,Central District
-Hawthorn,2,Mitchell Lewis,1998-10-14,199.0,Forward,83,27yr 6mth,Calder Cannons
+Hawthorn,2,Mitchell Lewis,1998-10-14,199.0,Forward,83,27yr 5mth,Calder Cannons
 Hawthorn,9,Connor MacDonald,2003-01-13,185.0,Forward,95,23yr 3mth,Dandenong Stingrays
 Hawthorn,42,Bailey Macdonald,2004-08-04,182.0,Defender,8,21yr 8mth,Oakleigh Chargers
 Hawthorn,28,Cameron Mackenzie,2004-01-21,188.0,Midfield,49,22yr 2mth,Sandringham Dragons
@@ -437,12 +437,12 @@ Hawthorn,43,Jaime Uhr-Henry,2003-03-12,209.0,Ruck,0,23yr 1mth,Dandenong Rangers
 Hawthorn,25,Josh Ward,2003-08-15,183.0,Midfield,72,22yr 7mth,Northern Knights
 Hawthorn,5,Nick Watson,2005-02-24,170.0,Forward,48,21yr 1mth,Eastern Ranges
 Hawthorn,23,Joshua Weddle,2004-05-25,191.0,DefenderMidfield,65,21yr 10mth,Oakleigh Chargers
-Melbourne,26,Jed Adams,2004-05-14,196.0,Defender,1,21yr 11mth,Peel Thunder
+Melbourne,26,Jed Adams,2004-05-14,196.0,Defender,1,21yr 10mth,Peel Thunder
 Melbourne,38,Oscar Berry,,196.0,Defender,0,,North Florida Ospreys
 Melbourne,17,Jake Bowey,2002-09-12,175.0,Defender,84,23yr 7mth,Sandringham Dragons
 Melbourne,29,Tom Campbell,1991-11-02,201.0,Ruck,58,34yr 5mth,Bendigo Bombers
 Melbourne,37,Kade Chandler,2000-01-13,175.0,Forward,84,26yr 3mth,Norwood
-Melbourne,41,Paddy Cross,2003-02-14,181.0,Forward,1,23yr 2mth,Casey VFL
+Melbourne,41,Paddy Cross,2003-02-14,181.0,Forward,1,23yr 1mth,Casey VFL
 Melbourne,13,Jai Culley,2003-02-24,194.0,Midfield,21,23yr 1mth,Dandenong Stingrays
 Melbourne,31,Bayley Fritsch,1996-12-06,188.0,Forward,175,29yr 4mth,Casey Demons
 Melbourne,11,Max Gawn,1991-12-30,209.0,Ruck,252,34yr 3mth,Sandringham Dragons
@@ -536,7 +536,7 @@ Port Adelaide,9,Zak Butters,2000-09-08,181.0,Midfield,144,25yr 7mth,Western Jets
 Port Adelaide,33,Darcy Byrne-Jones,1995-09-20,181.0,DefenderForward,226,30yr 6mth,Oakleigh Chargers
 Port Adelaide,26,Tom Cochrane,2006-01-27,182.0,Forward,3,20yr 2mth,Central District
 Port Adelaide,28,Willem Drew,1998-10-01,188.0,Midfield,135,27yr 6mth,North Ballarat Rebels
-Port Adelaide,44,Corey Durdin,2002-04-14,173.0,Forward,69,24yr,Central Districts
+Port Adelaide,44,Corey Durdin,2002-04-14,173.0,Forward,69,23yr 11mth,Central Districts
 Port Adelaide,22,Logan Evans,2005-10-07,189.0,Defender,28,20yr 6mth,Port Adelaide
 Port Adelaide,6,Kane Farrell,1999-03-17,182.0,Defender,119,27yr,Bendigo Pioneers
 Port Adelaide,19,Mitch Georgiades,2001-09-28,192.0,Forward,97,24yr 6mth,Subiaco
@@ -559,7 +559,7 @@ Port Adelaide,27,Esava Ratugolea,1998-07-24,197.0,Defender,114,27yr 8mth,Murray 
 Port Adelaide,35,Joe Richards,1999-11-23,177.0,Forward,36,26yr 4mth,Wangaratta
 Port Adelaide,1,Connor Rozee,2000-01-22,185.0,DefenderMidfield,152,26yr 2mth,North Adelaide
 Port Adelaide,8,Josh Sinn,2003-01-07,187.0,Defender,30,23yr 3mth,Sandringham Dragons
-Port Adelaide,13,Ivan Soldo,1996-04-14,204.0,ForwardRuck,66,30yr,Daramalan College
+Port Adelaide,13,Ivan Soldo,1996-04-14,204.0,ForwardRuck,66,29yr 11mth,Daramalan College
 Port Adelaide,24,Jordon Sweet,1998-02-02,206.0,Ruck,51,28yr 2mth,North Adelaide
 Port Adelaide,38,Dante Visentini,2003-02-13,202.0,Ruck,15,23yr 2mth,Sandringham Dragons
 Port Adelaide,45,Xavier Walsh,2005-09-06,195.0,Forward,0,20yr 7mth,East Perth
@@ -570,7 +570,7 @@ Port Adelaide,16,Oliver Wines,1994-10-07,187.0,Midfield,275,31yr 6mth,Bendigo Pi
 Port Adelaide,39,Mitch Zadow,2004-03-11,180.0,Forward,1,22yr 1mth,East Fremantle
 Port Adelaide,25,Brandon Zerk-Thatcher,1998-08-25,195.0,Defender,90,27yr 7mth,Sturt
 Richmond,29,Jasper Alger,2006-12-17,183.0,Forward,5,19yr 3mth,Oakleigh Chargers
-Richmond,34,Harry Armstrong,2006-06-14,195.0,Forward,11,19yr 10mth,Sandringham Dragons
+Richmond,34,Harry Armstrong,2006-06-14,195.0,Forward,11,19yr 9mth,Sandringham Dragons
 Richmond,21,Noah Balta,1999-10-23,194.0,DefenderForward,121,26yr 5mth,Calder Cannons
 Richmond,6,Sam Banks,2003-04-02,187.0,DefenderMidfield,48,23yr,Tasmania Devils
 Richmond,35,Nathan Broad,1993-04-15,192.0,Defender,174,32yr 11mth,Swan Districts
@@ -678,7 +678,7 @@ Sydney,39,Liam Hetherton,2007-05-02,198.0,Forward,0,18yr 11mth,Murray Bushranger
 Sydney,17,James Jordon,2000-12-20,187.0,MidfieldForward,119,25yr 3mth,Oakleigh Chargers
 Sydney,31,Max King,2007-01-09,192.0,Forward,0,19yr 3mth,Sydney Swans Academy
 Sydney,32,Harry Kyle,2007-07-16,188.0,DefenderMidfield,0,18yr 8mth,Sydney Swans Academy
-Sydney,19,Peter Ladhams,1998-01-14,204.0,ForwardRuck,63,28yr 3mth,Norwood
+Sydney,19,Peter Ladhams,1998-01-14,204.0,ForwardRuck,63,28yr 2mth,Norwood
 Sydney,44,Jake Lloyd,1993-09-20,182.0,MidfieldForward,276,32yr 6mth,North Ballarat Rebels
 Sydney,30,Tom McCartin,1999-12-30,194.0,Defender,157,26yr 3mth,Geelong Falcons
 Sydney,6,Logan McDonald,2002-04-04,195.0,Forward,75,24yr,Perth Fc
@@ -697,13 +697,13 @@ Sydney,12,Angus Sheldrick,2003-11-07,178.0,Midfield,33,22yr 5mth,Claremont
 Sydney,41,Patrick Snell,2005-07-18,194.0,DefenderForward,0,20yr 8mth,Wilston Grange
 Sydney,1,Chad Warner,2001-05-19,185.0,MidfieldForward,113,24yr 10mth,East Fremantle
 Sydney,37,Corey Warner,2003-10-07,182.0,MidfieldForward,26,22yr 6mth,East Fremantle
-Sydney,15,Sam Wicks,1999-09-14,181.0,Defender,92,26yr 7mth,Swans Academy
+Sydney,15,Sam Wicks,1999-09-14,181.0,Defender,92,26yr 6mth,Swans Academy
 West Coast,26,Bo Allan,2006-02-16,191.0,DefenderMidfield,11,20yr 1mth,Peel Thunder
 West Coast,12,Sam Allen,2007-01-13,184.0,MidfieldForward,0,19yr 3mth,Oakleigh Chargers
 West Coast,3,Liam Baker,1998-01-27,173.0,Defender,155,28yr 2mth,Subiaco
 West Coast,30,Harry Barnett,2004-01-22,203.0,Ruck,2,22yr 2mth,West Adelaide
 West Coast,33,Rhett Bazzo,2003-10-17,195.0,Defender,28,22yr 5mth,Swan Districts
-West Coast,41,Sandy Brock,2002-12-14,198.0,Defender,16,23yr 4mth,Peel Thunder
+West Coast,41,Sandy Brock,2002-12-14,198.0,Defender,16,23yr 3mth,Peel Thunder
 West Coast,10,Tyler Brockman,2002-11-22,180.0,Forward,56,23yr 4mth,Subiaco
 West Coast,37,Malakai Champion,2006-05-17,172.0,Forward,3,19yr 10mth,Subiaco
 West Coast,28,Tom Cole,1997-05-28,188.0,Defender,132,28yr 10mth,Sandhurst Football Netball Club
@@ -757,12 +757,12 @@ Western Bulldogs,17,Nicholas Coffield,1999-10-23,191.0,Defender,64,26yr 5mth,Nor
 Western Bulldogs,16,Jordan Croft,2005-05-12,201.0,Forward,6,20yr 11mth,Calder Cannons
 Western Bulldogs,31,Bailey Dale,1996-07-22,188.0,Defender,183,29yr 8mth,Dandenong Stingrays
 Western Bulldogs,10,Sam Darcy,2003-07-19,208.0,Forward,50,22yr 8mth,Oakleigh Chargers
-Western Bulldogs,15,Will Darcy,2007-03-14,196.0,DefenderForward,0,19yr 1mth,Oakleigh Chargers
+Western Bulldogs,15,Will Darcy,2007-03-14,196.0,DefenderForward,0,19yr,Oakleigh Chargers
 Western Bulldogs,42,Sam Davidson,2001-12-13,190.0,MidfieldForward,24,24yr 4mth,Richmond
 Western Bulldogs,26,Josh Dolan,2006-11-11,177.0,Forward,13,19yr 5mth,Sandringham Dragons
 Western Bulldogs,25,Louis Emmett,2007-03-23,200.0,Ruck,1,19yr,Oakleigh Chargers
 Western Bulldogs,44,Timothy English,1997-08-10,208.0,Ruck,158,28yr 8mth,South Fremantle
-Western Bulldogs,27,Joel Freijah,2005-11-14,191.0,MidfieldForward,41,20yr 5mth,Greater Western Victoria Rebels
+Western Bulldogs,27,Joel Freijah,2005-11-14,191.0,MidfieldForward,41,20yr 4mth,Greater Western Victoria Rebels
 Western Bulldogs,12,Harvey Gallagher,2003-09-26,181.0,Defender,26,22yr 6mth,Bendigo Pioneers
 Western Bulldogs,38,Riley Garcia,2001-01-30,178.0,MidfieldForward,39,25yr 2mth,Swan Districts
 Western Bulldogs,43,Ryan Gardner,1997-06-01,197.0,Defender,54,28yr 10mth,Burnie Dockers
