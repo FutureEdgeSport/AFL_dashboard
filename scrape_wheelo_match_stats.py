@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 from config.constants import CURRENT_SEASON
+from utils.safe_io import safe_csv_write
 
 try:
     from selenium import webdriver
@@ -362,7 +363,7 @@ class MatchStatsScraper:
 
         out_path = OUTPUT_DIR / f"brownlow_predictions_{season}.csv"
         df.sort_values(["Round", "Team", "Player"], inplace=True, ignore_index=True)
-        df.to_csv(out_path, index=False)
+        safe_csv_write(df, out_path)
         print(f"\n💾 Saved {len(df)} rows → {out_path}")
         return out_path
 
@@ -387,7 +388,10 @@ class MatchStatsScraper:
             df = pd.concat([existing, df], ignore_index=True)
 
         df.sort_values(["Round", "Team", "Player"], inplace=True, ignore_index=True)
-        df.to_csv(out_path, index=False)
+        if len(df) < 50:
+            print(f"\n⚠️  Only {len(df)} rows scraped — suspiciously low, skipping write.")
+            return None
+        safe_csv_write(df, out_path)
         print(f"\n💾 Saved {len(df)} rows → {out_path}")
         return out_path
 

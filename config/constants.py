@@ -14,6 +14,9 @@ CURRENT_SEASON: int = 2026
 AVAILABLE_SEASONS: List[int] = [2026, 2025, 2024, 2023]
 DEFAULT_SEASON: int = 2026
 
+# Cache TTL for Streamlit @st.cache_data (seconds)
+CACHE_TTL: int = 900  # 15 minutes
+
 # Maximum matches to use in Rating × Matches calculations
 # Capped at 23 (regular season) to avoid over-rating teams that play finals
 MAX_REGULAR_SEASON_MATCHES: int = 23
@@ -1592,3 +1595,48 @@ def safe_int(x):
         return int(float(x))
     except (TypeError, ValueError):
         return None
+
+
+def safe_fmt(value, fmt: str = "+.2f", default: str = "—") -> str:
+    """Safely format a numeric value, returning *default* for None/NaN.
+
+    Usage:
+        safe_fmt(1.23, "+.2f")   → "+1.23"
+        safe_fmt(None, "+.2f")   → "—"
+        safe_fmt(float('nan'))   → "—"
+    """
+    if value is None:
+        return default
+    try:
+        v = float(value)
+        if v != v:  # NaN check
+            return default
+        return f"{v:{fmt}}"
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_first(df, default=None):
+    """Return the first row of a DataFrame, or *default* if empty.
+
+    Usage:
+        row = safe_first(filtered_df)
+        if row is not None:
+            ...
+    """
+    if df is None or df.empty:
+        return default
+    return df.iloc[0]
+
+
+def normalise_team_col(df, col: str = "Team"):
+    """Normalise a Team column in-place using the canonical mapping.
+
+    Handles GWS variants, whitespace, and common alternate names.
+    Returns the DataFrame for chaining.
+    """
+    if col in df.columns:
+        df[col] = df[col].astype(str).str.strip().map(
+            lambda t: TEAM_NAME_NORMALIZE_MAP.get(t, t)
+        )
+    return df

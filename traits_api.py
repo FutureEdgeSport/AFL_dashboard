@@ -105,10 +105,12 @@ def load_dob_cache():
 
 
 def save_dob_cache(cache):
-    """Save DOB cache to file."""
+    """Save DOB cache to file (atomic write)."""
     ensure_cache_dir()
-    with open(DOB_CACHE_FILE, 'w') as f:
+    tmp = DOB_CACHE_FILE.with_suffix('.tmp')
+    with open(tmp, 'w') as f:
         json.dump(cache, f, indent=2)
+    tmp.replace(DOB_CACHE_FILE)
 
 
 def load_traits_cache():
@@ -120,10 +122,12 @@ def load_traits_cache():
 
 
 def save_traits_cache(cache):
-    """Save traits cache to file."""
+    """Save traits cache to file (atomic write)."""
     ensure_cache_dir()
-    with open(TRAITS_CACHE_FILE, 'w') as f:
+    tmp = TRAITS_CACHE_FILE.with_suffix('.tmp')
+    with open(tmp, 'w') as f:
         json.dump(cache, f, indent=2)
+    tmp.replace(TRAITS_CACHE_FILE)
 
 
 def get_dob_from_wikipedia(player_name, team=None):

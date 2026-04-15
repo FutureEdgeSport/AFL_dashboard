@@ -451,6 +451,9 @@ class WheeloScraper:
                 
                 try:
                     df = pd.read_csv(csv_path)
+                    if len(df) < 10:
+                        print(f"    ⚠️ Only {len(df)} rows — skipping (suspiciously low)")
+                        continue
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                     print(f"    ✅ Written {len(df)} rows")
                 except Exception as e:
@@ -476,6 +479,9 @@ class WheeloScraper:
                 
                 try:
                     df = pd.read_csv(csv_path)
+                    if len(df) < 50:
+                        print(f"    ⚠️ Only {len(df)} rows — skipping (suspiciously low)")
+                        continue
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                     print(f"    ✅ Written {len(df)} rows")
                 except Exception as e:

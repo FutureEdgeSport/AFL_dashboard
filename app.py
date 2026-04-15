@@ -18,6 +18,7 @@ from PIL import Image
 # Import centralized configuration
 from config.constants import (
     CURRENT_SEASON, AVAILABLE_SEASONS, DEFAULT_SEASON,
+    CACHE_TTL,
     TEAM_FILE, PLAYER_FILE, TRAITS_FILE, LADDERS_FILE, MASTER_FILE,
     LOGO_FOLDER, PLAYER_PHOTO_FOLDER,
     TEAM_CODE_MAP, TEAM_CODE_TO_NAME, TEAM_COLOURS, TEAM_COLOUR_PALETTES, ALL_TEAMS,
@@ -27,6 +28,7 @@ from config.constants import (
     UIConfig, get_rating_color, get_rank_color, get_ordinal, safe_float, safe_int, normalize_team_name,
     get_unified_table_css, METRIC_TOOLTIPS, get_tooltip_html,
     PLAYER_NICKNAME_MAP, get_nickname_variants, build_player_name_variants,
+    safe_fmt, safe_first, normalise_team_col,
 )
 from config.player_names import get_resolver as _get_name_resolver
 
@@ -1124,7 +1126,7 @@ def _normalise_ladder_df(raw: pd.DataFrame) -> pd.DataFrame:
     return norm
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_team_ladders_from_excel(season: int, last10: bool = False, block: str | None = None) -> pd.DataFrame:
     """Load team ladder data from Excel sheets (legacy method with formulas).
     
@@ -1153,7 +1155,7 @@ def load_team_ladders_from_excel(season: int, last10: bool = False, block: str |
         return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_team_ladders_computed_wrapper(season: int, last10: bool = False, block: str | None = None) -> pd.DataFrame:
     """
     Load team ladder data from computed CSV files (sophisticated Z-score based ratings).
@@ -1233,7 +1235,7 @@ def load_team_ladders(season: int, last10: bool = False, block: str | None = Non
         return load_team_ladders_from_excel(season, last10, block=block)
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_afl_ladder_positions() -> pd.DataFrame:
     """Load historical AFL ladder positions - uses master workbook with fallback.
     
@@ -1513,7 +1515,7 @@ def _generate_summary_from_raw(season: int) -> pd.DataFrame:
     return df_out
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_team_summary_for_year(season: int) -> pd.DataFrame:
     """Load team summary for a season - uses master workbook with fallback."""
     # Try new data loader first (master workbook)
@@ -1541,7 +1543,7 @@ def load_team_summary_for_year(season: int) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_team_summary_for_year_l10(season: int) -> pd.DataFrame:
     """Load team Last 10 summary for a season."""
     try:
@@ -1555,7 +1557,7 @@ def load_team_summary_for_year_l10(season: int) -> pd.DataFrame:
         return load_team_summary_for_year(season)
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_team_summary_for_year_l5(season: int) -> pd.DataFrame:
     """Load team Last 5 summary for a season."""
     try:
@@ -1570,7 +1572,7 @@ def load_team_summary_for_year_l5(season: int) -> pd.DataFrame:
 
 
 # ---------------- DATA LOADERS – PLAYERS ----------------
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def _load_player_summary_excel() -> pd.DataFrame:
     """Load player summary data - uses master workbook with fallback to legacy Excel."""
     # Try new data loader first (master workbook)
@@ -1637,7 +1639,7 @@ def load_player_summary() -> pd.DataFrame:
         return _load_player_summary_excel()
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_player_seasons() -> list[int]:
     """Get available player seasons with error handling."""
     try:
@@ -1654,7 +1656,7 @@ def get_player_seasons() -> list[int]:
         return AVAILABLE_SEASONS  # Fall back to config default
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_traits_seasons() -> list[int]:
     """Get available trait seasons from the traits Excel file (2021-2025)."""
     try:
@@ -1768,7 +1770,7 @@ def _enrich_from_match_ratings(df: pd.DataFrame, season: int) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_players(season: int) -> pd.DataFrame:
     """
     Player Ratings loader - uses master workbook with fallback to legacy files.
@@ -1797,8 +1799,7 @@ def load_players(season: int) -> pd.DataFrame:
         
         if "Player" in df.columns:
             df["Player"] = df["Player"].astype(str).str.strip()
-        if "Team" in df.columns:
-            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+        normalise_team_col(df)
         if "Position" in df.columns:
             df["Position"] = df["Position"].astype(str).str.strip()
         
@@ -1829,8 +1830,7 @@ def load_players(season: int) -> pd.DataFrame:
 
             if "Player" in df.columns:
                 df["Player"] = df["Player"].astype(str).str.strip()
-            if "Team" in df.columns:
-                df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+            normalise_team_col(df)
             if "Position" in df.columns:
                 df["Position"] = df["Position"].astype(str).str.strip()
 
@@ -1918,7 +1918,7 @@ def load_players(season: int) -> pd.DataFrame:
     return _enrich_from_match_ratings(df, season)
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_full_squad(season: int) -> pd.DataFrame:
     """
     Load full squad list including players who didn't play.
@@ -1959,8 +1959,7 @@ def load_full_squad(season: int) -> pd.DataFrame:
             
             if "Player" in df.columns:
                 df["Player"] = df["Player"].astype(str).str.strip()
-            if "Team" in df.columns:
-                df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+            normalise_team_col(df)
             if "Position" in df.columns:
                 df["Position"] = df["Position"].astype(str).str.strip()
             
@@ -2026,8 +2025,7 @@ def load_full_squad(season: int) -> pd.DataFrame:
         # clean key columns
         if "Player" in df.columns:
             df["Player"] = df["Player"].astype(str).str.strip()
-        if "Team" in df.columns:
-            df["Team"] = df["Team"].astype(str).str.strip().replace({"GWS": "GWS Giants"})
+        normalise_team_col(df)
         if "Position" in df.columns:
             df["Position"] = df["Position"].astype(str).str.strip()
 
@@ -2359,7 +2357,7 @@ def _backfill_from_prior_season(df: pd.DataFrame, current_season: int) -> pd.Dat
     return df
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """
     Load ENRICHED traits for a season.
@@ -2660,7 +2658,7 @@ WHEELO_EXTRA_STATS = {
 _WHEELO_NON_TEAMS = {"Average", "League Average", "Avg", "Total"}
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def _load_wheelo_team_stats() -> pd.DataFrame:
     """Load Wheelo team data with new Equity/xChainScore columns."""
     try:
@@ -2849,7 +2847,7 @@ def get_team_logo_path(team_name: str):
     return None
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=CACHE_TTL)
 def load_player_name_mapping():
     """Load player photo guide and create mapping from various name formats to full names.
     
@@ -3183,7 +3181,7 @@ def build_player_traits_history_table(
     return out[display_cols], table_html
 
 # ---------------- TEAM SUMMARY: AVAILABLE YEARS ----------------
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_available_summary_years() -> list[int]:
     """
     Returns all years that have team summary data available.
@@ -3217,7 +3215,7 @@ def get_available_summary_years() -> list[int]:
     return years if years else sorted(set(TEAM_SEASONS), reverse=True)
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_l10_available_years() -> set[int]:
     """Return set of years that have Last 10 data (computed CSV or Excel sheet)."""
     l10_years: set[int] = set()
@@ -3240,7 +3238,7 @@ def get_l10_available_years() -> set[int]:
     return l10_years
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_l5_available_years() -> set[int]:
     """Return set of years that have Last 5 data (computed CSV or Excel sheet)."""
     l5_years: set[int] = set()
@@ -3264,7 +3262,7 @@ def get_l5_available_years() -> set[int]:
 
 
 # ---------------- AFL LADDER HELPERS ----------------
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (position_str, position_int, color) for team/season from ladder file.
@@ -3296,7 +3294,7 @@ def get_ladder_position(team_name: str, season: int) -> tuple[str, int | None, s
         return str(position), None, "#888888"
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_ladder_percentage(team_name: str, season: int) -> tuple[str, int | None, str]:
     """
     Returns (percentage_str, pct_rank, color) for team/season.
@@ -3711,8 +3709,8 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
             pts_series = pd.Series({team: age_band_points[team][band] for team in teams})
             ranks = pts_series.rank(ascending=False, method='min').astype(int)
             
-            selected_team_name = df_team["Team"].iloc[0]
-            if selected_team_name in ranks.index:
+            selected_team_name = safe_first(df_team["Team"])
+            if selected_team_name and selected_team_name in ranks.index:
                 age_band_rankings[band] = (ranks[selected_team_name], len(teams), pts_series[selected_team_name])
         
         # Calculate position rankings (row rankings) - TOTAL POINTS using weighted rating
@@ -4204,7 +4202,7 @@ def render_grouped_navigation():
         unsafe_allow_html=True,
     )
     
-    @st.cache_data(show_spinner=False, ttl=3600)
+    @st.cache_data(show_spinner=False, ttl=CACHE_TTL)
     def get_all_players_for_search(season: int):
         """Get all players for search functionality.
         
@@ -6851,9 +6849,9 @@ elif page == "Team Breakdown":
             szn_str = f"{r['season']:.1f}" if r["season"] is not None else "–"
             l5_str = f"{r['l5']:.1f}" if r["l5"] is not None else "–"
             l10_str = f"{r['l10']:.1f}" if r["l10"] is not None else "–"
-            l5d_str = f"{r['l5_diff']:+.1f}" if r["l5_diff"] is not None else "–"
+            l5d_str = safe_fmt(r['l5_diff'], "+.1f", "–")
             t4_str = f"{r['t4_avg']:.1f}" if r["t4_avg"] is not None else "–"
-            vt4_str = f"{r['vs_t4']:+.1f}" if r["vs_t4"] is not None else "–"
+            vt4_str = safe_fmt(r['vs_t4'], "+.1f", "–")
 
             body += f"<tr style='background:{bg};'>"
             body += f"<td style='padding:8px;color:#fff;font-weight:600;border-bottom:1px solid #2a2a3e;'>{r['label']}</td>"
@@ -7298,8 +7296,13 @@ elif page == "Team Compare":
             st.info(f"Logo not found for {team2}")
     
     # Get team rows from their respective ladder data
-    team1_row = ladders1[ladders1["Team"] == team1].iloc[0]
-    team2_row = ladders2[ladders2["Team"] == team2].iloc[0]
+    _t1_row_match = ladders1[ladders1["Team"] == team1]
+    _t2_row_match = ladders2[ladders2["Team"] == team2]
+    if _t1_row_match.empty or _t2_row_match.empty:
+        st.warning("Could not find one or both teams in ladder data.")
+        st.stop()
+    team1_row = _t1_row_match.iloc[0]
+    team2_row = _t2_row_match.iloc[0]
     
     # For similarity calculation, we need to use the combined/intersecting columns
     # Find common columns between both ladder datasets
@@ -8714,7 +8717,7 @@ elif page == "Game Trends":
             "icon": "▽",
             "color": "#888",
             "title": f"{_gt_clean_metric(w['metric'])} matters less",
-            "detail": f"Top 4 average {w['top4_season']:.1f} vs competition {w['comp_season']:.1f} ({w['advantage']:+.1f})",
+            "detail": f"Top 4 average {w['top4_season']:.1f} vs competition {w['comp_season']:.1f} ({safe_fmt(w['advantage'], '+.1f')})",
             "trend": "",
         })
 
@@ -8860,7 +8863,7 @@ elif page == "Game Trends":
             f"letter-spacing:0.5px;margin-bottom:4px;'>{_gt_clean_metric(_gt_sm)}</div>"
             f"<div style='font-size:1.4em;font-weight:900;color:{_sc};'>{_t4v:.1f}</div>"
             f"<div style='font-size:0.72em;color:#666;margin-top:2px;'>vs {_cv:.1f} "
-            f"<span style='color:{_sc};'>({_d:+.1f})</span></div>"
+            f"<span style='color:{_sc};'>({safe_fmt(_d, '+.1f')})</span></div>"
             f"</div>"
         )
     _gt_strip_html += "</div>"
@@ -8919,7 +8922,7 @@ elif page == "Game Trends":
                         f"<div style='margin-top:10px;padding-top:10px;border-top:1px solid #ffffff1a;'>"
                         f"<div style='font-size:0.8em;color:#aaa;'>Last 4 Games</div>"
                         f"<div style='font-size:1.4em;font-weight:800;color:{arr_color};'>"
-                        f"{t4_l5:.1f} <span style='font-size:0.7em;'>{arrow} {diff_sl5:+.1f}</span>"
+                        f"{t4_l5:.1f} <span style='font-size:0.7em;'>{arrow} {safe_fmt(diff_sl5, '+.1f')}</span>"
                         f"</div></div>"
                     )
 
@@ -8932,7 +8935,7 @@ elif page == "Game Trends":
                     f"<div style='font-size:2.6em;font-weight:900;color:{color};line-height:1;'>{t4_s:.1f}</div>"
                     f"<div style='font-size:0.82em;color:#777;margin-top:6px;'>"
                     f"vs Comp: <span style='color:#ccc;'>{comp_s:.1f}</span>"
-                    f"<span style='color:{color};font-weight:700;margin-left:8px;'>({adv:+.1f})</span>"
+                    f"<span style='color:{color};font-weight:700;margin-left:8px;'>({safe_fmt(adv, '+.1f')})</span>"
                     f"</div>"
                     f"{l5_html}"
                     f"</div>"
@@ -9050,7 +9053,7 @@ elif page == "Game Trends":
                     diff_c = "#FF4444"
 
                 l5_str = f"{r['l5_top4']:.1f}" if r["l5_top4"] is not None else "–"
-                l5vs_str = f"{r['l5_vs_season']:+.1f}" if r["l5_vs_season"] is not None else "–"
+                l5vs_str = safe_fmt(r['l5_vs_season'], "+.1f", "–")
                 # Trend color
                 if r["trend"] == "▲":
                     tr_c = "#00FF00"
@@ -9067,7 +9070,7 @@ elif page == "Game Trends":
                     f"<td style='padding:8px;color:#999;font-size:0.85em;border-bottom:1px solid #2a2a3e;'>{r['group']}</td>"
                     f"<td style='padding:8px;text-align:right;color:#FFD700;font-weight:700;border-bottom:1px solid #2a2a3e;'>{r['top4']:.1f}</td>"
                     f"<td style='padding:8px;text-align:right;color:#6495ED;border-bottom:1px solid #2a2a3e;'>{r['comp']:.1f}</td>"
-                    f"<td style='padding:8px;text-align:right;color:{diff_c};font-weight:700;border-bottom:1px solid #2a2a3e;'>{r['diff']:+.1f}</td>"
+                    f"<td style='padding:8px;text-align:right;color:{diff_c};font-weight:700;border-bottom:1px solid #2a2a3e;'>{safe_fmt(r['diff'], '+.1f')}</td>"
                     f"<td style='padding:8px;text-align:right;color:#00C8FF;border-bottom:1px solid #2a2a3e;'>{l5_str}</td>"
                     f"<td style='padding:8px;text-align:right;color:#ccc;border-bottom:1px solid #2a2a3e;'>{l5vs_str}</td>"
                     f"<td style='padding:8px;text-align:center;color:{tr_c};font-weight:700;font-size:1.1em;border-bottom:1px solid #2a2a3e;'>{r['trend']}</td>"
@@ -11906,8 +11909,8 @@ elif page == "Team List Summary":
             f"{selected_team}": f"{team_val:.1f}",
             "League Avg": f"{league_val:.1f}",
             "Top 4 Avg": f"{top4_val:.1f}",
-            "Diff vs League": f"{team_val - league_val:+.1f}",
-            "Diff vs Top 4": f"{team_val - top4_val:+.1f}",
+            "Diff vs League": safe_fmt(team_val - league_val, "+.1f"),
+            "Diff vs Top 4": safe_fmt(team_val - top4_val, "+.1f"),
             "Rank": rank,
             "Team_Val": team_val,
             "League_Val": league_val,
@@ -12078,8 +12081,8 @@ elif page == "Team List Summary":
                 f"{selected_team}": f"{team_val:.1f}",
                 "League Avg": f"{league_val:.1f}",
                 "Top 4 Avg": f"{top4_val:.1f}",
-                "Diff vs League": f"{team_val - league_val:+.1f}",
-                "Diff vs Top 4": f"{team_val - top4_val:+.1f}",
+                "Diff vs League": safe_fmt(team_val - league_val, "+.1f"),
+                "Diff vs Top 4": safe_fmt(team_val - top4_val, "+.1f"),
                 "Rank": rank
             })
     
@@ -12863,13 +12866,13 @@ elif page == "Best 23":
         )
 
     def _diff_pill(d):
-        if d is None:
+        if d is None or (isinstance(d, float) and d != d):
             return _pill("—", bg="rgba(255,255,255,0.06)", big=True)
         if d > 0:
-            return _pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
+            return _pill(safe_fmt(d, "+.2f"), bg="rgba(0,180,90,0.55)", big=True)
         if d < 0:
-            return _pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
-        return _pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
+            return _pill(safe_fmt(d, "+.2f"), bg="rgba(220,60,60,0.55)", big=True)
+        return _pill(safe_fmt(d, "+.2f"), bg="rgba(255,255,255,0.14)", big=True)
 
     # ------------------------------
     # Build logo b64 (uses your working helper)
@@ -13710,7 +13713,8 @@ elif page == "Team Selection Ratings":
 
     def _tsr_safe_float(x):
         try:
-            return float(x)
+            val = float(x)
+            return None if pd.isna(val) else val
         except Exception:
             return None
 
@@ -13766,13 +13770,13 @@ elif page == "Team Selection Ratings":
         )
 
     def _tsr_diff_pill(d):
-        if d is None:
+        if d is None or (isinstance(d, float) and d != d):
             return _tsr_pill("—", bg="rgba(255,255,255,0.06)", big=True)
         if d > 0:
-            return _tsr_pill(f"{d:+.2f}", bg="rgba(0,180,90,0.55)", big=True)
+            return _tsr_pill(safe_fmt(d, "+.2f"), bg="rgba(0,180,90,0.55)", big=True)
         if d < 0:
-            return _tsr_pill(f"{d:+.2f}", bg="rgba(220,60,60,0.55)", big=True)
-        return _tsr_pill(f"{d:+.2f}", bg="rgba(255,255,255,0.14)", big=True)
+            return _tsr_pill(safe_fmt(d, "+.2f"), bg="rgba(220,60,60,0.55)", big=True)
+        return _tsr_pill(safe_fmt(d, "+.2f"), bg="rgba(255,255,255,0.14)", big=True)
 
     def _tsr_magnet_html(row, series_for_colour, dim=False):
         first, last = _tsr_split_name(row["Player"])
@@ -14628,7 +14632,7 @@ elif page == "Team Selection Ratings":
                                 opacity=_alpha,
                                 line=dict(width=0),
                             ),
-                            text=f"{_v:+.2f}",
+                            text=safe_fmt(_v, "+.2f"),
                             textposition="outside",
                             textfont=dict(
                                 size=12,
@@ -14637,7 +14641,7 @@ elif page == "Team Selection Ratings":
                             ),
                             width=0.62,
                             showlegend=False,
-                            hovertemplate=f"<b>{_row['Team']}</b><br>This Round: {_v:+.2f}<extra></extra>",
+                            hovertemplate=f"<b>{_row['Team']}</b><br>This Round: {safe_fmt(_v, '+.2f')}<extra></extra>",
                         ))
 
                     # Season average — clean line tick
@@ -15638,8 +15642,13 @@ elif page == "List Breakdown - Traits":
                 display_logo(team2_trait, st, size=180)
         
         # Get team data from ladder
-        team1_data = ladder_df[ladder_df["Team"] == team1_trait].iloc[0]
-        team2_data = ladder_df[ladder_df["Team"] == team2_trait].iloc[0]
+        _t1_match = ladder_df[ladder_df["Team"] == team1_trait]
+        _t2_match = ladder_df[ladder_df["Team"] == team2_trait]
+        if _t1_match.empty or _t2_match.empty:
+            st.warning("Could not find team data in ladder.")
+            st.stop()
+        team1_data = _t1_match.iloc[0]
+        team2_data = _t2_match.iloc[0]
         
         # ========== RADAR CHARTS AND COLUMN CHART SECTION ==========
         st.markdown("---")
@@ -17171,7 +17180,11 @@ elif page == "IDP":
     selected_player = st.selectbox("Select Player", player_names, key="idp_player")
     
     # Get player data
-    player_data = team_traits[team_traits["Player_Full"] == selected_player].iloc[0]
+    _player_match = team_traits[team_traits["Player_Full"] == selected_player]
+    if _player_match.empty:
+        st.warning("Player data not found.")
+        st.stop()
+    player_data = _player_match.iloc[0]
     player_position = str(player_data.get("Position_Full", ""))
     player_age = player_data.get("Age", "N/A")
     
@@ -17370,7 +17383,7 @@ elif page == "IDP":
         else:
             player_val_str = f"{player_trait_val:.2f}"
             top10_val_str = f"{top10_trait_avg:.2f}"
-            delta_val_str = f"{delta:+.2f}"
+            delta_val_str = safe_fmt(delta, "+.2f")
         
         # Create visually appealing metric cards
         st.markdown(f"""
@@ -17386,7 +17399,7 @@ elif page == "IDP":
             <div style='background:linear-gradient(135deg,{delta_bg}25 0%,{delta_bg}15 100%);border:2px solid {delta_bg};border-radius:16px;padding:24px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);'>
                 <div style='color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;'>Difference</div>
                 <div style='color:{delta_text};background:{delta_bg};font-size:48px;font-weight:900;line-height:1;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.4);'>{delta_val_str}</div>
-                <div style='color:{delta_text};background:rgba(0,0,0,0.3);font-size:14px;font-weight:700;margin-top:10px;padding:6px 12px;border-radius:8px;'>{delta_pct:+.1f}%</div>
+                <div style='color:{delta_text};background:rgba(0,0,0,0.3);font-size:14px;font-weight:700;margin-top:10px;padding:6px 12px;border-radius:8px;'>{safe_fmt(delta_pct, '+.1f', '0.0')}%</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -17522,7 +17535,7 @@ elif page == "IDP":
             else:
                 player_val_str = f"{player_val:.2f}"
                 top10_avg_str = f"{top10_avg:.2f}"
-                delta_str = f"{delta:+.2f}"
+                delta_str = safe_fmt(delta, "+.2f")
             
             # Pillar header row
             st.markdown(f"""<div class="idp-stat-row {category}" style="border-left-color:{border_color};background:{pillar_color}30;">
@@ -17531,7 +17544,7 @@ elif page == "IDP":
                     <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div>
                     <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div>
                     <div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div>
-                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div>
+                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{safe_fmt(delta_pct, '+.1f', '0.0')}%</div></div>
                 </div>
             </div>""", unsafe_allow_html=True)
             
@@ -17560,7 +17573,7 @@ elif page == "IDP":
                     else:
                         sub_pv_str = f"{sub_player_val:.2f}"
                         sub_ta_str = f"{sub_top10_avg:.2f}"
-                        sub_delta_str = f"{sub_delta:+.2f}"
+                        sub_delta_str = safe_fmt(sub_delta, "+.2f")
                     
                     tier, tier_color = get_trait_tier(sub_player_val)
                     
@@ -17584,7 +17597,7 @@ elif page == "IDP":
                             </div>
                             <div style='text-align:center;min-width:60px;'>
                                 <div style='font-size:10px;color:rgba(255,255,255,0.5);'>%</div>
-                                <div style='font-size:16px;font-weight:900;color:{sub_border_color};'>{sub_delta_pct:+.1f}%</div>
+                                <div style='font-size:16px;font-weight:900;color:{sub_border_color};'>{safe_fmt(sub_delta_pct, '+.1f', '0.0')}%</div>
                             </div>
                         </div>
                     </div>
@@ -17627,7 +17640,7 @@ elif page == "IDP":
             else:
                 player_val_str = f"{player_val:.2f}"
                 top10_avg_str = f"{top10_avg:.2f}"
-                delta_str = f"{delta:+.2f}"
+                delta_str = safe_fmt(delta, "+.2f")
             
             tier, tier_color = get_trait_tier(player_val)
             
@@ -17639,7 +17652,7 @@ elif page == "IDP":
                     <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">You</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{player_val_str}</div></div>
                     <div style="text-align:center;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">Top 10 Avg</div><div style="font-size:18px;font-weight:900;color:#FFFFFF;">{top10_avg_str}</div></div>
                     <div style="text-align:center;min-width:90px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">+/-</div><div style="font-size:20px;font-weight:900;color:{border_color};">{delta_str}</div></div>
-                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{delta_pct:+.1f}%</div></div>
+                    <div style="text-align:center;min-width:80px;"><div style="font-size:11px;opacity:0.7;color:#CCCCCC;">%</div><div style="font-size:18px;font-weight:900;color:{border_color};">{safe_fmt(delta_pct, '+.1f', '0.0')}%</div></div>
                 </div>
             </div>""", unsafe_allow_html=True)
     
@@ -18072,7 +18085,7 @@ elif page == "IDP":
             else:
                 p1_val_str = f"{player_comp_val:.2f}"
                 p2_val_str = f"{comp_player_val:.2f}"
-                delta_str = f"{delta:+.2f}"
+                delta_str = safe_fmt(delta, "+.2f")
             
             # Determine advantage text and color
             if abs(delta) < 0.05:
@@ -18093,7 +18106,7 @@ elif page == "IDP":
                 p2_display = comparison_player_display.split()[-1] if ' ' in comparison_player_display else comparison_player_display
                 st.markdown(f"<div style='background:linear-gradient(135deg, {p2_color}25 0%, {p2_color}15 100%);border:2px solid {p2_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>{p2_display}</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{p2_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{p2_val_str}</div></div></div>", unsafe_allow_html=True)
             with col3:
-                st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta_str} ({delta_pct:+.1f}%)</div></div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:linear-gradient(135deg, {advantage_color}25 0%, {advantage_color}15 100%);border:2px solid {advantage_color};border-radius:16px;padding:28px 24px;box-shadow:0 6px 20px rgba(0,0,0,0.4);text-align:center;'><div style='color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;'>Advantage</div><div style='background:rgba(0,0,0,0.3);border-radius:12px;padding:20px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);'><div style='font-size:48px;font-weight:900;color:{advantage_color};line-height:1;text-shadow:2px 2px 8px rgba(0,0,0,0.5);'>{advantage_text}</div><div style='margin-top:12px;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.25);padding:8px 16px;border-radius:20px;display:inline-block;'>{delta_str} ({safe_fmt(delta_pct, '+.1f', '0.0')}%)</div></div></div>", unsafe_allow_html=True)
         
         # Sub-stats comparison - organized by pillar with expandable details
         st.markdown("<h4 style='color:#FFFFFF;margin:28px 0 16px 0;font-weight:900;font-size:18px;'>Detailed Comparison</h4>", unsafe_allow_html=True)
@@ -18129,7 +18142,7 @@ elif page == "IDP":
                 else:
                     p1_str = f"{p1_val:.2f}"
                     p2_str = f"{p2_val:.2f}"
-                    delta_display = f"{delta:+.2f}"
+                    delta_display = safe_fmt(delta, "+.2f")
                 
                 # Pillar comparison row
                 p1_display = selected_player_display.split()[-1] if ' ' in selected_player_display else selected_player_display
@@ -18185,7 +18198,7 @@ elif page == "IDP":
                         else:
                             sub_p1_str = f"{sub_p1_val:.2f}"
                             sub_p2_str = f"{sub_p2_val:.2f}"
-                            sub_delta_display = f"{sub_delta:+.2f}"
+                            sub_delta_display = safe_fmt(sub_delta, "+.2f")
                         
                         sub_p1_bg = "rgba(0,255,0,0.15)" if sub_delta > 0 else "transparent"
                         sub_p2_bg = "rgba(0,255,0,0.15)" if sub_delta < 0 else "transparent"
@@ -18245,7 +18258,7 @@ elif page == "IDP":
                 else:
                     p1_str = f"{p1_val:.2f}"
                     p2_str = f"{p2_val:.2f}"
-                    delta_display = f"{delta:+.2f}"
+                    delta_display = safe_fmt(delta, "+.2f")
                 
                 comparison_rows.append(f"""<tr>
                     <td style='text-align:left;font-weight:600;'>{substat}
@@ -18547,7 +18560,7 @@ elif page == "Custom Player Comparison":
         }
         return mapping.get(label, 2.25)
     
-    @st.cache_data(show_spinner=False, ttl=3600)
+    @st.cache_data(show_spinner=False, ttl=CACHE_TTL)
     def load_traits_for_comparison(season: int) -> pd.DataFrame:
         """Load and prepare traits data for comparison."""
         traits_df = load_traits(season)
@@ -18624,7 +18637,7 @@ elif page == "Custom Player Comparison":
         
         return np.array(vector)
     
-    @st.cache_data(show_spinner=False, ttl=3600)
+    @st.cache_data(show_spinner=False, ttl=CACHE_TTL)
     def calculate_all_similarities(
         custom_vector: tuple,  # Use tuple for caching
         traits_data: str,  # Serialized data for caching
@@ -19786,7 +19799,7 @@ elif page == "Game Model Scorecard":
                         
                             # Calculate trend
                             if data['diff_val'] is not None:
-                                diff_display = f"{data['diff_val']:+.2f}"
+                                diff_display = safe_fmt(data['diff_val'], "+.2f")
                                 if data['diff_val'] > 0.05:
                                     trend_color = "#00ff00"
                                     trend_icon = "↑"
@@ -19994,7 +20007,7 @@ elif page == "Game Model Scorecard":
                             
                             # Calculate advantage display
                             if data['diff_val'] is not None:
-                                diff_display = f"{data['diff_val']:+.2f}"
+                                diff_display = safe_fmt(data['diff_val'], "+.2f")
                                 if data['advantage'] == "advantage":
                                     adv_color = "#00ff00"
                                     adv_icon = "✓"
