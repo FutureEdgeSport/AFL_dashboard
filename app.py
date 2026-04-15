@@ -17248,9 +17248,9 @@ elif page == "IDP":
         st.markdown(f"""
         <div class="idp-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a3a 100%);border-left:6px solid {_rating_bg};padding:16px 24px;">
             <div style="display:flex;align-items:center;gap:24px;">
-                <div style="text-align:center;min-width:100px;">
+                <div style="text-align:center;min-width:200px;">
                     <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Trait Rating</div>
-                    <div style="background:{_rating_bg};color:{_rating_text};font-size:42px;font-weight:900;line-height:1;padding:12px 20px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">{_rating_display}</div>
+                    <div style="background:{_rating_bg};color:{_rating_text};font-size:42px;font-weight:900;line-height:1;padding:24px 40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">{_rating_display}</div>
                 </div>
                 <div style="flex:1;display:flex;gap:12px;">
                     <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:12px 8px;text-align:center;">
