@@ -17245,8 +17245,11 @@ elif page == "IDP":
         _rating_bg, _rating_text = rating_colour_for_value(_player_rating, _all_ratings) if _player_rating is not None else ("#333333", "white")
         if fc_mode and _player_rating is not None:
             _tier_label = get_fc_rating_label(convert_trait_to_fc_rating(_player_rating))
+        elif _player_rating is not None:
+            _tier_map = {"#008000": "Elite", "#90EE90": "Good", "#FFD700": "Average", "#FFA500": "Below Average", "#FF0000": "Poor"}
+            _tier_label = _tier_map.get(_rating_bg, "")
         else:
-            _tier_label, _ = get_trait_tier(_player_rating)
+            _tier_label = "N/A"
         _overall_rank_str = f"#{_overall_rank}" if _overall_rank is not None else "—"
         _pos_rank_str = f"#{_pos_rank}" if _pos_rank is not None else "—"
         st.markdown(f"""
