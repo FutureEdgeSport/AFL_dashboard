@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-14T21:19:41.508077",
+  "timestamp": "2026-04-15T15:58:05.183446",
   "players": {
     "Patrick Cripps": {
       "Player": "Patrick Cripps",
@@ -89,7 +89,7 @@
       "Defence_Neutralise": 1.88
     },
     "Harry Morrison": {
-      "Player": "Harry Morrison",
+      "Player": "H. Morrison",
       "data_provider_id": "H.Morrison 12/11/1998",
       "Team_API": "BH VFL",
       "Competition": "VFL",
@@ -118,7 +118,7 @@
       "Defence_Neutralise": 2.57
     },
     "Lloyd Meek": {
-      "Player": "Lloyd Meek",
+      "Player": "L. Meek",
       "data_provider_id": "L.Meek 22/4/1998",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -176,7 +176,7 @@
       "Defence_Neutralise": 1.74
     },
     "Massimo D'Ambrosio": {
-      "Player": "Massimo D'Ambrosio",
+      "Player": "M. D'Ambrosio",
       "data_provider_id": "M.D'Ambrosio 5/6/2003",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -350,7 +350,7 @@
       "Defence_Neutralise": 2.35
     },
     "Nick Watson": {
-      "Player": "Nick Watson",
+      "Player": "N. Watson",
       "data_provider_id": "N.Watson 24/2/2005",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -553,7 +553,7 @@
       "Defence_Neutralise": 2.78
     },
     "Mabior Chol": {
-      "Player": "Mabior Chol",
+      "Player": "M. Chol",
       "data_provider_id": "M.Chol 29/1/1997",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -644,32 +644,32 @@
       "data_provider_id": "J.Rowbottom 19/9/2000",
       "Team_API": "SYFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "M",
-      "Overall_Rating": 2.62,
-      "Ball Winning_Rating": 2.69,
-      "Ball Winning_Stoppage": 3.22,
-      "Ball Winning_Contest": 3.11,
-      "Ball Winning_Power": 2.18,
-      "Ball Winning_Receives": 1.83,
-      "Ball Use_Rating": 2.1,
-      "Ball Use_Handballing": 1.77,
-      "Ball Use_Kicking": 2.14,
-      "Ball Use_Goal Kicking": 2.19,
-      "Ball Use_Connecting": 2.36,
-      "Aerial_Rating": 1.84,
-      "Aerial_Marking": 1.2,
-      "Aerial_Contested": 2.03,
-      "Aerial_Moks": 2.56,
-      "Aerial_Ruck": 2.43,
-      "Defence_Rating": 3.89,
-      "Defence_Pressure": 4.29,
-      "Defence_Tackling": 4.12,
-      "Defence_Intercepting": 2.56,
-      "Defence_Neutralise": 2.7,
-      "Season_API": "2026"
+      "Overall_Rating": 2.5,
+      "Ball Winning_Rating": 2.36,
+      "Ball Winning_Stoppage": 2.41,
+      "Ball Winning_Contest": 3.01,
+      "Ball Winning_Power": 2.04,
+      "Ball Winning_Receives": 1.81,
+      "Ball Use_Rating": 2.14,
+      "Ball Use_Handballing": 1.97,
+      "Ball Use_Kicking": 2.33,
+      "Ball Use_Goal Kicking": 1.89,
+      "Ball Use_Connecting": 2.28,
+      "Aerial_Rating": 1.76,
+      "Aerial_Marking": 1.28,
+      "Aerial_Contested": 1.94,
+      "Aerial_Moks": 2.21,
+      "Aerial_Ruck": 2.44,
+      "Defence_Rating": 3.86,
+      "Defence_Pressure": 4.2,
+      "Defence_Tackling": 4.24,
+      "Defence_Intercepting": 2.45,
+      "Defence_Neutralise": 2.39
     },
     "Sam Wicks": {
-      "Player": "Sam Wicks",
+      "Player": "S. Wicks",
       "data_provider_id": "S.Wicks 14/9/1999",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -727,7 +727,7 @@
       "Defence_Neutralise": 2.77
     },
     "Tom McCartin": {
-      "Player": "Tom McCartin",
+      "Player": "T. McCartin",
       "data_provider_id": "T.McCartin 30/12/1999",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -843,7 +843,7 @@
       "Defence_Neutralise": 2.84
     },
     "James Jordon": {
-      "Player": "James Jordon",
+      "Player": "J. Jordon",
       "data_provider_id": "J.Jordon 20/12/2000",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -901,7 +901,7 @@
       "Defence_Neutralise": 2.05
     },
     "Brodie Grundy": {
-      "Player": "Brodie Grundy",
+      "Player": "B. Grundy",
       "data_provider_id": "B.Grundy 15/4/1994",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -959,7 +959,7 @@
       "Defence_Neutralise": 2.32
     },
     "Lewis Melican": {
-      "Player": "Lewis Melican",
+      "Player": "L. Melican",
       "data_provider_id": "L.Melican 4/11/1996",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -1162,7 +1162,7 @@
       "Defence_Neutralise": 1.38
     },
     "Bobby Hill": {
-      "Player": "B. Hill",
+      "Player": "Bobby Hill",
       "data_provider_id": "B.Hill 9/2/2000",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -1220,7 +1220,7 @@
       "Defence_Neutralise": 3.86
     },
     "Reef McInnes": {
-      "Player": "Reef McInnes",
+      "Player": "R. McInnes",
       "data_provider_id": "R.McInnes 12/12/2002",
       "Team_API": "COFC VFL",
       "Competition": "VFL",
@@ -1249,7 +1249,7 @@
       "Defence_Neutralise": 1.61
     },
     "Ned Long": {
-      "Player": "Ned Long",
+      "Player": "N. Long",
       "data_provider_id": "N.Long 5/2/2003",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -1427,32 +1427,32 @@
       "data_provider_id": "J.Crisp 2/10/1993",
       "Team_API": "COFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "W",
-      "Overall_Rating": 3.43,
-      "Ball Winning_Rating": 3.59,
-      "Ball Winning_Stoppage": 2.42,
-      "Ball Winning_Contest": 3.84,
-      "Ball Winning_Power": 3.24,
-      "Ball Winning_Receives": 4.07,
-      "Ball Use_Rating": 2.97,
-      "Ball Use_Handballing": 4.8,
-      "Ball Use_Kicking": 3.12,
-      "Ball Use_Goal Kicking": 2.46,
-      "Ball Use_Connecting": 2.66,
-      "Aerial_Rating": 4.47,
-      "Aerial_Marking": 4.12,
-      "Aerial_Contested": 4.69,
-      "Aerial_Moks": 4.91,
+      "Overall_Rating": 3.34,
+      "Ball Winning_Rating": 3.42,
+      "Ball Winning_Stoppage": 1.8,
+      "Ball Winning_Contest": 3.5,
+      "Ball Winning_Power": 3.0,
+      "Ball Winning_Receives": 4.26,
+      "Ball Use_Rating": 2.86,
+      "Ball Use_Handballing": 4.26,
+      "Ball Use_Kicking": 2.85,
+      "Ball Use_Goal Kicking": 2.61,
+      "Ball Use_Connecting": 2.64,
+      "Aerial_Rating": 4.36,
+      "Aerial_Marking": 4.05,
+      "Aerial_Contested": 4.34,
+      "Aerial_Moks": 4.9,
       "Aerial_Ruck": 2.5,
-      "Defence_Rating": 3.22,
-      "Defence_Pressure": 2.51,
-      "Defence_Tackling": 2.17,
-      "Defence_Intercepting": 4.42,
-      "Defence_Neutralise": 3.17,
-      "Season_API": "2026"
+      "Defence_Rating": 3.31,
+      "Defence_Pressure": 3.08,
+      "Defence_Tackling": 2.02,
+      "Defence_Intercepting": 4.55,
+      "Defence_Neutralise": 3.08
     },
     "Tim Membrey": {
-      "Player": "Tim Membrey",
+      "Player": "T. Membrey",
       "data_provider_id": "T.Membrey 26/5/1994",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -1481,7 +1481,7 @@
       "Defence_Neutralise": 2.74
     },
     "Daniel McStay": {
-      "Player": "Daniel McStay",
+      "Player": "D. McStay",
       "data_provider_id": "D.McStay 24/6/1995",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -1543,29 +1543,29 @@
       "data_provider_id": "D.Cameron 18/7/1995",
       "Team_API": "COFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "R",
-      "Overall_Rating": 2.76,
-      "Ball Winning_Rating": 3.1,
-      "Ball Winning_Stoppage": 3.22,
-      "Ball Winning_Contest": 3.36,
-      "Ball Winning_Power": 3.13,
-      "Ball Winning_Receives": 2.68,
-      "Ball Use_Rating": 2.55,
-      "Ball Use_Handballing": 2.38,
-      "Ball Use_Kicking": 2.79,
-      "Ball Use_Goal Kicking": 2.52,
-      "Ball Use_Connecting": 2.51,
-      "Aerial_Rating": 2.77,
-      "Aerial_Marking": 3.29,
-      "Aerial_Contested": 3.08,
-      "Aerial_Moks": 3.45,
-      "Aerial_Ruck": 2.01,
-      "Defence_Rating": 2.65,
-      "Defence_Pressure": 2.51,
-      "Defence_Tackling": 2.56,
-      "Defence_Intercepting": 3.7,
-      "Defence_Neutralise": 2.18,
-      "Season_API": "2026"
+      "Overall_Rating": 2.71,
+      "Ball Winning_Rating": 2.92,
+      "Ball Winning_Stoppage": 3.16,
+      "Ball Winning_Contest": 3.48,
+      "Ball Winning_Power": 2.71,
+      "Ball Winning_Receives": 2.25,
+      "Ball Use_Rating": 2.34,
+      "Ball Use_Handballing": 2.26,
+      "Ball Use_Kicking": 2.58,
+      "Ball Use_Goal Kicking": 2.15,
+      "Ball Use_Connecting": 2.36,
+      "Aerial_Rating": 2.91,
+      "Aerial_Marking": 2.92,
+      "Aerial_Contested": 3.33,
+      "Aerial_Moks": 3.64,
+      "Aerial_Ruck": 2.18,
+      "Defence_Rating": 2.5,
+      "Defence_Pressure": 2.67,
+      "Defence_Tackling": 2.94,
+      "Defence_Intercepting": 3.45,
+      "Defence_Neutralise": 1.55
     },
     "Brayden Maynard": {
       "Player": "Brayden Maynard",
@@ -1655,7 +1655,7 @@
       "Defence_Neutralise": 1.52
     },
     "Jacob Wehr": {
-      "Player": "Jacob Wehr",
+      "Player": "J. Wehr",
       "data_provider_id": "J.Wehr 5/7/1998",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -1713,7 +1713,7 @@
       "Defence_Neutralise": 3.32
     },
     "Xavier O'Halloran": {
-      "Player": "Xavier O'Halloran",
+      "Player": "X. O'Halloran",
       "data_provider_id": "X.O'Halloran 11/7/2000",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -1771,7 +1771,7 @@
       "Defence_Neutralise": 3.78
     },
     "Toby Bedford": {
-      "Player": "Toby Bedford",
+      "Player": "T. Bedford",
       "data_provider_id": "T.Bedford 27/5/2000",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -1800,7 +1800,7 @@
       "Defence_Neutralise": 2.36
     },
     "Kieren Briggs": {
-      "Player": "Kieren Briggs",
+      "Player": "K. Briggs",
       "data_provider_id": "K.Briggs 6/10/1999",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -1885,7 +1885,7 @@
       "Defence_Neutralise": 2.02
     },
     "Aaron Cadman": {
-      "Player": "Aaron Cadman",
+      "Player": "A. Cadman",
       "data_provider_id": "A.Cadman 3/3/2004",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -1914,7 +1914,7 @@
       "Defence_Neutralise": 2.95
     },
     "Darcy Jones": {
-      "Player": "Darcy Jones",
+      "Player": "D. Jones",
       "data_provider_id": "D.Jones 3/4/2004",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -1972,7 +1972,7 @@
       "Defence_Neutralise": 2.33
     },
     "Max Gruzewski": {
-      "Player": "Max Gruzewski",
+      "Player": "M. Gruzewski",
       "data_provider_id": "M.Gruzewski 21/7/2004",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -2001,7 +2001,7 @@
       "Defence_Neutralise": 3.29
     },
     "James Leake": {
-      "Player": "James Leake",
+      "Player": "J. Leake",
       "data_provider_id": "J.Leake 2/10/2005",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -2230,7 +2230,7 @@
       "Season_API": "2026"
     },
     "Jack Silvagni": {
-      "Player": "Jack Silvagni",
+      "Player": "J. Silvagni",
       "data_provider_id": "J.Silvagni 17/12/1997",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -2317,7 +2317,7 @@
       "Defence_Neutralise": 3.45
     },
     "Tom De Koning": {
-      "Player": "Tom De Koning",
+      "Player": "T. De Koning",
       "data_provider_id": "T.De Koning 16/7/1999",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -2404,7 +2404,7 @@
       "Season_API": "2025"
     },
     "Brodie Kemp": {
-      "Player": "Brodie Kemp",
+      "Player": "B. Kemp",
       "data_provider_id": "B.Kemp 1/5/2001",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -2433,7 +2433,7 @@
       "Defence_Neutralise": 3.06
     },
     "Jesse Motlop": {
-      "Player": "Jesse Motlop",
+      "Player": "J. Motlop",
       "data_provider_id": "J.Motlop 23/11/2003",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -2462,7 +2462,7 @@
       "Defence_Neutralise": 3.29
     },
     "Oliver Hollands": {
-      "Player": "Oliver Hollands",
+      "Player": "O. Hollands",
       "data_provider_id": "O.Hollands 16/1/2004",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -2491,7 +2491,7 @@
       "Defence_Neutralise": 2.0
     },
     "Cooper Lord": {
-      "Player": "Cooper Lord",
+      "Player": "C. Lord",
       "data_provider_id": "C.Lord 20/3/2005",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -2520,7 +2520,7 @@
       "Defence_Neutralise": 1.98
     },
     "George Hewett": {
-      "Player": "George Hewett",
+      "Player": "G. Hewett",
       "data_provider_id": "G.Hewett 29/12/1995",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -2694,7 +2694,7 @@
       "Defence_Neutralise": 3.01
     },
     "Ben Miller": {
-      "Player": "Ben Miller",
+      "Player": "B. Miller",
       "data_provider_id": "B.Miller 31/8/1999",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2723,7 +2723,7 @@
       "Defence_Neutralise": 2.92
     },
     "Rhyan Mansell": {
-      "Player": "Rhyan Mansell",
+      "Player": "R. Mansell",
       "data_provider_id": "R.Mansell 4/6/2000",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2781,7 +2781,7 @@
       "Season_API": "2025"
     },
     "Sam Banks": {
-      "Player": "Sam Banks",
+      "Player": "S. Banks",
       "data_provider_id": "S.Banks 2/4/2003",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2839,7 +2839,7 @@
       "Season_API": "2025"
     },
     "Tom Brown": {
-      "Player": "Tom Brown",
+      "Player": "T. Brown",
       "data_provider_id": "T.Brown 30/7/2003",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2868,7 +2868,7 @@
       "Defence_Neutralise": 2.52
     },
     "Tyler Sonsie": {
-      "Player": "Tyler Sonsie",
+      "Player": "T. Sonsie",
       "data_provider_id": "T.Sonsie 27/1/2003",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2926,7 +2926,7 @@
       "Season_API": "2025"
     },
     "Steely Green": {
-      "Player": "Steely Green",
+      "Player": "S. Green",
       "data_provider_id": "S.Green 9/1/2004",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2955,7 +2955,7 @@
       "Defence_Neutralise": 2.25
     },
     "Seth Campbell": {
-      "Player": "Seth Campbell",
+      "Player": "S. Campbell",
       "data_provider_id": "S.Campbell 29/12/2004",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -2984,7 +2984,7 @@
       "Defence_Neutralise": 3.52
     },
     "Sam Lalor": {
-      "Player": "Sam Lalor",
+      "Player": "S. Lalor",
       "data_provider_id": "S.Lalor 30/8/2006",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -3042,7 +3042,7 @@
       "Defence_Neutralise": 2.21
     },
     "James Trezise": {
-      "Player": "James Trezise",
+      "Player": "J. Trezise",
       "data_provider_id": "J.Trezise 15/6/2002",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -3361,7 +3361,7 @@
       "Defence_Neutralise": 2.24
     },
     "Xavier Duursma": {
-      "Player": "Xavier Duursma",
+      "Player": "X. Duursma",
       "data_provider_id": "X.Duursma 7/7/2000",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -3419,33 +3419,33 @@
       "Defence_Neutralise": 1.85
     },
     "Jaxon Prior": {
-      "Player": "Jaxon Prior",
+      "Player": "J. Prior",
       "data_provider_id": "J.Prior 4/6/2001",
       "Team_API": "EFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GD",
-      "Overall_Rating": 2.66,
-      "Ball Winning_Rating": 2.66,
-      "Ball Winning_Stoppage": 3.01,
-      "Ball Winning_Contest": 3.22,
-      "Ball Winning_Power": 2.55,
-      "Ball Winning_Receives": 2.2,
-      "Ball Use_Rating": 2.4,
-      "Ball Use_Handballing": 2.23,
-      "Ball Use_Kicking": 2.91,
-      "Ball Use_Goal Kicking": 1.96,
-      "Ball Use_Connecting": 2.03,
-      "Aerial_Rating": 2.49,
-      "Aerial_Marking": 1.91,
-      "Aerial_Contested": 1.82,
-      "Aerial_Moks": 3.97,
+      "Overall_Rating": 2.65,
+      "Ball Winning_Rating": 2.56,
+      "Ball Winning_Stoppage": 2.39,
+      "Ball Winning_Contest": 2.7,
+      "Ball Winning_Power": 2.19,
+      "Ball Winning_Receives": 2.6,
+      "Ball Use_Rating": 2.54,
+      "Ball Use_Handballing": 2.46,
+      "Ball Use_Kicking": 2.88,
+      "Ball Use_Goal Kicking": 1.81,
+      "Ball Use_Connecting": 2.44,
+      "Aerial_Rating": 2.68,
+      "Aerial_Marking": 2.86,
+      "Aerial_Contested": 1.74,
+      "Aerial_Moks": 3.55,
       "Aerial_Ruck": 2.48,
-      "Defence_Rating": 3.13,
-      "Defence_Pressure": 3.31,
-      "Defence_Tackling": 3.28,
-      "Defence_Intercepting": 3.35,
-      "Defence_Neutralise": 2.4,
-      "Season_API": "2026"
+      "Defence_Rating": 2.89,
+      "Defence_Pressure": 2.89,
+      "Defence_Tackling": 3.03,
+      "Defence_Intercepting": 2.92,
+      "Defence_Neutralise": 2.66
     },
     "Harrison Jones": {
       "Player": "Harrison Jones",
@@ -3477,7 +3477,7 @@
       "Defence_Neutralise": 2.24
     },
     "Nick Bryan": {
-      "Player": "Nick Bryan",
+      "Player": "N. Bryan",
       "data_provider_id": "N.Bryan 22/10/2001",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -3535,7 +3535,7 @@
       "Season_API": "2025"
     },
     "Zach Reid": {
-      "Player": "Zach Reid",
+      "Player": "Z. Reid",
       "data_provider_id": "Z.Reid 2/3/2002",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -3593,7 +3593,7 @@
       "Defence_Neutralise": 3.23
     },
     "Nate Caddy": {
-      "Player": "Nate Caddy",
+      "Player": "N. Caddy",
       "data_provider_id": "N.Caddy 14/7/2005",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -3622,7 +3622,7 @@
       "Defence_Neutralise": 1.09
     },
     "Isaac Kako": {
-      "Player": "Isaac Kako",
+      "Player": "I. Kako",
       "data_provider_id": "I.Kako 7/3/2006",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -3742,29 +3742,29 @@
       "data_provider_id": "M.Redman 26/8/1997",
       "Team_API": "EFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GD",
       "Overall_Rating": 2.27,
-      "Ball Winning_Rating": 1.4,
-      "Ball Winning_Stoppage": 1.5,
-      "Ball Winning_Contest": 1.27,
-      "Ball Winning_Power": 1.8,
-      "Ball Winning_Receives": 1.36,
-      "Ball Use_Rating": 2.7,
-      "Ball Use_Handballing": 2.37,
-      "Ball Use_Kicking": 3.31,
-      "Ball Use_Goal Kicking": 1.96,
-      "Ball Use_Connecting": 2.6,
-      "Aerial_Rating": 3.31,
-      "Aerial_Marking": 2.49,
-      "Aerial_Contested": 3.58,
-      "Aerial_Moks": 3.95,
+      "Ball Winning_Rating": 1.28,
+      "Ball Winning_Stoppage": 1.4,
+      "Ball Winning_Contest": 1.08,
+      "Ball Winning_Power": 1.69,
+      "Ball Winning_Receives": 1.29,
+      "Ball Use_Rating": 2.78,
+      "Ball Use_Handballing": 2.48,
+      "Ball Use_Kicking": 3.42,
+      "Ball Use_Goal Kicking": 1.81,
+      "Ball Use_Connecting": 2.68,
+      "Aerial_Rating": 3.43,
+      "Aerial_Marking": 2.65,
+      "Aerial_Contested": 3.62,
+      "Aerial_Moks": 4.11,
       "Aerial_Ruck": 2.48,
-      "Defence_Rating": 1.91,
-      "Defence_Pressure": 1.75,
-      "Defence_Tackling": 1.97,
-      "Defence_Intercepting": 2.0,
-      "Defence_Neutralise": 1.9,
-      "Season_API": "2026"
+      "Defence_Rating": 1.84,
+      "Defence_Pressure": 1.62,
+      "Defence_Tackling": 1.92,
+      "Defence_Intercepting": 1.96,
+      "Defence_Neutralise": 1.86
     },
     "Andrew McGrath": {
       "Player": "Andrew McGrath",
@@ -3796,7 +3796,7 @@
       "Defence_Neutralise": 2.05
     },
     "Josh Ward": {
-      "Player": "Josh Ward",
+      "Player": "J. Ward",
       "data_provider_id": "J.Ward 15/8/2003",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -3941,7 +3941,7 @@
       "Defence_Neutralise": 2.35
     },
     "Josh Treacy": {
-      "Player": "Josh Treacy",
+      "Player": "J. Treacy",
       "data_provider_id": "J.Treacy 4/8/2002",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -3970,7 +3970,7 @@
       "Defence_Neutralise": 3.44
     },
     "Heath Chapman": {
-      "Player": "Heath Chapman",
+      "Player": "H. Chapman",
       "data_provider_id": "H.Chapman 31/1/2002",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -4055,7 +4055,7 @@
       "Defence_Neutralise": 2.78
     },
     "Karl Worner": {
-      "Player": "Karl Worner",
+      "Player": "K. Worner",
       "data_provider_id": "K.Worner 16/6/2002",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -4084,7 +4084,7 @@
       "Defence_Neutralise": 3.43
     },
     "Murphy Reid": {
-      "Player": "Murphy Reid",
+      "Player": "M. Reid",
       "data_provider_id": "M.Reid 30/7/2006",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -4320,29 +4320,29 @@
       "data_provider_id": "S.De Koning 26/2/2001",
       "Team_API": "GFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "KD",
-      "Overall_Rating": 2.98,
-      "Ball Winning_Rating": 2.62,
-      "Ball Winning_Stoppage": 3.44,
-      "Ball Winning_Contest": 2.45,
+      "Overall_Rating": 2.89,
+      "Ball Winning_Rating": 2.82,
+      "Ball Winning_Stoppage": 4.05,
+      "Ball Winning_Contest": 2.78,
       "Ball Winning_Power": 2.36,
-      "Ball Winning_Receives": 2.42,
-      "Ball Use_Rating": 2.2,
-      "Ball Use_Handballing": 2.96,
-      "Ball Use_Kicking": 1.23,
-      "Ball Use_Goal Kicking": 2.75,
-      "Ball Use_Connecting": 2.46,
-      "Aerial_Rating": 3.8,
-      "Aerial_Marking": 3.29,
-      "Aerial_Contested": 4.33,
-      "Aerial_Moks": 3.57,
-      "Aerial_Ruck": 3.38,
-      "Defence_Rating": 2.82,
-      "Defence_Pressure": 2.64,
-      "Defence_Tackling": 2.95,
-      "Defence_Intercepting": 3.13,
-      "Defence_Neutralise": 2.61,
-      "Season_API": "2026"
+      "Ball Winning_Receives": 2.28,
+      "Ball Use_Rating": 2.42,
+      "Ball Use_Handballing": 3.21,
+      "Ball Use_Kicking": 1.27,
+      "Ball Use_Goal Kicking": 3.9,
+      "Ball Use_Connecting": 2.39,
+      "Aerial_Rating": 3.28,
+      "Aerial_Marking": 2.71,
+      "Aerial_Contested": 3.9,
+      "Aerial_Moks": 2.98,
+      "Aerial_Ruck": 3.59,
+      "Defence_Rating": 2.79,
+      "Defence_Pressure": 2.92,
+      "Defence_Tackling": 3.37,
+      "Defence_Intercepting": 2.98,
+      "Defence_Neutralise": 2.45
     },
     "Max Holmes": {
       "Player": "Max Holmes",
@@ -4374,7 +4374,7 @@
       "Defence_Neutralise": 2.12
     },
     "Shannon Neale": {
-      "Player": "Shannon Neale",
+      "Player": "S. Neale",
       "data_provider_id": "S.Neale 25/7/2002",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -4432,7 +4432,7 @@
       "Season_API": "2026"
     },
     "Connor O'Sullivan": {
-      "Player": "Connor O'Sullivan",
+      "Player": "C. O'Sullivan",
       "data_provider_id": "C.O'Sullivan 19/5/2005",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -4780,7 +4780,7 @@
       "Defence_Neutralise": 2.92
     },
     "Noah Answerth": {
-      "Player": "Noah Answerth",
+      "Player": "N. Answerth",
       "data_provider_id": "N.Answerth 6/8/1999",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -4896,7 +4896,7 @@
       "Defence_Neutralise": 1.96
     },
     "Jaspa Fletcher": {
-      "Player": "Jaspa Fletcher",
+      "Player": "J. Fletcher",
       "data_provider_id": "J.Fletcher 24/2/2004",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -4925,7 +4925,7 @@
       "Defence_Neutralise": 2.55
     },
     "Logan Morris": {
-      "Player": "Logan Morris",
+      "Player": "L. Morris",
       "data_provider_id": "L.Morris 10/5/2005",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -4954,7 +4954,7 @@
       "Defence_Neutralise": 1.11
     },
     "Levi Ashcroft": {
-      "Player": "Levi Ashcroft",
+      "Player": "L. Ashcroft",
       "data_provider_id": "L.Ashcroft 18/12/2006",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -5070,7 +5070,7 @@
       "Defence_Neutralise": 2.39
     },
     "Callum Ah Chee": {
-      "Player": "Callum Ah Chee",
+      "Player": "C. Ah Chee",
       "data_provider_id": "C.Ah Chee 9/10/1997",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -5273,7 +5273,7 @@
       "Defence_Neutralise": 2.99
     },
     "Tristan Xerri": {
-      "Player": "Tristan Xerri",
+      "Player": "T. Xerri",
       "data_provider_id": "T.Xerri 15/3/1999",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -5302,7 +5302,7 @@
       "Defence_Neutralise": 3.76
     },
     "Tom Powell": {
-      "Player": "Tom Powell",
+      "Player": "T. Powell",
       "data_provider_id": "T.Powell 2/3/2002",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -5335,29 +5335,29 @@
       "data_provider_id": "C.Comben 20/7/2001",
       "Team_API": "NMFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "KD",
-      "Overall_Rating": 3.04,
-      "Ball Winning_Rating": 2.76,
-      "Ball Winning_Stoppage": 2.71,
-      "Ball Winning_Contest": 3.2,
-      "Ball Winning_Power": 2.33,
-      "Ball Winning_Receives": 2.51,
-      "Ball Use_Rating": 2.66,
-      "Ball Use_Handballing": 2.62,
-      "Ball Use_Kicking": 2.56,
-      "Ball Use_Goal Kicking": 3.52,
-      "Ball Use_Connecting": 2.37,
-      "Aerial_Rating": 3.18,
-      "Aerial_Marking": 3.42,
-      "Aerial_Contested": 3.18,
-      "Aerial_Moks": 3.02,
-      "Aerial_Ruck": 2.38,
-      "Defence_Rating": 3.25,
-      "Defence_Pressure": 3.98,
-      "Defence_Tackling": 3.94,
-      "Defence_Intercepting": 3.16,
-      "Defence_Neutralise": 2.92,
-      "Season_API": "2026"
+      "Overall_Rating": 2.7,
+      "Ball Winning_Rating": 2.53,
+      "Ball Winning_Stoppage": 2.48,
+      "Ball Winning_Contest": 2.77,
+      "Ball Winning_Power": 2.36,
+      "Ball Winning_Receives": 2.35,
+      "Ball Use_Rating": 2.55,
+      "Ball Use_Handballing": 2.76,
+      "Ball Use_Kicking": 2.22,
+      "Ball Use_Goal Kicking": 3.35,
+      "Ball Use_Connecting": 2.22,
+      "Aerial_Rating": 2.54,
+      "Aerial_Marking": 2.79,
+      "Aerial_Contested": 2.62,
+      "Aerial_Moks": 2.26,
+      "Aerial_Ruck": 2.37,
+      "Defence_Rating": 3.0,
+      "Defence_Pressure": 3.77,
+      "Defence_Tackling": 3.89,
+      "Defence_Intercepting": 2.19,
+      "Defence_Neutralise": 3.07
     },
     "Harry Sheezel": {
       "Player": "Harry Sheezel",
@@ -5389,7 +5389,7 @@
       "Defence_Neutralise": 2.17
     },
     "Jacob Konstanty": {
-      "Player": "Jacob Konstanty",
+      "Player": "J. Konstanty",
       "data_provider_id": "J.Konstanty 9/11/2004",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -5418,7 +5418,7 @@
       "Defence_Neutralise": 4.08
     },
     "Colby McKercher": {
-      "Player": "Colby McKercher",
+      "Player": "C. McKercher",
       "data_provider_id": "C.McKercher 12/4/2005",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -5447,7 +5447,7 @@
       "Defence_Neutralise": 1.81
     },
     "Finn O'Sullivan": {
-      "Player": "Finn O'Sullivan",
+      "Player": "F. O'Sullivan",
       "data_provider_id": "F.O'Sullivan 30/5/2006",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -5621,7 +5621,7 @@
       "Defence_Neutralise": 2.25
     },
     "Lachlan Bramble": {
-      "Player": "Lachlan Bramble",
+      "Player": "L. Bramble",
       "data_provider_id": "L.Bramble 19/4/1998",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -5737,7 +5737,7 @@
       "Defence_Neutralise": 2.18
     },
     "Rhylee West": {
-      "Player": "Rhylee West",
+      "Player": "R. West",
       "data_provider_id": "R.West 12/7/2000",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -5795,7 +5795,7 @@
       "Defence_Neutralise": 1.88
     },
     "Sam Darcy": {
-      "Player": "Sam Darcy",
+      "Player": "S. Darcy",
       "data_provider_id": "S.Darcy 19/7/2003",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -5853,7 +5853,7 @@
       "Defence_Neutralise": 2.01
     },
     "Joel Freijah": {
-      "Player": "Joel Freijah",
+      "Player": "J. Freijah",
       "data_provider_id": "J.Freijah 14/11/2005",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -5939,7 +5939,7 @@
       "Season_API": "2026"
     },
     "Rory Lobb": {
-      "Player": "Rory Lobb",
+      "Player": "R. Lobb",
       "data_provider_id": "R.Lobb 9/2/1993",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -6089,26 +6089,26 @@
       "Season_API": "2026",
       "Position_API": "M",
       "Overall_Rating": 2.3,
-      "Ball Winning_Rating": 2.25,
-      "Ball Winning_Stoppage": 2.35,
-      "Ball Winning_Contest": 1.97,
-      "Ball Winning_Power": 1.41,
-      "Ball Winning_Receives": 2.88,
-      "Ball Use_Rating": 2.19,
-      "Ball Use_Handballing": 2.44,
-      "Ball Use_Kicking": 2.09,
+      "Ball Winning_Rating": 2.23,
+      "Ball Winning_Stoppage": 2.32,
+      "Ball Winning_Contest": 1.9,
+      "Ball Winning_Power": 1.37,
+      "Ball Winning_Receives": 2.95,
+      "Ball Use_Rating": 2.24,
+      "Ball Use_Handballing": 2.47,
+      "Ball Use_Kicking": 2.15,
       "Ball Use_Goal Kicking": 1.62,
-      "Ball Use_Connecting": 2.64,
-      "Aerial_Rating": 2.35,
-      "Aerial_Marking": 3.38,
-      "Aerial_Contested": 1.87,
-      "Aerial_Moks": 1.64,
+      "Ball Use_Connecting": 2.69,
+      "Aerial_Rating": 2.36,
+      "Aerial_Marking": 3.49,
+      "Aerial_Contested": 1.8,
+      "Aerial_Moks": 1.62,
       "Aerial_Ruck": 2.44,
-      "Defence_Rating": 2.51,
-      "Defence_Pressure": 2.72,
-      "Defence_Tackling": 2.01,
-      "Defence_Intercepting": 3.65,
-      "Defence_Neutralise": 2.6
+      "Defence_Rating": 2.47,
+      "Defence_Pressure": 2.71,
+      "Defence_Tackling": 1.89,
+      "Defence_Intercepting": 3.68,
+      "Defence_Neutralise": 2.59
     },
     "Kane Farrell": {
       "Player": "Kane Farrell",
@@ -6140,33 +6140,33 @@
       "Defence_Neutralise": 2.76
     },
     "Joe Richards": {
-      "Player": "Joe Richards",
+      "Player": "J. Richards",
       "data_provider_id": "J.Richards 23/11/1999",
       "Team_API": "PAFC",
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "GF",
-      "Overall_Rating": 2.9,
-      "Ball Winning_Rating": 2.91,
-      "Ball Winning_Stoppage": 2.45,
-      "Ball Winning_Contest": 2.51,
-      "Ball Winning_Power": 2.72,
-      "Ball Winning_Receives": 3.47,
-      "Ball Use_Rating": 3.02,
-      "Ball Use_Handballing": 3.21,
-      "Ball Use_Kicking": 3.53,
-      "Ball Use_Goal Kicking": 2.21,
-      "Ball Use_Connecting": 3.51,
-      "Aerial_Rating": 2.86,
-      "Aerial_Marking": 3.91,
-      "Aerial_Contested": 1.89,
-      "Aerial_Moks": 3.22,
-      "Aerial_Ruck": 2.47,
-      "Defence_Rating": 2.67,
-      "Defence_Pressure": 2.72,
-      "Defence_Tackling": 2.9,
-      "Defence_Intercepting": 2.32,
-      "Defence_Neutralise": 2.16
+      "Overall_Rating": 2.95,
+      "Ball Winning_Rating": 3.1,
+      "Ball Winning_Stoppage": 2.84,
+      "Ball Winning_Contest": 2.71,
+      "Ball Winning_Power": 2.92,
+      "Ball Winning_Receives": 3.57,
+      "Ball Use_Rating": 2.91,
+      "Ball Use_Handballing": 2.94,
+      "Ball Use_Kicking": 3.54,
+      "Ball Use_Goal Kicking": 2.01,
+      "Ball Use_Connecting": 3.48,
+      "Aerial_Rating": 2.74,
+      "Aerial_Marking": 3.65,
+      "Aerial_Contested": 1.87,
+      "Aerial_Moks": 3.09,
+      "Aerial_Ruck": 2.46,
+      "Defence_Rating": 3.02,
+      "Defence_Pressure": 3.21,
+      "Defence_Tackling": 3.3,
+      "Defence_Intercepting": 2.51,
+      "Defence_Neutralise": 2.18
     },
     "Miles Bergman": {
       "Player": "Miles Bergman",
@@ -6198,7 +6198,7 @@
       "Defence_Neutralise": 1.65
     },
     "Mitch Georgiades": {
-      "Player": "Mitch Georgiades",
+      "Player": "M. Georgiades",
       "data_provider_id": "M.Georgiades 28/9/2001",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -6284,7 +6284,7 @@
       "Defence_Neutralise": 3.09
     },
     "Jase Burgoyne": {
-      "Player": "Jase Burgoyne",
+      "Player": "J. Burgoyne",
       "data_provider_id": "J.Burgoyne 15/7/2003",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -6313,7 +6313,7 @@
       "Defence_Neutralise": 1.72
     },
     "Josh Sinn": {
-      "Player": "Josh Sinn",
+      "Player": "J. Sinn",
       "data_provider_id": "J.Sinn 7/1/2003",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -6486,7 +6486,7 @@
       "Defence_Neutralise": 3.14
     },
     "Isaac Cumming": {
-      "Player": "Isaac Cumming",
+      "Player": "I. Cumming",
       "data_provider_id": "I.Cumming 11/8/1998",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -6515,7 +6515,7 @@
       "Defence_Neutralise": 3.31
     },
     "James Peatling": {
-      "Player": "James Peatling",
+      "Player": "J. Peatling",
       "data_provider_id": "J.Peatling 21/8/2000",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -6573,7 +6573,7 @@
       "Defence_Neutralise": 2.18
     },
     "Josh Worrell": {
-      "Player": "Josh Worrell",
+      "Player": "J. Worrell",
       "data_provider_id": "J.Worrell 11/4/2001",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -6602,7 +6602,7 @@
       "Defence_Neutralise": 3.92
     },
     "Mark Keane": {
-      "Player": "Mark Keane",
+      "Player": "M. Keane",
       "data_provider_id": "M.Keane 17/3/2000",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -6689,7 +6689,7 @@
       "Defence_Neutralise": 2.17
     },
     "Daniel Curtin": {
-      "Player": "Daniel Curtin",
+      "Player": "D. Curtin",
       "data_provider_id": "D.Curtin 8/3/2005",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -7008,7 +7008,7 @@
       "Defence_Neutralise": 2.12
     },
     "Max Hall": {
-      "Player": "Max Hall",
+      "Player": "M. Hall",
       "data_provider_id": "M.Hall 15/4/2002",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -7037,7 +7037,7 @@
       "Defence_Neutralise": 2.29
     },
     "Marcus Windhager": {
-      "Player": "Marcus Windhager",
+      "Player": "M. Windhager",
       "data_provider_id": "M.Windhager 16/5/2003",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -7066,7 +7066,7 @@
       "Defence_Neutralise": 2.13
     },
     "Anthony Caminiti": {
-      "Player": "Anthony Caminiti",
+      "Player": "A. Caminiti",
       "data_provider_id": "A.Caminiti 9/12/2003",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -7327,7 +7327,7 @@
       "Defence_Neutralise": 2.27
     },
     "Kade Chandler": {
-      "Player": "Kade Chandler",
+      "Player": "K. Chandler",
       "data_provider_id": "K.Chandler 13/1/2000",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -7385,7 +7385,7 @@
       "Defence_Neutralise": 1.95
     },
     "Jake Bowey": {
-      "Player": "Jake Bowey",
+      "Player": "J. Bowey",
       "data_provider_id": "J.Bowey 12/9/2002",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -7414,7 +7414,7 @@
       "Defence_Neutralise": 1.75
     },
     "Xavier Lindsay": {
-      "Player": "Xavier Lindsay",
+      "Player": "X. Lindsay",
       "data_provider_id": "X.Lindsay 3/8/2006",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -7704,7 +7704,7 @@
       "Defence_Neutralise": 2.45
     },
     "Joel Jeffrey": {
-      "Player": "Joel Jeffrey",
+      "Player": "J. Jeffrey",
       "data_provider_id": "J.Jeffrey 12/3/2002",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -7762,7 +7762,7 @@
       "Defence_Neutralise": 2.45
     },
     "Wil Powell": {
-      "Player": "Wil Powell",
+      "Player": "W. Powell",
       "data_provider_id": "W.Powell 26/8/1999",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -7878,36 +7878,36 @@
       "Defence_Neutralise": 1.74
     },
     "Bodhi Uwland": {
-      "Player": "Bodhi Uwland",
+      "Player": "B. Uwland",
       "data_provider_id": "B.Uwland 25/7/2003",
       "Team_API": "GCFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GD",
-      "Overall_Rating": 3.05,
-      "Ball Winning_Rating": 2.81,
-      "Ball Winning_Stoppage": 2.62,
-      "Ball Winning_Contest": 3.02,
-      "Ball Winning_Power": 2.51,
-      "Ball Winning_Receives": 2.8,
-      "Ball Use_Rating": 2.89,
-      "Ball Use_Handballing": 3.32,
-      "Ball Use_Kicking": 3.15,
-      "Ball Use_Goal Kicking": 1.96,
-      "Ball Use_Connecting": 2.14,
-      "Aerial_Rating": 4.04,
-      "Aerial_Marking": 3.59,
-      "Aerial_Contested": 3.79,
-      "Aerial_Moks": 4.84,
+      "Overall_Rating": 3.07,
+      "Ball Winning_Rating": 3.17,
+      "Ball Winning_Stoppage": 3.15,
+      "Ball Winning_Contest": 3.43,
+      "Ball Winning_Power": 3.27,
+      "Ball Winning_Receives": 2.98,
+      "Ball Use_Rating": 2.84,
+      "Ball Use_Handballing": 3.11,
+      "Ball Use_Kicking": 3.22,
+      "Ball Use_Goal Kicking": 1.81,
+      "Ball Use_Connecting": 2.23,
+      "Aerial_Rating": 3.53,
+      "Aerial_Marking": 2.99,
+      "Aerial_Contested": 3.02,
+      "Aerial_Moks": 4.75,
       "Aerial_Ruck": 2.48,
-      "Defence_Rating": 2.92,
-      "Defence_Pressure": 2.66,
-      "Defence_Tackling": 2.53,
-      "Defence_Intercepting": 3.84,
-      "Defence_Neutralise": 2.68,
-      "Season_API": "2026"
+      "Defence_Rating": 3.02,
+      "Defence_Pressure": 2.32,
+      "Defence_Tackling": 2.42,
+      "Defence_Intercepting": 4.12,
+      "Defence_Neutralise": 3.43
     },
     "Bailey Humphrey": {
-      "Player": "Bailey Humphrey",
+      "Player": "B. Humphrey",
       "data_provider_id": "B.Humphrey 11/9/2004",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -8052,7 +8052,7 @@
       "Season_API": "2026"
     },
     "Ben Long": {
-      "Player": "Ben Long",
+      "Player": "B. Long",
       "data_provider_id": "B.Long 21/8/1997",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -8168,7 +8168,7 @@
       "Defence_Neutralise": 1.44
     },
     "Elijah Hewett": {
-      "Player": "Elijah Hewett",
+      "Player": "E. Hewett",
       "data_provider_id": "E.Hewett 27/5/2004",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -8255,7 +8255,7 @@
       "Defence_Neutralise": 2.76
     },
     "Harley Reid": {
-      "Player": "Harley Reid",
+      "Player": "H. Reid",
       "data_provider_id": "H.Reid 17/4/2005",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -8284,7 +8284,7 @@
       "Defence_Neutralise": 3.01
     },
     "Ryan Maric": {
-      "Player": "Ryan Maric",
+      "Player": "R. Maric",
       "data_provider_id": "R.Maric 6/9/2004",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -8660,7 +8660,7 @@
       "Defence_Neutralise": 1.74
     },
     "Dylan Stephens": {
-      "Player": "Dylan Stephens",
+      "Player": "D. Stephens",
       "data_provider_id": "D.Stephens 8/1/2001",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -8689,7 +8689,7 @@
       "Defence_Neutralise": 1.92
     },
     "Patrick Voss": {
-      "Player": "Patrick Voss",
+      "Player": "P. Voss",
       "data_provider_id": "P.Voss 29/6/2003",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -8747,36 +8747,36 @@
       "Defence_Neutralise": 2.23
     },
     "Esava Ratugolea": {
-      "Player": "Esava Ratugolea",
+      "Player": "E. Ratugolea",
       "data_provider_id": "E.Ratugolea 24/7/1998",
       "Team_API": "PAFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "KD",
-      "Overall_Rating": 2.49,
-      "Ball Winning_Rating": 2.25,
+      "Overall_Rating": 2.46,
+      "Ball Winning_Rating": 2.31,
       "Ball Winning_Stoppage": 2.71,
-      "Ball Winning_Contest": 1.98,
-      "Ball Winning_Power": 2.51,
-      "Ball Winning_Receives": 2.14,
-      "Ball Use_Rating": 2.46,
-      "Ball Use_Handballing": 2.36,
-      "Ball Use_Kicking": 2.76,
-      "Ball Use_Goal Kicking": 2.09,
-      "Ball Use_Connecting": 1.96,
-      "Aerial_Rating": 3.11,
-      "Aerial_Marking": 2.92,
-      "Aerial_Contested": 3.59,
-      "Aerial_Moks": 2.7,
-      "Aerial_Ruck": 2.38,
-      "Defence_Rating": 2.12,
-      "Defence_Pressure": 0.9,
-      "Defence_Tackling": 1.65,
-      "Defence_Intercepting": 2.31,
-      "Defence_Neutralise": 2.42,
-      "Season_API": "2026"
+      "Ball Winning_Contest": 2.05,
+      "Ball Winning_Power": 2.49,
+      "Ball Winning_Receives": 2.26,
+      "Ball Use_Rating": 2.49,
+      "Ball Use_Handballing": 2.4,
+      "Ball Use_Kicking": 2.84,
+      "Ball Use_Goal Kicking": 2.04,
+      "Ball Use_Connecting": 1.87,
+      "Aerial_Rating": 2.99,
+      "Aerial_Marking": 2.91,
+      "Aerial_Contested": 3.33,
+      "Aerial_Moks": 2.64,
+      "Aerial_Ruck": 2.37,
+      "Defence_Rating": 2.07,
+      "Defence_Pressure": 0.65,
+      "Defence_Tackling": 1.41,
+      "Defence_Intercepting": 2.43,
+      "Defence_Neutralise": 2.37
     },
     "Sam Flanders": {
-      "Player": "Sam Flanders",
+      "Player": "S. Flanders",
       "data_provider_id": "S.Flanders 24/7/2001",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -8805,7 +8805,7 @@
       "Defence_Neutralise": 2.04
     },
     "Mac Andrew": {
-      "Player": "Mac Andrew",
+      "Player": "M. Andrew",
       "data_provider_id": "M.Andrew 4/12/2003",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -8834,7 +8834,7 @@
       "Defence_Neutralise": 2.5
     },
     "Jake Melksham": {
-      "Player": "Jake Melksham",
+      "Player": "J. Melksham",
       "data_provider_id": "J.Melksham 29/8/1991",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -8892,7 +8892,7 @@
       "Defence_Neutralise": 2.99
     },
     "Cooper Sharman": {
-      "Player": "Cooper Sharman",
+      "Player": "C. Sharman",
       "data_provider_id": "C.Sharman 25/7/2000",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -8921,7 +8921,7 @@
       "Defence_Neutralise": 2.16
     },
     "Jake Stringer": {
-      "Player": "Jake Stringer",
+      "Player": "J. Stringer",
       "data_provider_id": "J.Stringer 25/4/1994",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -8979,7 +8979,7 @@
       "Defence_Neutralise": 1.62
     },
     "Billy Frampton": {
-      "Player": "Billy Frampton",
+      "Player": "B. Frampton",
       "data_provider_id": "B.Frampton 20/11/1996",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -9037,7 +9037,7 @@
       "Defence_Neutralise": 1.83
     },
     "Jake Riccardi": {
-      "Player": "Jake Riccardi",
+      "Player": "J. Riccardi",
       "data_provider_id": "J.Riccardi 7/11/1999",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -9095,7 +9095,7 @@
       "Defence_Neutralise": 2.67
     },
     "Hugo Ralphsmith": {
-      "Player": "Hugo Ralphsmith",
+      "Player": "H. Ralphsmith",
       "data_provider_id": "H.Ralphsmith 9/11/2001",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -9124,7 +9124,7 @@
       "Defence_Neutralise": 2.09
     },
     "Jonty Faull": {
-      "Player": "Jonty Faull",
+      "Player": "J. Faull",
       "data_provider_id": "J.Faull 1/2/2006",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -9153,7 +9153,7 @@
       "Defence_Neutralise": 2.81
     },
     "Harvey Thomas": {
-      "Player": "Harvey Thomas",
+      "Player": "H. Thomas",
       "data_provider_id": "H.Thomas 8/8/2005",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -9240,7 +9240,7 @@
       "Defence_Neutralise": 1.52
     },
     "Samson Ryan": {
-      "Player": "Samson Ryan",
+      "Player": "S. Ryan",
       "data_provider_id": "S.Ryan 9/12/2000",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -9414,7 +9414,7 @@
       "Season_API": "2025"
     },
     "Kane McAuliffe": {
-      "Player": "Kane McAuliffe",
+      "Player": "K. McAuliffe",
       "data_provider_id": "K.McAuliffe 1/3/2005",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -9501,7 +9501,7 @@
       "Defence_Neutralise": 3.72
     },
     "Harry Rowston": {
-      "Player": "Harry Rowston",
+      "Player": "H. Rowston",
       "data_provider_id": "H.Rowston 12/8/2004",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -9588,7 +9588,7 @@
       "Defence_Neutralise": 2.01
     },
     "Mani Liddy": {
-      "Player": "Mani Liddy",
+      "Player": "M. Liddy",
       "data_provider_id": "M.Liddy 20/2/2002",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -9646,7 +9646,7 @@
       "Defence_Neutralise": 2.01
     },
     "Ryan Angwin": {
-      "Player": "Ryan Angwin",
+      "Player": "R. Angwin",
       "data_provider_id": "R.Angwin 12/12/2002",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -9704,7 +9704,7 @@
       "Defence_Neutralise": 1.35
     },
     "Flynn Young": {
-      "Player": "Flynn Young",
+      "Player": "F. Young",
       "data_provider_id": "F.Young 3/2/2002",
       "Team_API": "CAR VFL",
       "Competition": "VFL",
@@ -9762,7 +9762,7 @@
       "Season_API": "2025"
     },
     "Roan Steele": {
-      "Player": "Roan Steele",
+      "Player": "R. Steele",
       "data_provider_id": "R.Steele 22/10/2001",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -9849,7 +9849,7 @@
       "Season_API": "2025"
     },
     "Tylar Young": {
-      "Player": "Tylar Young",
+      "Player": "T. Young",
       "data_provider_id": "T.Young 5/9/1998",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -9907,7 +9907,7 @@
       "Defence_Neutralise": 2.42
     },
     "Zac Banch": {
-      "Player": "Zac Banch",
+      "Player": "Z. Banch",
       "data_provider_id": "Z.Banch 21/1/2003",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -9965,7 +9965,7 @@
       "Defence_Neutralise": 2.54
     },
     "Jake Soligo": {
-      "Player": "Jake Soligo",
+      "Player": "J. Soligo",
       "data_provider_id": "J.Soligo 25/1/2003",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -10052,7 +10052,7 @@
       "Defence_Neutralise": 3.21
     },
     "Edward Allan": {
-      "Player": "Edward Allan",
+      "Player": "E. Allan",
       "data_provider_id": "E.Allan 26/5/2004",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -10139,7 +10139,7 @@
       "Defence_Neutralise": 2.02
     },
     "Liam McMahon": {
-      "Player": "Liam McMahon",
+      "Player": "L. McMahon",
       "data_provider_id": "L.McMahon 2/5/2002",
       "Team_API": "ESS VFL",
       "Competition": "VFL",
@@ -10168,7 +10168,7 @@
       "Defence_Neutralise": 2.09
     },
     "Archie Roberts": {
-      "Player": "Archie Roberts",
+      "Player": "A. Roberts",
       "data_provider_id": "A.Roberts 18/11/2005",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -10255,7 +10255,7 @@
       "Defence_Neutralise": 2.45
     },
     "Lawson Humphries": {
-      "Player": "Lawson Humphries",
+      "Player": "L. Humphries",
       "data_provider_id": "L.Humphries 24/4/2003",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -10284,7 +10284,7 @@
       "Defence_Neutralise": 2.62
     },
     "Oisin Mullin": {
-      "Player": "Oisin Mullin",
+      "Player": "O. Mullin",
       "data_provider_id": "O.Mullin 11/2/2000",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -10342,7 +10342,7 @@
       "Defence_Neutralise": 1.85
     },
     "Callum Brown": {
-      "Player": "Callum Brown",
+      "Player": "C. Brown",
       "data_provider_id": "C.Brown 15/8/2000",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -10429,62 +10429,62 @@
       "Defence_Neutralise": 2.36
     },
     "Connor MacDonald": {
-      "Player": "Connor Macdonald",
+      "Player": "C. Macdonald",
       "data_provider_id": "C.Macdonald 13/1/2003",
       "Team_API": "HFC",
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "GF",
-      "Overall_Rating": 3.21,
-      "Ball Winning_Rating": 3.82,
-      "Ball Winning_Stoppage": 3.94,
-      "Ball Winning_Contest": 3.7,
-      "Ball Winning_Power": 2.13,
-      "Ball Winning_Receives": 4.27,
-      "Ball Use_Rating": 3.04,
-      "Ball Use_Handballing": 2.82,
-      "Ball Use_Kicking": 3.7,
-      "Ball Use_Goal Kicking": 2.13,
-      "Ball Use_Connecting": 3.82,
-      "Aerial_Rating": 2.99,
-      "Aerial_Marking": 3.4,
-      "Aerial_Contested": 2.57,
-      "Aerial_Moks": 3.22,
-      "Aerial_Ruck": 2.47,
-      "Defence_Rating": 2.68,
+      "Overall_Rating": 3.33,
+      "Ball Winning_Rating": 4.09,
+      "Ball Winning_Stoppage": 4.87,
+      "Ball Winning_Contest": 3.96,
+      "Ball Winning_Power": 2.36,
+      "Ball Winning_Receives": 4.23,
+      "Ball Use_Rating": 3.17,
+      "Ball Use_Handballing": 3.19,
+      "Ball Use_Kicking": 3.82,
+      "Ball Use_Goal Kicking": 2.19,
+      "Ball Use_Connecting": 3.91,
+      "Aerial_Rating": 2.98,
+      "Aerial_Marking": 3.59,
+      "Aerial_Contested": 2.45,
+      "Aerial_Moks": 3.09,
+      "Aerial_Ruck": 2.46,
+      "Defence_Rating": 2.66,
       "Defence_Pressure": 2.5,
-      "Defence_Tackling": 2.96,
-      "Defence_Intercepting": 3.28,
-      "Defence_Neutralise": 1.97
+      "Defence_Tackling": 3.01,
+      "Defence_Intercepting": 2.96,
+      "Defence_Neutralise": 1.88
     },
     "Paul Curtis": {
-      "Player": "Paul Curtis",
+      "Player": "P. Curtis",
       "data_provider_id": "P.Curtis 4/3/2003",
       "Team_API": "NMFC",
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "GF",
-      "Overall_Rating": 2.7,
-      "Ball Winning_Rating": 2.17,
-      "Ball Winning_Stoppage": 2.24,
-      "Ball Winning_Contest": 2.27,
-      "Ball Winning_Power": 3.16,
-      "Ball Winning_Receives": 1.82,
-      "Ball Use_Rating": 2.68,
-      "Ball Use_Handballing": 2.41,
-      "Ball Use_Kicking": 2.21,
-      "Ball Use_Goal Kicking": 3.4,
-      "Ball Use_Connecting": 2.38,
-      "Aerial_Rating": 3.78,
-      "Aerial_Marking": 2.32,
-      "Aerial_Contested": 5.0,
-      "Aerial_Moks": 3.22,
-      "Aerial_Ruck": 2.47,
-      "Defence_Rating": 2.34,
-      "Defence_Pressure": 2.62,
-      "Defence_Tackling": 2.01,
-      "Defence_Intercepting": 2.05,
-      "Defence_Neutralise": 2.74
+      "Overall_Rating": 2.79,
+      "Ball Winning_Rating": 2.41,
+      "Ball Winning_Stoppage": 2.37,
+      "Ball Winning_Contest": 2.62,
+      "Ball Winning_Power": 2.81,
+      "Ball Winning_Receives": 2.17,
+      "Ball Use_Rating": 2.8,
+      "Ball Use_Handballing": 2.2,
+      "Ball Use_Kicking": 2.41,
+      "Ball Use_Goal Kicking": 3.48,
+      "Ball Use_Connecting": 2.72,
+      "Aerial_Rating": 3.55,
+      "Aerial_Marking": 2.45,
+      "Aerial_Contested": 4.6,
+      "Aerial_Moks": 3.09,
+      "Aerial_Ruck": 2.46,
+      "Defence_Rating": 2.54,
+      "Defence_Pressure": 2.72,
+      "Defence_Tackling": 2.37,
+      "Defence_Intercepting": 2.3,
+      "Defence_Neutralise": 2.72
     },
     "Cameron Zurhaar": {
       "Player": "Cameron Zurhaar",
@@ -10545,7 +10545,7 @@
       "Defence_Neutralise": 4.24
     },
     "Maurice Rioli": {
-      "Player": "Maurice Rioli",
+      "Player": "M. Rioli",
       "data_provider_id": "M.Rioli 1/9/2002",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -10574,7 +10574,7 @@
       "Defence_Neutralise": 2.81
     },
     "Jack Ross": {
-      "Player": "Jack Ross",
+      "Player": "J. Ross",
       "data_provider_id": "J.Ross 3/9/2000",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -10632,7 +10632,7 @@
       "Defence_Neutralise": 2.89
     },
     "Luke Trainor": {
-      "Player": "Luke Trainor",
+      "Player": "L. Trainor",
       "data_provider_id": "L.Trainor 10/4/2006",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -10748,7 +10748,7 @@
       "Defence_Neutralise": 2.23
     },
     "Lachlan McNeil": {
-      "Player": "Lachlan McNeil",
+      "Player": "L. McNeil",
       "data_provider_id": "L.McNeil 2/9/2001",
       "Team_API": "FTS VFL",
       "Competition": "VFL",
@@ -10806,7 +10806,7 @@
       "Defence_Neutralise": 2.19
     },
     "Sam Berry": {
-      "Player": "Sam Berry",
+      "Player": "S. Berry",
       "data_provider_id": "S.Berry 12/2/2002",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -10835,7 +10835,7 @@
       "Defence_Neutralise": 4.02
     },
     "Hugh Bond": {
-      "Player": "Hugh Bond",
+      "Player": "H. Bond",
       "data_provider_id": "H.Bond 25/9/2004",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -10864,7 +10864,7 @@
       "Defence_Neutralise": 2.1
     },
     "James Borlase": {
-      "Player": "James Borlase",
+      "Player": "J. Borlase",
       "data_provider_id": "J.Borlase 18/7/2002",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -10922,7 +10922,7 @@
       "Defence_Neutralise": 2.62
     },
     "Brayden Cook": {
-      "Player": "Brayden Cook",
+      "Player": "B. Cook",
       "data_provider_id": "B.Cook 18/7/2002",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -10980,7 +10980,7 @@
       "Defence_Neutralise": 2.14
     },
     "Finnbar Maley": {
-      "Player": "Finnbar Maley",
+      "Player": "F. Maley",
       "data_provider_id": "F.Maley 18/7/2003",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -11038,7 +11038,7 @@
       "Defence_Neutralise": 3.91
     },
     "Luke Nankervis": {
-      "Player": "Luke Nankervis",
+      "Player": "L. Nankervis",
       "data_provider_id": "L.Nankervis 25/5/2003",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -11125,7 +11125,7 @@
       "Defence_Neutralise": 2.94
     },
     "Zac Taylor": {
-      "Player": "Zac Taylor",
+      "Player": "Z. Taylor",
       "data_provider_id": "Z.Taylor 31/1/2003",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -11154,7 +11154,7 @@
       "Defence_Neutralise": 3.16
     },
     "Darcy Fort": {
-      "Player": "Darcy Fort",
+      "Player": "D. Fort",
       "data_provider_id": "D.Fort 6/8/1993",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -11212,7 +11212,7 @@
       "Defence_Neutralise": 2.03
     },
     "Darcy Gardiner": {
-      "Player": "Darcy Gardiner",
+      "Player": "D. Gardiner",
       "data_provider_id": "D.Gardiner 22/9/1995",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -11270,7 +11270,7 @@
       "Defence_Neutralise": 2.21
     },
     "Conor McKenna": {
-      "Player": "C. McKenna",
+      "Player": "Conor McKenna",
       "data_provider_id": "C.McKenna 28/3/1996",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -11328,7 +11328,7 @@
       "Defence_Neutralise": 3.9
     },
     "Bruce Reville": {
-      "Player": "Bruce Reville",
+      "Player": "B. Reville",
       "data_provider_id": "B.Reville 22/2/2001",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -11386,7 +11386,7 @@
       "Defence_Neutralise": 2.84
     },
     "Blake Acres": {
-      "Player": "B. Acres",
+      "Player": "Blake Acres",
       "data_provider_id": "B.Acres 7/10/1995",
       "Team_API": "CAR VFL",
       "Competition": "VFL",
@@ -11444,7 +11444,7 @@
       "Defence_Neutralise": 2.01
     },
     "Campbell Chesser": {
-      "Player": "Campbell Chesser",
+      "Player": "C. Chesser",
       "data_provider_id": "C.Chesser 27/4/2003",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11473,7 +11473,7 @@
       "Defence_Neutralise": 4.2
     },
     "Lachlan Cowan": {
-      "Player": "Lachlan Cowan",
+      "Player": "L. Cowan",
       "data_provider_id": "L.Cowan 1/12/2004",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11502,7 +11502,7 @@
       "Defence_Neutralise": 1.97
     },
     "Francis Evans": {
-      "Player": "Francis Evans",
+      "Player": "F. Evans",
       "data_provider_id": "F.Evans 23/8/2001",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11560,7 +11560,7 @@
       "Defence_Neutralise": 2.13
     },
     "Elijah Hollands": {
-      "Player": "Elijah Hollands",
+      "Player": "E. Hollands",
       "data_provider_id": "E.Hollands 25/4/2002",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11618,7 +11618,7 @@
       "Defence_Neutralise": 2.64
     },
     "Ashton Moir": {
-      "Player": "Ashton Moir",
+      "Player": "A. Moir",
       "data_provider_id": "A.Moir 15/4/2005",
       "Team_API": "CAR VFL",
       "Competition": "VFL",
@@ -11676,7 +11676,7 @@
       "Defence_Neutralise": 2.18
     },
     "Hudson O'Keeffe": {
-      "Player": "Hudson O'Keeffe",
+      "Player": "H. O'Keeffe",
       "data_provider_id": "H.O'Keeffe 16/12/2004",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11705,7 +11705,7 @@
       "Defence_Neutralise": 2.15
     },
     "Marc Pittonet": {
-      "Player": "Marc Pittonet",
+      "Player": "M. Pittonet",
       "data_provider_id": "M.Pittonet 3/6/1996",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11763,7 +11763,7 @@
       "Defence_Neutralise": 2.2
     },
     "Lewis Young": {
-      "Player": "Lewis Young",
+      "Player": "L. Young",
       "data_provider_id": "L.Young 20/12/1998",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -11792,7 +11792,7 @@
       "Defence_Neutralise": 3.09
     },
     "Jack Buller": {
-      "Player": "Jack Buller",
+      "Player": "J. Buller",
       "data_provider_id": "J.Buller 16/5/2001",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -11821,7 +11821,7 @@
       "Defence_Neutralise": 1.09
     },
     "Lachlan Blakiston": {
-      "Player": "Lachlan Blakiston",
+      "Player": "L. Blakiston",
       "data_provider_id": "L.Blakiston 9/9/1998",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11850,7 +11850,7 @@
       "Defence_Neutralise": 2.01
     },
     "Archer Day-Wicks": {
-      "Player": "Archer Day-Wicks",
+      "Player": "A. Day-Wicks",
       "data_provider_id": "A.Day-Wicks 13/5/2006",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11879,7 +11879,7 @@
       "Defence_Neutralise": 3.31
     },
     "Saad El-Hawli": {
-      "Player": "Saad El-Hawli",
+      "Player": "S. El-Hawli",
       "data_provider_id": "S.El-Hawli 15/5/2001",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11908,7 +11908,7 @@
       "Defence_Neutralise": 1.58
     },
     "Brayden Fiorini": {
-      "Player": "Brayden Fiorini",
+      "Player": "B. Fiorini",
       "data_provider_id": "B.Fiorini 22/8/1997",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11937,7 +11937,7 @@
       "Defence_Neutralise": 3.13
     },
     "Matt Guelfi": {
-      "Player": "Matt Guelfi",
+      "Player": "M. Guelfi",
       "data_provider_id": "M.Guelfi 14/8/1997",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11966,7 +11966,7 @@
       "Defence_Neutralise": 3.3
     },
     "Zak Johnson": {
-      "Player": "Zak Johnson",
+      "Player": "Z. Johnson",
       "data_provider_id": "Z.Johnson 24/12/2006",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -11995,91 +11995,91 @@
       "Defence_Neutralise": 2.52
     },
     "Jayden Nguyen": {
-      "Player": "Jayden Nguyen",
+      "Player": "J. Nguyen",
       "data_provider_id": "J.Nguyen 27/7/2006",
       "Team_API": "EFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GD",
-      "Overall_Rating": 1.94,
-      "Ball Winning_Rating": 2.17,
-      "Ball Winning_Stoppage": 2.51,
-      "Ball Winning_Contest": 2.27,
-      "Ball Winning_Power": 1.92,
-      "Ball Winning_Receives": 2.05,
-      "Ball Use_Rating": 2.49,
-      "Ball Use_Handballing": 4.39,
-      "Ball Use_Kicking": 1.13,
-      "Ball Use_Goal Kicking": 1.96,
-      "Ball Use_Connecting": 1.78,
-      "Aerial_Rating": 1.34,
-      "Aerial_Marking": 0.93,
-      "Aerial_Contested": 1.82,
-      "Aerial_Moks": 1.27,
+      "Overall_Rating": 1.91,
+      "Ball Winning_Rating": 2.13,
+      "Ball Winning_Stoppage": 2.5,
+      "Ball Winning_Contest": 2.24,
+      "Ball Winning_Power": 1.82,
+      "Ball Winning_Receives": 2.01,
+      "Ball Use_Rating": 2.57,
+      "Ball Use_Handballing": 4.69,
+      "Ball Use_Kicking": 1.12,
+      "Ball Use_Goal Kicking": 1.81,
+      "Ball Use_Connecting": 1.76,
+      "Aerial_Rating": 1.23,
+      "Aerial_Marking": 0.83,
+      "Aerial_Contested": 1.78,
+      "Aerial_Moks": 1.06,
       "Aerial_Ruck": 2.48,
-      "Defence_Rating": 1.29,
-      "Defence_Pressure": 0.73,
-      "Defence_Tackling": 1.18,
-      "Defence_Intercepting": 1.41,
-      "Defence_Neutralise": 1.98,
-      "Season_API": "2026"
+      "Defence_Rating": 1.18,
+      "Defence_Pressure": 0.55,
+      "Defence_Tackling": 1.07,
+      "Defence_Intercepting": 1.31,
+      "Defence_Neutralise": 1.95
     },
     "Darcy Parish": {
       "Player": "Darcy Parish",
       "data_provider_id": "D.Parish 25/7/1997",
       "Team_API": "EFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "M",
-      "Overall_Rating": 2.46,
-      "Ball Winning_Rating": 2.64,
-      "Ball Winning_Stoppage": 3.41,
-      "Ball Winning_Contest": 2.68,
-      "Ball Winning_Power": 2.02,
-      "Ball Winning_Receives": 1.91,
-      "Ball Use_Rating": 2.22,
-      "Ball Use_Handballing": 2.19,
-      "Ball Use_Kicking": 2.76,
-      "Ball Use_Goal Kicking": 1.43,
-      "Ball Use_Connecting": 2.13,
-      "Aerial_Rating": 2.63,
-      "Aerial_Marking": 2.01,
-      "Aerial_Contested": 3.13,
-      "Aerial_Moks": 2.56,
-      "Aerial_Ruck": 2.43,
-      "Defence_Rating": 2.36,
-      "Defence_Pressure": 2.34,
-      "Defence_Tackling": 2.3,
-      "Defence_Intercepting": 3.15,
-      "Defence_Neutralise": 1.85,
-      "Season_API": "2026"
+      "Overall_Rating": 2.45,
+      "Ball Winning_Rating": 2.67,
+      "Ball Winning_Stoppage": 3.16,
+      "Ball Winning_Contest": 2.61,
+      "Ball Winning_Power": 1.99,
+      "Ball Winning_Receives": 2.43,
+      "Ball Use_Rating": 2.55,
+      "Ball Use_Handballing": 2.58,
+      "Ball Use_Kicking": 3.22,
+      "Ball Use_Goal Kicking": 1.4,
+      "Ball Use_Connecting": 2.5,
+      "Aerial_Rating": 2.57,
+      "Aerial_Marking": 2.27,
+      "Aerial_Contested": 2.7,
+      "Aerial_Moks": 2.81,
+      "Aerial_Ruck": 2.44,
+      "Defence_Rating": 1.81,
+      "Defence_Pressure": 1.61,
+      "Defence_Tackling": 1.87,
+      "Defence_Intercepting": 2.31,
+      "Defence_Neutralise": 1.85
     },
     "Archie Perkins": {
       "Player": "Archie Perkins",
       "data_provider_id": "A.Perkins 26/3/2002",
       "Team_API": "EFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GF",
-      "Overall_Rating": 2.36,
-      "Ball Winning_Rating": 2.09,
-      "Ball Winning_Stoppage": 1.52,
-      "Ball Winning_Contest": 1.77,
-      "Ball Winning_Power": 1.64,
-      "Ball Winning_Receives": 2.73,
-      "Ball Use_Rating": 2.3,
-      "Ball Use_Handballing": 3.35,
-      "Ball Use_Kicking": 2.05,
-      "Ball Use_Goal Kicking": 2.01,
-      "Ball Use_Connecting": 2.51,
-      "Aerial_Rating": 3.25,
-      "Aerial_Marking": 3.15,
-      "Aerial_Contested": 3.88,
-      "Aerial_Moks": 2.04,
-      "Aerial_Ruck": 2.47,
-      "Defence_Rating": 1.87,
-      "Defence_Pressure": 1.93,
-      "Defence_Tackling": 1.91,
-      "Defence_Intercepting": 1.42,
-      "Defence_Neutralise": 1.9,
-      "Season_API": "2026"
+      "Overall_Rating": 2.27,
+      "Ball Winning_Rating": 2.04,
+      "Ball Winning_Stoppage": 1.53,
+      "Ball Winning_Contest": 1.7,
+      "Ball Winning_Power": 1.65,
+      "Ball Winning_Receives": 2.65,
+      "Ball Use_Rating": 2.09,
+      "Ball Use_Handballing": 2.98,
+      "Ball Use_Kicking": 1.88,
+      "Ball Use_Goal Kicking": 1.81,
+      "Ball Use_Connecting": 2.36,
+      "Aerial_Rating": 3.2,
+      "Aerial_Marking": 3.44,
+      "Aerial_Contested": 3.56,
+      "Aerial_Moks": 1.98,
+      "Aerial_Ruck": 2.46,
+      "Defence_Rating": 1.91,
+      "Defence_Pressure": 1.91,
+      "Defence_Tackling": 2.03,
+      "Defence_Intercepting": 1.64,
+      "Defence_Neutralise": 1.79
     },
     "Will Setterfield": {
       "Player": "W. Setterfield",
@@ -12111,7 +12111,7 @@
       "Defence_Neutralise": 3.2
     },
     "Elijah Tsatas": {
-      "Player": "Elijah Tsatas",
+      "Player": "E. Tsatas",
       "data_provider_id": "E.Tsatas 18/10/2004",
       "Team_API": "ESS VFL",
       "Competition": "VFL",
@@ -12256,7 +12256,7 @@
       "Defence_Neutralise": 2.52
     },
     "Isaiah Dudley": {
-      "Player": "Isaiah Dudley",
+      "Player": "I. Dudley",
       "data_provider_id": "I.Dudley 30/4/2003",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -12285,7 +12285,7 @@
       "Defence_Neutralise": 1.88
     },
     "Neil Erasmus": {
-      "Player": "Neil Erasmus",
+      "Player": "N. Erasmus",
       "data_provider_id": "N.Erasmus 2/12/2003",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -12343,7 +12343,7 @@
       "Defence_Neutralise": 2.6
     },
     "Oscar McDonald": {
-      "Player": "Oscar McDonald",
+      "Player": "O. McDonald",
       "data_provider_id": "O.McDonald 18/3/1996",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -12401,7 +12401,7 @@
       "Defence_Neutralise": 2.18
     },
     "Nathan O'Driscoll": {
-      "Player": "Nathan O'Driscoll",
+      "Player": "N. O'Driscoll",
       "data_provider_id": "N.O'Driscoll 17/5/2002",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -12517,7 +12517,7 @@
       "Defence_Neutralise": 2.19
     },
     "Corey Wagner": {
-      "Player": "Corey Wagner",
+      "Player": "C. Wagner",
       "data_provider_id": "C.Wagner 23/3/1997",
       "Team_API": "FRFC",
       "Competition": "AFL",
@@ -12633,7 +12633,7 @@
       "Defence_Neutralise": 2.14
     },
     "Jack Bowes": {
-      "Player": "Jack Bowes",
+      "Player": "J. Bowes",
       "data_provider_id": "J.Bowes 26/1/1998",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -12662,7 +12662,7 @@
       "Defence_Neutralise": 2.89
     },
     "Jhye Clark": {
-      "Player": "Jhye Clark",
+      "Player": "J. Clark",
       "data_provider_id": "J.Clark 23/7/2004",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -12720,7 +12720,7 @@
       "Defence_Neutralise": 1.46
     },
     "Shaun Mannagh": {
-      "Player": "Shaun Mannagh",
+      "Player": "S. Mannagh",
       "data_provider_id": "S.Mannagh 6/8/1997",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -12749,7 +12749,7 @@
       "Defence_Neutralise": 1.97
     },
     "Jack Martin": {
-      "Player": "Jack Martin",
+      "Player": "J. Martin",
       "data_provider_id": "J.Martin 29/1/1995",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -12836,7 +12836,7 @@
       "Defence_Neutralise": 2.52
     },
     "Oscar Adams": {
-      "Player": "Oscar Adams",
+      "Player": "O. Adams",
       "data_provider_id": "O.Adams 23/7/2003",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -12865,7 +12865,7 @@
       "Defence_Neutralise": 1.81
     },
     "Sam Clohesy": {
-      "Player": "Sam Clohesy",
+      "Player": "S. Clohesy",
       "data_provider_id": "S.Clohesy 12/12/2002",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -12894,7 +12894,7 @@
       "Defence_Neutralise": 2.96
     },
     "Jy Farrar": {
-      "Player": "Jy Farrar",
+      "Player": "J. Farrar",
       "data_provider_id": "J.Farrar 7/12/1996",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -12923,7 +12923,7 @@
       "Defence_Neutralise": 2.34
     },
     "Will Graham": {
-      "Player": "Will Graham",
+      "Player": "W. Graham",
       "data_provider_id": "W.Graham 27/7/2005",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -12981,7 +12981,7 @@
       "Defence_Neutralise": 2.85
     },
     "Ethan Read": {
-      "Player": "Ethan Read",
+      "Player": "E. Read",
       "data_provider_id": "E.Read 7/7/2005",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -13010,7 +13010,7 @@
       "Defence_Neutralise": 2.46
     },
     "Jake Rogers": {
-      "Player": "Jake Rogers",
+      "Player": "J. Rogers",
       "data_provider_id": "J.Rogers 2/3/2005",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -13039,7 +13039,7 @@
       "Defence_Neutralise": 2.64
     },
     "Jed Walter": {
-      "Player": "Jed Walter",
+      "Player": "J. Walter",
       "data_provider_id": "J.Walter 8/6/2005",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -13097,7 +13097,7 @@
       "Defence_Neutralise": 2.55
     },
     "Sam Butler": {
-      "Player": "Sam Butler",
+      "Player": "S. Butler",
       "data_provider_id": "S.Butler 10/2/2003",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -13155,7 +13155,7 @@
       "Defence_Neutralise": 2.32
     },
     "Jack Ginnivan": {
-      "Player": "Jack Ginnivan",
+      "Player": "J. Ginnivan",
       "data_provider_id": "J.Ginnivan 9/12/2002",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -13387,7 +13387,7 @@
       "Defence_Neutralise": 2.02
     },
     "Blake Howes": {
-      "Player": "Blake Howes",
+      "Player": "B. Howes",
       "data_provider_id": "B.Howes 7/4/2003",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13445,7 +13445,7 @@
       "Defence_Neutralise": 1.56
     },
     "Changkuoth Jiath": {
-      "Player": "Changkuoth Jiath",
+      "Player": "C. Jiath",
       "data_provider_id": "C.Jiath 13/6/1999",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13503,7 +13503,7 @@
       "Defence_Neutralise": 3.7
     },
     "Harvey Langford": {
-      "Player": "Harvey Langford",
+      "Player": "H. Langford",
       "data_provider_id": "H.Langford 15/3/2006",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13561,7 +13561,7 @@
       "Defence_Neutralise": 1.82
     },
     "Tom McDonald": {
-      "Player": "Tom McDonald",
+      "Player": "T. McDonald",
       "data_provider_id": "T.McDonald 18/9/1992",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13619,7 +13619,7 @@
       "Defence_Neutralise": 2.01
     },
     "Harry Sharp": {
-      "Player": "Harry Sharp",
+      "Player": "H. Sharp",
       "data_provider_id": "H.Sharp 17/12/2002",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13648,7 +13648,7 @@
       "Defence_Neutralise": 2.34
     },
     "Koltyn Tholstrup": {
-      "Player": "Koltyn Tholstrup",
+      "Player": "K. Tholstrup",
       "data_provider_id": "K.Tholstrup 28/6/2005",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13677,7 +13677,7 @@
       "Defence_Neutralise": 1.69
     },
     "Daniel Turner": {
-      "Player": "Daniel Turner",
+      "Player": "D. Turner",
       "data_provider_id": "D.Turner 28/1/2002",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13706,7 +13706,7 @@
       "Defence_Neutralise": 2.89
     },
     "Jacob Van Rooyen": {
-      "Player": "Jacob van Rooyen",
+      "Player": "J. van Rooyen",
       "data_provider_id": "J.van Rooyen 16/4/2003",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13735,7 +13735,7 @@
       "Defence_Neutralise": 2.88
     },
     "Caleb Windsor": {
-      "Player": "Caleb Windsor",
+      "Player": "C. Windsor",
       "data_provider_id": "C.Windsor 9/6/2005",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -13793,33 +13793,33 @@
       "Defence_Neutralise": 2.29
     },
     "Aidan Corr": {
-      "Player": "Aidan Corr",
+      "Player": "A. Corr",
       "data_provider_id": "A.Corr 17/5/1994",
       "Team_API": "NMFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "KD",
-      "Overall_Rating": 1.98,
-      "Ball Winning_Rating": 2.37,
-      "Ball Winning_Stoppage": 2.05,
-      "Ball Winning_Contest": 2.22,
-      "Ball Winning_Power": 1.9,
-      "Ball Winning_Receives": 2.99,
-      "Ball Use_Rating": 2.63,
-      "Ball Use_Handballing": 2.08,
-      "Ball Use_Kicking": 3.34,
-      "Ball Use_Goal Kicking": 2.18,
-      "Ball Use_Connecting": 2.42,
-      "Aerial_Rating": 1.27,
-      "Aerial_Marking": 1.74,
-      "Aerial_Contested": 0.96,
-      "Aerial_Moks": 1.29,
-      "Aerial_Ruck": 2.34,
-      "Defence_Rating": 2.1,
-      "Defence_Pressure": 3.05,
-      "Defence_Tackling": 3.14,
-      "Defence_Intercepting": 1.67,
-      "Defence_Neutralise": 1.83,
-      "Season_API": "2026"
+      "Overall_Rating": 1.34,
+      "Ball Winning_Rating": 1.32,
+      "Ball Winning_Stoppage": 1.78,
+      "Ball Winning_Contest": 0.84,
+      "Ball Winning_Power": 1.64,
+      "Ball Winning_Receives": 1.41,
+      "Ball Use_Rating": 1.48,
+      "Ball Use_Handballing": 0.79,
+      "Ball Use_Kicking": 1.93,
+      "Ball Use_Goal Kicking": 2.04,
+      "Ball Use_Connecting": 1.89,
+      "Aerial_Rating": 1.36,
+      "Aerial_Marking": 1.99,
+      "Aerial_Contested": 1.18,
+      "Aerial_Moks": 1.1,
+      "Aerial_Ruck": 2.37,
+      "Defence_Rating": 1.28,
+      "Defence_Pressure": 3.09,
+      "Defence_Tackling": 2.93,
+      "Defence_Intercepting": 0.09,
+      "Defence_Neutralise": 1.13
     },
     "Wil Dawson": {
       "Player": "W. Dawson",
@@ -13851,7 +13851,7 @@
       "Defence_Neutralise": 2.51
     },
     "Zane Duursma": {
-      "Player": "Zane Duursma",
+      "Player": "Z. Duursma",
       "data_provider_id": "Z.Duursma 28/8/2005",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -13996,7 +13996,7 @@
       "Defence_Neutralise": 2.11
     },
     "Toby Pink": {
-      "Player": "Toby Pink",
+      "Player": "T. Pink",
       "data_provider_id": "T.Pink 11/8/1998",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -14025,7 +14025,7 @@
       "Defence_Neutralise": 2.11
     },
     "Bailey Scott": {
-      "Player": "B. Scott",
+      "Player": "Bailey Scott",
       "data_provider_id": "B.Scott 9/7/2000",
       "Team_API": "NM VFL",
       "Competition": "VFL",
@@ -14054,7 +14054,7 @@
       "Defence_Neutralise": 3.08
     },
     "Charlie Spargo": {
-      "Player": "Charlie Spargo",
+      "Player": "C. Spargo",
       "data_provider_id": "C.Spargo 25/11/1999",
       "Team_API": "NM VFL",
       "Competition": "VFL",
@@ -14083,7 +14083,7 @@
       "Defence_Neutralise": 2.02
     },
     "Cooper Trembath": {
-      "Player": "Cooper Trembath",
+      "Player": "C. Trembath",
       "data_provider_id": "C.Trembath 17/10/2005",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -14112,7 +14112,7 @@
       "Defence_Neutralise": 2.3
     },
     "George Wardlaw": {
-      "Player": "George Wardlaw",
+      "Player": "G. Wardlaw",
       "data_provider_id": "G.Wardlaw 11/6/2004",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -14141,7 +14141,7 @@
       "Defence_Neutralise": 2.73
     },
     "Joe Berry": {
-      "Player": "Joe Berry",
+      "Player": "J. Berry",
       "data_provider_id": "J.Berry 18/4/2006",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14199,7 +14199,7 @@
       "Defence_Neutralise": 1.35
     },
     "Corey Durdin": {
-      "Player": "Corey Durdin",
+      "Player": "C. Durdin",
       "data_provider_id": "C.Durdin 14/4/2002",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14228,7 +14228,7 @@
       "Defence_Neutralise": 1.88
     },
     "Logan Evans": {
-      "Player": "Logan Evans",
+      "Player": "L. Evans",
       "data_provider_id": "L.Evans 7/10/2005",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14257,7 +14257,7 @@
       "Defence_Neutralise": 3.37
     },
     "Ollie Lord": {
-      "Player": "Ollie Lord",
+      "Player": "O. Lord",
       "data_provider_id": "O.Lord 2/1/2002",
       "Team_API": "POR SA",
       "Competition": "SANFL",
@@ -14344,7 +14344,7 @@
       "Defence_Neutralise": 3.44
     },
     "Jackson Mead": {
-      "Player": "Jackson Mead",
+      "Player": "J. Mead",
       "data_provider_id": "J.Mead 30/9/2001",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14402,7 +14402,7 @@
       "Defence_Neutralise": 2.14
     },
     "Jordon Sweet": {
-      "Player": "Jordon Sweet",
+      "Player": "J. Sweet",
       "data_provider_id": "J.Sweet 2/2/1998",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14431,7 +14431,7 @@
       "Defence_Neutralise": 3.01
     },
     "Dante Visentini": {
-      "Player": "Dante Visentini",
+      "Player": "D. Visentini",
       "data_provider_id": "D.Visentini 13/2/2003",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -14518,7 +14518,7 @@
       "Defence_Neutralise": 2.11
     },
     "Hugh Boxshall": {
-      "Player": "Hugh Boxshall",
+      "Player": "H. Boxshall",
       "data_provider_id": "H.Boxshall 11/7/2006",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -14576,7 +14576,7 @@
       "Defence_Neutralise": 1.31
     },
     "Hunter Clark": {
-      "Player": "Hunter Clark",
+      "Player": "H. Clark",
       "data_provider_id": "H.Clark 26/3/1999",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -14634,7 +14634,7 @@
       "Defence_Neutralise": 1.8
     },
     "Hugo Garcia": {
-      "Player": "Hugo Garcia",
+      "Player": "H. Garcia",
       "data_provider_id": "H.Garcia 22/5/2005",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -14721,7 +14721,7 @@
       "Defence_Neutralise": 1.93
     },
     "Isaac Keeler": {
-      "Player": "Isaac Keeler",
+      "Player": "I. Keeler",
       "data_provider_id": "I.Keeler 23/4/2004",
       "Team_API": "STK VFL",
       "Competition": "VFL",
@@ -14808,7 +14808,7 @@
       "Defence_Neutralise": 1.83
     },
     "Alix Tauru": {
-      "Player": "Alix Tauru",
+      "Player": "A. Tauru",
       "data_provider_id": "A.Tauru 16/11/2006",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -14866,7 +14866,7 @@
       "Defence_Neutralise": 1.67
     },
     "Darcy Wilson": {
-      "Player": "Darcy Wilson",
+      "Player": "D. Wilson",
       "data_provider_id": "D.Wilson 18/8/2005",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -14895,7 +14895,7 @@
       "Defence_Neutralise": 3.31
     },
     "Taylor Adams": {
-      "Player": "T. Adams",
+      "Player": "Taylor Adams",
       "data_provider_id": "T.Adams 20/9/1993",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -14953,7 +14953,7 @@
       "Defence_Neutralise": 2.53
     },
     "Caiden Cleary": {
-      "Player": "Caiden Cleary",
+      "Player": "C. Cleary",
       "data_provider_id": "C.Cleary 5/3/2005",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -15011,7 +15011,7 @@
       "Defence_Neutralise": 4.51
     },
     "Joel Hamling": {
-      "Player": "Joel Hamling",
+      "Player": "J. Hamling",
       "data_provider_id": "J.Hamling 9/4/1993",
       "Team_API": "SYD VFL",
       "Competition": "VFL",
@@ -15185,65 +15185,65 @@
       "Defence_Neutralise": 3.53
     },
     "Malcolm Rosas": {
-      "Player": "Malcolm Rosas",
+      "Player": "M. Rosas",
       "data_provider_id": "M.Rosas 27/6/2001",
       "Team_API": "SYFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "GF",
-      "Overall_Rating": 2.16,
-      "Ball Winning_Rating": 2.03,
-      "Ball Winning_Stoppage": 2.07,
-      "Ball Winning_Contest": 2.1,
-      "Ball Winning_Power": 2.76,
-      "Ball Winning_Receives": 1.79,
-      "Ball Use_Rating": 2.39,
-      "Ball Use_Handballing": 3.04,
-      "Ball Use_Kicking": 2.36,
-      "Ball Use_Goal Kicking": 2.37,
-      "Ball Use_Connecting": 1.87,
-      "Aerial_Rating": 1.7,
-      "Aerial_Marking": 1.15,
-      "Aerial_Contested": 1.97,
-      "Aerial_Moks": 2.04,
-      "Aerial_Ruck": 2.47,
-      "Defence_Rating": 2.51,
-      "Defence_Pressure": 2.4,
-      "Defence_Tackling": 2.59,
-      "Defence_Intercepting": 2.14,
-      "Defence_Neutralise": 2.8,
-      "Season_API": "2026"
+      "Overall_Rating": 2.3,
+      "Ball Winning_Rating": 2.06,
+      "Ball Winning_Stoppage": 1.99,
+      "Ball Winning_Contest": 2.09,
+      "Ball Winning_Power": 2.49,
+      "Ball Winning_Receives": 1.96,
+      "Ball Use_Rating": 2.78,
+      "Ball Use_Handballing": 3.12,
+      "Ball Use_Kicking": 2.79,
+      "Ball Use_Goal Kicking": 2.87,
+      "Ball Use_Connecting": 2.18,
+      "Aerial_Rating": 1.66,
+      "Aerial_Marking": 1.16,
+      "Aerial_Contested": 1.9,
+      "Aerial_Moks": 1.98,
+      "Aerial_Ruck": 2.46,
+      "Defence_Rating": 2.52,
+      "Defence_Pressure": 2.44,
+      "Defence_Tackling": 2.66,
+      "Defence_Intercepting": 1.79,
+      "Defence_Neutralise": 2.82
     },
     "Angus Sheldrick": {
-      "Player": "Angus Sheldrick",
+      "Player": "A. Sheldrick",
       "data_provider_id": "A.Sheldrick 7/11/2003",
       "Team_API": "SYFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "M",
-      "Overall_Rating": 2.31,
-      "Ball Winning_Rating": 2.43,
-      "Ball Winning_Stoppage": 2.49,
+      "Overall_Rating": 2.39,
+      "Ball Winning_Rating": 2.48,
+      "Ball Winning_Stoppage": 2.36,
       "Ball Winning_Contest": 2.34,
-      "Ball Winning_Power": 2.62,
-      "Ball Winning_Receives": 2.33,
-      "Ball Use_Rating": 2.13,
-      "Ball Use_Handballing": 2.34,
-      "Ball Use_Kicking": 1.9,
-      "Ball Use_Goal Kicking": 2.1,
-      "Ball Use_Connecting": 2.29,
-      "Aerial_Rating": 2.18,
-      "Aerial_Marking": 1.76,
-      "Aerial_Contested": 1.95,
-      "Aerial_Moks": 3.44,
-      "Aerial_Ruck": 2.43,
-      "Defence_Rating": 2.48,
-      "Defence_Pressure": 2.31,
-      "Defence_Tackling": 2.16,
-      "Defence_Intercepting": 3.79,
-      "Defence_Neutralise": 3.17,
-      "Season_API": "2026"
+      "Ball Winning_Power": 2.63,
+      "Ball Winning_Receives": 2.71,
+      "Ball Use_Rating": 2.3,
+      "Ball Use_Handballing": 2.69,
+      "Ball Use_Kicking": 2.06,
+      "Ball Use_Goal Kicking": 2.09,
+      "Ball Use_Connecting": 2.43,
+      "Aerial_Rating": 2.23,
+      "Aerial_Marking": 2.18,
+      "Aerial_Contested": 1.87,
+      "Aerial_Moks": 3.1,
+      "Aerial_Ruck": 2.44,
+      "Defence_Rating": 2.5,
+      "Defence_Pressure": 2.24,
+      "Defence_Tackling": 2.25,
+      "Defence_Intercepting": 4.19,
+      "Defence_Neutralise": 2.9
     },
     "Corey Warner": {
-      "Player": "Corey Warner",
+      "Player": "Co. Warner",
       "data_provider_id": "Co.Warner 7/10/2003",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -15272,7 +15272,7 @@
       "Defence_Neutralise": 2.97
     },
     "Bo Allan": {
-      "Player": "Bo Allan",
+      "Player": "B. Allan",
       "data_provider_id": "B.Allan 16/2/2006",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -15330,7 +15330,7 @@
       "Defence_Neutralise": 2.74
     },
     "Sandy Brock": {
-      "Player": "Sandy Brock",
+      "Player": "S. Brock",
       "data_provider_id": "S.Brock 14/12/2002",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -15620,7 +15620,7 @@
       "Defence_Neutralise": 2.15
     },
     "Noah Long": {
-      "Player": "N. Long",
+      "Player": "Noah Long",
       "data_provider_id": "N.Long 23/8/2004",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -15678,7 +15678,7 @@
       "Defence_Neutralise": 1.92
     },
     "Archer Reid": {
-      "Player": "Archer Reid",
+      "Player": "A. Reid",
       "data_provider_id": "A.Reid 19/9/2005",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -15707,7 +15707,7 @@
       "Defence_Neutralise": 1.61
     },
     "Jobe Shanahan": {
-      "Player": "Jobe Shanahan",
+      "Player": "J. Shanahan",
       "data_provider_id": "J.Shanahan 2/8/2006",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -15765,7 +15765,7 @@
       "Defence_Neutralise": 2.77
     },
     "Oskar Baker": {
-      "Player": "Oskar Baker",
+      "Player": "O. Baker",
       "data_provider_id": "O.Baker 25/5/1998",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -15794,7 +15794,7 @@
       "Defence_Neutralise": 4.34
     },
     "Connor Budarick": {
-      "Player": "Connor Budarick",
+      "Player": "C. Budarick",
       "data_provider_id": "C.Budarick 6/4/2001",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -15881,7 +15881,7 @@
       "Defence_Neutralise": 3.59
     },
     "Jordan Croft": {
-      "Player": "Jordan Croft",
+      "Player": "J. Croft",
       "data_provider_id": "J.Croft 12/5/2005",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -15939,7 +15939,7 @@
       "Defence_Neutralise": 2.77
     },
     "Josh Dolan": {
-      "Player": "Josh Dolan",
+      "Player": "J. Dolan",
       "data_provider_id": "J.Dolan 11/11/2006",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -16055,7 +16055,7 @@
       "Defence_Neutralise": 2.13
     },
     "Cooper Hynes": {
-      "Player": "Cooper Hynes",
+      "Player": "C. Hynes",
       "data_provider_id": "C.Hynes 28/2/2006",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -16084,7 +16084,7 @@
       "Defence_Neutralise": 1.9
     },
     "Arthur Jones": {
-      "Player": "Arthur Jones",
+      "Player": "A. Jones",
       "data_provider_id": "A.Jones 18/7/2003",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -16113,7 +16113,7 @@
       "Defence_Neutralise": 1.79
     },
     "Buku Khamis": {
-      "Player": "Buku Khamis",
+      "Player": "B. Khamis",
       "data_provider_id": "B.Khamis 24/3/2000",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -16142,7 +16142,7 @@
       "Defence_Neutralise": 2.56
     },
     "Alex Davies": {
-      "Player": "Alex Davies",
+      "Player": "A. Davies",
       "data_provider_id": "A.Davies 18/3/2002",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -16287,7 +16287,7 @@
       "Defence_Neutralise": 3.3
     },
     "Lachlan Fogarty": {
-      "Player": "Lachie Fogarty",
+      "Player": "L. Fogarty",
       "data_provider_id": "L.Fogarty 1/4/1999",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -16316,7 +16316,7 @@
       "Defence_Neutralise": 2.34
     },
     "Jagga Smith": {
-      "Player": "Jagga Smith",
+      "Player": "J. Smith",
       "data_provider_id": "J.Smith 28/1/2006",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -16345,7 +16345,7 @@
       "Defence_Neutralise": 1.94
     },
     "Will Hayes": {
-      "Player": "William Hayes",
+      "Player": "W. Hayes",
       "data_provider_id": "W.Hayes 16/5/2006",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -16403,7 +16403,7 @@
       "Defence_Neutralise": 2.23
     },
     "Lachie Sullivan": {
-      "Player": "Lachlan Sullivan",
+      "Player": "L. Sullivan",
       "data_provider_id": "L.Sullivan 25/9/1997",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -16490,36 +16490,36 @@
       "Defence_Neutralise": 2.11
     },
     "Ollie Dempsey": {
-      "Player": "Oliver Dempsey",
+      "Player": "O. Dempsey",
       "data_provider_id": "O.Dempsey 7/1/2003",
       "Team_API": "GFC",
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "W",
-      "Overall_Rating": 2.55,
-      "Ball Winning_Rating": 3.0,
-      "Ball Winning_Stoppage": 2.64,
-      "Ball Winning_Contest": 3.84,
-      "Ball Winning_Power": 2.52,
-      "Ball Winning_Receives": 2.66,
-      "Ball Use_Rating": 2.51,
-      "Ball Use_Handballing": 3.05,
-      "Ball Use_Kicking": 2.13,
-      "Ball Use_Goal Kicking": 4.18,
-      "Ball Use_Connecting": 1.83,
-      "Aerial_Rating": 2.79,
-      "Aerial_Marking": 2.91,
-      "Aerial_Contested": 3.37,
-      "Aerial_Moks": 2.2,
+      "Overall_Rating": 2.56,
+      "Ball Winning_Rating": 2.81,
+      "Ball Winning_Stoppage": 2.26,
+      "Ball Winning_Contest": 3.48,
+      "Ball Winning_Power": 2.42,
+      "Ball Winning_Receives": 2.69,
+      "Ball Use_Rating": 2.45,
+      "Ball Use_Handballing": 2.89,
+      "Ball Use_Kicking": 2.01,
+      "Ball Use_Goal Kicking": 3.91,
+      "Ball Use_Connecting": 1.93,
+      "Aerial_Rating": 3.46,
+      "Aerial_Marking": 3.36,
+      "Aerial_Contested": 3.84,
+      "Aerial_Moks": 3.38,
       "Aerial_Ruck": 2.5,
-      "Defence_Rating": 1.79,
-      "Defence_Pressure": 2.48,
-      "Defence_Tackling": 1.77,
-      "Defence_Intercepting": 1.49,
-      "Defence_Neutralise": 1.64
+      "Defence_Rating": 1.72,
+      "Defence_Pressure": 2.41,
+      "Defence_Tackling": 1.74,
+      "Defence_Intercepting": 1.45,
+      "Defence_Neutralise": 1.51
     },
     "Mitchell Edwards": {
-      "Player": "Mitchell Edwards",
+      "Player": "M. Edwards",
       "data_provider_id": "M.Edwards 2/6/2005",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -16548,7 +16548,7 @@
       "Defence_Neutralise": 2.29
     },
     "Mitchell Knevitt": {
-      "Player": "Mitch Knevitt",
+      "Player": "M. Knevitt",
       "data_provider_id": "M.Knevitt 8/1/2003",
       "Team_API": "GEEL VFL",
       "Competition": "VFL",
@@ -16606,7 +16606,7 @@
       "Defence_Neutralise": 4.83
     },
     "Nicholas Holman": {
-      "Player": "N. Holman",
+      "Player": "Nick Holman",
       "data_provider_id": "N.Holman 29/5/1995",
       "Team_API": "GCS VFL",
       "Competition": "VFL",
@@ -16641,27 +16641,27 @@
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "W",
-      "Overall_Rating": 2.19,
-      "Ball Winning_Rating": 1.89,
-      "Ball Winning_Stoppage": 2.15,
-      "Ball Winning_Contest": 2.48,
-      "Ball Winning_Power": 2.45,
-      "Ball Winning_Receives": 1.17,
-      "Ball Use_Rating": 2.34,
-      "Ball Use_Handballing": 1.86,
-      "Ball Use_Kicking": 2.55,
-      "Ball Use_Goal Kicking": 1.49,
-      "Ball Use_Connecting": 2.72,
-      "Aerial_Rating": 2.06,
-      "Aerial_Marking": 1.97,
-      "Aerial_Contested": 2.09,
-      "Aerial_Moks": 2.2,
+      "Overall_Rating": 2.31,
+      "Ball Winning_Rating": 2.04,
+      "Ball Winning_Stoppage": 2.2,
+      "Ball Winning_Contest": 2.82,
+      "Ball Winning_Power": 2.27,
+      "Ball Winning_Receives": 1.32,
+      "Ball Use_Rating": 2.48,
+      "Ball Use_Handballing": 2.01,
+      "Ball Use_Kicking": 2.5,
+      "Ball Use_Goal Kicking": 1.56,
+      "Ball Use_Connecting": 3.04,
+      "Aerial_Rating": 2.02,
+      "Aerial_Marking": 1.99,
+      "Aerial_Contested": 2.01,
+      "Aerial_Moks": 2.07,
       "Aerial_Ruck": 2.5,
-      "Defence_Rating": 2.48,
-      "Defence_Pressure": 2.49,
-      "Defence_Tackling": 2.94,
-      "Defence_Intercepting": 2.56,
-      "Defence_Neutralise": 2.08
+      "Defence_Rating": 2.63,
+      "Defence_Pressure": 2.55,
+      "Defence_Tackling": 2.91,
+      "Defence_Intercepting": 2.89,
+      "Defence_Neutralise": 2.25
     },
     "Lachlan Ash": {
       "Player": "Lachie Ash",
@@ -16693,7 +16693,7 @@
       "Defence_Neutralise": 2.62
     },
     "Josaia Delana": {
-      "Player": "Josaia Delana",
+      "Player": "J. Delana",
       "data_provider_id": "J.Delana 1/7/2006",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -16722,7 +16722,7 @@
       "Defence_Neutralise": 1.78
     },
     "Joseph Fonti": {
-      "Player": "Joe Fonti",
+      "Player": "J. Fonti",
       "data_provider_id": "J.Fonti 24/12/2004",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -16751,7 +16751,7 @@
       "Defence_Neutralise": 3.51
     },
     "Phoenix Gothard": {
-      "Player": "Phoenix Gothard",
+      "Player": "P. Gothard",
       "data_provider_id": "P.Gothard 7/9/2005",
       "Team_API": "GWS",
       "Competition": "AFL",
@@ -16838,7 +16838,7 @@
       "Defence_Neutralise": 3.5
     },
     "Nick Madden": {
-      "Player": "Nicholas Madden",
+      "Player": "N. Madden",
       "data_provider_id": "N.Madden 17/5/2004",
       "Team_API": "GWS VFL",
       "Competition": "VFL",
@@ -16896,33 +16896,33 @@
       "Defence_Neutralise": 3.48
     },
     "Cameron Mackenzie": {
-      "Player": "Cam Mackenzie",
+      "Player": "C. Mackenzie",
       "data_provider_id": "C.Mackenzie 21/1/2004",
       "Team_API": "HFC",
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "M",
-      "Overall_Rating": 2.48,
-      "Ball Winning_Rating": 2.51,
-      "Ball Winning_Stoppage": 2.96,
-      "Ball Winning_Contest": 2.39,
-      "Ball Winning_Power": 2.46,
-      "Ball Winning_Receives": 2.05,
-      "Ball Use_Rating": 2.46,
-      "Ball Use_Handballing": 2.3,
-      "Ball Use_Kicking": 2.75,
-      "Ball Use_Goal Kicking": 2.38,
-      "Ball Use_Connecting": 2.24,
-      "Aerial_Rating": 2.12,
-      "Aerial_Marking": 2.55,
-      "Aerial_Contested": 2.0,
-      "Aerial_Moks": 1.64,
+      "Overall_Rating": 2.31,
+      "Ball Winning_Rating": 2.37,
+      "Ball Winning_Stoppage": 2.63,
+      "Ball Winning_Contest": 2.28,
+      "Ball Winning_Power": 2.36,
+      "Ball Winning_Receives": 2.09,
+      "Ball Use_Rating": 2.23,
+      "Ball Use_Handballing": 1.95,
+      "Ball Use_Kicking": 2.51,
+      "Ball Use_Goal Kicking": 2.25,
+      "Ball Use_Connecting": 2.06,
+      "Aerial_Rating": 2.08,
+      "Aerial_Marking": 2.51,
+      "Aerial_Contested": 1.94,
+      "Aerial_Moks": 1.62,
       "Aerial_Ruck": 2.44,
-      "Defence_Rating": 2.72,
-      "Defence_Pressure": 3.08,
-      "Defence_Tackling": 2.97,
-      "Defence_Intercepting": 0.18,
-      "Defence_Neutralise": 2.85
+      "Defence_Rating": 2.5,
+      "Defence_Pressure": 2.93,
+      "Defence_Tackling": 2.6,
+      "Defence_Intercepting": 0.39,
+      "Defence_Neutralise": 2.51
     },
     "Ned Reeves": {
       "Player": "Ned Reeves",
@@ -16954,7 +16954,7 @@
       "Defence_Neutralise": 1.41
     },
     "Joshua Weddle": {
-      "Player": "Josh Weddle",
+      "Player": "J. Weddle",
       "data_provider_id": "J.Weddle 25/5/2004",
       "Team_API": "HFC",
       "Competition": "AFL",
@@ -16983,7 +16983,7 @@
       "Defence_Neutralise": 2.22
     },
     "Latrelle Pickett": {
-      "Player": "Latrelle Pickett",
+      "Player": "L. Pickett",
       "data_provider_id": "L.Pickett 28/12/2005",
       "Team_API": "MFC",
       "Competition": "AFL",
@@ -17012,7 +17012,7 @@
       "Defence_Neutralise": 2.23
     },
     "Tom Blamires": {
-      "Player": "Tom Blamires",
+      "Player": "T. Blamires",
       "data_provider_id": "T.Blamires 13/8/2002",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -17041,7 +17041,7 @@
       "Defence_Neutralise": 1.35
     },
     "Lachlan Jones": {
-      "Player": "Lachie Jones",
+      "Player": "L. Jones",
       "data_provider_id": "L.Jones 9/4/2002",
       "Team_API": "PAFC",
       "Competition": "AFL",
@@ -17157,7 +17157,7 @@
       "Defence_Neutralise": 1.74
     },
     "Mykelti Lefau": {
-      "Player": "Mykelti Lefau",
+      "Player": "M. Lefau",
       "data_provider_id": "M.Lefau 22/6/1998",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -17215,7 +17215,7 @@
       "Defence_Neutralise": 1.79
     },
     "Jack Carroll": {
-      "Player": "Jack Carroll",
+      "Player": "J. Carroll",
       "data_provider_id": "J.Carroll 20/12/2002",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -17302,7 +17302,7 @@
       "Defence_Neutralise": 2.44
     },
     "Matthew Roberts": {
-      "Player": "Matt Roberts",
+      "Player": "M. Roberts",
       "data_provider_id": "M.Roberts 31/7/2003",
       "Team_API": "SYFC",
       "Competition": "AFL",
@@ -17331,36 +17331,36 @@
       "Defence_Neutralise": 3.08
     },
     "Jai Serong": {
-      "Player": "Jai Serong",
+      "Player": "J. Serong",
       "data_provider_id": "J.Serong 16/2/2003",
       "Team_API": "SYFC",
       "Competition": "AFL",
+      "Season_API": "2026",
       "Position_API": "W",
-      "Overall_Rating": 2.48,
-      "Ball Winning_Rating": 2.47,
-      "Ball Winning_Stoppage": 2.2,
-      "Ball Winning_Contest": 2.87,
-      "Ball Winning_Power": 2.64,
-      "Ball Winning_Receives": 2.25,
-      "Ball Use_Rating": 2.47,
-      "Ball Use_Handballing": 2.52,
-      "Ball Use_Kicking": 2.47,
-      "Ball Use_Goal Kicking": 1.44,
-      "Ball Use_Connecting": 2.98,
-      "Aerial_Rating": 1.71,
-      "Aerial_Marking": 1.44,
-      "Aerial_Contested": 1.76,
-      "Aerial_Moks": 2.12,
+      "Overall_Rating": 2.74,
+      "Ball Winning_Rating": 2.34,
+      "Ball Winning_Stoppage": 1.9,
+      "Ball Winning_Contest": 2.86,
+      "Ball Winning_Power": 2.4,
+      "Ball Winning_Receives": 2.15,
+      "Ball Use_Rating": 2.74,
+      "Ball Use_Handballing": 2.71,
+      "Ball Use_Kicking": 2.85,
+      "Ball Use_Goal Kicking": 1.96,
+      "Ball Use_Connecting": 3.07,
+      "Aerial_Rating": 2.82,
+      "Aerial_Marking": 2.27,
+      "Aerial_Contested": 3.04,
+      "Aerial_Moks": 3.6,
       "Aerial_Ruck": 2.5,
-      "Defence_Rating": 3.08,
-      "Defence_Pressure": 2.52,
-      "Defence_Tackling": 3.05,
-      "Defence_Intercepting": 3.81,
-      "Defence_Neutralise": 2.74,
-      "Season_API": "2026"
+      "Defence_Rating": 3.3,
+      "Defence_Pressure": 2.71,
+      "Defence_Tackling": 2.95,
+      "Defence_Intercepting": 4.52,
+      "Defence_Neutralise": 2.7
     },
     "Matthew Flynn": {
-      "Player": "Matt Flynn",
+      "Player": "M. Flynn",
       "data_provider_id": "M.Flynn 13/9/1997",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -17389,7 +17389,7 @@
       "Defence_Neutralise": 1.92
     },
     "Milan Murdock": {
-      "Player": "Milan Murdock",
+      "Player": "M. Murdock",
       "data_provider_id": "M.Murdock 30/6/2000",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -17418,7 +17418,7 @@
       "Defence_Neutralise": 1.79
     },
     "Jacob Newton": {
-      "Player": "Jacob Newton",
+      "Player": "J. Newton",
       "data_provider_id": "J.Newton 20/3/2006",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -17447,7 +17447,7 @@
       "Defence_Neutralise": 1.79
     },
     "Matt Owies": {
-      "Player": "Matthew Owies",
+      "Player": "M. Owies",
       "data_provider_id": "M.Owies 19/3/1997",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -17476,7 +17476,7 @@
       "Defence_Neutralise": 1.79
     },
     "Deven Robertson": {
-      "Player": "Deven Robertson",
+      "Player": "D. Robertson",
       "data_provider_id": "D.Robertson 30/6/2001",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -17563,7 +17563,7 @@
       "Defence_Neutralise": 3.97
     },
     "Lachie Jaques": {
-      "Player": "Lachie Jaques",
+      "Player": "L. Jaques",
       "data_provider_id": "L.Jaques 1/6/2006",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -17650,7 +17650,7 @@
       "Defence_Neutralise": 2.5
     },
     "Lachlan McAndrew": {
-      "Player": "Lachlan McAndrew",
+      "Player": "L. McAndrew",
       "data_provider_id": "L.McAndrew 26/5/2000",
       "Team_API": "AFC",
       "Competition": "AFL",
@@ -17708,7 +17708,7 @@
       "Defence_Neutralise": 2.14
     },
     "James Tunstill": {
-      "Player": "James Tunstill",
+      "Player": "J. Tunstill",
       "data_provider_id": "J.Tunstill 18/7/2003",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -17737,7 +17737,7 @@
       "Defence_Neutralise": 1.79
     },
     "Matt Carroll": {
-      "Player": "Matthew Carroll",
+      "Player": "M. Carroll",
       "data_provider_id": "M.Carroll 28/11/2005",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -17766,7 +17766,7 @@
       "Defence_Neutralise": 2.69
     },
     "Matt Cottrell": {
-      "Player": "Matthew Cottrell",
+      "Player": "M. Cottrell",
       "data_provider_id": "M.Cottrell 29/2/2000",
       "Team_API": "CAR VFL",
       "Competition": "VFL",
@@ -17824,7 +17824,7 @@
       "Defence_Neutralise": 1.77
     },
     "Oscar Steene": {
-      "Player": "Oscar Steene",
+      "Player": "O. Steene",
       "data_provider_id": "O.Steene 23/8/2003",
       "Team_API": "COFC",
       "Competition": "AFL",
@@ -17853,7 +17853,7 @@
       "Defence_Neutralise": 3.19
     },
     "Tom Edwards": {
-      "Player": "Thomas Edwards",
+      "Player": "T. Edwards",
       "data_provider_id": "T.Edwards 20/5/2000",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -17888,30 +17888,30 @@
       "Competition": "AFL",
       "Season_API": "2026",
       "Position_API": "M",
-      "Overall_Rating": 2.78,
-      "Ball Winning_Rating": 2.68,
-      "Ball Winning_Stoppage": 2.5,
-      "Ball Winning_Contest": 3.0,
-      "Ball Winning_Power": 2.07,
-      "Ball Winning_Receives": 2.99,
-      "Ball Use_Rating": 2.97,
-      "Ball Use_Handballing": 3.1,
-      "Ball Use_Kicking": 3.1,
-      "Ball Use_Goal Kicking": 2.38,
-      "Ball Use_Connecting": 3.15,
-      "Aerial_Rating": 2.3,
-      "Aerial_Marking": 2.64,
-      "Aerial_Contested": 2.0,
-      "Aerial_Moks": 2.35,
+      "Overall_Rating": 2.83,
+      "Ball Winning_Rating": 2.71,
+      "Ball Winning_Stoppage": 2.47,
+      "Ball Winning_Contest": 2.83,
+      "Ball Winning_Power": 2.25,
+      "Ball Winning_Receives": 3.2,
+      "Ball Use_Rating": 3.13,
+      "Ball Use_Handballing": 3.26,
+      "Ball Use_Kicking": 3.36,
+      "Ball Use_Goal Kicking": 2.52,
+      "Ball Use_Connecting": 3.2,
+      "Aerial_Rating": 2.46,
+      "Aerial_Marking": 2.92,
+      "Aerial_Contested": 1.94,
+      "Aerial_Moks": 2.81,
       "Aerial_Ruck": 2.44,
-      "Defence_Rating": 3.05,
-      "Defence_Pressure": 3.16,
-      "Defence_Tackling": 3.08,
-      "Defence_Intercepting": 3.36,
-      "Defence_Neutralise": 2.21
+      "Defence_Rating": 2.88,
+      "Defence_Pressure": 2.92,
+      "Defence_Tackling": 2.81,
+      "Defence_Intercepting": 3.69,
+      "Defence_Neutralise": 2.15
     },
     "Tanner Bruhn": {
-      "Player": "Tanner Bruhn",
+      "Player": "T. Bruhn",
       "data_provider_id": "T.Bruhn 27/5/2002",
       "Team_API": "GFC",
       "Competition": "AFL",
@@ -17940,7 +17940,7 @@
       "Defence_Neutralise": 2.01
     },
     "Callum Coleman-Jones": {
-      "Player": "Callum Coleman-Jones",
+      "Player": "C. Coleman-Jones",
       "data_provider_id": "C.Coleman-Jones 13/6/1999",
       "Team_API": "NMFC",
       "Competition": "AFL",
@@ -17998,7 +17998,7 @@
       "Defence_Neutralise": 2.81
     },
     "Harry Schoenberg": {
-      "Player": "Harry Schoenberg",
+      "Player": "H. Schoenberg",
       "data_provider_id": "H.Schoenberg 21/2/2001",
       "Team_API": "WCFC",
       "Competition": "AFL",
@@ -18027,7 +18027,7 @@
       "Defence_Neutralise": 1.79
     },
     "Zane Zakostelsky": {
-      "Player": "Zane Zakostelsky",
+      "Player": "Z. Zakostelsky",
       "data_provider_id": "Z.Zakostelsky 14/12/2005",
       "Team_API": "BFC",
       "Competition": "AFL",
@@ -18114,7 +18114,7 @@
       "Defence_Neutralise": 3.99
     },
     "Archie May": {
-      "Player": "Archer May",
+      "Player": "A. May",
       "data_provider_id": "A.May 27/8/2004",
       "Team_API": "EFC",
       "Competition": "AFL",
@@ -18230,7 +18230,7 @@
       "Defence_Neutralise": 2.8
     },
     "Leo Lombard": {
-      "Player": "Leonardo Lombard",
+      "Player": "L. Lombard",
       "data_provider_id": "L.Lombard 5/10/2006",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -18259,7 +18259,7 @@
       "Defence_Neutralise": 2.34
     },
     "Jamarra Ugle-Hagan": {
-      "Player": "J. Ugle-Hagan",
+      "Player": "Jamarra Ugle-Hagan",
       "data_provider_id": "J.Ugle-Hagan 4/4/2002",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -18346,7 +18346,7 @@
       "Defence_Neutralise": 2.0
     },
     "Max King": {
-      "Player": "M. King",
+      "Player": "Max King",
       "data_provider_id": "M.King 7/7/2000",
       "Team_API": "SKFC",
       "Competition": "AFL",
@@ -18433,7 +18433,7 @@
       "Defence_Neutralise": 2.19
     },
     "Cody Weightman": {
-      "Player": "C. Weightman",
+      "Player": "Cody Weightman",
       "data_provider_id": "C.Weightman 15/1/2001",
       "Team_API": "WBFC",
       "Competition": "AFL",
@@ -18665,7 +18665,7 @@
       "Defence_Neutralise": 2.85
     },
     "Tom Doedee": {
-      "Player": "T. Doedee",
+      "Player": "Tom Doedee",
       "data_provider_id": "T.Doedee 1/3/1997",
       "Team_API": "BLR VFL",
       "Competition": "VFL",
@@ -18723,7 +18723,7 @@
       "Defence_Neutralise": 2.36
     },
     "Darragh Joyce": {
-      "Player": "Darragh Joyce",
+      "Player": "D. Joyce",
       "data_provider_id": "D.Joyce 23/4/1997",
       "Team_API": "BLR VFL",
       "Competition": "VFL",
@@ -18810,7 +18810,7 @@
       "Defence_Neutralise": 3.48
     },
     "Jordan Boyd": {
-      "Player": "Jordan Boyd",
+      "Player": "J. Boyd",
       "data_provider_id": "J.Boyd 22/9/1998",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -18897,7 +18897,7 @@
       "Defence_Neutralise": 2.34
     },
     "Wade Derksen": {
-      "Player": "Wade Derksen",
+      "Player": "W. Derksen",
       "data_provider_id": "W.Derksen 18/6/2001",
       "Team_API": "CFC",
       "Competition": "AFL",
@@ -18984,7 +18984,7 @@
       "Defence_Neutralise": 2.54
     },
     "Liam Reidy": {
-      "Player": "Liam Reidy",
+      "Player": "L. Reidy",
       "data_provider_id": "L.Reidy 14/6/2000",
       "Team_API": "CAR VFL",
       "Competition": "VFL",
@@ -19013,7 +19013,7 @@
       "Defence_Neutralise": 2.27
     },
     "Angus Anderson": {
-      "Player": "Angus Anderson",
+      "Player": "A. Anderson",
       "data_provider_id": "A.Anderson 25/5/2003",
       "Team_API": "COFC VFL",
       "Competition": "VFL",
@@ -19042,33 +19042,33 @@
       "Defence_Neutralise": 3.14
     },
     "Joel Cochran": {
-      "Player": "Joel Cochran",
+      "Player": "J. Cochran",
       "data_provider_id": "J.Cochran 28/3/2006",
       "Team_API": "COFC VFL",
       "Competition": "VFL",
       "Season_API": "2026",
       "Position_API": "GD",
-      "Overall_Rating": 2.2,
-      "Ball Winning_Rating": 1.89,
-      "Ball Winning_Stoppage": 1.59,
-      "Ball Winning_Contest": 2.14,
-      "Ball Winning_Power": 2.31,
-      "Ball Winning_Receives": 1.73,
-      "Ball Use_Rating": 1.98,
-      "Ball Use_Handballing": 1.4,
-      "Ball Use_Kicking": 2.38,
-      "Ball Use_Goal Kicking": 1.97,
-      "Ball Use_Connecting": 2.29,
-      "Aerial_Rating": 2.78,
-      "Aerial_Marking": 2.3,
-      "Aerial_Contested": 3.0,
-      "Aerial_Moks": 3.07,
+      "Overall_Rating": 2.25,
+      "Ball Winning_Rating": 1.8,
+      "Ball Winning_Stoppage": 1.56,
+      "Ball Winning_Contest": 1.83,
+      "Ball Winning_Power": 2.03,
+      "Ball Winning_Receives": 1.81,
+      "Ball Use_Rating": 1.96,
+      "Ball Use_Handballing": 1.29,
+      "Ball Use_Kicking": 2.36,
+      "Ball Use_Goal Kicking": 1.95,
+      "Ball Use_Connecting": 2.45,
+      "Aerial_Rating": 3.02,
+      "Aerial_Marking": 2.21,
+      "Aerial_Contested": 3.17,
+      "Aerial_Moks": 3.8,
       "Aerial_Ruck": 2.5,
-      "Defence_Rating": 2.48,
-      "Defence_Pressure": 3.47,
-      "Defence_Tackling": 1.54,
-      "Defence_Intercepting": 2.56,
-      "Defence_Neutralise": 2.54
+      "Defence_Rating": 2.63,
+      "Defence_Pressure": 3.72,
+      "Defence_Tackling": 1.58,
+      "Defence_Intercepting": 2.92,
+      "Defence_Neutralise": 2.46
     },
     "Noah Howes": {
       "Player": "N. Howes",
@@ -19448,7 +19448,7 @@
       "Defence_Neutralise": 1.78
     },
     "Jake Kolodjashnij": {
-      "Player": "Jake Kolodjashnij",
+      "Player": "J. Kolodjashnij",
       "data_provider_id": "J.Kolodjashnij 9/8/1995",
       "Team_API": "GEEL VFL",
       "Competition": "VFL",
@@ -19709,7 +19709,7 @@
       "Defence_Neutralise": 2.81
     },
     "Lachlan Gulbin": {
-      "Player": "Lachlan Gulbin",
+      "Player": "L. Gulbin",
       "data_provider_id": "L.Gulbin 24/11/2006",
       "Team_API": "GCFC",
       "Competition": "AFL",
@@ -20202,7 +20202,7 @@
       "Defence_Neutralise": 2.8
     },
     "Paddy Cross": {
-      "Player": "Paddy Cross",
+      "Player": "P. Cross",
       "data_provider_id": "P.Cross 14/2/2003",
       "Team_API": "CSY VFL",
       "Competition": "VFL",
@@ -20260,7 +20260,7 @@
       "Defence_Neutralise": 1.32
     },
     "Bailey Laurie": {
-      "Player": "Bailey Laurie",
+      "Player": "B. Laurie",
       "data_provider_id": "B.Laurie 24/3/2002",
       "Team_API": "CSY VFL",
       "Competition": "VFL",
@@ -20550,7 +20550,7 @@
       "Defence_Neutralise": 2.14
     },
     "Will Brodie": {
-      "Player": "Will Brodie",
+      "Player": "W. Brodie",
       "data_provider_id": "W.Brodie 23/8/1998",
       "Team_API": "PTFC WAFL",
       "Competition": "WAFL",
@@ -20637,7 +20637,7 @@
       "Defence_Neutralise": 2.18
     },
     "Liam Fawcett": {
-      "Player": "Liam Fawcett",
+      "Player": "L. Fawcett",
       "data_provider_id": "L.Fawcett 22/4/2005",
       "Team_API": "RFC",
       "Competition": "AFL",
@@ -21159,7 +21159,7 @@
       "Defence_Neutralise": 2.15
     },
     "Malakai Champion": {
-      "Player": "Malakai Champion",
+      "Player": "M. Champion",
       "data_provider_id": "M.Champion 17/5/2006",
       "Team_API": "WCE WAFL",
       "Competition": "WAFL",
@@ -21478,7 +21478,7 @@
       "Defence_Neutralise": 4.43
     },
     "Oliver Hannaford": {
-      "Player": "Oliver Hannaford",
+      "Player": "O. Hannaford",
       "data_provider_id": "O.Hannaford 1/9/2006",
       "Team_API": "GWS",
       "Competition": "AFL",

@@ -204,18 +204,34 @@ def enhance_dataset_with_traits(traits_results):
         'Ball Use_Rating',
         'Aerial_Rating',
         'Defence_Rating',
-        # Individual trait ratings
-        'Athleticism_Rating',
-        'Kicking_Rating', 
-        'Marking_Rating',
-        'Handballing_Rating',
-        'Tackling & Pressure_Rating',
-        'Hit-Ups & Groundball_Rating',
-        'Ruck_Rating'
     ]
+
+    # Metric (sub-trait) columns: parser returns "{Pillar}_{Metric}" format,
+    # but we rename to short "{Metric}" names to match app expectations.
+    _METRIC_RENAME = {
+        'Ball Winning_Stoppage': 'Stoppage',
+        'Ball Winning_Contest': 'Contest',
+        'Ball Winning_Power': 'Power',
+        'Ball Winning_Receives': 'Receives',
+        'Ball Use_Handballing': 'Handballing',
+        'Ball Use_Kicking': 'Kicking',
+        'Ball Use_Goal Kicking': 'Goal Kicking',
+        'Ball Use_Connecting': 'Connecting',
+        'Aerial_Marking': 'Marking',
+        'Aerial_Contested': 'Contested',
+        'Aerial_Moks': 'Moks',
+        'Aerial_Ruck': 'Ruck',
+        'Defence_Pressure': 'Pressure',
+        'Defence_Tackling': 'Tackling',
+        'Defence_Intercepting': 'Intercepting',
+        'Defence_Neutralise': 'Neutralise',
+    }
+    metric_columns = list(_METRIC_RENAME.values())   # short names for the CSV
+
+    all_columns = trait_columns + metric_columns
     
     # Initialize columns
-    for col in trait_columns:
+    for col in all_columns:
         df[col] = None
     
     # Apply traits data
@@ -227,6 +243,10 @@ def enhance_dataset_with_traits(traits_results):
             for col in trait_columns:
                 if col in traits:
                     df.at[idx, col] = traits[col]
+            # Map metric columns from long parser names to short names
+            for long_key, short_name in _METRIC_RENAME.items():
+                if long_key in traits:
+                    df.at[idx, short_name] = traits[long_key]
             matched += 1
     
     print(f"Matched traits for {matched}/{len(df)} players ({matched/len(df)*100:.1f}%)")
@@ -238,7 +258,7 @@ def enhance_dataset_with_traits(traits_results):
     
     # Show sample
     print("\nSample of players with traits:")
-    sample_cols = ['Player', 'Team', 'Overall_Rating', 'Athleticism_Rating', 'Kicking_Rating']
+    sample_cols = ['Player', 'Team', 'Overall_Rating', 'Ball Winning_Rating', 'Ball Use_Rating']
     sample = df[df['Overall_Rating'].notna()][sample_cols].head(10)
     print(sample.to_string())
     

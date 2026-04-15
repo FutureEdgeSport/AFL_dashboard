@@ -147,7 +147,18 @@ def build_2026_data():
     traits_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_with_traits.csv"
     if traits_path.exists():
         traits_df = pd.read_csv(traits_path)
-        trait_cols = [c for c in traits_df.columns if "Rating" in c or "Overall" in c or "data_provider" in c]
+        # Keep columns with "Rating", "Overall", or "data_provider" in the name,
+        # plus the 16 sub-trait metric short names used by the app.
+        _METRIC_SHORT_NAMES = {
+            'Stoppage', 'Contest', 'Power', 'Receives',
+            'Handballing', 'Kicking', 'Goal Kicking', 'Connecting',
+            'Marking', 'Contested', 'Moks', 'Ruck',
+            'Pressure', 'Tackling', 'Intercepting', 'Neutralise',
+        }
+        trait_cols = [
+            c for c in traits_df.columns
+            if "Rating" in c or "Overall" in c or "data_provider" in c or c in _METRIC_SHORT_NAMES
+        ]
         if trait_cols:
             traits_subset = traits_df[["Player", "Team"] + trait_cols].copy()
             traits_out_path = BASE_DIR / "data" / "raw" / "traits" / f"traits_{SEASON}.csv"
