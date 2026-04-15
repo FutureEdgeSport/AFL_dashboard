@@ -17219,7 +17219,7 @@ elif page == "IDP":
     # ========== PLAYER HEADER WITH PHOTO ==========
     st.markdown("<div style='margin-top:24px;'></div>", unsafe_allow_html=True)
     
-    col_photo, col_info, col_rating = st.columns([1, 2, 1])
+    col_photo, col_info = st.columns([1, 3])
     
     # Display player photo and team logo
     with col_photo:
@@ -17227,7 +17227,7 @@ elif page == "IDP":
         display_logo(selected_team_display, logo_col, size=160)
         display_player_photo(selected_player_display, col_photo, use_container_width=True, team_name=selected_team_display)
     
-    # Display player info
+    # Display player info + trait rating card (stacked vertically, right of photo)
     with col_info:
         st.markdown(f"""
         <div class="idp-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);border-left:6px solid #FFFFFF;">
@@ -17240,26 +17240,29 @@ elif page == "IDP":
         </div>
         """, unsafe_allow_html=True)
     
-    # Display trait rating summary card
-    with col_rating:
+        # Trait rating summary card (below name card, still right of photo)
         _rating_display = format_trait_val(_player_rating) if _player_rating is not None else "—"
         _rating_bg, _rating_text = rating_colour_for_value(_player_rating, _all_ratings) if _player_rating is not None else ("#333333", "white")
         _overall_rank_str = f"#{_overall_rank}" if _overall_rank is not None else "—"
         _pos_rank_str = f"#{_pos_rank}" if _pos_rank is not None else "—"
         st.markdown(f"""
-        <div class="idp-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a3a 100%);border-left:6px solid {_rating_bg};text-align:center;padding:20px 16px;">
-            <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">Trait Rating</div>
-            <div style="background:{_rating_bg};color:{_rating_text};font-size:48px;font-weight:900;line-height:1;padding:14px 0;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.5);margin-bottom:16px;">{_rating_display}</div>
-            <div style="display:flex;gap:8px;justify-content:center;">
-                <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 6px;">
-                    <div style="color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Overall</div>
-                    <div style="color:#FFFFFF;font-size:22px;font-weight:900;">{_overall_rank_str}</div>
-                    <div style="color:rgba(255,255,255,0.4);font-size:10px;">of {_overall_total}</div>
+        <div class="idp-card" style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a3a 100%);border-left:6px solid {_rating_bg};padding:16px 24px;">
+            <div style="display:flex;align-items:center;gap:24px;">
+                <div style="text-align:center;min-width:100px;">
+                    <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Trait Rating</div>
+                    <div style="background:{_rating_bg};color:{_rating_text};font-size:42px;font-weight:900;line-height:1;padding:12px 20px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">{_rating_display}</div>
                 </div>
-                <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 6px;">
-                    <div style="color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">{player_position}</div>
-                    <div style="color:#FFFFFF;font-size:22px;font-weight:900;">{_pos_rank_str}</div>
-                    <div style="color:rgba(255,255,255,0.4);font-size:10px;">of {_pos_total}</div>
+                <div style="flex:1;display:flex;gap:12px;">
+                    <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:12px 8px;text-align:center;">
+                        <div style="color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Overall Rank</div>
+                        <div style="color:#FFFFFF;font-size:26px;font-weight:900;">{_overall_rank_str}</div>
+                        <div style="color:rgba(255,255,255,0.4);font-size:10px;">of {_overall_total}</div>
+                    </div>
+                    <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:10px;padding:12px 8px;text-align:center;">
+                        <div style="color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">{player_position} Rank</div>
+                        <div style="color:#FFFFFF;font-size:26px;font-weight:900;">{_pos_rank_str}</div>
+                        <div style="color:rgba(255,255,255,0.4);font-size:10px;">of {_pos_total}</div>
+                    </div>
                 </div>
             </div>
         </div>
