@@ -167,6 +167,20 @@ UPDATE_STEPS = [
         "Compare pipeline outputs against backups and alert on anomalies",
         False,
     ),
+    (
+        "team_selections",
+        "scrape_team_selections.py",
+        [],
+        "Scrape team selections & fixture from FootyWire + Squiggle API",
+        False,
+    ),
+    (
+        "validate_selections",
+        "scrape_team_selections.py",
+        ["--validate"],
+        "Validate announced squads against actual match-day players",
+        False,
+    ),
 ]
 
 # Dependency chain: if a prerequisite fails, the dependent step is SKIPPED.
@@ -186,6 +200,8 @@ STEP_DEPENDENCIES = {
 # Steps not listed here run every day. Overridden when using --only.
 STEP_DAY_RESTRICTIONS = {
     "traits_api": {6, 0, 1},  # Sunday, Monday, Tuesday
+    "team_selections": {2, 3, 4},  # Wednesday, Thursday, Friday
+    "validate_selections": {0, 1},  # Monday, Tuesday (after games played)
 }
 
 # Maximum number of scheduled log files to keep

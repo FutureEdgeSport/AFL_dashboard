@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  AFL Dashboard – Team Selections Evening Scrape
+  ===============================================
+  Scrapes announced team selections from FootyWire at 7:00 PM
+  on Wednesday, Thursday, and Friday (team announcement days).
+  If the Mac was asleep at the scheduled time, it runs as soon as it wakes.
+
+  INSTALL:
+    cp com.afldashboard.teamselections.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.afldashboard.teamselections.plist
+
+  UNINSTALL:
+    launchctl unload ~/Library/LaunchAgents/com.afldashboard.teamselections.plist
+    rm ~/Library/LaunchAgents/com.afldashboard.teamselections.plist
+
+  MANUAL TRIGGER (test):
+    launchctl start com.afldashboard.teamselections
+
+  VIEW LOGS:
+    tail -f /Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stdout.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.afldashboard.teamselections</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/marcuswagner/coding/AFL_dashboard/run_scheduled_update.sh</string>
+        <string>--only</string>
+        <string>team_selections</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard</string>
+
+    <!-- Wednesday, Thursday, Friday at 19:00 (7 PM) -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Weekday</key>
+            <integer>3</integer>
+            <key>Hour</key>
+            <integer>19</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>4</integer>
+            <key>Hour</key>
+            <integer>19</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>5</integer>
+            <key>Hour</key>
+            <integer>19</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+
+    <!-- Redirect stdout/stderr to log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/launchd_stderr.log</string>
+
+    <!-- Inherit user's PATH so conda/homebrew are found -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/marcuswagner</string>
+    </dict>
+</dict>
+</plist>

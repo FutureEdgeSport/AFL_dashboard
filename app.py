@@ -13898,6 +13898,260 @@ elif page == "Team Selection Ratings":
         pass
 
     # =====================================================
+    # LOAD TRAITS DATA (shared by Pre-Round + Match Day)
+    # =====================================================
+    _traits_file = f"data/raw/traits/traits_{season}.csv"
+    _traits_df = None
+    if os.path.exists(_traits_file):
+        _traits_df = pd.read_csv(_traits_file)
+        _trait_col = "Overall_Rating" if "Overall_Rating" in _traits_df.columns else "Rating"
+        _traits_df = _traits_df.rename(columns={_trait_col: "TraitRating"})
+        _traits_df["TraitRating"] = pd.to_numeric(_traits_df["TraitRating"], errors="coerce")
+
+    # =====================================================
+    # PRE-ROUND TEAM STRENGTH PREVIEW
+    # =====================================================
+    _ts_file = f"data/raw/team/team_selections_{season}.csv"
+    _fix_file = f"data/raw/fixture/fixture_{season}.csv"
+
+    if os.path.exists(_ts_file) and os.path.exists(_fix_file) and _traits_df is not None:
+        _ts_df = pd.read_csv(_ts_file)
+        _fix_df = pd.read_csv(_fix_file)
+
+        if not _ts_df.empty:
+            _upcoming_round = int(_ts_df["Round"].max())
+            _upcoming_fix = _fix_df[_fix_df["Round"] == _upcoming_round].copy()
+            _round_label_pr = "Opening Round" if _upcoming_round == 0 else f"Round {_upcoming_round}"
+
+            # Only selected / interchange players (not emergencies)
+            _ts_active = _ts_df[
+                (_ts_df["Round"] == _upcoming_round) &
+                (_ts_df["SelectionType"].isin(["selected", "interchange"]))
+            ].copy()
+            _announced_teams = sorted(_ts_active["Team"].unique())
+
+            if _announced_teams:
+                st.markdown("---")
+                st.subheader(f"{_round_label_pr} — Pre-Round Team Strength")
+                st.caption(
+                    f"{len(_announced_teams)} of 18 teams announced. "
+                    "Strength is the average trait rating of the announced squad."
+                )
+
+                # --- Calculate trait-based strength per announced team ---
+                _pr_team_data = []
+                for _pr_team in _announced_teams:
+                    _pr_players = _ts_active[_ts_active["Team"] == _pr_team]["Player"].tolist()
+                    _pr_vals = []
+                    for _pr_p in _pr_players:
+                        # Match abbreviated name (e.g. "J Weitering") to traits full name
+                        _pr_match = _traits_df[_traits_df["Team"] == _pr_team]
+                        # Try abbreviated match: first initial + surname
+                        _pr_parts = _pr_p.split()
+                        if len(_pr_parts) >= 2:
+                            _pr_initial = _pr_parts[0]
+                            _pr_surname = _pr_parts[-1]
+                            _pr_found = _pr_match[
+                                _pr_match["Player"].str.startswith(_pr_initial) &
+                                _pr_match["Player"].str.endswith(_pr_surname)
+                            ]
+                            if not _pr_found.empty:
+                                _v = _tsr_safe_float(_pr_found.iloc[0]["TraitRating"])
+                                if _v is not None:
+                                    _pr_vals.append(_v)
+                                continue
+                        # Exact match fallback
+                        _pr_exact = _pr_match[_pr_match["Player"] == _pr_p]
+                        if not _pr_exact.empty:
+                            _v = _tsr_safe_float(_pr_exact.iloc[0]["TraitRating"])
+                            if _v is not None:
+                                _pr_vals.append(_v)
+
+                    if _pr_vals:
+                        _pr_team_data.append({
+                            "Team": _pr_team,
+                            "AvgRating": sum(_pr_vals) / len(_pr_vals),
+                            "MatchedPlayers": len(_pr_vals),
+                            "TotalPlayers": len(_pr_players),
+                        })
+
+                if _pr_team_data:
+                    _pr_df = pd.DataFrame(_pr_team_data)
+                    _pr_baseline = _pr_df["AvgRating"].mean()
+                    _pr_df["RelStrength"] = _pr_df["AvgRating"] - _pr_baseline
+                    _pr_df = _pr_df.sort_values("RelStrength", ascending=False)
+
+                    # --- Per-game matchup cards ---
+                    if not _upcoming_fix.empty:
+                        _pr_games = []
+                        for _, _fg in _upcoming_fix.iterrows():
+                            _h = _fg.get("HomeTeam", "")
+                            _a = _fg.get("AwayTeam", "")
+                            _venue = _fg.get("Venue", "")
+                            _day = _fg.get("GameDay", "")
+                            _h_data = _pr_df[_pr_df["Team"] == _h]
+                            _a_data = _pr_df[_pr_df["Team"] == _a]
+                            _h_avg = float(_h_data["AvgRating"].iloc[0]) if not _h_data.empty else None
+                            _a_avg = float(_a_data["AvgRating"].iloc[0]) if not _a_data.empty else None
+                            _h_rel = float(_h_data["RelStrength"].iloc[0]) if not _h_data.empty else None
+                            _a_rel = float(_a_data["RelStrength"].iloc[0]) if not _a_data.empty else None
+                            _h_announced = _h in _announced_teams
+                            _a_announced = _a in _announced_teams
+                            if _h_announced or _a_announced:
+                                _pr_games.append({
+                                    "home": _h, "away": _a, "venue": _venue, "day": _day,
+                                    "h_avg": _h_avg, "a_avg": _a_avg,
+                                    "h_rel": _h_rel, "a_rel": _a_rel,
+                                    "h_announced": _h_announced, "a_announced": _a_announced,
+                                })
+
+                        if _pr_games:
+                            for _g in _pr_games:
+                                _h_str = f"{_g['h_avg']:.2f}" if _g['h_avg'] is not None else "TBA"
+                                _a_str = f"{_g['a_avg']:.2f}" if _g['a_avg'] is not None else "TBA"
+                                _diff = None
+                                if _g['h_avg'] is not None and _g['a_avg'] is not None:
+                                    _diff = _g['h_avg'] - _g['a_avg']
+                                _diff_str = safe_fmt(_diff, "+.2f") if _diff is not None else "—"
+                                _diff_bg = (
+                                    "rgba(0,180,90,0.45)" if _diff is not None and _diff > 0
+                                    else "rgba(220,60,60,0.45)" if _diff is not None and _diff < 0
+                                    else "rgba(255,255,255,0.08)"
+                                )
+                                _h_logo = get_team_logo_path(_g['home']) if "get_team_logo_path" in globals() else None
+                                _a_logo = get_team_logo_path(_g['away']) if "get_team_logo_path" in globals() else None
+                                _h_logo_b64 = _tsr_img_to_b64(_h_logo) if _h_logo else ""
+                                _a_logo_b64 = _tsr_img_to_b64(_a_logo) if _a_logo else ""
+                                _h_opacity = "1.0" if _g['h_announced'] else "0.35"
+                                _a_opacity = "1.0" if _g['a_announced'] else "0.35"
+
+                                _card_html = f"""
+                                <div style="
+                                    display:flex; align-items:center; justify-content:space-between;
+                                    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+                                    border-radius:14px; padding:14px 20px; margin:6px 0;
+                                    font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                ">
+                                    <div style="display:flex;align-items:center;gap:10px;flex:1;opacity:{_h_opacity};">
+                                        {"<img src='data:image/png;base64," + _h_logo_b64 + "' style='width:36px;height:36px;object-fit:contain;'/>" if _h_logo_b64 else ""}
+                                        <div>
+                                            <div style="font-weight:700;font-size:14px;color:#fff;">{_g['home']}</div>
+                                            <div style="font-size:11px;color:rgba(255,255,255,0.5);">{"Announced" if _g['h_announced'] else "Not yet announced"}</div>
+                                        </div>
+                                        <div style="font-size:18px;font-weight:900;color:#fff;margin-left:auto;">{_h_str}</div>
+                                    </div>
+                                    <div style="
+                                        display:flex;flex-direction:column;align-items:center;
+                                        padding:0 16px;min-width:80px;
+                                    ">
+                                        <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;margin-bottom:4px;">NET</div>
+                                        <div style="
+                                            padding:6px 14px;border-radius:10px;background:{_diff_bg};
+                                            font-weight:900;font-size:15px;color:#fff;
+                                        ">{_diff_str}</div>
+                                        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">{_g['day']} · {_g['venue']}</div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end;opacity:{_a_opacity};">
+                                        <div style="font-size:18px;font-weight:900;color:#fff;margin-right:auto;">{_a_str}</div>
+                                        <div style="text-align:right;">
+                                            <div style="font-weight:700;font-size:14px;color:#fff;">{_g['away']}</div>
+                                            <div style="font-size:11px;color:rgba(255,255,255,0.5);">{"Announced" if _g['a_announced'] else "Not yet announced"}</div>
+                                        </div>
+                                        {"<img src='data:image/png;base64," + _a_logo_b64 + "' style='width:36px;height:36px;object-fit:contain;'/>" if _a_logo_b64 else ""}
+                                    </div>
+                                </div>
+                                """
+                                st.markdown(_card_html, unsafe_allow_html=True)
+
+                    # --- Bar chart of announced team strengths ---
+                    if len(_pr_df) >= 2:
+                        import plotly.graph_objects as go
+
+                        _pr_teams = _pr_df["Team"].tolist()
+                        _pr_n = len(_pr_teams)
+                        _pr_max_abs = max(abs(_pr_df["RelStrength"].max()), abs(_pr_df["RelStrength"].min()), 0.3)
+                        _pr_x_range = [-_pr_max_abs * 1.4, _pr_max_abs * 1.4]
+
+                        _pr_fig = go.Figure()
+
+                        for _, _pr_row in _pr_df.iterrows():
+                            _pal = TEAM_COLOUR_PALETTES.get(_pr_row["Team"], {"primary": "#555555"})
+                            _pr_fig.add_trace(go.Bar(
+                                x=[_pr_row["RelStrength"]],
+                                y=[_pr_row["Team"]],
+                                orientation="h",
+                                marker=dict(color=_pal["primary"], opacity=0.88),
+                                text=safe_fmt(_pr_row["RelStrength"], "+.2f"),
+                                textposition="outside",
+                                textfont=dict(size=12, color="rgba(255,255,255,0.9)"),
+                                width=0.62,
+                                showlegend=False,
+                                hovertemplate=(
+                                    f"<b>{_pr_row['Team']}</b><br>"
+                                    f"Avg Trait: {_pr_row['AvgRating']:.2f}<br>"
+                                    f"Matched: {int(_pr_row['MatchedPlayers'])}/{int(_pr_row['TotalPlayers'])} players"
+                                    f"<extra></extra>"
+                                ),
+                            ))
+
+                        _pr_fig.update_layout(
+                            height=max(300, _pr_n * 44),
+                            margin=dict(l=0, r=20, t=0, b=28),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)",
+                            xaxis=dict(
+                                title=dict(
+                                    text="Trait Rating vs Announced Avg",
+                                    font=dict(size=11, color="rgba(255,255,255,0.45)"),
+                                ),
+                                range=_pr_x_range,
+                                zeroline=True, zerolinecolor="rgba(255,255,255,0.18)", zerolinewidth=1.5,
+                                showgrid=True, gridcolor="rgba(255,255,255,0.04)",
+                                color="rgba(255,255,255,0.45)",
+                                tickfont=dict(size=10, color="rgba(255,255,255,0.4)"),
+                            ),
+                            yaxis=dict(
+                                autorange="reversed",
+                                color="rgba(255,255,255,0.9)",
+                                tickfont=dict(size=13, color="rgba(255,255,255,0.9)"),
+                                showgrid=False,
+                            ),
+                            font=dict(color="white"),
+                            barmode="overlay",
+                            hoverlabel=dict(
+                                bgcolor="rgba(20,20,25,0.95)",
+                                bordercolor="rgba(255,255,255,0.15)",
+                                font=dict(size=12, color="white"),
+                            ),
+                        )
+
+                        _pr_chart_html = f"""
+                        <div style="
+                            background:linear-gradient(135deg,rgba(20,20,28,0.95) 0%,rgba(12,12,18,0.98) 100%);
+                            border:1px solid rgba(255,255,255,0.06);border-radius:16px;
+                            padding:28px 24px 12px 24px;margin:14px 0 20px 0;
+                        ">
+                            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+                                <div style="font-size:20px;font-weight:700;color:rgba(255,255,255,0.95);
+                                    font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                    letter-spacing:-0.02em;">Pre-Round Team Strength</div>
+                                <div style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.40);
+                                    font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                    letter-spacing:0.02em;">{_round_label_pr} · {season}</div>
+                            </div>
+                            <div style="font-size:12px;color:rgba(255,255,255,0.35);
+                                font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+                                margin-bottom:16px;letter-spacing:0.01em;">
+                                Average trait rating of announced squad, relative to the mean of announced teams.
+                            </div>
+                        </div>
+                        """
+                        st.markdown(_pr_chart_html, unsafe_allow_html=True)
+                        st.plotly_chart(_pr_fig, use_container_width=True, config={"displayModeBar": False})
+
+    st.markdown("---")
+
+    # =====================================================
     # MATCH DAY GAME SELECTOR
     # =====================================================
     st.caption("Select a round and game to see the actual match-day squads with current season ratings.")
@@ -13980,14 +14234,7 @@ elif page == "Team Selection Ratings":
             )
             st.markdown(_rating_explainer, unsafe_allow_html=True)
 
-            # Load traits data
-            _traits_file = f"data/raw/traits/traits_{season}.csv"
-            _traits_df = None
-            if os.path.exists(_traits_file):
-                _traits_df = pd.read_csv(_traits_file)
-                _trait_col = "Overall_Rating" if "Overall_Rating" in _traits_df.columns else "Rating"
-                _traits_df = _traits_df.rename(columns={_trait_col: "TraitRating"})
-                _traits_df["TraitRating"] = pd.to_numeric(_traits_df["TraitRating"], errors="coerce")
+            # Traits data already loaded above (shared _traits_df)
 
             _md_match_df = _md_round_df[_md_round_df["MatchId"] == md_match_id]
             _md_match_teams = sorted(_md_match_df["Team"].unique())
