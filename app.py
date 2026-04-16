@@ -13919,7 +13919,18 @@ elif page == "Team Selection Ratings":
         _fix_df = pd.read_csv(_fix_file)
 
         if not _ts_df.empty:
-            _upcoming_round = int(_ts_df["Round"].max())
+            _pr_all_rounds = sorted(_ts_df["Round"].unique())
+            _pr_latest_round = int(_pr_all_rounds[-1])
+            _pr_round_labels = {r: "Opening Round" if r == 0 else f"Round {int(r)}" for r in _pr_all_rounds}
+
+            _upcoming_round = st.selectbox(
+                "Pre-Round",
+                _pr_all_rounds,
+                index=len(_pr_all_rounds) - 1,
+                format_func=lambda r: _pr_round_labels[r],
+                key="pr_round_sel",
+            )
+            _upcoming_round = int(_upcoming_round)
             _upcoming_fix = _fix_df[_fix_df["Round"] == _upcoming_round].copy()
             _round_label_pr = "Opening Round" if _upcoming_round == 0 else f"Round {_upcoming_round}"
 
