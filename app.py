@@ -13914,7 +13914,7 @@ elif page == "Team Selection Ratings":
     _ts_file = f"data/raw/team/team_selections_{season}.csv"
     _fix_file = f"data/raw/fixture/fixture_{season}.csv"
 
-    if os.path.exists(_ts_file) and os.path.exists(_fix_file) and _traits_df is not None:
+    if os.path.exists(_ts_file) and os.path.exists(_fix_file):
         _ts_df = pd.read_csv(_ts_file)
         _fix_df = pd.read_csv(_fix_file)
 
@@ -13933,39 +13933,87 @@ elif page == "Team Selection Ratings":
             if _announced_teams:
                 st.markdown("---")
                 st.subheader(f"{_round_label_pr} — Pre-Round Team Strength")
-                st.caption(
-                    f"{len(_announced_teams)} of 18 teams announced. "
-                    "Strength is the average trait rating of the announced squad."
+
+                # --- Rating mode toggle ---
+                _pr_mode_options = ["Current Season"]
+                if _traits_df is not None:
+                    _pr_mode_options.append("Trait Rating")
+                if "Last 2 Average" in merged_all.columns:
+                    _pr_mode_options.append("Last 2 Seasons")
+                if "Career" in merged_all.columns:
+                    _pr_mode_options.append("Career")
+                _pr_rating_mode = st.radio(
+                    "Rating Display",
+                    _pr_mode_options,
+                    horizontal=True,
+                    key="pr_rating_mode",
                 )
 
-                # --- Calculate trait-based strength per announced team ---
+                _pr_mode_labels = {
+                    "Current Season": "season rating",
+                    "Trait Rating": "trait rating",
+                    "Last 2 Seasons": "last-2-season rating",
+                    "Career": "career rating",
+                }
+                st.caption(
+                    f"{len(_announced_teams)} of 18 teams announced. "
+                    f"Strength is the average {_pr_mode_labels.get(_pr_rating_mode, 'rating')} of the announced squad."
+                )
+
+                # --- Helper: look up a rating for an abbreviated player name ---
+                def _pr_lookup_rating(player_name, team_name, mode):
+                    """Resolve FootyWire abbreviated name and return the
+                    chosen rating, or None if not found."""
+                    parts = player_name.split()
+                    initial = parts[0] if parts else ""
+                    surname = parts[-1] if len(parts) >= 2 else player_name
+
+                    if mode == "Trait Rating" and _traits_df is not None:
+                        src = _traits_df[_traits_df["Team"] == team_name]
+                        # Abbreviated match
+                        if len(parts) >= 2:
+                            found = src[
+                                src["Player"].str.startswith(initial) &
+                                src["Player"].str.endswith(surname)
+                            ]
+                            if not found.empty:
+                                return _tsr_safe_float(found.iloc[0]["TraitRating"])
+                        # Exact
+                        exact = src[src["Player"] == player_name]
+                        if not exact.empty:
+                            return _tsr_safe_float(exact.iloc[0]["TraitRating"])
+                        return None
+
+                    # Season / Last 2 / Career — look up in merged_all
+                    col = {
+                        "Current Season": "Rating",
+                        "Last 2 Seasons": "Last 2 Average",
+                        "Career": "Career",
+                    }.get(mode, "Rating")
+                    src = merged_all[merged_all["Team"] == team_name]
+                    # Abbreviated match
+                    if len(parts) >= 2:
+                        found = src[
+                            src["Player"].str.startswith(initial) &
+                            src["Player"].str.endswith(surname)
+                        ]
+                        if not found.empty:
+                            return _tsr_safe_float(found.iloc[0].get(col))
+                    # Exact
+                    exact = src[src["Player"] == player_name]
+                    if not exact.empty:
+                        return _tsr_safe_float(exact.iloc[0].get(col))
+                    return None
+
+                # --- Calculate strength per announced team ---
                 _pr_team_data = []
                 for _pr_team in _announced_teams:
                     _pr_players = _ts_active[_ts_active["Team"] == _pr_team]["Player"].tolist()
                     _pr_vals = []
                     for _pr_p in _pr_players:
-                        # Match abbreviated name (e.g. "J Weitering") to traits full name
-                        _pr_match = _traits_df[_traits_df["Team"] == _pr_team]
-                        # Try abbreviated match: first initial + surname
-                        _pr_parts = _pr_p.split()
-                        if len(_pr_parts) >= 2:
-                            _pr_initial = _pr_parts[0]
-                            _pr_surname = _pr_parts[-1]
-                            _pr_found = _pr_match[
-                                _pr_match["Player"].str.startswith(_pr_initial) &
-                                _pr_match["Player"].str.endswith(_pr_surname)
-                            ]
-                            if not _pr_found.empty:
-                                _v = _tsr_safe_float(_pr_found.iloc[0]["TraitRating"])
-                                if _v is not None:
-                                    _pr_vals.append(_v)
-                                continue
-                        # Exact match fallback
-                        _pr_exact = _pr_match[_pr_match["Player"] == _pr_p]
-                        if not _pr_exact.empty:
-                            _v = _tsr_safe_float(_pr_exact.iloc[0]["TraitRating"])
-                            if _v is not None:
-                                _pr_vals.append(_v)
+                        _v = _pr_lookup_rating(_pr_p, _pr_team, _pr_rating_mode)
+                        if _v is not None:
+                            _pr_vals.append(_v)
 
                     if _pr_vals:
                         _pr_team_data.append({
@@ -14088,7 +14136,7 @@ elif page == "Team Selection Ratings":
                                 showlegend=False,
                                 hovertemplate=(
                                     f"<b>{_pr_row['Team']}</b><br>"
-                                    f"Avg Trait: {_pr_row['AvgRating']:.2f}<br>"
+                                    f"Avg: {_pr_row['AvgRating']:.2f}<br>"
                                     f"Matched: {int(_pr_row['MatchedPlayers'])}/{int(_pr_row['TotalPlayers'])} players"
                                     f"<extra></extra>"
                                 ),
@@ -14101,7 +14149,7 @@ elif page == "Team Selection Ratings":
                             plot_bgcolor="rgba(0,0,0,0)",
                             xaxis=dict(
                                 title=dict(
-                                    text="Trait Rating vs Announced Avg",
+                                    text=f"{_pr_rating_mode} vs Announced Avg",
                                     font=dict(size=11, color="rgba(255,255,255,0.45)"),
                                 ),
                                 range=_pr_x_range,
@@ -14142,7 +14190,7 @@ elif page == "Team Selection Ratings":
                             <div style="font-size:12px;color:rgba(255,255,255,0.35);
                                 font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
                                 margin-bottom:16px;letter-spacing:0.01em;">
-                                Average trait rating of announced squad, relative to the mean of announced teams.
+                                Average {_pr_mode_labels.get(_pr_rating_mode, 'rating')} of announced squad, relative to the mean of announced teams.
                             </div>
                         </div>
                         """
