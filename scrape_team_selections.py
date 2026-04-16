@@ -319,11 +319,25 @@ def scrape_team_selections(season: int = CURRENT_SEASON) -> pd.DataFrame:
     return df
 
 
+def _sunday_teams_for_round(season: int, round_num: int) -> set[str]:
+    """Return the set of canonical team names playing on Sunday in this round."""
+    fixture_path = FIXTURE_DIR / f"fixture_{season}.csv"
+    if not fixture_path.exists():
+        return set()
+    fix = pd.read_csv(fixture_path)
+    sunday = fix[(fix["Round"] == round_num) & (fix["GameDay"] == "Sunday")]
+    teams = set(sunday["HomeTeam"].tolist()) | set(sunday["AwayTeam"].tolist())
+    return teams
+
+
 def save_team_selections(season: int = CURRENT_SEASON) -> pd.DataFrame:
     """Scrape and save team selections.
 
     Merges with any existing selections for the season (different rounds
     or earlier partial scrapes for the same round).
+
+    Sunday game teams are excluded until Friday 7pm because earlier in
+    the week they only have extended squads (not finalised 23-player lists).
     """
     TEAM_SEL_DIR.mkdir(parents=True, exist_ok=True)
     path = TEAM_SEL_DIR / f"team_selections_{season}.csv"
@@ -334,6 +348,28 @@ def save_team_selections(season: int = CURRENT_SEASON) -> pd.DataFrame:
         return new_df
 
     current_round = new_df["Round"].iloc[0]
+
+    # ── Exclude Sunday-game teams before Friday 7pm ────────────────────
+    now = datetime.now()
+    is_friday_evening_or_later = (
+        now.weekday() > 4  # Saturday (5) or Sunday (6)
+        or (now.weekday() == 4 and now.hour >= 19)  # Friday 7pm+
+    )
+    if not is_friday_evening_or_later:
+        sunday_teams = _sunday_teams_for_round(season, current_round)
+        if sunday_teams:
+            before = new_df["Team"].nunique()
+            new_df = new_df[~new_df["Team"].isin(sunday_teams)].reset_index(drop=True)
+            after = new_df["Team"].nunique()
+            logger.info(
+                "Excluded %d Sunday-game teams (extended squads only): %s",
+                before - after,
+                ", ".join(sorted(sunday_teams)),
+            )
+            if new_df.empty:
+                logger.warning("All scraped teams are Sunday games — nothing to save yet")
+                return new_df
+
     logger.info(
         "Scraped %d selection entries for Round %s (%d teams)",
         len(new_df),
