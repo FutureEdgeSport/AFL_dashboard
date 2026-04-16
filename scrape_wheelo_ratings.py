@@ -57,6 +57,7 @@ try:
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
     from webdriver_manager.chrome import ChromeDriverManager
+    from webdriver_manager.core.driver_cache import DriverCacheManager
 except ImportError:
     print("❌ Required packages not installed.")
     print("   Run: pip install selenium webdriver-manager")
@@ -146,7 +147,9 @@ class WheeloScraper:
         for attempt in range(1, max_retries + 1):
             try:
                 print(f"🔧 Setting up Chrome driver (attempt {attempt}/{max_retries})...")
-                driver_path = ChromeDriverManager().install()
+                driver_path = ChromeDriverManager(
+                    cache_manager=DriverCacheManager(valid_range=0)
+                ).install()
                 self._codesign_if_needed(driver_path)
                 self.driver = webdriver.Chrome(
                     service=Service(driver_path),
