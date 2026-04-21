@@ -243,15 +243,29 @@ def compute_player_summary(
         # Add current season stats
         row[f"{current_season} Matches"] = player_current.get("Matches", 0)
         row[f"{current_season} Rating"] = player_current.get(rating_col, np.nan)
-        
-        # Compute total matches across all seasons
-        total_matches = 0
-        for season, df in season_data.items():
-            if "Player" not in df.columns:
-                continue
-            player_row = df[df["Player"] == player_name]
-            if not player_row.empty:
-                total_matches += player_row.iloc[0].get("Matches", 0)
+
+        # Total career matches.  Prefer the official AFL career-games count
+        # from the current season's squad file (squads_{year}.csv's
+        # "Matches_Career" column), because our per-season stats only start
+        # in 2012 — summing them undercounts veterans who debuted earlier
+        # (e.g. Sidebottom, Pendlebury).  Fall back to the sum only if the
+        # squad file doesn't carry that column for this player.
+        total_matches = np.nan
+        if not squads_df.empty and "Matches_Career" in squads_df.columns and "Player" in squads_df.columns:
+            _sq_row = squads_df[squads_df["Player"] == player_name]
+            if not _sq_row.empty:
+                _career = pd.to_numeric(_sq_row.iloc[0].get("Matches_Career"), errors="coerce")
+                if pd.notna(_career):
+                    total_matches = int(_career)
+        if pd.isna(total_matches):
+            _sum = 0
+            for season, df in season_data.items():
+                if "Player" not in df.columns:
+                    continue
+                player_row = df[df["Player"] == player_name]
+                if not player_row.empty:
+                    _sum += player_row.iloc[0].get("Matches", 0) or 0
+            total_matches = int(_sum)
         row["Total Matches"] = total_matches
         
         # Compute historical ratings per season
