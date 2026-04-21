@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 .env
 *.ipynb_checkpoints/
+# Timestamped master workbook safety copies created by
+# append_traits_historical_to_master.py — git history already tracks
+# AFL_Master_2012_2025.xlsx so these local backups are redundant.
+AFL_Master_*.backup-*.xlsx
