@@ -1,0 +1,24 @@
+2026-04-16 13:40:54,826 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-16_1340.log
+2026-04-16 13:40:54,826 [INFO] ============================================================
+2026-04-16 13:40:54,826 [INFO] AFL Dashboard – Scheduled Data Update
+2026-04-16 13:40:54,826 [INFO] Date: Thursday 16 April 2026 13:40
+2026-04-16 13:40:54,826 [INFO] Mode: DRY RUN
+2026-04-16 13:40:54,826 [INFO] ============================================================
+2026-04-16 13:40:54,826 [INFO] Python: /Users/marcuswagner/coding/AFL_dashboard/.venv/bin/python
+2026-04-16 13:40:54,826 [INFO] 
+Steps to run (1):
+2026-04-16 13:40:54,826 [INFO]   • team_selections: Scrape team selections & fixture from FootyWire + Squiggle API
+2026-04-16 13:40:54,826 [INFO] 
+2026-04-16 13:40:54,826 [INFO] Dry run complete – no scripts executed.
+2026-04-16 13:40:59,310 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-16_1340.log
+2026-04-16 13:40:59,310 [INFO] ============================================================
+2026-04-16 13:40:59,310 [INFO] AFL Dashboard – Scheduled Data Update
+2026-04-16 13:40:59,310 [INFO] Date: Thursday 16 April 2026 13:40
+2026-04-16 13:40:59,310 [INFO] Mode: DRY RUN
+2026-04-16 13:40:59,310 [INFO] ============================================================
+2026-04-16 13:40:59,310 [INFO] Python: /Users/marcuswagner/coding/AFL_dashboard/.venv/bin/python
+2026-04-16 13:40:59,310 [INFO] 
+Steps to run (1):
+2026-04-16 13:40:59,310 [INFO]   • validate_selections: Validate announced squads against actual match-day players
+2026-04-16 13:40:59,310 [INFO] 
+2026-04-16 13:40:59,310 [INFO] Dry run complete – no scripts executed.

@@ -1,0 +1,212 @@
+2026-04-19 07:14:20,041 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-19_0714.log
+2026-04-19 07:14:20,041 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-19_0714.log
+2026-04-19 07:14:20,041 [INFO] ============================================================
+2026-04-19 07:14:20,041 [INFO] ============================================================
+2026-04-19 07:14:20,041 [INFO] AFL Dashboard – Scheduled Data Update
+2026-04-19 07:14:20,041 [INFO] AFL Dashboard – Scheduled Data Update
+2026-04-19 07:14:20,041 [INFO] Date: Sunday 19 April 2026 07:14
+2026-04-19 07:14:20,042 [INFO] Date: Sunday 19 April 2026 07:14
+2026-04-19 07:14:20,042 [INFO] Mode: FULL
+2026-04-19 07:14:20,042 [INFO] Mode: FULL
+2026-04-19 07:14:20,042 [INFO] ============================================================
+2026-04-19 07:14:20,042 [INFO] ============================================================
+2026-04-19 07:14:20,042 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-04-19 07:14:20,042 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-04-19 07:14:20,042 [INFO] 
+Steps to run (2):
+2026-04-19 07:14:20,042 [INFO] 
+Steps to run (17):
+2026-04-19 07:14:20,042 [INFO]   • wheelo_ratings: Scrape Wheelo team & player ratings (Selenium) [SLOW]
+2026-04-19 07:14:20,042 [INFO]   • footywire_squads: Scrape player squads from Footywire
+2026-04-19 07:14:20,042 [INFO]   • wheelo_match_stats: Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium) [SLOW]
+2026-04-19 07:14:20,042 [INFO]   • footywire_extended: Scrape contracts & draft history from Footywire
+2026-04-19 07:14:20,042 [INFO] 
+2026-04-19 07:14:20,042 [INFO]   • afl_ladders: Scrape AFL ladder standings from Footywire (current season)
+2026-04-19 07:14:20,042 [INFO] START [wheelo_ratings] Scrape Wheelo team & player ratings (Selenium)
+2026-04-19 07:14:20,042 [INFO]   • wheelo_ratings: Scrape Wheelo team & player ratings (Selenium) [SLOW]
+2026-04-19 07:14:20,042 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_ratings.py --all
+2026-04-19 07:14:20,042 [INFO]   • wheelo_match_stats: Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium) [SLOW]
+2026-04-19 07:14:20,042 [INFO]   • traits_api: Fetch Traits API data for current-season players [SLOW]
+2026-04-19 07:14:20,042 [INFO]   • wheelo_to_raw: Copy Wheelo team stats to raw data folder for ratings pipeline
+2026-04-19 07:14:20,042 [INFO]   • build_season: Build season data files (squads, stats, traits CSVs)
+2026-04-19 07:14:20,042 [INFO]   • wheelo_player_to_raw: Merge Wheelo player season data (matches, ratings) into raw player CSVs
+2026-04-19 07:14:20,042 [INFO]   • regenerate_ratings: Regenerate computed team summaries and ladders
+2026-04-19 07:14:20,042 [INFO]   • refresh_master_ladders: Update master workbook Team_Ladders_All with freshly-scraped ladder data
+2026-04-19 07:14:20,042 [INFO]   • update_photos: Download photos for any new/missing players [SLOW]
+2026-04-19 07:14:20,042 [INFO]   • validate_freshness: Validate pipeline output files are present and fresh
+2026-04-19 07:14:20,042 [INFO]   • validate_schemas: Validate CSV output schemas (columns, row counts, data quality)
+2026-04-19 07:14:20,042 [INFO]   • data_diff_check: Compare pipeline outputs against backups and alert on anomalies
+2026-04-19 07:14:20,042 [INFO]   • team_selections: Scrape team selections & fixture from FootyWire + Squiggle API
+2026-04-19 07:14:20,042 [INFO]   • validate_selections: Validate announced squads against actual match-day players
+2026-04-19 07:14:20,042 [INFO] 
+2026-04-19 07:14:20,042 [INFO] START [footywire_squads] Scrape player squads from Footywire
+2026-04-19 07:14:20,042 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_footywire.py 
+2026-04-19 07:14:52,643 [INFO]   DONE [footywire_squads] in 32.6s
+2026-04-19 07:14:52,644 [INFO]     | DefenderMidfieldForward      1
+2026-04-19 07:14:52,644 [INFO]     | Name: count, dtype: int64
+2026-04-19 07:14:52,644 [INFO]     | 
+2026-04-19 07:14:52,644 [INFO]     | 
+2026-04-19 07:14:52,644 [INFO]     | Updated DOB cache: 0 new entries
+2026-04-19 07:14:52,644 [INFO] START [footywire_extended] Scrape contracts & draft history from Footywire
+2026-04-19 07:14:52,644 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_footywire_extended.py --current-only
+2026-04-19 07:30:19,497 [INFO]   DONE [wheelo_ratings] in 959.5s
+2026-04-19 07:30:19,498 [INFO]     | 📊 Team Stats downloaded: 3 files
+2026-04-19 07:30:19,498 [INFO]     | 📊 Player Stats downloaded: 3 files
+2026-04-19 07:30:19,498 [INFO]     | 📊 Squad Lists downloaded: 1 file
+2026-04-19 07:30:19,498 [INFO]     | 
+2026-04-19 07:30:19,498 [INFO]     | 📁 CSV files saved in: /Users/marcuswagner/coding/AFL_dashboard/wheelo_downloads
+2026-04-19 07:30:19,498 [INFO] START [wheelo_match_stats] Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)
+2026-04-19 07:30:19,498 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py --brownlow
+2026-04-19 07:54:59,306 [ERROR]   FAILED [wheelo_match_stats] exit code 1 (1479.8s)
+2026-04-19 07:54:59,307 [ERROR]     | 6   chromedriver                        0x0000000102cf1248 cxxbridge1$str$ptr + 2920364
+2026-04-19 07:54:59,307 [ERROR]     | 7   chromedriver                        0x0000000102cf4a28 cxxbridge1$str$ptr + 2934668
+2026-04-19 07:54:59,307 [ERROR]     | 8   chromedriver                        0x0000000102cd71fc cxxbridge1$str$ptr + 2813792
+2026-04-19 07:54:59,307 [ERROR]     | 9   chromedriver                        0x0000000102cf52a8 cxxbridge1$str$ptr + 2936844
+2026-04-19 07:54:59,307 [ERROR]     | 10  chromedriver                        0x0000000102cc8024 cxxbridge1$str$ptr + 2751880
+2026-04-19 07:54:59,307 [ERROR]     | 11  chromedriver                        0x0000000102d1a988 cxxbridge1$str$ptr + 3090156
+2026-04-19 07:54:59,307 [ERROR]     | 12  chromedriver                        0x0000000102d1ab04 cxxbridge1$str$ptr + 3090536
+2026-04-19 07:54:59,307 [ERROR]     | 13  chromedriver                        0x0000000102d2b6e4 cxxbridge1$str$ptr + 3159112
+2026-04-19 07:54:59,307 [ERROR]     | 14  libsystem_pthread.dylib             0x000000019d915c08 _pthread_start + 136
+2026-04-19 07:54:59,307 [ERROR]     | 15  libsystem_pthread.dylib             0x000000019d910ba8 thread_start + 8
+2026-04-19 07:54:59,307 [ERROR]     | 
+2026-04-19 07:54:59,307 [ERROR]     |   📋 Round 5 (round 5)
+2026-04-19 07:54:59,307 [ERROR]     |     (no games found)
+2026-04-19 07:54:59,307 [ERROR]     | 
+2026-04-19 07:54:59,307 [ERROR]     |   📋 Round 6 (round 6)
+2026-04-19 07:54:59,307 [INFO] 
+2026-04-19 07:54:59,307 [INFO] ============================================================
+2026-04-19 07:54:59,307 [INFO] UPDATE SUMMARY
+2026-04-19 07:54:59,307 [INFO] ============================================================
+2026-04-19 07:54:59,307 [INFO]   ✓ wheelo_ratings: OK
+2026-04-19 07:54:59,307 [INFO]   ✗ wheelo_match_stats: FAILED: Exit code 1
+2026-04-19 07:54:59,307 [INFO] 
+2026-04-19 07:54:59,307 [INFO] Results: 1 passed, 1 failed, 0 skipped
+2026-04-19 07:54:59,307 [INFO] Total time: 2439s (40.7 min)
+2026-04-19 07:54:59,307 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-19_0714.log
+2026-04-19 07:54:59,309 [INFO] Log rotation: removed 1 old log file(s)
+2026-04-19 07:54:59,324 [INFO] Stopped Streamlit (PIDs: 18375)
+2026-04-19 07:55:01,477 [INFO] Restarted Streamlit app.
+2026-04-19 07:55:01,478 [WARNING] 
+⚠️  1 step(s) failed. Check log for details.
+2026-04-19 07:55:06,184 [INFO] Email sent to marcus.wagner@futureedgesport.com.au
+2026-04-19 08:21:01,051 [INFO]   DONE [footywire_extended] in 3968.4s
+2026-04-19 08:21:01,052 [INFO]     | 5  Adelaide    Brayden Cook           2026.0           Non-Free Agent      2020.0    National          1.0        25.0
+2026-04-19 08:21:01,052 [INFO]     | 6  Adelaide     Indy Cotton           2027.0                  Unknown         NaN        None          NaN         NaN
+2026-04-19 08:21:01,052 [INFO]     | 7  Adelaide   Isaac Cumming           2030.0           Non-Free Agent      2016.0    National          1.0        20.0
+2026-04-19 08:21:01,052 [INFO]     | 8  Adelaide   Daniel Curtin           2029.0           Non-Free Agent      2023.0    National          1.0         8.0
+2026-04-19 08:21:01,052 [INFO]     | 9  Adelaide   Jordan Dawson           2029.0    Restricted Free Agent      2015.0    National          4.0        56.0
+2026-04-19 08:21:01,052 [INFO] START [afl_ladders] Scrape AFL ladder standings from Footywire (current season)
+2026-04-19 08:21:01,052 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_afl_ladders.py --current-only
+2026-04-19 08:21:02,898 [INFO]   DONE [afl_ladders] in 1.8s
+2026-04-19 08:21:02,898 [INFO]     |   2026: 18 teams
+2026-04-19 08:21:02,899 [INFO]     | 
+2026-04-19 08:21:02,899 [INFO]     | ============================================================
+2026-04-19 08:21:02,899 [INFO]     | Completed: 2026-04-19 08:21:02
+2026-04-19 08:21:02,899 [INFO]     | ============================================================
+2026-04-19 08:21:02,899 [INFO] START [wheelo_ratings] Scrape Wheelo team & player ratings (Selenium)
+2026-04-19 08:21:02,899 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_ratings.py --all
+2026-04-19 08:21:52,828 [INFO]   DONE [wheelo_ratings] in 49.9s
+2026-04-19 08:21:52,829 [INFO]     | 📊 Team Stats downloaded: 3 files
+2026-04-19 08:21:52,829 [INFO]     | 📊 Player Stats downloaded: 3 files
+2026-04-19 08:21:52,829 [INFO]     | 📊 Squad Lists downloaded: 1 file
+2026-04-19 08:21:52,829 [INFO]     | 
+2026-04-19 08:21:52,829 [INFO]     | 📁 CSV files saved in: /Users/marcuswagner/coding/AFL_dashboard/wheelo_downloads
+2026-04-19 08:21:52,829 [INFO] START [wheelo_match_stats] Scrape Wheelo match-by-match player ratings + Brownlow predictions (Selenium)
+2026-04-19 08:21:52,829 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_wheelo_match_stats.py --brownlow
+2026-04-19 08:22:59,552 [INFO]   DONE [wheelo_match_stats] in 66.7s
+2026-04-19 08:22:59,552 [INFO]     | ============================================================
+2026-04-19 08:22:59,553 [INFO]     | 🔧 Chrome driver attempt 1/3…
+2026-04-19 08:22:59,553 [INFO]     | ✅ Chrome driver ready
+2026-04-19 08:22:59,553 [INFO]     | 
+2026-04-19 08:22:59,553 [INFO]     | 💾 Saved 2070 rows → /Users/marcuswagner/coding/AFL_dashboard/data/raw/player/brownlow_predictions_2026.csv
+2026-04-19 08:22:59,553 [INFO] START [traits_api] Fetch Traits API data for current-season players
+2026-04-19 08:22:59,553 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/run_traits_api.py 
+2026-04-19 08:33:53,100 [INFO]   DONE [traits_api] in 653.5s
+2026-04-19 08:33:53,101 [INFO]     |    Bailey Laurie   Melbourne            3.35                4.52            3.05
+2026-04-19 08:33:53,101 [INFO]     |       Jack Crisp Collingwood            3.34                3.42            2.86
+2026-04-19 08:33:53,101 [INFO]     | Connor MacDonald    Hawthorn            3.33                4.09            3.17
+2026-04-19 08:33:53,101 [INFO]     | 
+2026-04-19 08:33:53,101 [INFO]     | Snapshot: R6 already finalised — updated with latest values
+2026-04-19 08:33:53,101 [INFO] START [wheelo_to_raw] Copy Wheelo team stats to raw data folder for ratings pipeline
+2026-04-19 08:33:53,431 [INFO]   Backed up team_stats_2026.csv → backups/team_stats_2026_20260419_083353.csv
+2026-04-19 08:33:53,433 [INFO]   Copied Wheelo 2026 Season -> team_stats_2026.csv (18 teams)
+2026-04-19 08:33:53,449 [INFO]   Backed up team_stats_2026_L10.csv → backups/team_stats_2026_L10_20260419_083353.csv
+2026-04-19 08:33:53,451 [INFO]   Copied Wheelo 2026 L10 -> team_stats_2026_L10.csv (18 teams)
+2026-04-19 08:33:53,472 [INFO]   Backed up team_stats_2026_L5.csv → backups/team_stats_2026_L5_20260419_083353.csv
+2026-04-19 08:33:53,474 [INFO]   Copied Wheelo 2026 L5 -> team_stats_2026_L5.csv (18 teams)
+2026-04-19 08:33:53,474 [INFO]   DONE [wheelo_to_raw] in 0.4s
+2026-04-19 08:33:53,474 [INFO] START [build_season] Build season data files (squads, stats, traits CSVs)
+2026-04-19 08:33:53,474 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/build_season_data.py 
+2026-04-19 08:33:53,744 [INFO]   DONE [build_season] in 0.3s
+2026-04-19 08:33:53,744 [INFO]     |   Western Bulldogs      43 players  Avg Age: 24.4  Avg Games: 75
+2026-04-19 08:33:53,744 [INFO]     | 
+2026-04-19 08:33:53,744 [INFO]     | ============================================================
+2026-04-19 08:33:53,744 [INFO]     | ✅ 2026 DATA BUILD COMPLETE
+2026-04-19 08:33:53,744 [INFO]     | ============================================================
+2026-04-19 08:33:53,744 [INFO] START [wheelo_player_to_raw] Merge Wheelo player season data (matches, ratings) into raw player CSVs
+2026-04-19 08:33:53,891 [INFO]   Wheelo Wheelo 2026 Season: 532 players, 18 teams
+2026-04-19 08:33:53,908 [INFO]   Name mappings (39): {'Mitch Owens': 'Mitchito Owens', 'Tim English': 'Timothy English', 'Matthew Johnson': 'Matt Johnson', 'Zach Merrett': 'Zachary Merrett', 'Lachie Schultz': 'Lachlan Schultz', 'Sam Collins': 'Samuel Collins', 'William Hayes': 'Will Hayes', 'Harry Himmelberg': 'Harrison Himmelberg', 'Matt Flynn': 'Matthew Flynn', 'Tom Liberatore': 'Thomas Liberatore', 'Sam Grlj': 'Samuel Grlj', 'Lachie Jones': 'Lachlan Jones', 'Matthew Carroll': 'Matt Carroll', 'Brad Close': 'Bradley Close', 'Thomas Edwards': 'Tom Edwards', 'Cam Mackenzie': 'Cameron Mackenzie', 'Matthew Owies': 'Matt Owies', 'Nicholas Madden': 'Nick Madden', 'Mitch Lewis': 'Mitchell Lewis', 'Lachie Weller': 'Lachlan Weller', 'Dan Butler': 'Daniel Butler', 'Ollie Wines': 'Oliver Wines', 'Lachie Fogarty': 'Lachlan Fogarty', 'Cam Rayner': 'Cameron Rayner', 'Jacob van Rooyen': 'Jacob Van Rooyen', 'Zac Williams': 'Zachary Williams', 'Jack Macrae': 'Jackson Macrae', 'Mitch Knevitt': 'Mitchell Knevitt', 'Tom Stewart': 'Thomas Stewart', 'Joe Fonti': 'Joseph Fonti', 'Lachie Ash': 'Lachlan Ash', 'Leonardo Lombard': 'Leo Lombard', 'Matt Roberts': 'Matthew Roberts', 'Josh Weddle': 'Joshua Weddle', 'Lachlan Sullivan': 'Lachie Sullivan', 'Archer May': 'Archie May', 'Connor Macdonald': 'Connor MacDonald', 'Oliver Dempsey': 'Ollie Dempsey', 'Christopher Scerri': 'Chris Scerri'}
+2026-04-19 08:33:53,916 [INFO]   Backed up player_stats_2026.csv → backups/player_stats_2026_20260419_083353.csv
+2026-04-19 08:33:53,918 [INFO]   Updated player_stats_2026.csv: 532 players with matches from Wheelo
+2026-04-19 08:33:53,936 [INFO]   Backed up squads_2026.csv → backups/squads_2026_20260419_083353.csv
+2026-04-19 08:33:53,938 [INFO]   Updated squads_2026.csv: 532 players matched from Wheelo
+2026-04-19 08:33:53,938 [INFO]   DONE [wheelo_player_to_raw] in 0.2s
+2026-04-19 08:33:53,938 [INFO] START [regenerate_ratings] Regenerate computed team summaries and ladders
+2026-04-19 08:33:53,938 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/regenerate_ratings.py 
+2026-04-19 08:33:54,214 [INFO]   DONE [regenerate_ratings] in 0.3s
+2026-04-19 08:33:54,214 [INFO]     | Skipping 2025 Last 5 - no raw data
+2026-04-19 08:33:54,214 [INFO]     | 
+2026-04-19 08:33:54,214 [INFO]     | ============================================================
+2026-04-19 08:33:54,214 [INFO]     | DONE!
+2026-04-19 08:33:54,214 [INFO]     | ============================================================
+2026-04-19 08:33:54,214 [INFO] START [refresh_master_ladders] Update master workbook Team_Ladders_All with freshly-scraped ladder data
+2026-04-19 08:34:06,474 [INFO]   Refreshed Team_Ladders_All: 287 rows
+2026-04-19 08:34:06,478 [INFO]   DONE [refresh_master_ladders] in 12.3s
+2026-04-19 08:34:06,478 [INFO] START [update_photos] Download photos for any new/missing players
+2026-04-19 08:34:06,478 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/auto_update_photos.py 
+2026-04-19 08:36:57,318 [INFO]   DONE [update_photos] in 170.8s
+2026-04-19 08:36:57,319 [INFO]     | 
+2026-04-19 08:36:57,319 [INFO] START [validate_freshness] Validate pipeline output files are present and fresh
+2026-04-19 08:36:57,319 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/validate_pipeline_freshness.py 
+2026-04-19 08:36:57,352 [INFO]   DONE [validate_freshness] in 0.0s
+2026-04-19 08:36:57,352 [INFO]     |   ✓ FRESH    footywire_drafts_history.csv  (08:21)
+2026-04-19 08:36:57,352 [INFO]     |   ✓ FRESH    footywire_2026_with_traits.csv  (08:33)
+2026-04-19 08:36:57,352 [INFO]     |   ✓ FRESH    traits_2026.csv  (08:33)
+2026-04-19 08:36:57,352 [INFO]     | 
+2026-04-19 08:36:57,352 [INFO]     | ✅ All required files are present and fresh.
+2026-04-19 08:36:57,352 [INFO] START [validate_schemas] Validate CSV output schemas (columns, row counts, data quality)
+2026-04-19 08:36:57,364 [INFO]   DONE [validate_schemas] 0 warning(s) in 0.0s
+2026-04-19 08:36:57,364 [INFO] START [data_diff_check] Compare pipeline outputs against backups and alert on anomalies
+2026-04-19 08:36:57,375 [INFO]   DONE [data_diff_check] no anomalies in 0.0s
+2026-04-19 08:36:57,375 [INFO]   SKIP [team_selections] – Skipped: only runs on Wed, Thu, Fri
+2026-04-19 08:36:57,375 [INFO]   SKIP [validate_selections] – Skipped: only runs on Mon, Tue
+2026-04-19 08:36:57,375 [INFO] 
+2026-04-19 08:36:57,375 [INFO] ============================================================
+2026-04-19 08:36:57,375 [INFO] UPDATE SUMMARY
+2026-04-19 08:36:57,375 [INFO] ============================================================
+2026-04-19 08:36:57,375 [INFO]   ✓ footywire_squads: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ footywire_extended: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ afl_ladders: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ wheelo_ratings: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ wheelo_match_stats: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ traits_api: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ wheelo_to_raw: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ build_season: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ wheelo_player_to_raw: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ regenerate_ratings: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ refresh_master_ladders: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ update_photos: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ validate_freshness: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ validate_schemas: OK
+2026-04-19 08:36:57,375 [INFO]   ✓ data_diff_check: OK
+2026-04-19 08:36:57,375 [INFO]   ⊘ team_selections: SKIPPED: Skipped: only runs on Wed, Thu, Fri
+2026-04-19 08:36:57,375 [INFO]   ⊘ validate_selections: SKIPPED: Skipped: only runs on Mon, Tue
+2026-04-19 08:36:57,375 [INFO] 
+2026-04-19 08:36:57,375 [INFO] Results: 17 passed, 0 failed, 2 skipped
+2026-04-19 08:36:57,375 [INFO] Total time: 4957s (82.6 min)
+2026-04-19 08:36:57,375 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-19_0714.log
+2026-04-19 08:36:57,390 [INFO] Stopped Streamlit (PIDs: 20301)
+2026-04-19 08:36:59,557 [INFO] Restarted Streamlit app.
+2026-04-19 08:36:59,558 [WARNING] 
+⚠️  Completed with 2 skipped step(s).
+2026-04-19 08:37:05,928 [INFO] Email sent to marcus.wagner@futureedgesport.com.au

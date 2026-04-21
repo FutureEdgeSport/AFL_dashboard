@@ -1,0 +1,222 @@
+2026-04-18 09:46:08,690 [INFO] ============================================================
+2026-04-18 09:46:08,690 [INFO] AFL Player Photo Auto-Updater
+2026-04-18 09:46:08,690 [INFO] Started at: 2026-04-18 09:46:08
+2026-04-18 09:46:08,690 [INFO] ============================================================
+2026-04-18 09:46:08,701 [INFO] Loaded 746 players from squads_2026.csv
+2026-04-18 09:46:08,969 [INFO] Loaded 889 players from Excel
+2026-04-18 09:46:08,971 [INFO] Found 72 players without photos
+2026-04-18 09:46:08,972 [INFO] Found 2 players who changed teams:
+2026-04-18 09:46:08,972 [INFO]   • Mason Cox: Fremantle → Collingwood
+2026-04-18 09:46:08,972 [INFO]   • Judd McVee: Fremantle → Melbourne
+2026-04-18 09:46:08,972 [INFO] [1/74] [TEAM CHANGE] Mason Cox (Collingwood)
+2026-04-18 09:46:08,972 [DEBUG]   Fetching Collingwood player data...
+2026-04-18 09:46:08,979 [DEBUG] Starting new HTTPS connection (1): www.collingwoodfc.com.au:443
+2026-04-18 09:46:09,998 [DEBUG] https://www.collingwoodfc.com.au:443 "GET /players HTTP/1.1" 200 32751
+2026-04-18 09:46:11,572 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:13,073 [INFO] [2/74] [TEAM CHANGE] Judd McVee (Melbourne)
+2026-04-18 09:46:13,074 [DEBUG]   Fetching Melbourne player data...
+2026-04-18 09:46:13,076 [DEBUG] Starting new HTTPS connection (1): www.melbournefc.com.au:443
+2026-04-18 09:46:13,996 [DEBUG] https://www.melbournefc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:46:15,561 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:17,135 [INFO] [3/74]  Cameron Rayner (Brisbane)
+2026-04-18 09:46:17,136 [DEBUG]   Fetching Brisbane player data...
+2026-04-18 09:46:17,138 [DEBUG] Starting new HTTPS connection (1): www.lions.com.au:443
+2026-04-18 09:46:17,992 [DEBUG] https://www.lions.com.au:443 "GET /players HTTP/1.1" 200 34122
+2026-04-18 09:46:19,525 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:21,083 [INFO] [4/74]  Matt Carroll (Carlton)
+2026-04-18 09:46:21,083 [DEBUG]   Fetching Carlton player data...
+2026-04-18 09:46:21,085 [DEBUG] Starting new HTTPS connection (1): www.carltonfc.com.au:443
+2026-04-18 09:46:21,985 [DEBUG] https://www.carltonfc.com.au:443 "GET /players HTTP/1.1" 200 32670
+2026-04-18 09:46:23,503 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:25,023 [INFO] [5/74]  Matt Cottrell (Carlton)
+2026-04-18 09:46:25,023 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:26,553 [INFO] [6/74]  Lachlan Fogarty (Carlton)
+2026-04-18 09:46:26,553 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:28,127 [INFO] [7/74]  Zachary Williams (Carlton)
+2026-04-18 09:46:28,127 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:29,702 [INFO] [8/74]  Will Hayes (Collingwood)
+2026-04-18 09:46:29,702 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:31,273 [INFO] [9/74]  Lachlan Schultz (Collingwood)
+2026-04-18 09:46:31,273 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:32,845 [INFO] [10/74]  Lachie Sullivan (Collingwood)
+2026-04-18 09:46:32,845 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:34,363 [INFO] [11/74]  Samuel Swadling (Collingwood)
+2026-04-18 09:46:34,363 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:35,936 [INFO] [12/74]  Nikolas Cox (Essendon)
+2026-04-18 09:46:35,937 [DEBUG]   Fetching Essendon player data...
+2026-04-18 09:46:35,939 [DEBUG] Starting new HTTPS connection (1): www.essendonfc.com.au:443
+2026-04-18 09:46:37,140 [DEBUG] https://www.essendonfc.com.au:443 "GET /players HTTP/1.1" 200 34104
+2026-04-18 09:46:38,698 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:40,273 [INFO] [13/74]  Tom Edwards (Essendon)
+2026-04-18 09:46:40,273 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:41,843 [INFO] [14/74]  Nicholas Martin (Essendon)
+2026-04-18 09:46:41,844 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:43,346 [INFO] [15/74]  Archie May (Essendon)
+2026-04-18 09:46:43,346 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:44,877 [INFO] [16/74]  Zachary Merrett (Essendon)
+2026-04-18 09:46:44,878 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:46,453 [INFO] [17/74]  Bradley Close (Geelong)
+2026-04-18 09:46:46,453 [DEBUG]   Fetching Geelong player data...
+2026-04-18 09:46:46,455 [DEBUG] Starting new HTTPS connection (1): www.geelongcats.com.au:443
+2026-04-18 09:46:47,688 [DEBUG] https://www.geelongcats.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:46:49,209 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:50,711 [INFO] [18/74]  Ollie Dempsey (Geelong)
+2026-04-18 09:46:50,711 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:52,235 [INFO] [19/74]  Nick Driscoll (Geelong)
+2026-04-18 09:46:52,235 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:53,775 [INFO] [20/74]  Lennox Hoffman (Geelong)
+2026-04-18 09:46:53,775 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:55,321 [INFO] [21/74]  Mitchell Knevitt (Geelong)
+2026-04-18 09:46:55,321 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:56,896 [INFO] [22/74]  Thomas Stewart (Geelong)
+2026-04-18 09:46:56,896 [WARNING]   ✗ Could not download photo
+2026-04-18 09:46:58,404 [INFO] [23/74]  Samuel Collins (Gold Coast)
+2026-04-18 09:46:58,404 [DEBUG]   Fetching Gold Coast player data...
+2026-04-18 09:46:58,407 [DEBUG] Starting new HTTPS connection (1): www.goldcoastfc.com.au:443
+2026-04-18 09:46:59,221 [DEBUG] https://www.goldcoastfc.com.au:443 "GET /players HTTP/1.1" 200 33157
+2026-04-18 09:47:00,803 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:02,331 [INFO] [24/74]  Nicholas Holman (Gold Coast)
+2026-04-18 09:47:02,331 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:03,834 [INFO] [25/74]  Leo Lombard (Gold Coast)
+2026-04-18 09:47:03,834 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:05,406 [INFO] [26/74]  Lachlan Weller (Gold Coast)
+2026-04-18 09:47:05,406 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:06,981 [INFO] [27/74]  Lachlan Ash (GWS Giants)
+2026-04-18 09:47:06,982 [DEBUG]   Fetching GWS Giants player data...
+2026-04-18 09:47:06,984 [DEBUG] Starting new HTTPS connection (1): www.gwsgiants.com.au:443
+2026-04-18 09:47:07,964 [DEBUG] https://www.gwsgiants.com.au:443 "GET /players HTTP/1.1" 200 34126
+2026-04-18 09:47:09,502 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:11,060 [INFO] [28/74]  Joseph Fonti (GWS Giants)
+2026-04-18 09:47:11,060 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:12,612 [INFO] [29/74]  Harrison Himmelberg (GWS Giants)
+2026-04-18 09:47:12,615 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:14,159 [INFO] [30/74]  Joshua Kelly (GWS Giants)
+2026-04-18 09:47:14,160 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:15,693 [INFO] [31/74]  Nick Madden (GWS Giants)
+2026-04-18 09:47:15,693 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:17,199 [INFO] [32/74]  Ollie Greeves (Hawthorn)
+2026-04-18 09:47:17,199 [DEBUG]   Fetching Hawthorn player data...
+2026-04-18 09:47:17,201 [DEBUG] Starting new HTTPS connection (1): www.hawthornfc.com.au:443
+2026-04-18 09:47:18,204 [DEBUG] https://www.hawthornfc.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:47:19,716 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:21,227 [INFO] [33/74]  Mitchell Lewis (Hawthorn)
+2026-04-18 09:47:21,227 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:22,777 [INFO] [34/74]  Cameron Mackenzie (Hawthorn)
+2026-04-18 09:47:22,781 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:24,295 [INFO] [35/74]  Joshua Weddle (Hawthorn)
+2026-04-18 09:47:24,296 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:25,861 [INFO] [36/74]  Lachlan Jones (Port Adelaide)
+2026-04-18 09:47:25,861 [DEBUG]   Fetching Port Adelaide player data...
+2026-04-18 09:47:25,862 [DEBUG] Starting new HTTPS connection (1): www.portadelaidefc.com.au:443
+2026-04-18 09:47:27,010 [DEBUG] https://www.portadelaidefc.com.au:443 "GET /players HTTP/1.1" 200 34782
+2026-04-18 09:47:28,573 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:30,110 [INFO] [37/74]  Oliver Wines (Port Adelaide)
+2026-04-18 09:47:30,110 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:31,677 [INFO] [38/74]  Samuel Grlj (Richmond)
+2026-04-18 09:47:31,677 [DEBUG]   Fetching Richmond player data...
+2026-04-18 09:47:31,679 [DEBUG] Starting new HTTPS connection (1): www.richmondfc.com.au:443
+2026-04-18 09:47:32,542 [DEBUG] https://www.richmondfc.com.au:443 "GET /players HTTP/1.1" 200 34823
+2026-04-18 09:47:34,095 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:35,668 [INFO] [39/74]  Daniel Butler (St Kilda)
+2026-04-18 09:47:35,668 [DEBUG]   Fetching St Kilda player data...
+2026-04-18 09:47:35,670 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-04-18 09:47:36,533 [DEBUG] https://www.saints.com.au:443 "GET /players HTTP/1.1" 200 27576
+2026-04-18 09:47:36,537 [DEBUG]   Using HTML link fallback for St Kilda (43 unique players)
+2026-04-18 09:47:38,075 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:39,603 [INFO] [40/74]  Jackson Macrae (St Kilda)
+2026-04-18 09:47:39,603 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:41,178 [INFO] [41/74]  Kobe McDonald (St Kilda)
+2026-04-18 09:47:41,179 [DEBUG]   Fetching providerId from player page...
+2026-04-18 09:47:41,181 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-04-18 09:47:41,355 [DEBUG] https://www.saints.com.au:443 "GET /players/15854/kobe-mcdonald HTTP/1.1" 200 29367
+2026-04-18 09:47:41,945 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-04-18 09:47:42,472 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2026014/1044597.png HTTP/1.1" 404 48734
+2026-04-18 09:47:43,002 [DEBUG] Starting new HTTPS connection (1): s.afl.com.au:443
+2026-04-18 09:47:43,601 [DEBUG] https://s.afl.com.au:443 "GET /staticfile/AFL%20Tenant/AFL/Players/ChampIDImages/AFL/2025014/1044597.png HTTP/1.1" 404 48734
+2026-04-18 09:47:44,197 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:45,737 [INFO] [42/74]  Mitchito Owens (St Kilda)
+2026-04-18 09:47:45,737 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:47,275 [INFO] [43/74]  Will Edwards (Sydney)
+2026-04-18 09:47:47,275 [DEBUG]   Fetching Sydney player data...
+2026-04-18 09:47:47,277 [DEBUG] Starting new HTTPS connection (1): www.sydneyswans.com.au:443
+2026-04-18 09:47:48,104 [DEBUG] https://www.sydneyswans.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:47:49,680 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:51,256 [INFO] [44/74]  Will Green (Sydney)
+2026-04-18 09:47:51,256 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:52,821 [INFO] [45/74]  Matthew Roberts (Sydney)
+2026-04-18 09:47:52,821 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:54,357 [INFO] [46/74]  Matthew Flynn (West Coast)
+2026-04-18 09:47:54,357 [DEBUG]   Fetching West Coast player data...
+2026-04-18 09:47:54,359 [DEBUG] Starting new HTTPS connection (1): www.westcoasteagles.com.au:443
+2026-04-18 09:47:55,463 [DEBUG] https://www.westcoasteagles.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:47:56,980 [WARNING]   ✗ Could not download photo
+2026-04-18 09:47:58,555 [INFO] [47/74]  Matt Owies (West Coast)
+2026-04-18 09:47:58,555 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:00,130 [INFO] [48/74]  Nicholas Coffield (Western Bulldogs)
+2026-04-18 09:48:00,131 [DEBUG]   Fetching Western Bulldogs player data...
+2026-04-18 09:48:00,132 [DEBUG] Starting new HTTPS connection (1): www.westernbulldogs.com.au:443
+2026-04-18 09:48:01,146 [DEBUG] https://www.westernbulldogs.com.au:443 "GET /players HTTP/1.1" 200 None
+2026-04-18 09:48:02,676 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:04,248 [INFO] [49/74]  Timothy English (Western Bulldogs)
+2026-04-18 09:48:04,248 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:05,788 [INFO] [50/74]  Thomas Liberatore (Western Bulldogs)
+2026-04-18 09:48:05,788 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:07,291 [INFO] [51/74]  Taylor Duryea (Western Bulldogs)
+2026-04-18 09:48:07,291 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:08,843 [INFO] [52/74]  Travis Boak (Port Adelaide)
+2026-04-18 09:48:08,846 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:10,400 [INFO] [53/74]  Willie Rioli (Port Adelaide)
+2026-04-18 09:48:10,401 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:11,971 [INFO] [54/74]  Jeremy Finlayson (Port Adelaide)
+2026-04-18 09:48:11,972 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:13,479 [INFO] [55/74]  Ryan Burton (Port Adelaide)
+2026-04-18 09:48:13,480 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:15,050 [INFO] [56/74]  Matt Crouch (Adelaide)
+2026-04-18 09:48:15,050 [DEBUG]   Fetching Adelaide player data...
+2026-04-18 09:48:15,053 [DEBUG] Starting new HTTPS connection (1): www.afc.com.au:443
+2026-04-18 09:48:16,265 [DEBUG] https://www.afc.com.au:443 "GET /players HTTP/1.1" 200 29420
+2026-04-18 09:48:17,810 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:19,386 [INFO] [57/74]  Harry Boyd (St Kilda)
+2026-04-18 09:48:19,386 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:20,944 [INFO] [58/74]  Arie Schoenmaker (St Kilda)
+2026-04-18 09:48:20,944 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:22,465 [INFO] [59/74]  Jimmy Webster (St Kilda)
+2026-04-18 09:48:22,465 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:24,039 [INFO] [60/74]  Zaine Cordy (St Kilda)
+2026-04-18 09:48:24,039 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:25,615 [INFO] [61/74]  Zak Jones (St Kilda)
+2026-04-18 09:48:25,615 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:27,164 [INFO] [62/74]  Ted Clohesy (Geelong)
+2026-04-18 09:48:27,164 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:28,717 [INFO] [63/74]  Liam Jones (Western Bulldogs)
+2026-04-18 09:48:28,718 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:30,233 [INFO] [64/74]  Lachlan Murphy (Adelaide)
+2026-04-18 09:48:30,236 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:31,811 [INFO] [65/74]  Jason Johannisen (Western Bulldogs)
+2026-04-18 09:48:31,811 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:33,321 [INFO] [66/74]  Rory Atkins (Port Adelaide)
+2026-04-18 09:48:33,321 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:34,849 [INFO] [67/74]  Brodie Smith (Adelaide)
+2026-04-18 09:48:34,849 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:36,373 [INFO] [68/74]  Mitch Duncan (Geelong)
+2026-04-18 09:48:36,374 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:37,942 [INFO] [69/74]  Caleb Poulter (Western Bulldogs)
+2026-04-18 09:48:37,943 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:39,499 [INFO] [70/74]  Jed McEntee (Port Adelaide)
+2026-04-18 09:48:39,499 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:41,073 [INFO] [71/74]  Angus McLennan (St Kilda)
+2026-04-18 09:48:41,074 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:42,641 [INFO] [72/74]  Hugh Jackson (Port Adelaide)
+2026-04-18 09:48:42,641 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:44,149 [INFO] [73/74]  Dylan Williams (Port Adelaide)
+2026-04-18 09:48:44,150 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:45,712 [INFO] [74/74]  Chris Burgess (Adelaide)
+2026-04-18 09:48:45,713 [WARNING]   ✗ Could not download photo
+2026-04-18 09:48:47,233 [INFO] ============================================================
+2026-04-18 09:48:47,233 [INFO] SUMMARY
+2026-04-18 09:48:47,233 [INFO]   Downloaded (new): 0
+2026-04-18 09:48:47,234 [INFO]   Downloaded (team changes): 0
+2026-04-18 09:48:47,234 [INFO]   Total downloaded: 0
+2026-04-18 09:48:47,234 [INFO]   Failed: 74
+2026-04-18 09:48:47,234 [INFO]   Remaining: 0
+2026-04-18 09:48:47,234 [INFO] ============================================================
