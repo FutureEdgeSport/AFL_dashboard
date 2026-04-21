@@ -21423,6 +21423,7 @@ elif page == "Player Rating Matrix":
                     # --- Trait Ratings: cumulative display with per-round history ---
                     _traits_df = load_traits_for_season_fresh(selected_season)
                     _trait_pivot_ok = not _traits_df.empty and "Overall_Rating" in _traits_df.columns
+                    _trait_played_pivot = None
                     if not _trait_pivot_ok:
                         st.warning("No trait rating data available for this season.")
                         pivot = pd.DataFrame(columns=["Tot", "Avg"])
@@ -21473,22 +21474,44 @@ elif page == "Player Rating Matrix":
                             _hist_lookup = {(r["Player"], int(r["Round"])): r["Overall_Rating"] for _, r in _th_team.iterrows() if pd.notna(r["Overall_Rating"])}
                             # Latest round across both match data and trait history uses live traits
                             _latest_data_round = int(max(_all_rounds)) if _all_rounds else 0
-                            _rdata["_tr"] = _rdata.apply(
-                                lambda r: (
-                                    _trait_map.get(r[player_col]) if int(r["Round"]) == _latest_data_round and r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col]))
-                                    else _hist_lookup.get((r[player_col], int(r["Round"])), float("nan")) if r["_cg"] >= 3
-                                    else float("nan")
-                                ), axis=1
-                            )
+
+                            def _raw_tr(r):
+                                p = r[player_col]
+                                rd = int(r["Round"])
+                                if r["_cg"] < 3:
+                                    return float("nan")
+                                if rd == _latest_data_round and pd.notna(_trait_map.get(p)):
+                                    return _trait_map.get(p)
+                                return _hist_lookup.get((p, rd), float("nan"))
+
+                            _rdata["_tr_raw"] = _rdata.apply(_raw_tr, axis=1)
+                            # Mark which cells correspond to an actual snapshot
+                            # (player played that round).  Cells where the player
+                            # did NOT play will be forward-filled below and
+                            # rendered at reduced opacity.
+                            _rdata["_played"] = _rdata["_tr_raw"].notna()
+                            # Forward-fill within each player so once a rating is
+                            # established it carries across rounds they miss.
+                            _rdata = _rdata.sort_values([player_col, "Round"])
+                            _rdata["_tr"] = _rdata.groupby(player_col)["_tr_raw"].ffill()
                         else:
                             # No history: use current trait rating for all rounds >= 3 games (fallback)
                             _rdata["_tr"] = _rdata.apply(
                                 lambda r: _trait_map.get(r[player_col]) if r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col])) else float("nan"), axis=1
                             )
+                            _rdata["_played"] = _rdata["_tr"].notna()
 
                         pivot = _rdata.pivot_table(index=player_col, columns="Round", values="_tr", aggfunc="first")
                         pivot = pivot.reindex(columns=_all_rounds)
                         pivot.columns = [("OR" if int(c) == 0 else f"R{int(c)}") for c in pivot.columns]
+
+                        # Parallel pivot flagging which cells were genuinely
+                        # played (True) vs forward-filled (False).  Used by the
+                        # renderer to fade carried-forward ratings to 50%.
+                        _trait_played_pivot = _rdata.pivot_table(
+                            index=player_col, columns="Round", values="_played", aggfunc="first"
+                        ).reindex(columns=_all_rounds)
+                        _trait_played_pivot.columns = [("OR" if int(c) == 0 else f"R{int(c)}") for c in _trait_played_pivot.columns]
 
                         # Tot = current Overall_Rating × total games played
                         _gp = df_filt.groupby(player_col)[player_col].count()
@@ -21682,7 +21705,18 @@ elif page == "Player Rating Matrix":
                             tc = _text_colour(bg)
                             display = _mr_fv(val) if pd.notna(val) else "—"
                         _dv = float(val) if pd.notna(val) else ''
-                        cells += f"<td data-val='{_dv}' style='padding:6px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='background:{bg};color:{tc};'>{display}</span></td>"
+                        # Trait mode: fade cells that are forward-filled (player
+                        # didn't play that round) so it's visually clear the
+                        # rating is carried from a prior round.
+                        _pill_style = f"background:{bg};color:{tc};"
+                        if _mr_use_traits and pd.notna(val) and _trait_played_pivot is not None:
+                            try:
+                                _was_played = bool(_trait_played_pivot.loc[player, rc])
+                            except (KeyError, TypeError):
+                                _was_played = True
+                            if not _was_played:
+                                _pill_style += "opacity:0.5;"
+                        cells += f"<td data-val='{_dv}' style='padding:6px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);'><span class='ct-pill' style='{_pill_style}'>{display}</span></td>"
                     _summary_td_style = "padding:6px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);border-left:2px solid rgba(255,255,255,0.2);"
                     tot_val = row["Tot"]
                     tot_bg, tot_tc = _pct_colour(tot_val, tq80, tq60, tq40, tq20)
@@ -21773,6 +21807,7 @@ function _mrSort(ci) {{
 <span style='color:#FFD700;'>■</span> 40-60th |
 <span style='color:#FFA500;'>■</span> 20-40th |
 <span style='color:#FF0000;'>■</span> Bottom 20% |
+Faded = didn't play (rating carried from prior round) |
 — Under 3 games / No trait rating |
 Scale: 1.0 – 5.0
 </div>""", unsafe_allow_html=True)
