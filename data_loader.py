@@ -74,6 +74,17 @@ def _get_base_path() -> Path:
     return Path(__file__).parent
 
 
+def _file_mtime(path: str | Path) -> float:
+    """Return file modification time, or 0 if it doesn't exist.
+
+    Used as a cache-key parameter so ``st.cache_data`` auto-invalidates
+    when the underlying file changes on disk."""
+    try:
+        return Path(path).stat().st_mtime
+    except (OSError, ValueError):
+        return 0.0
+
+
 @lru_cache(maxsize=1)
 def master_workbook_available() -> bool:
     """Check if master workbook exists and is valid."""
@@ -354,7 +365,7 @@ def load_ladder_positions() -> pd.DataFrame:
 # ============================================================================
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def load_traits_for_season(season: int) -> pd.DataFrame:
+def load_traits_for_season(season: int, _mtime: float = 0.0) -> pd.DataFrame:
     """
     Load player traits for a specific season.
     Master: Player_Traits_{season} or Player_Traits_Historical (with filter)
@@ -385,6 +396,12 @@ def load_traits_for_season(season: int) -> pd.DataFrame:
                 pass
     
     return df
+
+
+def load_traits_for_season_fresh(season: int) -> pd.DataFrame:
+    """Load traits with automatic cache invalidation on file change."""
+    csv_path = _get_base_path() / "data" / "raw" / "traits" / f"traits_{season}.csv"
+    return load_traits_for_season(season, _mtime=_file_mtime(csv_path))
 
 
 # ============================================================================
@@ -458,7 +475,7 @@ def load_wheelo_player_data() -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def load_match_ratings(season: int = None) -> pd.DataFrame:
+def load_match_ratings(season: int = None, _mtime: float = 0.0) -> pd.DataFrame:
     """Load round-by-round match ratings from data/raw/player/match_ratings_{season}.csv."""
     if season is None:
         from config.constants import CURRENT_SEASON
@@ -474,8 +491,17 @@ def load_match_ratings(season: int = None) -> pd.DataFrame:
     return pd.DataFrame()
 
 
+def load_match_ratings_fresh(season: int = None) -> pd.DataFrame:
+    """Load match ratings with automatic cache invalidation on file change."""
+    if season is None:
+        from config.constants import CURRENT_SEASON
+        season = CURRENT_SEASON
+    path = _get_base_path() / "data" / "raw" / "player" / f"match_ratings_{season}.csv"
+    return load_match_ratings(season, _mtime=_file_mtime(path))
+
+
 @st.cache_data(show_spinner=False, ttl=3600)
-def load_brownlow_predictions(season: int = None) -> pd.DataFrame:
+def load_brownlow_predictions(season: int = None, _mtime: float = 0.0) -> pd.DataFrame:
     """Load Brownlow predictions from data/raw/player/brownlow_predictions_{season}.csv."""
     if season is None:
         from config.constants import CURRENT_SEASON
@@ -489,6 +515,15 @@ def load_brownlow_predictions(season: int = None) -> pd.DataFrame:
         except Exception:
             pass
     return pd.DataFrame()
+
+
+def load_brownlow_predictions_fresh(season: int = None) -> pd.DataFrame:
+    """Load Brownlow predictions with automatic cache invalidation on file change."""
+    if season is None:
+        from config.constants import CURRENT_SEASON
+        season = CURRENT_SEASON
+    path = _get_base_path() / "data" / "raw" / "player" / f"brownlow_predictions_{season}.csv"
+    return load_brownlow_predictions(season, _mtime=_file_mtime(path))
 
 
 @st.cache_data(show_spinner=False, ttl=3600)

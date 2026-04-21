@@ -172,6 +172,105 @@ if "recent_views" not in st.session_state:
 if "comparison_history" not in st.session_state:
     st.session_state.comparison_history = []  # List of {"type": "team/best23", "team1": ..., "team2": ...}
 
+# ============================================================================
+# WATCH LIST PERSISTENCE
+# ============================================================================
+import json as _wl_json
+
+_WATCH_LIST_PATH = Path(__file__).parent / "data" / "watch_lists.json"
+
+def _load_watch_lists() -> dict:
+    """Load watch lists from JSON file."""
+    if _WATCH_LIST_PATH.exists():
+        try:
+            with open(_WATCH_LIST_PATH, "r") as f:
+                return _wl_json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def _save_watch_lists(wl: dict):
+    """Save watch lists to JSON file."""
+    try:
+        _WATCH_LIST_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(_WATCH_LIST_PATH, "w") as f:
+            _wl_json.dump(wl, f, indent=2)
+    except Exception:
+        pass
+
+if "watch_lists" not in st.session_state:
+    st.session_state.watch_lists = _load_watch_lists()
+
+def add_player_to_watch_list(player: str, team: str, list_name: str = "Default"):
+    """Add a player to a named watch list. Returns True if added, False if already present."""
+    wl = st.session_state.watch_lists
+    if list_name not in wl:
+        wl[list_name] = []
+    key = {"player": player.strip(), "team": team.strip()}
+    # Check if already present
+    for entry in wl[list_name]:
+        if entry["player"] == key["player"] and entry["team"] == key["team"]:
+            return False
+    wl[list_name].append(key)
+    st.session_state.watch_lists = wl
+    _save_watch_lists(wl)
+    return True
+
+def remove_player_from_watch_list(player: str, team: str, list_name: str = "Default"):
+    """Remove a player from a named watch list."""
+    wl = st.session_state.watch_lists
+    if list_name not in wl:
+        return
+    wl[list_name] = [e for e in wl[list_name]
+                     if not (e["player"] == player.strip() and e["team"] == team.strip())]
+    st.session_state.watch_lists = wl
+    _save_watch_lists(wl)
+
+def get_watch_list_names() -> list:
+    """Return sorted list of watch list names."""
+    return sorted(st.session_state.watch_lists.keys())
+
+def delete_watch_list(list_name: str):
+    """Delete an entire watch list."""
+    wl = st.session_state.watch_lists
+    wl.pop(list_name, None)
+    st.session_state.watch_lists = wl
+    _save_watch_lists(wl)
+
+def rename_watch_list(old_name: str, new_name: str):
+    """Rename a watch list."""
+    wl = st.session_state.watch_lists
+    if old_name in wl and new_name not in wl:
+        wl[new_name] = wl.pop(old_name)
+        st.session_state.watch_lists = wl
+        _save_watch_lists(wl)
+
+def reorder_watch_list(list_name: str, new_order: list):
+    """Reorder a watch list given a list of indices in the new order."""
+    wl = st.session_state.watch_lists
+    if list_name not in wl:
+        return
+    old = wl[list_name]
+    wl[list_name] = [old[i] for i in new_order if i < len(old)]
+    st.session_state.watch_lists = wl
+    _save_watch_lists(wl)
+
+def render_watch_list_add_button(player: str, team: str, key_suffix: str = ""):
+    """Render an 'Add to Watch List' popover with list selection. Call within a Streamlit column/container."""
+    wl_names = get_watch_list_names()
+    if not wl_names:
+        wl_names = ["Default"]
+    with st.popover("📋", help="Add to Watch List"):
+        sel_list = st.selectbox("Watch List", wl_names, key=f"wl_sel_{player}_{team}_{key_suffix}")
+        new_list = st.text_input("Or create new list", key=f"wl_new_{player}_{team}_{key_suffix}")
+        target = new_list.strip() if new_list.strip() else sel_list
+        if st.button("Add", key=f"wl_add_{player}_{team}_{key_suffix}"):
+            added = add_player_to_watch_list(player, team, target)
+            if added:
+                st.success(f"Added {player} to '{target}'")
+            else:
+                st.info(f"{player} already in '{target}'")
+
 def add_to_recent_views(view_type: str, name: str, team: str = None, page: str = None):
     """Add an item to recent views, keeping last 5 unique items."""
     item = {"type": view_type, "name": name, "team": team, "page": page}
@@ -4017,7 +4116,7 @@ def predict_player_trajectory(
 # Define page groups for organized navigation (AMS categories)
 PAGE_GROUPS = {
     "Home": ["Home"],
-    "List Management & Recruiting": ["Club List", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "List Breakdown - Traits", "Contract Status"],
+    "List Management & Recruiting": ["Club List", "Depth Chart", "Team Age Breakdown", "List Ladder", "Team List Summary", "List Breakdown - Traits", "Contract Status", "Watch List"],
     "Team Performance": ["Overview", "Team Breakdown", "Team Compare", "Game Trends", "Game Predictor", "Game Model Scorecard", "Best 23", "Team Selection Ratings", "Ladder"],
     "Individual Performance": ["Player Profile", "IDP", "Custom Player Comparison", "Player Rating Matrix"],
 }
@@ -4266,7 +4365,7 @@ def render_grouped_navigation():
         matches = [p for p in all_players_search if search_query.lower() in p["player"].lower()][:5]
         if matches:
             for match in matches:
-                col1, col2 = st.sidebar.columns([4, 1])
+                col1, col2 = st.sidebar.columns([5, 1])
                 with col1:
                     if st.button(f"{match['player']}", key=f"search_{match['player']}_{match['team']}", use_container_width=True):
                         st.session_state.selected_player_search = match['player']
@@ -9528,7 +9627,7 @@ elif page == "Club List":
 
     # Use render_sortable_table for working JavaScript sorting
     render_sortable_table(html)
-    
+
     # Professional footer
     render_footer()
 
@@ -9622,7 +9721,7 @@ elif page == "Player Profile":
         # Clear the search state after using it
         st.session_state.selected_player_search = None
 
-    player_col1, player_col2 = st.columns([5, 1])
+    player_col1, player_col2, player_col3 = st.columns([5, 1, 1])
     with player_col1:
         selected_player = st.selectbox("Select Player", player_names, index=player_default_idx, key="pp_player")
     with player_col2:
@@ -9633,6 +9732,8 @@ elif page == "Player Profile":
         if st.button(star_label, key="fav_player_profile"):
             toggle_favorite_player(selected_player, selected_team)
             st.rerun()
+    with player_col3:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
     
     # Track in recent views
     add_to_recent_views("player", selected_player, selected_team, "Player Profile")
@@ -13938,6 +14039,16 @@ elif page == "Team Selection Ratings":
         _ts_df = pd.read_csv(_ts_file)
         _fix_df = pd.read_csv(_fix_file)
 
+        # Normalise team names so selections/fixture match player ratings
+        _tsr_team_map = {
+            "Brisbane Lions": "Brisbane",
+        }
+        if "Team" in _ts_df.columns:
+            _ts_df["Team"] = _ts_df["Team"].replace(_tsr_team_map)
+        for _fc in ("HomeTeam", "AwayTeam"):
+            if _fc in _fix_df.columns:
+                _fix_df[_fc] = _fix_df[_fc].replace(_tsr_team_map)
+
         if not _ts_df.empty:
             _pr_all_rounds = sorted(_ts_df["Round"].unique())
             _pr_latest_round = int(_pr_all_rounds[-1])
@@ -14146,9 +14257,56 @@ elif page == "Team Selection Ratings":
                     if len(_pr_df) >= 2:
                         import plotly.graph_objects as go
 
+                        # --- Compute Season Avg / Best / Worst from historical match ratings ---
+                        _pr_season_avg = {}
+                        _pr_season_best = {}
+                        _pr_season_best_rnd = {}
+                        _pr_season_worst = {}
+                        _pr_season_worst_rnd = {}
+                        _pr_has_history = False
+                        _mr_path = Path(__file__).parent / "data" / "raw" / "player" / f"match_ratings_{season}.csv"
+                        if _mr_path.exists():
+                            try:
+                                _mr_hist = pd.read_csv(_mr_path)
+                                if "Round" in _mr_hist.columns and "RatingPoints" in _mr_hist.columns:
+                                    _mr_hist = _mr_hist[_mr_hist["Round"] > 0]  # exclude Opening Round 0
+                                    _mr_rounds = sorted(_mr_hist["Round"].unique())
+                                    if len(_mr_rounds) >= 2:
+                                        # Build per-round team averages
+                                        _rnd_team_avgs = []
+                                        for _rnd in _mr_rounds:
+                                            _rnd_df = _mr_hist[_mr_hist["Round"] == _rnd]
+                                            _rnd_avgs = _rnd_df.groupby("Team")["RatingPoints"].mean().reset_index()
+                                            _rnd_avgs.columns = ["Team", "AvgRating"]
+                                            _rnd_avgs["Round"] = _rnd
+                                            _rnd_team_avgs.append(_rnd_avgs)
+                                        _all_rnd = pd.concat(_rnd_team_avgs, ignore_index=True)
+                                        _hist_league_avg = _all_rnd.groupby("Team")["AvgRating"].mean().mean()
+                                        _all_rnd["RelStrength"] = _all_rnd["AvgRating"] - _hist_league_avg
+                                        _pr_season_avg = _all_rnd.groupby("Team")["RelStrength"].mean().to_dict()
+                                        _pr_season_best = _all_rnd.groupby("Team")["RelStrength"].max().to_dict()
+                                        _pr_season_worst = _all_rnd.groupby("Team")["RelStrength"].min().to_dict()
+                                        for _t in _pr_season_best:
+                                            _t_rows = _all_rnd[_all_rnd["Team"] == _t]
+                                            _best_row = _t_rows.loc[_t_rows["RelStrength"].idxmax()]
+                                            _pr_season_best_rnd[_t] = f"Rd {int(_best_row['Round'])}"
+                                        for _t in _pr_season_worst:
+                                            _t_rows = _all_rnd[_all_rnd["Team"] == _t]
+                                            _worst_row = _t_rows.loc[_t_rows["RelStrength"].idxmin()]
+                                            _pr_season_worst_rnd[_t] = f"Rd {int(_worst_row['Round'])}"
+                                        _pr_has_history = True
+                            except Exception:
+                                pass
+
                         _pr_teams = _pr_df["Team"].tolist()
                         _pr_n = len(_pr_teams)
                         _pr_max_abs = max(abs(_pr_df["RelStrength"].max()), abs(_pr_df["RelStrength"].min()), 0.3)
+                        # Extend range to accommodate season best/worst markers
+                        if _pr_has_history:
+                            _hist_vals = [v for t, v in _pr_season_best.items() if t in _pr_teams] + \
+                                         [v for t, v in _pr_season_worst.items() if t in _pr_teams]
+                            if _hist_vals:
+                                _pr_max_abs = max(_pr_max_abs, max(abs(v) for v in _hist_vals))
                         _pr_x_range = [-_pr_max_abs * 1.4, _pr_max_abs * 1.4]
 
                         _pr_fig = go.Figure()
@@ -14171,6 +14329,50 @@ elif page == "Team Selection Ratings":
                                     f"Matched: {int(_pr_row['MatchedPlayers'])}/{int(_pr_row['TotalPlayers'])} players"
                                     f"<extra></extra>"
                                 ),
+                            ))
+
+                        # --- Season Avg / Best / Worst marker traces ---
+                        if _pr_has_history:
+                            # Season average — white tick marker
+                            _pr_avg_x = [_pr_season_avg.get(t, float("nan")) for t in _pr_teams]
+                            _pr_avg_hover = [
+                                f"<b>{t}</b>: {v:+.1f}<extra>Season Avg</extra>" if pd.notna(v) else ""
+                                for t, v in zip(_pr_teams, _pr_avg_x)
+                            ]
+                            _pr_fig.add_trace(go.Scatter(
+                                x=_pr_avg_x, y=_pr_teams, mode="markers",
+                                marker=dict(symbol="line-ns", size=20,
+                                            line=dict(width=2.5, color="rgba(255,255,255,0.75)"),
+                                            color="rgba(255,255,255,0.75)"),
+                                name="Season Avg", hovertemplate=_pr_avg_hover,
+                            ))
+
+                            # Season best — gold diamond
+                            _pr_best_x = [_pr_season_best.get(t, float("nan")) for t in _pr_teams]
+                            _pr_best_hover = [
+                                f"<b>{t}</b>: {v:+.1f} ({_pr_season_best_rnd.get(t, '')})<extra>Season Best</extra>"
+                                if pd.notna(v) else ""
+                                for t, v in zip(_pr_teams, _pr_best_x)
+                            ]
+                            _pr_fig.add_trace(go.Scatter(
+                                x=_pr_best_x, y=_pr_teams, mode="markers",
+                                marker=dict(symbol="diamond", size=8, color="#FFD700",
+                                            line=dict(width=0.8, color="rgba(0,0,0,0.5)")),
+                                name="Season Best", hovertemplate=_pr_best_hover,
+                            ))
+
+                            # Season worst — red diamond
+                            _pr_worst_x = [_pr_season_worst.get(t, float("nan")) for t in _pr_teams]
+                            _pr_worst_hover = [
+                                f"<b>{t}</b>: {v:+.1f} ({_pr_season_worst_rnd.get(t, '')})<extra>Season Worst</extra>"
+                                if pd.notna(v) else ""
+                                for t, v in zip(_pr_teams, _pr_worst_x)
+                            ]
+                            _pr_fig.add_trace(go.Scatter(
+                                x=_pr_worst_x, y=_pr_teams, mode="markers",
+                                marker=dict(symbol="diamond", size=8, color="#FF4444",
+                                            line=dict(width=0.8, color="rgba(0,0,0,0.5)")),
+                                name="Season Worst", hovertemplate=_pr_worst_hover,
                             ))
 
                         _pr_fig.update_layout(
@@ -14197,6 +14399,14 @@ elif page == "Team Selection Ratings":
                             ),
                             font=dict(color="white"),
                             barmode="overlay",
+                            legend=dict(
+                                orientation="h",
+                                yanchor="bottom", y=1.0,
+                                xanchor="center", x=0.5,
+                                font=dict(size=11, color="rgba(255,255,255,0.7)"),
+                                bgcolor="rgba(0,0,0,0)",
+                                itemsizing="constant",
+                            ) if _pr_has_history else dict(visible=False),
                             hoverlabel=dict(
                                 bgcolor="rgba(20,20,25,0.95)",
                                 bordercolor="rgba(255,255,255,0.15)",
@@ -14227,6 +14437,57 @@ elif page == "Team Selection Ratings":
                         """
                         st.markdown(_pr_chart_html, unsafe_allow_html=True)
                         st.plotly_chart(_pr_fig, use_container_width=True, config={"displayModeBar": False})
+
+                        # --- Chart methodology explainer ---
+                        _pr_explainer_rows = (
+                            "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                            "<td style='padding:6px 10px 6px 0;vertical-align:top;width:20px;'>"
+                            "<span style='display:inline-block;width:14px;height:14px;background:#6a89cc;border-radius:3px;'></span></td>"
+                            "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;width:110px;'>Bar (This Round)</td>"
+                            f"<td style='padding:6px 0;'>Average the {_pr_mode_labels.get(_pr_rating_mode, 'rating')} for each player in the team&#39;s announced squad, "
+                            f"then subtract the <b style=\"color:rgba(255,255,255,0.8);\">league baseline</b> (mean of all announced team averages). "
+                            f"Positive&nbsp;=&nbsp;above average.</td></tr>"
+                            "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                            "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                            "<span style='display:inline-block;width:14px;height:2px;background:rgba(255,255,255,0.75);margin-top:7px;'></span></td>"
+                            "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Zero Line</td>"
+                            "<td style='padding:6px 0;'>The league average baseline — computed as the mean of all team averages "
+                            "across all rounds. A team on the zero line is exactly league-average.</td></tr>"
+                        )
+                        if _pr_has_history:
+                            _pr_explainer_rows += (
+                                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                                "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                                "<span style='font-size:11px;color:rgba(255,255,255,0.75);'>⎯ &#124;</span></td>"
+                                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Avg</td>"
+                                "<td style='padding:6px 0;'>Mean of this team&#39;s relative strength across all rounds played "
+                                "(white tick marker). Shows where the team typically sits.</td></tr>"
+                                "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
+                                "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                                "<span style='color:#FFD700;font-size:13px;'>◆</span></td>"
+                                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Best</td>"
+                                "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the highest relative strength. "
+                                "Hover to see which round.</td></tr>"
+                                "<tr>"
+                                "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                                "<span style='color:#FF4444;font-size:13px;'>◆</span></td>"
+                                "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Worst</td>"
+                                "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the lowest relative strength. "
+                                "Hover to see which round.</td></tr>"
+                            )
+                        _pr_explainer = (
+                            "<div style='background:linear-gradient(135deg,rgba(20,20,28,0.92) 0%,rgba(14,14,20,0.96) 100%);"
+                            "border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px 16px 22px;"
+                            "margin:8px 0 14px 0;font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;'>"
+                            "<div style='display:flex;align-items:center;gap:8px;margin-bottom:12px;'>"
+                            "<span style='font-size:14px;'>📊</span>"
+                            "<span style='font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.03em;'>"
+                            "HOW THE CHART WORKS</span></div>"
+                            "<table style='width:100%;border-collapse:collapse;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;'>"
+                            f"{_pr_explainer_rows}"
+                            "</table></div>"
+                        )
+                        st.markdown(_pr_explainer, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -17326,6 +17587,563 @@ elif page == "Contract Status":
             render_sortable_table(_cws_html)
     elif not _cws_has_filter:
         st.info("Select at least one filter to search across the competition.")
+
+    render_footer()
+
+# ================= WATCH LIST =================
+elif page == "Watch List":
+    render_page_header("Watch List", "Track & Manage Players of Interest", "list")
+    render_breadcrumb([("Home", "Home"), ("Watch List", None)])
+
+    # ---------- Season selector (for data lookups) ----------
+    _wl_seasons = sorted(get_player_seasons(), reverse=True)
+    if not _wl_seasons:
+        st.error("No player seasons found.")
+        st.stop()
+    _wl_default_idx = _wl_seasons.index(CURRENT_SEASON) if CURRENT_SEASON in _wl_seasons else 0
+    _wl_season = st.selectbox("Select Season", _wl_seasons, index=_wl_default_idx, key="wl_season")
+
+    # ---------- Load player data (same as Contract Status) ----------
+    try:
+        _wl_df = load_full_squad(int(_wl_season))
+    except Exception as _wl_e:
+        st.error(f"Failed to load player data for {_wl_season}: {_wl_e}")
+        st.stop()
+
+    if _wl_df is None or _wl_df.empty:
+        st.warning(f"No player data available for {_wl_season}.")
+        st.stop()
+
+    _wl_df = _wl_df.copy()
+    _wl_df["Player"] = _wl_df["Player"].astype(str).str.strip()
+    _wl_df["Team"] = _wl_df["Team"].astype(str).str.strip()
+    _wl_df["RatingPoints_Avg"] = pd.to_numeric(_wl_df.get("RatingPoints_Avg"), errors="coerce").fillna(0)
+    if "Age" in _wl_df.columns:
+        _wl_df["Age"] = pd.to_numeric(_wl_df["Age"], errors="coerce")
+    if "Matches" in _wl_df.columns:
+        _wl_df["Matches"] = pd.to_numeric(_wl_df["Matches"], errors="coerce").fillna(0)
+    else:
+        _wl_df["Matches"] = 0
+
+    # Load contract/FA data
+    _wl_fw_path = Path(__file__).parent / "data" / "raw" / "player" / f"footywire_{int(_wl_season)}_complete.csv"
+    if _wl_fw_path.exists():
+        try:
+            _wl_fw = pd.read_csv(_wl_fw_path)
+            _wl_fw["Player"] = _wl_fw["Player"].astype(str).str.strip()
+            _wl_fw["Team"] = _wl_fw["Team"].astype(str).str.strip()
+            _wl_fw_cols = ["Player", "Team"] + [c for c in ["Contract_Expiry", "FA_Status"] if c in _wl_fw.columns]
+            _wl_df = _wl_df.merge(_wl_fw[_wl_fw_cols], on=["Player", "Team"], how="left")
+        except Exception:
+            _wl_df["Contract_Expiry"] = np.nan
+            _wl_df["FA_Status"] = "Unknown"
+    else:
+        _wl_df["Contract_Expiry"] = np.nan
+        _wl_df["FA_Status"] = "Unknown"
+
+    if "Contract_Expiry" not in _wl_df.columns:
+        _wl_df["Contract_Expiry"] = np.nan
+    if "FA_Status" not in _wl_df.columns:
+        _wl_df["FA_Status"] = "Unknown"
+
+    # Position mapping — enrich from player_summary for granular positions
+    try:
+        _wl_summary_pos = load_player_summary()
+        if not _wl_summary_pos.empty and "Position" in _wl_summary_pos.columns:
+            _wl_sp = _wl_summary_pos[["Player", "Team", "Position"]].copy()
+            _wl_sp.columns = ["Player", "Team", "_SummaryPos"]
+            _wl_sp["Player"] = _wl_sp["Player"].astype(str).str.strip()
+            _wl_sp["Team"] = _wl_sp["Team"].astype(str).str.strip()
+            _wl_sp = _wl_sp.drop_duplicates(subset=["Player", "Team"], keep="first")
+            _wl_df = _wl_df.merge(_wl_sp, on=["Player", "Team"], how="left")
+            _has_sp = _wl_df["_SummaryPos"].notna() & (_wl_df["_SummaryPos"].astype(str).str.strip() != "")
+            _wl_df.loc[_has_sp, "Position"] = _wl_df.loc[_has_sp, "_SummaryPos"]
+            _wl_df = _wl_df.drop(columns=["_SummaryPos"])
+    except Exception:
+        pass
+
+    if "Position" in _wl_df.columns:
+        _wl_df["DepthPos"] = _wl_df["Position"].apply(
+            lambda x: map_position_to_depth(x) if pd.notna(x) and str(x).strip() != "" else "—"
+        )
+    else:
+        _wl_df["DepthPos"] = "—"
+
+    # Rating tier helper (percentile-based)
+    _wl_all_ratings = _wl_df["RatingPoints_Avg"].dropna()
+    def _wl_get_tier(v):
+        vals = _wl_all_ratings
+        if pd.isna(v) or len(vals) == 0:
+            return "Unknown"
+        pct = (vals <= v).mean()
+        if pct >= 0.80:
+            return "Elite"
+        elif pct >= 0.60:
+            return "Good"
+        elif pct >= 0.40:
+            return "Average"
+        elif pct >= 0.20:
+            return "Below Average"
+        else:
+            return "Poor"
+
+    _wl_df["RatingTier"] = _wl_df["RatingPoints_Avg"].apply(_wl_get_tier)
+
+    # ============ TAB LAYOUT: Manual vs Auto Watch Lists ============
+    _wl_tab_manual, _wl_tab_auto = st.tabs(["📋 My Watch Lists", "⚡ Auto Watch Lists"])
+
+    # ============================================================
+    # TAB 1: MANUAL WATCH LISTS
+    # ============================================================
+    with _wl_tab_manual:
+        _wl_names = get_watch_list_names()
+
+        # ---------- Management row ----------
+        _wl_mgmt_c1, _wl_mgmt_c2, _wl_mgmt_c3 = st.columns([2, 2, 4])
+        with _wl_mgmt_c1:
+            _wl_new_name = st.text_input("Create new watch list", placeholder="Enter list name...", key="wl_create_name")
+            if st.button("Create", key="wl_create_btn") and _wl_new_name.strip():
+                wl = st.session_state.watch_lists
+                if _wl_new_name.strip() not in wl:
+                    wl[_wl_new_name.strip()] = []
+                    st.session_state.watch_lists = wl
+                    _save_watch_lists(wl)
+                    st.rerun()
+                else:
+                    st.warning("List already exists.")
+        with _wl_mgmt_c2:
+            if _wl_names:
+                _wl_del_sel = st.selectbox("Delete a watch list", _wl_names, key="wl_del_sel")
+                if st.button("Delete", key="wl_del_btn", type="secondary"):
+                    delete_watch_list(_wl_del_sel)
+                    st.rerun()
+
+        # ---------- Add players section ----------
+        st.markdown("---")
+        st.markdown("##### Add Players")
+        _wl_add_c1, _wl_add_c2, _wl_add_c3 = st.columns([3, 2, 2])
+        _wl_all_players = sorted(_wl_df[["Player", "Team"]].drop_duplicates().apply(
+            lambda r: f"{r['Player']} ({r['Team']})", axis=1
+        ).tolist())
+
+        with _wl_add_c1:
+            _wl_add_sel = st.multiselect("Search & select players", _wl_all_players, key="wl_add_players")
+        with _wl_add_c2:
+            _wl_target_names = _wl_names if _wl_names else ["Default"]
+            _wl_add_target = st.selectbox("Add to list", _wl_target_names, key="wl_add_target")
+        with _wl_add_c3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Add Selected", key="wl_add_btn", type="primary"):
+                _wl_added_count = 0
+                for _wl_ps in _wl_add_sel:
+                    # Parse "Player Name (Team)"
+                    _wl_paren = _wl_ps.rfind("(")
+                    if _wl_paren > 0:
+                        _wl_pname = _wl_ps[:_wl_paren].strip()
+                        _wl_tname = _wl_ps[_wl_paren+1:].rstrip(")")
+                        if add_player_to_watch_list(_wl_pname, _wl_tname, _wl_add_target):
+                            _wl_added_count += 1
+                if _wl_added_count > 0:
+                    st.success(f"Added {_wl_added_count} player(s) to '{_wl_add_target}'")
+                    st.rerun()
+                elif _wl_add_sel:
+                    st.info("All selected players already in list.")
+
+        # ---------- Display selected watch list ----------
+        st.markdown("---")
+        _wl_names = get_watch_list_names()  # Refresh after potential creation
+        if not _wl_names:
+            st.info("No watch lists yet. Create one above or add players from any page using the 📋 button.")
+        else:
+            _wl_view_sel = st.selectbox("View Watch List", _wl_names, key="wl_view_sel")
+            _wl_entries = st.session_state.watch_lists.get(_wl_view_sel, [])
+
+            if not _wl_entries:
+                st.info(f"'{_wl_view_sel}' is empty. Add players using the search above or 📋 buttons on other pages.")
+            else:
+                # Build display dataframe by matching against player data
+                _wl_rows = []
+                for _wl_i, _wl_entry in enumerate(_wl_entries):
+                    _wl_match = _wl_df[
+                        (_wl_df["Player"] == _wl_entry["player"]) &
+                        (_wl_df["Team"] == _wl_entry["team"])
+                    ]
+                    if not _wl_match.empty:
+                        _wl_r = _wl_match.iloc[0]
+                        _wl_age_col = "Age_Decimal" if "Age_Decimal" in _wl_df.columns else "Age"
+                        _wl_rows.append({
+                            "idx": _wl_i,
+                            "PLAYER": _wl_r["Player"],
+                            "TEAM": _wl_r["Team"],
+                            "POSITION": _wl_r.get("DepthPos", "—"),
+                            "AGE": pd.to_numeric(_wl_r.get(_wl_age_col), errors="coerce"),
+                            "GAMES": int(_wl_r.get("Matches", 0)),
+                            "RATING": round(float(_wl_r.get("RatingPoints_Avg", 0)), 1),
+                            "CONTRACT EXPIRY": _wl_r.get("Contract_Expiry", np.nan),
+                            "FA STATUS": _wl_r.get("FA_Status", "Unknown"),
+                        })
+                    else:
+                        _wl_rows.append({
+                            "idx": _wl_i,
+                            "PLAYER": _wl_entry["player"],
+                            "TEAM": _wl_entry["team"],
+                            "POSITION": "—",
+                            "AGE": np.nan,
+                            "GAMES": 0,
+                            "RATING": 0.0,
+                            "CONTRACT EXPIRY": np.nan,
+                            "FA STATUS": "Unknown",
+                        })
+
+                _wl_out = pd.DataFrame(_wl_rows)
+
+                # ---------- Reorder controls ----------
+                st.markdown("##### Reorder & Manage")
+                _wl_reorder_cols = st.columns([1, 1, 1, 5])
+                with _wl_reorder_cols[0]:
+                    _wl_move_player = st.selectbox(
+                        "Player", _wl_out["PLAYER"] + " (" + _wl_out["TEAM"] + ")",
+                        key="wl_move_player",
+                    )
+                with _wl_reorder_cols[1]:
+                    _wl_move_dir = st.selectbox("Move", ["Up", "Down", "To Top", "To Bottom"], key="wl_move_dir")
+                with _wl_reorder_cols[2]:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("Move", key="wl_move_btn"):
+                        _wl_sel_idx = _wl_out[
+                            (_wl_out["PLAYER"] + " (" + _wl_out["TEAM"] + ")") == _wl_move_player
+                        ].index
+                        if len(_wl_sel_idx) > 0:
+                            _wl_ci = int(_wl_sel_idx[0])
+                            _wl_order = list(range(len(_wl_entries)))
+                            if _wl_move_dir == "Up" and _wl_ci > 0:
+                                _wl_order[_wl_ci], _wl_order[_wl_ci-1] = _wl_order[_wl_ci-1], _wl_order[_wl_ci]
+                            elif _wl_move_dir == "Down" and _wl_ci < len(_wl_order) - 1:
+                                _wl_order[_wl_ci], _wl_order[_wl_ci+1] = _wl_order[_wl_ci+1], _wl_order[_wl_ci]
+                            elif _wl_move_dir == "To Top":
+                                _wl_order.pop(_wl_ci)
+                                _wl_order.insert(0, _wl_ci)
+                            elif _wl_move_dir == "To Bottom":
+                                _wl_order.pop(_wl_ci)
+                                _wl_order.append(_wl_ci)
+                            reorder_watch_list(_wl_view_sel, _wl_order)
+                            st.rerun()
+
+                # ---------- Remove players ----------
+                _wl_remove_cols = st.columns([3, 1, 4])
+                with _wl_remove_cols[0]:
+                    _wl_remove_sel = st.multiselect(
+                        "Remove players",
+                        _wl_out["PLAYER"] + " (" + _wl_out["TEAM"] + ")",
+                        key="wl_remove_sel",
+                    )
+                with _wl_remove_cols[1]:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("Remove", key="wl_remove_btn", type="secondary") and _wl_remove_sel:
+                        for _wl_rs in _wl_remove_sel:
+                            _wl_paren = _wl_rs.rfind("(")
+                            if _wl_paren > 0:
+                                _wl_rpname = _wl_rs[:_wl_paren].strip()
+                                _wl_rtname = _wl_rs[_wl_paren+1:].rstrip(")")
+                                remove_player_from_watch_list(_wl_rpname, _wl_rtname, _wl_view_sel)
+                        st.rerun()
+
+                # ---------- Build HTML table (Contract Status style) ----------
+                _wl_league_ratings = _wl_df["RatingPoints_Avg"].dropna()
+
+                _wl_fa_colors = {
+                    "Unrestricted Free Agent": ("#FF4444", "#FFFFFF"),
+                    "Restricted Free Agent": ("#FFA500", "#000000"),
+                    "Non-Free Agent": ("#4CAF50", "#FFFFFF"),
+                    "Delisted Free Agent": ("#FF6666", "#FFFFFF"),
+                    "Out of Contract": ("#FF8800", "#000000"),
+                    "Unknown": ("#888888", "#FFFFFF"),
+                }
+
+                def _wl_expiry_color(expiry, current_year):
+                    if pd.isna(expiry):
+                        return "#888888", "#FFFFFF"
+                    years_left = int(expiry) - int(current_year)
+                    if years_left <= 0:
+                        return "#FF4444", "#FFFFFF"
+                    elif years_left == 1:
+                        return "#FF8800", "#000000"
+                    elif years_left == 2:
+                        return "#FFCC00", "#000000"
+                    elif years_left <= 4:
+                        return "#88CC44", "#000000"
+                    else:
+                        return "#4CAF50", "#FFFFFF"
+
+                _wl_html = """
+<table class="fe-table fe-sortable">
+<thead>
+<tr>
+<th>#</th>
+<th>PLAYER</th>
+<th>TEAM</th>
+<th>POS</th>
+<th>AGE</th>
+<th>GP</th>
+<th>RATING</th>
+<th>EXPIRY</th>
+<th>FA STATUS</th>
+</tr>
+</thead>
+<tbody>
+"""
+                for _wl_ri, _wl_rr in _wl_out.iterrows():
+                    _wl_rv = _wl_rr["RATING"]
+                    _wl_gv = _wl_rr["GAMES"]
+                    _wl_has_played = not pd.isna(_wl_gv) and int(_wl_gv) > 0
+                    if _wl_has_played:
+                        _wl_bg_r, _wl_fg_r = rating_colour_for_value(_wl_rv, _wl_league_ratings)
+                    else:
+                        _wl_bg_r, _wl_fg_r = "#444444", "#999999"
+
+                    _wl_age_s = "—" if pd.isna(_wl_rr["AGE"]) else f"{float(_wl_rr['AGE']):.1f}"
+                    _wl_gm_s = "—" if pd.isna(_wl_gv) else str(int(_wl_gv))
+                    _wl_rt_s = "—" if pd.isna(_wl_rv) or _wl_rv == 0 else f"{float(_wl_rv):.1f}"
+
+                    _wl_exp_v = _wl_rr["CONTRACT EXPIRY"]
+                    _wl_exp_s = "—" if pd.isna(_wl_exp_v) else str(int(_wl_exp_v))
+                    _wl_bg_e, _wl_fg_e = _wl_expiry_color(_wl_exp_v, _wl_season)
+
+                    _wl_fa = _wl_rr["FA STATUS"]
+                    _wl_bg_fa, _wl_fg_fa = _wl_fa_colors.get(_wl_fa, ("#888888", "#FFFFFF"))
+                    _wl_fa_short = _wl_fa
+                    if "Unrestricted" in str(_wl_fa):
+                        _wl_fa_short = "UFA"
+                    elif "Restricted" in str(_wl_fa) and "Unrestricted" not in str(_wl_fa):
+                        _wl_fa_short = "RFA"
+                    elif "Non-Free" in str(_wl_fa):
+                        _wl_fa_short = "Non-FA"
+                    elif "Delisted" in str(_wl_fa):
+                        _wl_fa_short = "DFA"
+                    elif "Out of Contract" in str(_wl_fa):
+                        _wl_fa_short = "OOC"
+
+                    _wl_pos_s = _wl_rr["POSITION"] if pd.notna(_wl_rr["POSITION"]) else "—"
+
+                    _wl_html += f"""
+<tr>
+<td>{_wl_ri + 1}</td>
+<td>{_wl_rr['PLAYER']}</td>
+<td>{_wl_rr['TEAM']}</td>
+<td>{_wl_pos_s}</td>
+<td>{_wl_age_s}</td>
+<td>{_wl_gm_s}</td>
+<td><span class="ct-pill" style="background:{_wl_bg_r}; color:{_wl_fg_r};">{_wl_rt_s}</span></td>
+<td><span class="ct-pill" style="background:{_wl_bg_e}; color:{_wl_fg_e};">{_wl_exp_s}</span></td>
+<td><span class="ct-pill ct-fa" style="background:{_wl_bg_fa}; color:{_wl_fg_fa};" title="{_wl_fa}">{_wl_fa_short}</span></td>
+</tr>
+"""
+                _wl_html += "</tbody></table>"
+                render_sortable_table(_wl_html)
+
+    # ============================================================
+    # TAB 2: AUTOMATIC WATCH LISTS
+    # ============================================================
+    with _wl_tab_auto:
+        st.markdown("##### Generate Auto Watch List")
+        st.caption("Combine any filters below — leave a filter empty to skip it.")
+
+        _wl_auto_c1, _wl_auto_c2, _wl_auto_c3, _wl_auto_c4 = st.columns(4)
+
+        with _wl_auto_c1:
+            _wl_auto_rating_sel = st.multiselect(
+                "Rating Tier",
+                ["Elite", "Good", "Average", "Below Average", "Poor"],
+                key="wl_auto_val_rating",
+            )
+        with _wl_auto_c2:
+            _wl_positions = sorted(_wl_df["DepthPos"].dropna().unique().tolist())
+            _wl_positions = [p for p in _wl_positions if p != "—"]
+            _wl_auto_pos_sel = st.multiselect("Position", _wl_positions, key="wl_auto_val_pos")
+        with _wl_auto_c3:
+            _wl_expiry_yrs = sorted([int(y) for y in _wl_df["Contract_Expiry"].dropna().unique() if pd.notna(y)])
+            _wl_expiry_opts = [str(y) for y in _wl_expiry_yrs]
+            _wl_auto_contract_sel = st.multiselect("Contract Expiry", _wl_expiry_opts, key="wl_auto_val_contract")
+        with _wl_auto_c4:
+            _wl_fa_opts = sorted([s for s in _wl_df["FA_Status"].dropna().unique().tolist() if s != "Unknown"])
+            _wl_auto_fa_sel = st.multiselect("FA Status", _wl_fa_opts, key="wl_auto_val_fa")
+
+        # Optional team filter for auto lists
+        _wl_auto_teams = sorted(_wl_df["Team"].dropna().unique().tolist())
+        _wl_auto_team_filter = st.multiselect(
+            "Filter by team (optional — leave empty for all teams)",
+            _wl_auto_teams,
+            key="wl_auto_teams",
+        )
+
+        # Apply all active filters
+        _wl_auto_df = _wl_df.copy()
+        if _wl_auto_team_filter:
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["Team"].isin(_wl_auto_team_filter)]
+        if _wl_auto_rating_sel:
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["RatingTier"].isin(_wl_auto_rating_sel)]
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["Matches"] > 0]
+        if _wl_auto_pos_sel:
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["DepthPos"].isin(_wl_auto_pos_sel)]
+        if _wl_auto_contract_sel:
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["Contract_Expiry"].isin([int(y) for y in _wl_auto_contract_sel])]
+        if _wl_auto_fa_sel:
+            _wl_auto_df = _wl_auto_df[_wl_auto_df["FA_Status"].isin(_wl_auto_fa_sel)]
+
+        _wl_auto_df = _wl_auto_df.sort_values("RatingPoints_Avg", ascending=False).reset_index(drop=True)
+
+        # Build summary of active filters
+        _wl_filter_parts = []
+        if _wl_auto_rating_sel:
+            _wl_filter_parts.append(f"Rating: {', '.join(_wl_auto_rating_sel)}")
+        if _wl_auto_pos_sel:
+            _wl_filter_parts.append(f"Position: {', '.join(_wl_auto_pos_sel)}")
+        if _wl_auto_contract_sel:
+            _wl_filter_parts.append(f"Expiry: {', '.join(_wl_auto_contract_sel)}")
+        if _wl_auto_fa_sel:
+            _wl_filter_parts.append(f"FA: {', '.join(_wl_auto_fa_sel)}")
+        if _wl_auto_team_filter:
+            _wl_filter_parts.append(f"Teams: {', '.join(_wl_auto_team_filter)}")
+        _wl_filter_summary = " | ".join(_wl_filter_parts) if _wl_filter_parts else "No filters applied"
+
+        st.markdown(f"**{len(_wl_auto_df)} players** matching: {_wl_filter_summary}")
+
+        # Save auto list to a manual watch list
+        _wl_save_default = " + ".join(
+            [f"{k}" for k in [
+                ", ".join(_wl_auto_rating_sel) if _wl_auto_rating_sel else "",
+                ", ".join(_wl_auto_pos_sel) if _wl_auto_pos_sel else "",
+                ", ".join(_wl_auto_contract_sel) if _wl_auto_contract_sel else "",
+                ", ".join(_wl_auto_fa_sel) if _wl_auto_fa_sel else "",
+            ] if k]
+        ) or "Auto List"
+        _wl_save_c1, _wl_save_c2 = st.columns([3, 5])
+        with _wl_save_c1:
+            _wl_save_name = st.text_input(
+                "Save as watch list",
+                value=_wl_save_default,
+                key="wl_auto_save_name",
+            )
+            if st.button("Save to My Watch Lists", key="wl_auto_save_btn") and _wl_save_name.strip():
+                wl = st.session_state.watch_lists
+                _wl_sn = _wl_save_name.strip()
+                wl[_wl_sn] = [
+                    {"player": r["Player"], "team": r["Team"]}
+                    for _, r in _wl_auto_df.iterrows()
+                ]
+                st.session_state.watch_lists = wl
+                _save_watch_lists(wl)
+                st.success(f"Saved {len(_wl_auto_df)} players to '{_wl_sn}'")
+                st.rerun()
+
+        if _wl_auto_df.empty:
+            st.info("No players match the selected criteria.")
+        else:
+            # Build HTML table
+            _wl_age_col_auto = "Age_Decimal" if "Age_Decimal" in _wl_auto_df.columns else "Age"
+
+            _wla_html = """
+<table class="fe-table fe-sortable">
+<thead>
+<tr>
+<th>PLAYER</th>
+<th>TEAM</th>
+<th>POS</th>
+<th>AGE</th>
+<th>GP</th>
+<th>RATING</th>
+<th>TIER</th>
+<th>EXPIRY</th>
+<th>FA STATUS</th>
+</tr>
+</thead>
+<tbody>
+"""
+            _wla_fa_colors = {
+                "Unrestricted Free Agent": ("#FF4444", "#FFFFFF"),
+                "Restricted Free Agent": ("#FFA500", "#000000"),
+                "Non-Free Agent": ("#4CAF50", "#FFFFFF"),
+                "Delisted Free Agent": ("#FF6666", "#FFFFFF"),
+                "Out of Contract": ("#FF8800", "#000000"),
+                "Unknown": ("#888888", "#FFFFFF"),
+            }
+            _wla_tier_colors = {
+                "Elite": ("#008000", "#FFFFFF"),
+                "Good": ("#90EE90", "#000000"),
+                "Average": ("#FFD700", "#000000"),
+                "Below Average": ("#FFA500", "#FFFFFF"),
+                "Poor": ("#FF0000", "#FFFFFF"),
+                "Unknown": ("#888888", "#FFFFFF"),
+            }
+
+            def _wla_expiry_color(expiry, current_year):
+                if pd.isna(expiry):
+                    return "#888888", "#FFFFFF"
+                years_left = int(expiry) - int(current_year)
+                if years_left <= 0:
+                    return "#FF4444", "#FFFFFF"
+                elif years_left == 1:
+                    return "#FF8800", "#000000"
+                elif years_left == 2:
+                    return "#FFCC00", "#000000"
+                elif years_left <= 4:
+                    return "#88CC44", "#000000"
+                else:
+                    return "#4CAF50", "#FFFFFF"
+
+            for _, _wla_r in _wl_auto_df.iterrows():
+                _wla_rv = pd.to_numeric(_wla_r.get("RatingPoints_Avg", 0), errors="coerce")
+                _wla_gv = pd.to_numeric(_wla_r.get("Matches", 0), errors="coerce")
+                _wla_has_played = not pd.isna(_wla_gv) and int(_wla_gv) > 0
+                if _wla_has_played:
+                    _wla_bg_r, _wla_fg_r = rating_colour_for_value(_wla_rv, _wl_all_ratings)
+                else:
+                    _wla_bg_r, _wla_fg_r = "#444444", "#999999"
+
+                _wla_age = pd.to_numeric(_wla_r.get(_wl_age_col_auto), errors="coerce")
+                _wla_age_s = "—" if pd.isna(_wla_age) else f"{float(_wla_age):.1f}"
+                _wla_gm_s = "—" if pd.isna(_wla_gv) else str(int(_wla_gv))
+                _wla_rt_s = "—" if pd.isna(_wla_rv) or _wla_rv == 0 else f"{float(_wla_rv):.1f}"
+
+                _wla_tier = _wla_r.get("RatingTier", "Unknown")
+                _wla_bg_t, _wla_fg_t = _wla_tier_colors.get(_wla_tier, ("#888888", "#FFFFFF"))
+
+                _wla_exp_v = _wla_r.get("Contract_Expiry", np.nan)
+                _wla_exp_s = "—" if pd.isna(_wla_exp_v) else str(int(_wla_exp_v))
+                _wla_bg_e, _wla_fg_e = _wla_expiry_color(_wla_exp_v, _wl_season)
+
+                _wla_fa = _wla_r.get("FA_Status", "Unknown")
+                _wla_bg_fa, _wla_fg_fa = _wla_fa_colors.get(str(_wla_fa), ("#888888", "#FFFFFF"))
+                _wla_fa_short = str(_wla_fa)
+                if "Unrestricted" in _wla_fa_short:
+                    _wla_fa_short = "UFA"
+                elif "Restricted" in _wla_fa_short and "Unrestricted" not in _wla_fa_short:
+                    _wla_fa_short = "RFA"
+                elif "Non-Free" in _wla_fa_short:
+                    _wla_fa_short = "Non-FA"
+                elif "Delisted" in _wla_fa_short:
+                    _wla_fa_short = "DFA"
+                elif "Out of Contract" in _wla_fa_short:
+                    _wla_fa_short = "OOC"
+
+                _wla_pos = _wla_r.get("DepthPos", "—")
+                _wla_pos_s = _wla_pos if pd.notna(_wla_pos) else "—"
+
+                _wla_html += f"""
+<tr>
+<td>{_wla_r['Player']}</td>
+<td>{_wla_r['Team']}</td>
+<td>{_wla_pos_s}</td>
+<td>{_wla_age_s}</td>
+<td>{_wla_gm_s}</td>
+<td><span class="ct-pill" style="background:{_wla_bg_r}; color:{_wla_fg_r};">{_wla_rt_s}</span></td>
+<td><span class="ct-pill" style="background:{_wla_bg_t}; color:{_wla_fg_t};">{_wla_tier}</span></td>
+<td><span class="ct-pill" style="background:{_wla_bg_e}; color:{_wla_fg_e};">{_wla_exp_s}</span></td>
+<td><span class="ct-pill ct-fa" style="background:{_wla_bg_fa}; color:{_wla_fg_fa};" title="{_wla_fa}">{_wla_fa_short}</span></td>
+</tr>
+"""
+            _wla_html += "</tbody></table>"
+            render_sortable_table(_wla_html)
 
     render_footer()
 
@@ -20487,7 +21305,7 @@ elif page == "Player Rating Matrix":
     render_page_header("Player Rating Matrix", "Round-by-Round Player Ratings", "chart_bar")
     render_breadcrumb([("Home", "Home"), ("Player Rating Matrix", None)])
 
-    from data_loader import load_match_ratings, load_brownlow_predictions, load_traits_for_season
+    from data_loader import load_match_ratings_fresh, load_brownlow_predictions_fresh, load_traits_for_season_fresh
     import re as _mr_re
 
     # Discover available seasons from match_ratings_*.csv files
@@ -20503,7 +21321,7 @@ elif page == "Player Rating Matrix":
     # Season filter
     selected_season = st.selectbox("Season", _mr_seasons, index=0, key="mr_season")
 
-    df_mr = load_match_ratings(selected_season)
+    df_mr = load_match_ratings_fresh(selected_season)
 
     if df_mr.empty:
         st.warning("No match rating data available for this season. Run the Wheelo Match Stats scraper first:\n\n```\npython scrape_wheelo_match_stats.py --season " + str(selected_season) + "\n```")
@@ -20520,7 +21338,7 @@ elif page == "Player Rating Matrix":
         _mr_use_traits = _mr_metric_choice == "Trait Ratings"
 
         # Load Brownlow data (always — needed for competition leaderboard + metric view)
-        df_brownlow = load_brownlow_predictions(selected_season)
+        df_brownlow = load_brownlow_predictions_fresh(selected_season)
         if _mr_use_brownlow and df_brownlow.empty:
             st.warning("No Brownlow prediction data available for this season. Run:\n\n```\npython scrape_wheelo_match_stats.py --brownlow-only --season " + str(selected_season) + "\n```")
 
@@ -20572,6 +21390,16 @@ elif page == "Player Rating Matrix":
             teams_available = sorted(_mr_source_df["Team"].dropna().unique()) if "Team" in _mr_source_df.columns else []
             rounds_available = sorted(_mr_source_df["Round"].dropna().unique()) if "Round" in _mr_source_df.columns else []
 
+            # When using Trait Rating mode, extend rounds_available with trait history rounds
+            if _mr_use_traits:
+                _trait_hist_path_check = Path(__file__).parent / "data" / "raw" / "traits" / f"traits_history_{selected_season}.csv"
+                if _trait_hist_path_check.exists():
+                    try:
+                        _th_rounds = pd.read_csv(_trait_hist_path_check, usecols=["Round"])["Round"].dropna().unique()
+                        rounds_available = sorted(set(rounds_available) | set(int(r) for r in _th_rounds))
+                    except Exception:
+                        pass
+
             col_f1, col_f2 = st.columns(2)
             with col_f1:
                 selected_team = st.selectbox("Team", teams_available, index=0) if teams_available else None
@@ -20594,7 +21422,7 @@ elif page == "Player Rating Matrix":
 
                 if _mr_use_traits:
                     # --- Trait Ratings: cumulative display with per-round history ---
-                    _traits_df = load_traits_for_season(selected_season)
+                    _traits_df = load_traits_for_season_fresh(selected_season)
                     _trait_pivot_ok = not _traits_df.empty and "Overall_Rating" in _traits_df.columns
                     if not _trait_pivot_ok:
                         st.warning("No trait rating data available for this season.")
@@ -20613,7 +21441,12 @@ elif page == "Player Rating Matrix":
                         _trait_map = {p: v for p, v in _trait_map.items() if pd.notna(v)}
 
                         # Build grid: ALL players with trait ratings × ALL rounds in range
-                        _all_rounds = sorted(df_filt["Round"].dropna().unique())
+                        # Include rounds from BOTH match data and trait history so trait-only rounds (e.g. R6 before match stats update) appear
+                        _match_rounds = set(df_filt["Round"].dropna().unique())
+                        _trait_hist_rounds = set(_trait_hist["Round"].dropna().unique()) if _has_history else set()
+                        _all_rounds = sorted(_match_rounds | _trait_hist_rounds)
+                        # Respect the user's round-range slider
+                        _all_rounds = [r for r in _all_rounds if round_range[0] <= r <= round_range[1]]
                         _all_trait_players = sorted(_trait_map.keys())
                         _rdata = pd.DataFrame([(p, rd) for p in _all_trait_players for rd in _all_rounds], columns=[player_col, "Round"])
 
@@ -20639,8 +21472,8 @@ elif page == "Player Rating Matrix":
                             _th_team = _th_team.copy()
                             _th_team["Overall_Rating"] = pd.to_numeric(_th_team["Overall_Rating"], errors="coerce")
                             _hist_lookup = {(r["Player"], int(r["Round"])): r["Overall_Rating"] for _, r in _th_team.iterrows() if pd.notna(r["Overall_Rating"])}
-                            # Latest round in the match data always uses live traits
-                            _latest_data_round = int(df_filt["Round"].max())
+                            # Latest round across both match data and trait history uses live traits
+                            _latest_data_round = int(max(_all_rounds)) if _all_rounds else 0
                             _rdata["_tr"] = _rdata.apply(
                                 lambda r: (
                                     _trait_map.get(r[player_col]) if int(r["Round"]) == _latest_data_round and r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col]))
@@ -21015,7 +21848,7 @@ Scale: 1.0 – 5.0
                     except (NameError, ValueError):
                         pass
                 else:
-                    _df_prior = load_match_ratings(_prior_season)
+                    _df_prior = load_match_ratings_fresh(_prior_season)
                     if not _df_prior.empty:
                         _diff_col = active_col
                         if _diff_col and _diff_col in _df_prior.columns and _diff_col in df_filt.columns:
