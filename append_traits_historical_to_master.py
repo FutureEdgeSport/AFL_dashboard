@@ -24,27 +24,10 @@ ROOT = Path(__file__).parent
 MASTER = ROOT / "AFL_Master_2012_2025.xlsx"
 TRAITS_DIR = ROOT / "data" / "raw" / "traits"
 
-# Same mapping the app uses (keep in sync with config/constants.TEAM_CODE_TO_NAME).
-TEAM_CODE_TO_NAME = {
-    "AFC": "Adelaide",
-    "BFC": "Brisbane Lions",
-    "CFC": "Collingwood",
-    "COFC": "Carlton",
-    "EFC": "Essendon",
-    "FRFC": "Fremantle",
-    "GCFC": "Gold Coast",
-    "GFC": "Geelong",
-    "GWS": "GWS Giants",
-    "HFC": "Hawthorn",
-    "MFC": "Melbourne",
-    "NMFC": "North Melbourne",
-    "PAFC": "Port Adelaide",
-    "RFC": "Richmond",
-    "SKFC": "St Kilda",
-    "SYFC": "Sydney",
-    "WBFC": "Western Bulldogs",
-    "WCFC": "West Coast",
-}
+# Use the authoritative mapping from config.constants so this script can
+# never drift (earlier revisions had CFC/COFC swapped, corrupting Carlton
+# and Collingwood historical rows).
+from config.constants import TEAM_CODE_TO_NAME  # noqa: E402
 
 POSITION_ABBREV_TO_FULL = {
     "R": "Ruck",
@@ -68,6 +51,14 @@ def main() -> int:
     existing.columns = [str(c).strip() for c in existing.columns]
     existing_seasons = sorted(pd.to_numeric(existing["Season"], errors="coerce").dropna().astype(int).unique())
     print(f"Existing Player_Traits_Historical rows: {len(existing)} seasons={existing_seasons}")
+
+    # Drop any 2011-2020 rows already present so a re-run re-imports them
+    # cleanly (e.g. after fixing a mapping bug).  Seasons >= 2021 were
+    # produced by the enriched pipeline and are authoritative.
+    _mask_hist = pd.to_numeric(existing["Season"], errors="coerce").between(2011, 2020)
+    if _mask_hist.any():
+        print(f"  dropping {int(_mask_hist.sum())} existing 2011-2020 rows for re-import")
+        existing = existing[~_mask_hist].reset_index(drop=True)
 
     # 2. Gather 2011-2020 CSVs
     new_frames: list[pd.DataFrame] = []

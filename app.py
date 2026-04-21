@@ -10235,13 +10235,12 @@ elif page == "Player Profile":
         else:
             player_table["CoachesVotes_Avg"] = np.nan
 
-        # Merge Trait Rating per season (traits data only exists from 2021 onwards)
+        # Merge Trait Rating per season. Traits data is available for
+        # 2011-2020 (historical CSVs) and 2021+ (Excel sheets); load_traits
+        # handles both sources transparently.
         trait_ratings = []
         for _, row in player_table.iterrows():
             s = int(row["Season"])
-            if s < 2021:
-                trait_ratings.append(np.nan)
-                continue
             try:
                 t_df = load_traits(s)
                 if t_df is not None and not t_df.empty and "Player_Full" in t_df.columns:
