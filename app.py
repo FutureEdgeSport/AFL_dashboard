@@ -1658,16 +1658,36 @@ def get_player_seasons() -> list[int]:
 
 @st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def get_traits_seasons() -> list[int]:
-    """Get available trait seasons from the traits Excel file (2021-2025)."""
+    """Get available trait seasons.
+
+    Sources:
+    - Sheets in the legacy traits Excel file (2021-2025)
+    - CSV files at data/raw/traits/traits_{season}.csv (historical 2011-2020
+      plus current 2026+)
+    """
+    seasons: set[int] = set()
     try:
         xl = pd.ExcelFile(TRAITS_FILE)
-        seasons = []
         for s in xl.sheet_names:
             if str(s).isdigit():
-                seasons.append(int(s))
-        return sorted(seasons, reverse=True)
+                seasons.add(int(s))
     except Exception:
+        pass
+
+    try:
+        traits_dir = Path(__file__).parent / "data" / "raw" / "traits"
+        if traits_dir.exists():
+            for csv_path in traits_dir.glob("traits_*.csv"):
+                stem = csv_path.stem  # traits_2019
+                tail = stem.split("_")[-1]
+                if tail.isdigit():
+                    seasons.add(int(tail))
+    except Exception:
+        pass
+
+    if not seasons:
         return AVAILABLE_SEASONS  # Fall back to config default
+    return sorted(seasons, reverse=True)
 
 
 def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
