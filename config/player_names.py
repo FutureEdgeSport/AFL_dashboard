@@ -238,6 +238,24 @@ class PlayerNameResolver:
         self._lower.clear()
         self._surname_team.clear()
 
+        # Helper: two canonical names are nickname-equivalent when they
+        # share surname+team and their first names are nickname variants.
+        # Used so ("Zach Merrett", "Zachary Merrett") don't block each other
+        # from uniqueness-based shortcuts.
+        def _same_player(a: str, b: str) -> bool:
+            if a == b:
+                return True
+            pa, pb = a.split(), b.split()
+            if len(pa) < 2 or len(pb) < 2:
+                return False
+            if " ".join(pa[1:]).lower() != " ".join(pb[1:]).lower():
+                return False
+            if self._canonical.get(a, "") != self._canonical.get(b, ""):
+                return False
+            va = {v.lower() for v in get_nickname_variants(pa[0])} | {pa[0].lower()}
+            vb = {v.lower() for v in get_nickname_variants(pb[0])} | {pb[0].lower()}
+            return bool(va & vb) or pb[0].lower() in va or pa[0].lower() in vb
+
         # Exact + case-insensitive
         for canon in self._canonical:
             self._exact[canon] = canon
@@ -259,18 +277,49 @@ class PlayerNameResolver:
                     if low not in self._lower:
                         self._lower[low] = canon
 
-        # Initial+surname
-        for canon in list(self._canonical.keys()):
+        # Initial+surname — only register globally if unique.
+        # If multiple canonical players share the same initial+surname, we
+        # skip the global shortcut so resolution must fall through to the
+        # team-aware lookup (_initial_surname_team below) and can't silently
+        # misroute (e.g. "B. Smith" → whichever B. Smith was added first).
+        initial_surname_groups: Dict[str, List[str]] = defaultdict(list)
+        for canon in self._canonical:
             parts = canon.split()
             if len(parts) >= 2 and len(parts[0]) > 1:
                 initial = parts[0][0].upper()
                 surname = " ".join(parts[1:])
-                abbrev = f"{initial}. {surname}"
+                initial_surname_groups[f"{initial}. {surname}"].append(canon)
+        for abbrev, names in initial_surname_groups.items():
+            # Collapse nickname-equivalent duplicates (Zach/Zachary Merrett)
+            unique: List[str] = []
+            for n in names:
+                if not any(_same_player(n, u) for u in unique):
+                    unique.append(n)
+            if len(unique) == 1:
+                canon = unique[0]
                 if abbrev not in self._exact:
                     self._exact[abbrev] = canon
                 low = _normalize(abbrev)
                 if low not in self._lower:
                     self._lower[low] = canon
+
+        # Initial + surname + team (used for disambiguation when the
+        # global shortcut above is ambiguous).
+        self._initial_surname_team: Dict[Tuple[str, str, str], str] = {}
+        ist_groups: Dict[Tuple[str, str, str], List[str]] = defaultdict(list)
+        for canon, team in self._canonical.items():
+            parts = canon.split()
+            if len(parts) >= 2 and len(parts[0]) > 1 and team:
+                initial = parts[0][0].upper()
+                surname = _extract_surname(canon)
+                ist_groups[(initial, surname, team)].append(canon)
+        for key, names in ist_groups.items():
+            unique: List[str] = []
+            for n in names:
+                if not any(_same_player(n, u) for u in unique):
+                    unique.append(n)
+            if len(unique) == 1:
+                self._initial_surname_team[key] = unique[0]
 
         # Surname + team (only unique surname per team)
         surname_team_groups: Dict[Tuple[str, str], List[str]] = defaultdict(list)
@@ -279,9 +328,12 @@ class PlayerNameResolver:
             if surname and team:
                 surname_team_groups[(surname, team)].append(canon)
         for key, names in surname_team_groups.items():
-            if len(names) == 1:
-                self._surname_team[key] = names[0]
-
+            unique: List[str] = []
+            for n in names:
+                if not any(_same_player(n, u) for u in unique):
+                    unique.append(n)
+            if len(unique) == 1:
+                self._surname_team[key] = unique[0]
     def _resolve_internal(self, name: str, team: str = "") -> str:
         """Internal resolve used during index building (avoids recursion)."""
         if name in self._exact:
@@ -301,18 +353,26 @@ class PlayerNameResolver:
                 vlow = _normalize(variant)
                 if vlow in self._lower:
                     return self._lower[vlow]
-        # Initial+surname
-        initials, surname = _parse_initial_surname(name)
-        if initials and surname:
-            abbrev = f"{initials[0]}. {surname}"
+        # Initial+surname — global shortcut (only populated when globally unique)
+        initials, surname_part = _parse_initial_surname(name)
+        if initials and surname_part:
+            abbrev = f"{initials[0]}. {surname_part}"
             if abbrev in self._exact:
                 return self._exact[abbrev]
-        # Surname+team
-        if team:
-            surname = _extract_surname(name)
-            if surname:
-                matched = self._surname_team.get((surname, team))
+            # Team-scoped initial+surname for ambiguous cases
+            if team:
+                matched = self._initial_surname_team.get(
+                    (initials[0].upper(), surname_part.lower(), team)
+                )
                 if matched:
+                    return matched
+        # Surname+team (requires initial match if input had an initial, to
+        # prevent "B. Crouch" → "Matt Crouch" style misroutes)
+        if team:
+            surname_only = _extract_surname(name)
+            if surname_only:
+                matched = self._surname_team.get((surname_only, team))
+                if matched and (not initials or matched.split()[0][0].upper() == initials[0].upper()):
                     return matched
         return name
 
@@ -361,18 +421,30 @@ class PlayerNameResolver:
                     return self._lower[vlow]
 
         # 4. Initial+surname match (A. Cadman → Aaron Cadman)
-        initials, surname = _parse_initial_surname(name)
-        if initials and surname:
-            abbrev = f"{initials[0]}. {surname}"
+        initials, surname_part = _parse_initial_surname(name)
+        if initials and surname_part:
+            abbrev = f"{initials[0]}. {surname_part}"
             if abbrev in self._exact:
                 return self._exact[abbrev]
-
-        # 5. Surname + team (unique within team)
-        if norm_team:
-            surname = _extract_surname(name)
-            if surname:
-                matched = self._surname_team.get((surname, norm_team))
+            # 4b. Team-scoped initial+surname (for non-unique initials)
+            if norm_team:
+                matched = self._initial_surname_team.get(
+                    (initials[0].upper(), surname_part.lower(), norm_team)
+                )
                 if matched:
+                    return matched
+
+        # 5. Surname + team (unique within team).  If the input carried an
+        # initial (e.g. "B. Crouch"), require it to match the canonical's
+        # first initial, so a single team's Matt Crouch doesn't swallow
+        # "B. Crouch" (Brad).
+        if norm_team:
+            surname_only = _extract_surname(name)
+            if surname_only:
+                matched = self._surname_team.get((surname_only, norm_team))
+                if matched and (
+                    not initials or matched.split()[0][0].upper() == initials[0].upper()
+                ):
                     return matched
 
         return name
