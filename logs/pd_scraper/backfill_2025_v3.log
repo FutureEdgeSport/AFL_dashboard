@@ -1,0 +1,25 @@
+2026-04-22 12:29:32,196 INFO [pd_scraper.auth]: Performing fresh login…
+2026-04-22 12:29:35,558 INFO [pd_scraper.auth]: Login successful for brentonsanderson.mentone
+2026-04-22 12:29:35,562 INFO [pd_scraper.auth]: Session state saved to /Users/marcuswagner/coding/AFL_dashboard/data/pd/session_state.json
+2026-04-22 12:29:36,838 INFO [pd_scraper.scrape_season]: Season 2025 rounds: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'SF']
+2026-04-22 12:29:38,064 INFO [pd_scraper.scrape_season]:   Round 1: 1 clickable fixtures
+2026-04-22 12:30:17,748 INFO [pd_scraper.scrape_season]:     wrote 26_04_2025_vs_assumption_college.json (346 KB)
+2026-04-22 12:30:21,427 INFO [pd_scraper.scrape_season]:   Round 2: 2 clickable fixtures
+2026-04-22 12:31:01,136 INFO [pd_scraper.scrape_season]:     wrote 03_05_2025_vs_camberwell_grammar.json (354 KB)
+2026-04-22 12:31:43,359 INFO [pd_scraper.scrape_season]:     wrote 03_05_2025_vs_mentone_grammar.json (350 KB)
+2026-04-22 12:31:47,046 INFO [pd_scraper.scrape_season]:   Round 3: 1 clickable fixtures
+2026-04-22 12:32:26,772 INFO [pd_scraper.scrape_season]:     wrote 10_05_2025_vs_pegs_agsv.json (355 KB)
+2026-04-22 12:32:30,455 INFO [pd_scraper.scrape_season]:   Round 4: 2 clickable fixtures
+2026-04-22 12:33:10,210 INFO [pd_scraper.scrape_season]:     wrote 17_05_2025_vs_mentone_grammar.json (351 KB)
+2026-04-22 12:33:52,421 INFO [pd_scraper.scrape_season]:     wrote 17_05_2025_vs_assumption_college.json (350 KB)
+2026-04-22 12:33:56,115 INFO [pd_scraper.scrape_season]:   Round 5: 2 clickable fixtures
+2026-04-22 12:34:35,907 INFO [pd_scraper.scrape_season]:     wrote 24_05_2025_vs_peninsula_grammar.json (353 KB)
+2026-04-22 12:35:18,123 INFO [pd_scraper.scrape_season]:     wrote 24_05_2025_vs_ivanhoe_grammar.json (354 KB)
+2026-04-22 12:35:21,814 INFO [pd_scraper.scrape_season]:   Round 6: 3 clickable fixtures
+2026-04-22 12:36:01,530 INFO [pd_scraper.scrape_season]:     wrote 31_05_2025_vs_pegs_agsv.json (354 KB)
+2026-04-22 12:36:44,003 INFO [pd_scraper.scrape_season]:     wrote 31_05_2025_vs_assumption_college.json (356 KB)22026-04-22 12:37:26,287 INFO [pd_scraper.scrape_season]:     wrote 31_05_2025_vs_mentone_grammar.json (353 KB)
+2026-04-22 12:37:29,976 INFO [pd_scraper.scrape_season]:   Round 7: 2 clickable fixtures22026-04-22 12:38:09,658 INFO [pd_scraper.scrape_season]:     wrote 14_06_2025_vs_marcellin_college.json (353 KB)22026-04-22 12:38:52,270 INFO [pd_scraper.scrape_season]:     wrote 14_06_2025_vs_yarra_valley_grammar.json (353 KB)
+2026-04-22 12:38:55,956 INFO [pd_scraper.scrape_season]:   Round 8: 2 clickable fixtures22026-04-22 12:39:35,896 INFO [pd_scraper.scrape_season]:     wrote 21_06_2025_vs_assumption_college.json (350 KB)22026-04-22 12:40:18,135 INFO [pd_scraper.scrape_season]:     wrote 21_06_2025_vs_mentone_grammar.json (344 KB)
+2026-04-22 12:40:21,822 INFO [pd_scraper.scrape_season]:   Round 9: 2 clickable fixtures22026-04-22 12:41:01,778 INFO [pd_scraper.scrape_season]:     wrote 28_06_2025_vs_marcellin_college.json (354 KB)22026-04-22 12:41:44,779 INFO [pd_scraper.scrape_season]:     wrote 28_06_2025_vs_camberwell_grammar.json (350 KB)
+2026-04-22 12:41:48,462 INFO [pd_scraper.scrape_season]:   Round SF: 0 clickable fixtures
+Ingested 17 match files → SQLite

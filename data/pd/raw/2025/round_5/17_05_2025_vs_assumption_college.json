@@ -1,0 +1,3167 @@
+{
+  "match_id": "17_05_2025_vs_assumption_college",
+  "header": {
+    "home_team": "PEGS AGSV",
+    "away_team": "Assumption College",
+    "home_score": 39,
+    "home_goals_behinds": "5.9",
+    "away_score": 38,
+    "away_goals_behinds": "5.8",
+    "round_text": "Round 04",
+    "title_bar": ""
+  },
+  "summary": {
+    "TOTAL": {
+      "period": "TOTAL",
+      "efficiency_donuts": [
+        {
+          "label": "Disposal Efficiency",
+          "value": "48%"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "43%"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "52%"
+        },
+        {
+          "label": "Disposal Efficiency",
+          "value": "47%",
+          "side": "away"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "40%",
+          "side": "away"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "62%",
+          "side": "away"
+        }
+      ],
+      "sections": [
+        {
+          "name": "Disposals",
+          "stats": [
+            {
+              "name": "Disposals",
+              "home": 210,
+              "away": 181,
+              "diff": "+29"
+            },
+            {
+              "name": "Kicks",
+              "home": 106,
+              "away": 106,
+              "diff": "+17"
+            },
+            {
+              "name": "Handballs",
+              "home": 104,
+              "away": 58,
+              "diff": "+46"
+            },
+            {
+              "name": "Contested Possesions",
+              "home": 123,
+              "away": 91,
+              "diff": "+32"
+            },
+            {
+              "name": "Total Groundball Gets",
+              "home": 89,
+              "away": 72,
+              "diff": "+17"
+            },
+            {
+              "name": "Hard Ball Gets",
+              "home": 38,
+              "away": 14,
+              "diff": "+24"
+            },
+            {
+              "name": "Loose Ball Gets",
+              "home": 51,
+              "away": 51,
+              "diff": "+7"
+            },
+            {
+              "name": "Intercept Possessions",
+              "home": 53,
+              "away": 53,
+              "diff": "+13"
+            },
+            {
+              "name": "Gathers",
+              "home": 31,
+              "away": 16,
+              "diff": "+15"
+            },
+            {
+              "name": "Handball Receives",
+              "home": 3,
+              "away": 0,
+              "diff": "+3"
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "stats": [
+            {
+              "name": "Marks",
+              "home": 26,
+              "away": 22,
+              "diff": "+4"
+            },
+            {
+              "name": "Contested Marks",
+              "home": 5,
+              "away": 2,
+              "diff": "+3"
+            },
+            {
+              "name": "Uncontested Marks",
+              "home": 21,
+              "away": 20,
+              "diff": "+1"
+            },
+            {
+              "name": "Intercept Marks",
+              "home": 8,
+              "away": 6,
+              "diff": "+2"
+            },
+            {
+              "name": "Marks Inside 50",
+              "home": 6,
+              "away": 2,
+              "diff": "+4"
+            }
+          ]
+        },
+        {
+          "name": "General Play",
+          "stats": [
+            {
+              "name": "Ranking Points",
+              "home": 968,
+              "away": 848,
+              "diff": "+120"
+            },
+            {
+              "name": "Hit Outs",
+              "home": 51,
+              "away": 27,
+              "diff": "+24"
+            },
+            {
+              "name": "Hit Outs to Advantage",
+              "home": 13,
+              "away": 4,
+              "diff": "+9"
+            },
+            {
+              "name": "Clearances",
+              "home": 33,
+              "away": 33,
+              "diff": "0"
+            },
+            {
+              "name": "Centre Clearances",
+              "home": 8,
+              "away": 5,
+              "diff": "+3"
+            },
+            {
+              "name": "Ball Up Clearances",
+              "home": 12,
+              "away": 10,
+              "diff": "+2"
+            },
+            {
+              "name": "Throw In Clearances",
+              "home": 13,
+              "away": 13,
+              "diff": "+5"
+            },
+            {
+              "name": "Inside 50s",
+              "home": 31,
+              "away": 31,
+              "diff": "+4"
+            },
+            {
+              "name": "Rebound 50s",
+              "home": 31,
+              "away": 26,
+              "diff": "+5"
+            },
+            {
+              "name": "Frees For",
+              "home": 14,
+              "away": 14,
+              "diff": "+4"
+            },
+            {
+              "name": "Kick Ins",
+              "home": 8,
+              "away": 8,
+              "diff": "+1"
+            },
+            {
+              "name": "1%ers",
+              "home": 42,
+              "away": 34,
+              "diff": "+8"
+            },
+            {
+              "name": "Turnovers",
+              "home": 66,
+              "away": 66,
+              "diff": "-13"
+            },
+            {
+              "name": "Back Turnovers",
+              "home": 8,
+              "away": 8,
+              "diff": "-2"
+            },
+            {
+              "name": "Midfield Turnovers",
+              "home": 36,
+              "away": 36,
+              "diff": "-5"
+            },
+            {
+              "name": "Forward Turnovers",
+              "home": 22,
+              "away": 22,
+              "diff": "-6"
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "stats": [
+            {
+              "name": "Overall Pressure",
+              "home": 95,
+              "away": 95,
+              "diff": "+12"
+            },
+            {
+              "name": "Pressure Acts",
+              "home": 36,
+              "away": 34,
+              "diff": "+2"
+            },
+            {
+              "name": "Chases",
+              "home": 7,
+              "away": 7,
+              "diff": "+5"
+            },
+            {
+              "name": "Smothers",
+              "home": 4,
+              "away": 4,
+              "diff": "0"
+            },
+            {
+              "name": "Spoils",
+              "home": 24,
+              "away": 11,
+              "diff": "+13"
+            },
+            {
+              "name": "Tackles",
+              "home": 48,
+              "away": 48,
+              "diff": "+9"
+            },
+            {
+              "name": "Tackles Eff",
+              "home": 42,
+              "away": 42,
+              "diff": "+3"
+            },
+            {
+              "name": "Forward 50 Tackles",
+              "home": 10,
+              "away": 9,
+              "diff": "+1"
+            },
+            {
+              "name": "Midfield Tackles",
+              "home": 20,
+              "away": 20,
+              "diff": "+14"
+            },
+            {
+              "name": "Back 50 Tackles",
+              "home": 18,
+              "away": 14,
+              "diff": "+4"
+            }
+          ]
+        },
+        {
+          "name": "Scoring",
+          "stats": [
+            {
+              "name": "Goals",
+              "home": 5,
+              "away": 5,
+              "diff": "0"
+            },
+            {
+              "name": "Behinds",
+              "home": 8,
+              "away": 6,
+              "diff": "+2"
+            },
+            {
+              "name": "Rushed Behinds",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            }
+          ]
+        }
+      ]
+    },
+    "Q1": {
+      "period": "Q1",
+      "efficiency_donuts": [
+        {
+          "label": "Disposal Efficiency",
+          "value": "39%"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "37%"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "41%"
+        },
+        {
+          "label": "Disposal Efficiency",
+          "value": "44%",
+          "side": "away"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "41%",
+          "side": "away"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "54%",
+          "side": "away"
+        }
+      ],
+      "sections": [
+        {
+          "name": "Disposals",
+          "stats": [
+            {
+              "name": "Disposals",
+              "home": 51,
+              "away": 43,
+              "diff": "+8"
+            },
+            {
+              "name": "Kicks",
+              "home": 27,
+              "away": 27,
+              "diff": "+5"
+            },
+            {
+              "name": "Handballs",
+              "home": 24,
+              "away": 11,
+              "diff": "+13"
+            },
+            {
+              "name": "Contested Possesions",
+              "home": 31,
+              "away": 23,
+              "diff": "+8"
+            },
+            {
+              "name": "Total Groundball Gets",
+              "home": 25,
+              "away": 15,
+              "diff": "+10"
+            },
+            {
+              "name": "Hard Ball Gets",
+              "home": 13,
+              "away": 3,
+              "diff": "+10"
+            },
+            {
+              "name": "Loose Ball Gets",
+              "home": 12,
+              "away": 12,
+              "diff": "0"
+            },
+            {
+              "name": "Intercept Possessions",
+              "home": 14,
+              "away": 14,
+              "diff": "+5"
+            },
+            {
+              "name": "Gathers",
+              "home": 3,
+              "away": 3,
+              "diff": "+1"
+            },
+            {
+              "name": "Handball Receives",
+              "home": 1,
+              "away": 0,
+              "diff": "+1"
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "stats": [
+            {
+              "name": "Marks",
+              "home": 7,
+              "away": 5,
+              "diff": "+2"
+            },
+            {
+              "name": "Contested Marks",
+              "home": 2,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Uncontested Marks",
+              "home": 5,
+              "away": 4,
+              "diff": "+1"
+            },
+            {
+              "name": "Intercept Marks",
+              "home": 3,
+              "away": 2,
+              "diff": "+1"
+            },
+            {
+              "name": "Marks Inside 50",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            }
+          ]
+        },
+        {
+          "name": "General Play",
+          "stats": [
+            {
+              "name": "Ranking Points",
+              "home": 194,
+              "away": 194,
+              "diff": "+18"
+            },
+            {
+              "name": "Hit Outs",
+              "home": 7,
+              "away": 6,
+              "diff": "+1"
+            },
+            {
+              "name": "Hit Outs to Advantage",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            },
+            {
+              "name": "Clearances",
+              "home": 5,
+              "away": 5,
+              "diff": "+3"
+            },
+            {
+              "name": "Centre Clearances",
+              "home": 2,
+              "away": 2,
+              "diff": "0"
+            },
+            {
+              "name": "Ball Up Clearances",
+              "home": 2,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Throw In Clearances",
+              "home": 1,
+              "away": 1,
+              "diff": "+4"
+            },
+            {
+              "name": "Inside 50s",
+              "home": 4,
+              "away": 4,
+              "diff": "+12"
+            },
+            {
+              "name": "Rebound 50s",
+              "home": 14,
+              "away": 2,
+              "diff": "+12"
+            },
+            {
+              "name": "Frees For",
+              "home": 5,
+              "away": 5,
+              "diff": "+2"
+            },
+            {
+              "name": "Kick Ins",
+              "home": 5,
+              "away": 1,
+              "diff": "+4"
+            },
+            {
+              "name": "1%ers",
+              "home": 7,
+              "away": 7,
+              "diff": "+1"
+            },
+            {
+              "name": "Turnovers",
+              "home": 19,
+              "away": 19,
+              "diff": "-5"
+            },
+            {
+              "name": "Back Turnovers",
+              "home": 2,
+              "away": 2,
+              "diff": "-1"
+            },
+            {
+              "name": "Midfield Turnovers",
+              "home": 15,
+              "away": 15,
+              "diff": "-9"
+            },
+            {
+              "name": "Forward Turnovers",
+              "home": 2,
+              "away": 7,
+              "diff": "-5"
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "stats": [
+            {
+              "name": "Overall Pressure",
+              "home": 12,
+              "away": 12,
+              "diff": "+9"
+            },
+            {
+              "name": "Pressure Acts",
+              "home": 4,
+              "away": 4,
+              "diff": "+4"
+            },
+            {
+              "name": "Chases",
+              "home": 1,
+              "away": 1,
+              "diff": "0"
+            },
+            {
+              "name": "Smothers",
+              "home": 0,
+              "away": 0,
+              "diff": "+2"
+            },
+            {
+              "name": "Spoils",
+              "home": 5,
+              "away": 2,
+              "diff": "+3"
+            },
+            {
+              "name": "Tackles",
+              "home": 7,
+              "away": 7,
+              "diff": "+3"
+            },
+            {
+              "name": "Tackles Eff",
+              "home": 5,
+              "away": 5,
+              "diff": "+5"
+            },
+            {
+              "name": "Forward 50 Tackles",
+              "home": 2,
+              "away": 2,
+              "diff": "+1"
+            },
+            {
+              "name": "Midfield Tackles",
+              "home": 1,
+              "away": 1,
+              "diff": "+5"
+            },
+            {
+              "name": "Back 50 Tackles",
+              "home": 4,
+              "away": 1,
+              "diff": "+3"
+            }
+          ]
+        },
+        {
+          "name": "Scoring",
+          "stats": [
+            {
+              "name": "Goals",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Behinds",
+              "home": 1,
+              "away": 1,
+              "diff": "+3"
+            },
+            {
+              "name": "Rushed Behinds",
+              "home": 0,
+              "away": 0,
+              "diff": "+1"
+            }
+          ]
+        }
+      ]
+    },
+    "Q2": {
+      "period": "Q2",
+      "efficiency_donuts": [
+        {
+          "label": "Disposal Efficiency",
+          "value": "52%"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "37%"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "71%"
+        },
+        {
+          "label": "Disposal Efficiency",
+          "value": "40%",
+          "side": "away"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "38%",
+          "side": "away"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "45%",
+          "side": "away"
+        }
+      ],
+      "sections": [
+        {
+          "name": "Disposals",
+          "stats": [
+            {
+              "name": "Disposals",
+              "home": 48,
+              "away": 35,
+              "diff": "+13"
+            },
+            {
+              "name": "Kicks",
+              "home": 27,
+              "away": 24,
+              "diff": "+3"
+            },
+            {
+              "name": "Handballs",
+              "home": 21,
+              "away": 11,
+              "diff": "+10"
+            },
+            {
+              "name": "Contested Possesions",
+              "home": 24,
+              "away": 20,
+              "diff": "+4"
+            },
+            {
+              "name": "Total Groundball Gets",
+              "home": 16,
+              "away": 16,
+              "diff": "0"
+            },
+            {
+              "name": "Hard Ball Gets",
+              "home": 7,
+              "away": 6,
+              "diff": "+1"
+            },
+            {
+              "name": "Loose Ball Gets",
+              "home": 9,
+              "away": 9,
+              "diff": "+1"
+            },
+            {
+              "name": "Intercept Possessions",
+              "home": 9,
+              "away": 9,
+              "diff": "+1"
+            },
+            {
+              "name": "Gathers",
+              "home": 10,
+              "away": 2,
+              "diff": "+8"
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "stats": [
+            {
+              "name": "Marks",
+              "home": 4,
+              "away": 4,
+              "diff": "+1"
+            },
+            {
+              "name": "Contested Marks",
+              "home": 0,
+              "away": 0,
+              "diff": "+1"
+            },
+            {
+              "name": "Uncontested Marks",
+              "home": 4,
+              "away": 4,
+              "diff": "0"
+            },
+            {
+              "name": "Intercept Marks",
+              "home": 0,
+              "away": 0,
+              "diff": "+1"
+            },
+            {
+              "name": "Marks Inside 50",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            }
+          ]
+        },
+        {
+          "name": "General Play",
+          "stats": [
+            {
+              "name": "Ranking Points",
+              "home": 237,
+              "away": 177,
+              "diff": "+60"
+            },
+            {
+              "name": "Hit Outs",
+              "home": 13,
+              "away": 10,
+              "diff": "+3"
+            },
+            {
+              "name": "Hit Outs to Advantage",
+              "home": 3,
+              "away": 2,
+              "diff": "+1"
+            },
+            {
+              "name": "Clearances",
+              "home": 11,
+              "away": 8,
+              "diff": "+3"
+            },
+            {
+              "name": "Centre Clearances",
+              "home": 1,
+              "away": 1,
+              "diff": "+2"
+            },
+            {
+              "name": "Ball Up Clearances",
+              "home": 7,
+              "away": 1,
+              "diff": "+6"
+            },
+            {
+              "name": "Throw In Clearances",
+              "home": 3,
+              "away": 3,
+              "diff": "+1"
+            },
+            {
+              "name": "Inside 50s",
+              "home": 8,
+              "away": 6,
+              "diff": "+2"
+            },
+            {
+              "name": "Rebound 50s",
+              "home": 5,
+              "away": 5,
+              "diff": "+1"
+            },
+            {
+              "name": "Frees For",
+              "home": 3,
+              "away": 3,
+              "diff": "0"
+            },
+            {
+              "name": "Kick Ins",
+              "home": 2,
+              "away": 2,
+              "diff": "+2"
+            },
+            {
+              "name": "1%ers",
+              "home": 13,
+              "away": 9,
+              "diff": "+4"
+            },
+            {
+              "name": "Turnovers",
+              "home": 11,
+              "away": 11,
+              "diff": "-2"
+            },
+            {
+              "name": "Back Turnovers",
+              "home": 0,
+              "away": 1,
+              "diff": "-1"
+            },
+            {
+              "name": "Midfield Turnovers",
+              "home": 7,
+              "away": 7,
+              "diff": "0"
+            },
+            {
+              "name": "Forward Turnovers",
+              "home": 4,
+              "away": 4,
+              "diff": "-3"
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "stats": [
+            {
+              "name": "Overall Pressure",
+              "home": 24,
+              "away": 24,
+              "diff": "+5"
+            },
+            {
+              "name": "Pressure Acts",
+              "home": 7,
+              "away": 7,
+              "diff": "+2"
+            },
+            {
+              "name": "Chases",
+              "home": 3,
+              "away": 3,
+              "diff": "+3"
+            },
+            {
+              "name": "Smothers",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            },
+            {
+              "name": "Spoils",
+              "home": 5,
+              "away": 3,
+              "diff": "+2"
+            },
+            {
+              "name": "Tackles",
+              "home": 12,
+              "away": 12,
+              "diff": "+2"
+            },
+            {
+              "name": "Tackles Eff",
+              "home": 11,
+              "away": 10,
+              "diff": "+1"
+            },
+            {
+              "name": "Forward 50 Tackles",
+              "home": 3,
+              "away": 0,
+              "diff": "+3"
+            },
+            {
+              "name": "Midfield Tackles",
+              "home": 6,
+              "away": 6,
+              "diff": "+4"
+            },
+            {
+              "name": "Back 50 Tackles",
+              "home": 3,
+              "away": 3,
+              "diff": "+1"
+            }
+          ]
+        },
+        {
+          "name": "Scoring",
+          "stats": [
+            {
+              "name": "Goals",
+              "home": 2,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Behinds",
+              "home": 4,
+              "away": 1,
+              "diff": "+3"
+            },
+            {
+              "name": "Rushed Behinds",
+              "home": 0,
+              "away": 0,
+              "diff": "+1"
+            }
+          ]
+        }
+      ]
+    },
+    "Q3": {
+      "period": "Q3",
+      "efficiency_donuts": [
+        {
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "label": "Disposal Efficiency",
+          "value": "47%",
+          "side": "away"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "38%",
+          "side": "away"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "64%",
+          "side": "away"
+        }
+      ],
+      "sections": [
+        {
+          "name": "Disposals",
+          "stats": [
+            {
+              "name": "Disposals",
+              "home": 60,
+              "away": 51,
+              "diff": "+9"
+            },
+            {
+              "name": "Kicks",
+              "home": 26,
+              "away": 26,
+              "diff": "+8"
+            },
+            {
+              "name": "Handballs",
+              "home": 34,
+              "away": 17,
+              "diff": "+17"
+            },
+            {
+              "name": "Contested Possesions",
+              "home": 41,
+              "away": 25,
+              "diff": "+16"
+            },
+            {
+              "name": "Total Groundball Gets",
+              "home": 31,
+              "away": 22,
+              "diff": "+9"
+            },
+            {
+              "name": "Hard Ball Gets",
+              "home": 11,
+              "away": 3,
+              "diff": "+8"
+            },
+            {
+              "name": "Loose Ball Gets",
+              "home": 20,
+              "away": 19,
+              "diff": "+1"
+            },
+            {
+              "name": "Intercept Possessions",
+              "home": 16,
+              "away": 16,
+              "diff": "+5"
+            },
+            {
+              "name": "Gathers",
+              "home": 9,
+              "away": 6,
+              "diff": "+3"
+            },
+            {
+              "name": "Handball Receives",
+              "home": 1,
+              "away": 0,
+              "diff": "+1"
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "stats": [
+            {
+              "name": "Marks",
+              "home": 10,
+              "away": 3,
+              "diff": "+7"
+            },
+            {
+              "name": "Contested Marks",
+              "home": 1,
+              "away": 0,
+              "diff": "+1"
+            },
+            {
+              "name": "Uncontested Marks",
+              "home": 9,
+              "away": 3,
+              "diff": "+6"
+            },
+            {
+              "name": "Intercept Marks",
+              "home": 4,
+              "away": 1,
+              "diff": "+3"
+            },
+            {
+              "name": "Marks Inside 50",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            }
+          ]
+        },
+        {
+          "name": "General Play",
+          "stats": [
+            {
+              "name": "Ranking Points",
+              "home": 289,
+              "away": 249,
+              "diff": "+40"
+            },
+            {
+              "name": "Hit Outs",
+              "home": 18,
+              "away": 4,
+              "diff": "+14"
+            },
+            {
+              "name": "Hit Outs to Advantage",
+              "home": 5,
+              "away": 1,
+              "diff": "+4"
+            },
+            {
+              "name": "Clearances",
+              "home": 8,
+              "away": 8,
+              "diff": "+3"
+            },
+            {
+              "name": "Centre Clearances",
+              "home": 3,
+              "away": 0,
+              "diff": "+3"
+            },
+            {
+              "name": "Ball Up Clearances",
+              "home": 2,
+              "away": 2,
+              "diff": "+2"
+            },
+            {
+              "name": "Throw In Clearances",
+              "home": 3,
+              "away": 3,
+              "diff": "+4"
+            },
+            {
+              "name": "Inside 50s",
+              "home": 9,
+              "away": 7,
+              "diff": "+2"
+            },
+            {
+              "name": "Rebound 50s",
+              "home": 6,
+              "away": 6,
+              "diff": "+3"
+            },
+            {
+              "name": "Frees For",
+              "home": 2,
+              "away": 2,
+              "diff": "+1"
+            },
+            {
+              "name": "Kick Ins",
+              "home": 0,
+              "away": 0,
+              "diff": "+2"
+            },
+            {
+              "name": "1%ers",
+              "home": 8,
+              "away": 6,
+              "diff": "+2"
+            },
+            {
+              "name": "Turnovers",
+              "home": 20,
+              "away": 20,
+              "diff": "-4"
+            },
+            {
+              "name": "Back Turnovers",
+              "home": 6,
+              "away": 6,
+              "diff": "-5"
+            },
+            {
+              "name": "Midfield Turnovers",
+              "home": 6,
+              "away": 8,
+              "diff": "-2"
+            },
+            {
+              "name": "Forward Turnovers",
+              "home": 8,
+              "away": 8,
+              "diff": "-1"
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "stats": [
+            {
+              "name": "Overall Pressure",
+              "home": 28,
+              "away": 28,
+              "diff": "+4"
+            },
+            {
+              "name": "Pressure Acts",
+              "home": 14,
+              "away": 8,
+              "diff": "+6"
+            },
+            {
+              "name": "Chases",
+              "home": 1,
+              "away": 1,
+              "diff": "0"
+            },
+            {
+              "name": "Smothers",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Spoils",
+              "home": 5,
+              "away": 3,
+              "diff": "+2"
+            },
+            {
+              "name": "Tackles",
+              "home": 12,
+              "away": 12,
+              "diff": "+9"
+            },
+            {
+              "name": "Tackles Eff",
+              "home": 11,
+              "away": 11,
+              "diff": "+5"
+            },
+            {
+              "name": "Forward 50 Tackles",
+              "home": 1,
+              "away": 1,
+              "diff": "+5"
+            },
+            {
+              "name": "Midfield Tackles",
+              "home": 4,
+              "away": 4,
+              "diff": "+2"
+            },
+            {
+              "name": "Back 50 Tackles",
+              "home": 7,
+              "away": 7,
+              "diff": "+2"
+            }
+          ]
+        },
+        {
+          "name": "Scoring",
+          "stats": [
+            {
+              "name": "Goals",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Behinds",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            }
+          ]
+        }
+      ]
+    },
+    "Q4": {
+      "period": "Q3",
+      "efficiency_donuts": [
+        {
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "label": "Disposal Efficiency",
+          "value": "47%",
+          "side": "away"
+        },
+        {
+          "label": "Kick Efficiency",
+          "value": "38%",
+          "side": "away"
+        },
+        {
+          "label": "Handball Efficiency",
+          "value": "64%",
+          "side": "away"
+        }
+      ],
+      "sections": [
+        {
+          "name": "Disposals",
+          "stats": [
+            {
+              "name": "Disposals",
+              "home": 60,
+              "away": 51,
+              "diff": "+9"
+            },
+            {
+              "name": "Kicks",
+              "home": 26,
+              "away": 26,
+              "diff": "+8"
+            },
+            {
+              "name": "Handballs",
+              "home": 34,
+              "away": 17,
+              "diff": "+17"
+            },
+            {
+              "name": "Contested Possesions",
+              "home": 41,
+              "away": 25,
+              "diff": "+16"
+            },
+            {
+              "name": "Total Groundball Gets",
+              "home": 31,
+              "away": 22,
+              "diff": "+9"
+            },
+            {
+              "name": "Hard Ball Gets",
+              "home": 11,
+              "away": 3,
+              "diff": "+8"
+            },
+            {
+              "name": "Loose Ball Gets",
+              "home": 20,
+              "away": 19,
+              "diff": "+1"
+            },
+            {
+              "name": "Intercept Possessions",
+              "home": 16,
+              "away": 16,
+              "diff": "+5"
+            },
+            {
+              "name": "Gathers",
+              "home": 9,
+              "away": 6,
+              "diff": "+3"
+            },
+            {
+              "name": "Handball Receives",
+              "home": 1,
+              "away": 0,
+              "diff": "+1"
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "stats": [
+            {
+              "name": "Marks",
+              "home": 10,
+              "away": 3,
+              "diff": "+7"
+            },
+            {
+              "name": "Contested Marks",
+              "home": 1,
+              "away": 0,
+              "diff": "+1"
+            },
+            {
+              "name": "Uncontested Marks",
+              "home": 9,
+              "away": 3,
+              "diff": "+6"
+            },
+            {
+              "name": "Intercept Marks",
+              "home": 4,
+              "away": 1,
+              "diff": "+3"
+            },
+            {
+              "name": "Marks Inside 50",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            }
+          ]
+        },
+        {
+          "name": "General Play",
+          "stats": [
+            {
+              "name": "Ranking Points",
+              "home": 289,
+              "away": 249,
+              "diff": "+40"
+            },
+            {
+              "name": "Hit Outs",
+              "home": 18,
+              "away": 4,
+              "diff": "+14"
+            },
+            {
+              "name": "Hit Outs to Advantage",
+              "home": 5,
+              "away": 1,
+              "diff": "+4"
+            },
+            {
+              "name": "Clearances",
+              "home": 8,
+              "away": 8,
+              "diff": "+3"
+            },
+            {
+              "name": "Centre Clearances",
+              "home": 3,
+              "away": 0,
+              "diff": "+3"
+            },
+            {
+              "name": "Ball Up Clearances",
+              "home": 2,
+              "away": 2,
+              "diff": "+2"
+            },
+            {
+              "name": "Throw In Clearances",
+              "home": 3,
+              "away": 3,
+              "diff": "+4"
+            },
+            {
+              "name": "Inside 50s",
+              "home": 9,
+              "away": 7,
+              "diff": "+2"
+            },
+            {
+              "name": "Rebound 50s",
+              "home": 6,
+              "away": 6,
+              "diff": "+3"
+            },
+            {
+              "name": "Frees For",
+              "home": 2,
+              "away": 2,
+              "diff": "+1"
+            },
+            {
+              "name": "Kick Ins",
+              "home": 0,
+              "away": 0,
+              "diff": "+2"
+            },
+            {
+              "name": "1%ers",
+              "home": 8,
+              "away": 6,
+              "diff": "+2"
+            },
+            {
+              "name": "Turnovers",
+              "home": 20,
+              "away": 20,
+              "diff": "-4"
+            },
+            {
+              "name": "Back Turnovers",
+              "home": 6,
+              "away": 6,
+              "diff": "-5"
+            },
+            {
+              "name": "Midfield Turnovers",
+              "home": 6,
+              "away": 8,
+              "diff": "-2"
+            },
+            {
+              "name": "Forward Turnovers",
+              "home": 8,
+              "away": 8,
+              "diff": "-1"
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "stats": [
+            {
+              "name": "Overall Pressure",
+              "home": 28,
+              "away": 28,
+              "diff": "+4"
+            },
+            {
+              "name": "Pressure Acts",
+              "home": 14,
+              "away": 8,
+              "diff": "+6"
+            },
+            {
+              "name": "Chases",
+              "home": 1,
+              "away": 1,
+              "diff": "0"
+            },
+            {
+              "name": "Smothers",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Spoils",
+              "home": 5,
+              "away": 3,
+              "diff": "+2"
+            },
+            {
+              "name": "Tackles",
+              "home": 12,
+              "away": 12,
+              "diff": "+9"
+            },
+            {
+              "name": "Tackles Eff",
+              "home": 11,
+              "away": 11,
+              "diff": "+5"
+            },
+            {
+              "name": "Forward 50 Tackles",
+              "home": 1,
+              "away": 1,
+              "diff": "+5"
+            },
+            {
+              "name": "Midfield Tackles",
+              "home": 4,
+              "away": 4,
+              "diff": "+2"
+            },
+            {
+              "name": "Back 50 Tackles",
+              "home": 7,
+              "away": 7,
+              "diff": "+2"
+            }
+          ]
+        },
+        {
+          "name": "Scoring",
+          "stats": [
+            {
+              "name": "Goals",
+              "home": 1,
+              "away": 1,
+              "diff": "+1"
+            },
+            {
+              "name": "Behinds",
+              "home": 2,
+              "away": 0,
+              "diff": "+2"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "score_sources": {
+    "TOTAL": {
+      "period": "Q3",
+      "donuts": [
+        {
+          "side": "home",
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "side": "home",
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "side": "home",
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Disposal Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Kick Efficiency",
+          "value": "38%"
+        },
+        {
+          "side": "away",
+          "label": "Handball Efficiency",
+          "value": "64%"
+        }
+      ],
+      "rows": []
+    },
+    "Q1": {
+      "period": "Q3",
+      "donuts": [
+        {
+          "side": "home",
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "side": "home",
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "side": "home",
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Disposal Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Kick Efficiency",
+          "value": "38%"
+        },
+        {
+          "side": "away",
+          "label": "Handball Efficiency",
+          "value": "64%"
+        }
+      ],
+      "rows": []
+    },
+    "Q2": {
+      "period": "Q3",
+      "donuts": [
+        {
+          "side": "home",
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "side": "home",
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "side": "home",
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Disposal Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Kick Efficiency",
+          "value": "38%"
+        },
+        {
+          "side": "away",
+          "label": "Handball Efficiency",
+          "value": "64%"
+        }
+      ],
+      "rows": []
+    },
+    "Q3": {
+      "period": "Q3",
+      "donuts": [
+        {
+          "side": "home",
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "side": "home",
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "side": "home",
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Disposal Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Kick Efficiency",
+          "value": "38%"
+        },
+        {
+          "side": "away",
+          "label": "Handball Efficiency",
+          "value": "64%"
+        }
+      ],
+      "rows": []
+    },
+    "Q4": {
+      "period": "Q3",
+      "donuts": [
+        {
+          "side": "home",
+          "label": "Disposal Efficiency",
+          "value": "50%"
+        },
+        {
+          "side": "home",
+          "label": "Kick Efficiency",
+          "value": "54%"
+        },
+        {
+          "side": "home",
+          "label": "Handball Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Disposal Efficiency",
+          "value": "47%"
+        },
+        {
+          "side": "away",
+          "label": "Kick Efficiency",
+          "value": "38%"
+        },
+        {
+          "side": "away",
+          "label": "Handball Efficiency",
+          "value": "64%"
+        }
+      ],
+      "rows": []
+    }
+  },
+  "efficiencies": {
+    "TOTAL": {
+      "period": "Q3",
+      "sections": [],
+      "pies": []
+    },
+    "Q1": {
+      "period": "Q3",
+      "sections": [],
+      "pies": []
+    },
+    "Q2": {
+      "period": "Q3",
+      "sections": [],
+      "pies": []
+    },
+    "Q3": {
+      "period": "Q3",
+      "sections": [],
+      "pies": []
+    },
+    "Q4": {
+      "period": "Q3",
+      "sections": [],
+      "pies": []
+    }
+  },
+  "shot_map": {
+    "TOTAL": {
+      "period": "Q3",
+      "shots": []
+    },
+    "Q1": {
+      "period": "Q3",
+      "shots": []
+    },
+    "Q2": {
+      "period": "Q3",
+      "shots": []
+    },
+    "Q3": {
+      "period": "Q3",
+      "shots": []
+    },
+    "Q4": {
+      "period": "Q3",
+      "shots": []
+    }
+  },
+  "free_kicks": {
+    "TOTAL": {
+      "period": "Q3",
+      "rows": [
+        {
+          "name": "Disposals",
+          "home": 60,
+          "away": 51,
+          "diff": "+9"
+        },
+        {
+          "name": "Kicks",
+          "home": 26,
+          "away": 26,
+          "diff": "+8"
+        },
+        {
+          "name": "Handballs",
+          "home": 34,
+          "away": 17,
+          "diff": "+17"
+        },
+        {
+          "name": "Contested Possesions",
+          "home": 41,
+          "away": 25,
+          "diff": "+16"
+        },
+        {
+          "name": "Total Groundball Gets",
+          "home": 31,
+          "away": 22,
+          "diff": "+9"
+        },
+        {
+          "name": "Hard Ball Gets",
+          "home": 11,
+          "away": 3,
+          "diff": "+8"
+        },
+        {
+          "name": "Loose Ball Gets",
+          "home": 20,
+          "away": 19,
+          "diff": "+1"
+        },
+        {
+          "name": "Intercept Possessions",
+          "home": 16,
+          "away": 16,
+          "diff": "+5"
+        },
+        {
+          "name": "Gathers",
+          "home": 9,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Handball Receives",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Marks",
+          "home": 10,
+          "away": 3,
+          "diff": "+7"
+        },
+        {
+          "name": "Contested Marks",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Uncontested Marks",
+          "home": 9,
+          "away": 3,
+          "diff": "+6"
+        },
+        {
+          "name": "Intercept Marks",
+          "home": 4,
+          "away": 1,
+          "diff": "+3"
+        },
+        {
+          "name": "Marks Inside 50",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "Ranking Points",
+          "home": 289,
+          "away": 249,
+          "diff": "+40"
+        },
+        {
+          "name": "Hit Outs",
+          "home": 18,
+          "away": 4,
+          "diff": "+14"
+        },
+        {
+          "name": "Hit Outs to Advantage",
+          "home": 5,
+          "away": 1,
+          "diff": "+4"
+        },
+        {
+          "name": "Clearances",
+          "home": 8,
+          "away": 8,
+          "diff": "+3"
+        },
+        {
+          "name": "Centre Clearances",
+          "home": 3,
+          "away": 0,
+          "diff": "+3"
+        },
+        {
+          "name": "Ball Up Clearances",
+          "home": 2,
+          "away": 2,
+          "diff": "+2"
+        },
+        {
+          "name": "Throw In Clearances",
+          "home": 3,
+          "away": 3,
+          "diff": "+4"
+        },
+        {
+          "name": "Inside 50s",
+          "home": 9,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Rebound 50s",
+          "home": 6,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Frees For",
+          "home": 2,
+          "away": 2,
+          "diff": "+1"
+        },
+        {
+          "name": "Kick Ins",
+          "home": 0,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "1%ers",
+          "home": 8,
+          "away": 6,
+          "diff": "+2"
+        },
+        {
+          "name": "Turnovers",
+          "home": 20,
+          "away": 20,
+          "diff": "-4"
+        },
+        {
+          "name": "Back Turnovers",
+          "home": 6,
+          "away": 6,
+          "diff": "-5"
+        },
+        {
+          "name": "Midfield Turnovers",
+          "home": 6,
+          "away": 8,
+          "diff": "-2"
+        },
+        {
+          "name": "Forward Turnovers",
+          "home": 8,
+          "away": 8,
+          "diff": "-1"
+        },
+        {
+          "name": "Overall Pressure",
+          "home": 28,
+          "away": 28,
+          "diff": "+4"
+        },
+        {
+          "name": "Pressure Acts",
+          "home": 14,
+          "away": 8,
+          "diff": "+6"
+        },
+        {
+          "name": "Chases",
+          "home": 1,
+          "away": 1,
+          "diff": "0"
+        },
+        {
+          "name": "Smothers",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Spoils",
+          "home": 5,
+          "away": 3,
+          "diff": "+2"
+        },
+        {
+          "name": "Tackles",
+          "home": 12,
+          "away": 12,
+          "diff": "+9"
+        },
+        {
+          "name": "Tackles Eff",
+          "home": 11,
+          "away": 11,
+          "diff": "+5"
+        },
+        {
+          "name": "Forward 50 Tackles",
+          "home": 1,
+          "away": 1,
+          "diff": "+5"
+        },
+        {
+          "name": "Midfield Tackles",
+          "home": 4,
+          "away": 4,
+          "diff": "+2"
+        },
+        {
+          "name": "Back 50 Tackles",
+          "home": 7,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Goals",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Behinds",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        }
+      ]
+    },
+    "Q1": {
+      "period": "Q3",
+      "rows": [
+        {
+          "name": "Disposals",
+          "home": 60,
+          "away": 51,
+          "diff": "+9"
+        },
+        {
+          "name": "Kicks",
+          "home": 26,
+          "away": 26,
+          "diff": "+8"
+        },
+        {
+          "name": "Handballs",
+          "home": 34,
+          "away": 17,
+          "diff": "+17"
+        },
+        {
+          "name": "Contested Possesions",
+          "home": 41,
+          "away": 25,
+          "diff": "+16"
+        },
+        {
+          "name": "Total Groundball Gets",
+          "home": 31,
+          "away": 22,
+          "diff": "+9"
+        },
+        {
+          "name": "Hard Ball Gets",
+          "home": 11,
+          "away": 3,
+          "diff": "+8"
+        },
+        {
+          "name": "Loose Ball Gets",
+          "home": 20,
+          "away": 19,
+          "diff": "+1"
+        },
+        {
+          "name": "Intercept Possessions",
+          "home": 16,
+          "away": 16,
+          "diff": "+5"
+        },
+        {
+          "name": "Gathers",
+          "home": 9,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Handball Receives",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Marks",
+          "home": 10,
+          "away": 3,
+          "diff": "+7"
+        },
+        {
+          "name": "Contested Marks",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Uncontested Marks",
+          "home": 9,
+          "away": 3,
+          "diff": "+6"
+        },
+        {
+          "name": "Intercept Marks",
+          "home": 4,
+          "away": 1,
+          "diff": "+3"
+        },
+        {
+          "name": "Marks Inside 50",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "Ranking Points",
+          "home": 289,
+          "away": 249,
+          "diff": "+40"
+        },
+        {
+          "name": "Hit Outs",
+          "home": 18,
+          "away": 4,
+          "diff": "+14"
+        },
+        {
+          "name": "Hit Outs to Advantage",
+          "home": 5,
+          "away": 1,
+          "diff": "+4"
+        },
+        {
+          "name": "Clearances",
+          "home": 8,
+          "away": 8,
+          "diff": "+3"
+        },
+        {
+          "name": "Centre Clearances",
+          "home": 3,
+          "away": 0,
+          "diff": "+3"
+        },
+        {
+          "name": "Ball Up Clearances",
+          "home": 2,
+          "away": 2,
+          "diff": "+2"
+        },
+        {
+          "name": "Throw In Clearances",
+          "home": 3,
+          "away": 3,
+          "diff": "+4"
+        },
+        {
+          "name": "Inside 50s",
+          "home": 9,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Rebound 50s",
+          "home": 6,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Frees For",
+          "home": 2,
+          "away": 2,
+          "diff": "+1"
+        },
+        {
+          "name": "Kick Ins",
+          "home": 0,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "1%ers",
+          "home": 8,
+          "away": 6,
+          "diff": "+2"
+        },
+        {
+          "name": "Turnovers",
+          "home": 20,
+          "away": 20,
+          "diff": "-4"
+        },
+        {
+          "name": "Back Turnovers",
+          "home": 6,
+          "away": 6,
+          "diff": "-5"
+        },
+        {
+          "name": "Midfield Turnovers",
+          "home": 6,
+          "away": 8,
+          "diff": "-2"
+        },
+        {
+          "name": "Forward Turnovers",
+          "home": 8,
+          "away": 8,
+          "diff": "-1"
+        },
+        {
+          "name": "Overall Pressure",
+          "home": 28,
+          "away": 28,
+          "diff": "+4"
+        },
+        {
+          "name": "Pressure Acts",
+          "home": 14,
+          "away": 8,
+          "diff": "+6"
+        },
+        {
+          "name": "Chases",
+          "home": 1,
+          "away": 1,
+          "diff": "0"
+        },
+        {
+          "name": "Smothers",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Spoils",
+          "home": 5,
+          "away": 3,
+          "diff": "+2"
+        },
+        {
+          "name": "Tackles",
+          "home": 12,
+          "away": 12,
+          "diff": "+9"
+        },
+        {
+          "name": "Tackles Eff",
+          "home": 11,
+          "away": 11,
+          "diff": "+5"
+        },
+        {
+          "name": "Forward 50 Tackles",
+          "home": 1,
+          "away": 1,
+          "diff": "+5"
+        },
+        {
+          "name": "Midfield Tackles",
+          "home": 4,
+          "away": 4,
+          "diff": "+2"
+        },
+        {
+          "name": "Back 50 Tackles",
+          "home": 7,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Goals",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Behinds",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        }
+      ]
+    },
+    "Q2": {
+      "period": "Q3",
+      "rows": [
+        {
+          "name": "Disposals",
+          "home": 60,
+          "away": 51,
+          "diff": "+9"
+        },
+        {
+          "name": "Kicks",
+          "home": 26,
+          "away": 26,
+          "diff": "+8"
+        },
+        {
+          "name": "Handballs",
+          "home": 34,
+          "away": 17,
+          "diff": "+17"
+        },
+        {
+          "name": "Contested Possesions",
+          "home": 41,
+          "away": 25,
+          "diff": "+16"
+        },
+        {
+          "name": "Total Groundball Gets",
+          "home": 31,
+          "away": 22,
+          "diff": "+9"
+        },
+        {
+          "name": "Hard Ball Gets",
+          "home": 11,
+          "away": 3,
+          "diff": "+8"
+        },
+        {
+          "name": "Loose Ball Gets",
+          "home": 20,
+          "away": 19,
+          "diff": "+1"
+        },
+        {
+          "name": "Intercept Possessions",
+          "home": 16,
+          "away": 16,
+          "diff": "+5"
+        },
+        {
+          "name": "Gathers",
+          "home": 9,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Handball Receives",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Marks",
+          "home": 10,
+          "away": 3,
+          "diff": "+7"
+        },
+        {
+          "name": "Contested Marks",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Uncontested Marks",
+          "home": 9,
+          "away": 3,
+          "diff": "+6"
+        },
+        {
+          "name": "Intercept Marks",
+          "home": 4,
+          "away": 1,
+          "diff": "+3"
+        },
+        {
+          "name": "Marks Inside 50",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "Ranking Points",
+          "home": 289,
+          "away": 249,
+          "diff": "+40"
+        },
+        {
+          "name": "Hit Outs",
+          "home": 18,
+          "away": 4,
+          "diff": "+14"
+        },
+        {
+          "name": "Hit Outs to Advantage",
+          "home": 5,
+          "away": 1,
+          "diff": "+4"
+        },
+        {
+          "name": "Clearances",
+          "home": 8,
+          "away": 8,
+          "diff": "+3"
+        },
+        {
+          "name": "Centre Clearances",
+          "home": 3,
+          "away": 0,
+          "diff": "+3"
+        },
+        {
+          "name": "Ball Up Clearances",
+          "home": 2,
+          "away": 2,
+          "diff": "+2"
+        },
+        {
+          "name": "Throw In Clearances",
+          "home": 3,
+          "away": 3,
+          "diff": "+4"
+        },
+        {
+          "name": "Inside 50s",
+          "home": 9,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Rebound 50s",
+          "home": 6,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Frees For",
+          "home": 2,
+          "away": 2,
+          "diff": "+1"
+        },
+        {
+          "name": "Kick Ins",
+          "home": 0,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "1%ers",
+          "home": 8,
+          "away": 6,
+          "diff": "+2"
+        },
+        {
+          "name": "Turnovers",
+          "home": 20,
+          "away": 20,
+          "diff": "-4"
+        },
+        {
+          "name": "Back Turnovers",
+          "home": 6,
+          "away": 6,
+          "diff": "-5"
+        },
+        {
+          "name": "Midfield Turnovers",
+          "home": 6,
+          "away": 8,
+          "diff": "-2"
+        },
+        {
+          "name": "Forward Turnovers",
+          "home": 8,
+          "away": 8,
+          "diff": "-1"
+        },
+        {
+          "name": "Overall Pressure",
+          "home": 28,
+          "away": 28,
+          "diff": "+4"
+        },
+        {
+          "name": "Pressure Acts",
+          "home": 14,
+          "away": 8,
+          "diff": "+6"
+        },
+        {
+          "name": "Chases",
+          "home": 1,
+          "away": 1,
+          "diff": "0"
+        },
+        {
+          "name": "Smothers",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Spoils",
+          "home": 5,
+          "away": 3,
+          "diff": "+2"
+        },
+        {
+          "name": "Tackles",
+          "home": 12,
+          "away": 12,
+          "diff": "+9"
+        },
+        {
+          "name": "Tackles Eff",
+          "home": 11,
+          "away": 11,
+          "diff": "+5"
+        },
+        {
+          "name": "Forward 50 Tackles",
+          "home": 1,
+          "away": 1,
+          "diff": "+5"
+        },
+        {
+          "name": "Midfield Tackles",
+          "home": 4,
+          "away": 4,
+          "diff": "+2"
+        },
+        {
+          "name": "Back 50 Tackles",
+          "home": 7,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Goals",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Behinds",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        }
+      ]
+    },
+    "Q3": {
+      "period": "Q3",
+      "rows": [
+        {
+          "name": "Disposals",
+          "home": 60,
+          "away": 51,
+          "diff": "+9"
+        },
+        {
+          "name": "Kicks",
+          "home": 26,
+          "away": 26,
+          "diff": "+8"
+        },
+        {
+          "name": "Handballs",
+          "home": 34,
+          "away": 17,
+          "diff": "+17"
+        },
+        {
+          "name": "Contested Possesions",
+          "home": 41,
+          "away": 25,
+          "diff": "+16"
+        },
+        {
+          "name": "Total Groundball Gets",
+          "home": 31,
+          "away": 22,
+          "diff": "+9"
+        },
+        {
+          "name": "Hard Ball Gets",
+          "home": 11,
+          "away": 3,
+          "diff": "+8"
+        },
+        {
+          "name": "Loose Ball Gets",
+          "home": 20,
+          "away": 19,
+          "diff": "+1"
+        },
+        {
+          "name": "Intercept Possessions",
+          "home": 16,
+          "away": 16,
+          "diff": "+5"
+        },
+        {
+          "name": "Gathers",
+          "home": 9,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Handball Receives",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Marks",
+          "home": 10,
+          "away": 3,
+          "diff": "+7"
+        },
+        {
+          "name": "Contested Marks",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Uncontested Marks",
+          "home": 9,
+          "away": 3,
+          "diff": "+6"
+        },
+        {
+          "name": "Intercept Marks",
+          "home": 4,
+          "away": 1,
+          "diff": "+3"
+        },
+        {
+          "name": "Marks Inside 50",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "Ranking Points",
+          "home": 289,
+          "away": 249,
+          "diff": "+40"
+        },
+        {
+          "name": "Hit Outs",
+          "home": 18,
+          "away": 4,
+          "diff": "+14"
+        },
+        {
+          "name": "Hit Outs to Advantage",
+          "home": 5,
+          "away": 1,
+          "diff": "+4"
+        },
+        {
+          "name": "Clearances",
+          "home": 8,
+          "away": 8,
+          "diff": "+3"
+        },
+        {
+          "name": "Centre Clearances",
+          "home": 3,
+          "away": 0,
+          "diff": "+3"
+        },
+        {
+          "name": "Ball Up Clearances",
+          "home": 2,
+          "away": 2,
+          "diff": "+2"
+        },
+        {
+          "name": "Throw In Clearances",
+          "home": 3,
+          "away": 3,
+          "diff": "+4"
+        },
+        {
+          "name": "Inside 50s",
+          "home": 9,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Rebound 50s",
+          "home": 6,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Frees For",
+          "home": 2,
+          "away": 2,
+          "diff": "+1"
+        },
+        {
+          "name": "Kick Ins",
+          "home": 0,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "1%ers",
+          "home": 8,
+          "away": 6,
+          "diff": "+2"
+        },
+        {
+          "name": "Turnovers",
+          "home": 20,
+          "away": 20,
+          "diff": "-4"
+        },
+        {
+          "name": "Back Turnovers",
+          "home": 6,
+          "away": 6,
+          "diff": "-5"
+        },
+        {
+          "name": "Midfield Turnovers",
+          "home": 6,
+          "away": 8,
+          "diff": "-2"
+        },
+        {
+          "name": "Forward Turnovers",
+          "home": 8,
+          "away": 8,
+          "diff": "-1"
+        },
+        {
+          "name": "Overall Pressure",
+          "home": 28,
+          "away": 28,
+          "diff": "+4"
+        },
+        {
+          "name": "Pressure Acts",
+          "home": 14,
+          "away": 8,
+          "diff": "+6"
+        },
+        {
+          "name": "Chases",
+          "home": 1,
+          "away": 1,
+          "diff": "0"
+        },
+        {
+          "name": "Smothers",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Spoils",
+          "home": 5,
+          "away": 3,
+          "diff": "+2"
+        },
+        {
+          "name": "Tackles",
+          "home": 12,
+          "away": 12,
+          "diff": "+9"
+        },
+        {
+          "name": "Tackles Eff",
+          "home": 11,
+          "away": 11,
+          "diff": "+5"
+        },
+        {
+          "name": "Forward 50 Tackles",
+          "home": 1,
+          "away": 1,
+          "diff": "+5"
+        },
+        {
+          "name": "Midfield Tackles",
+          "home": 4,
+          "away": 4,
+          "diff": "+2"
+        },
+        {
+          "name": "Back 50 Tackles",
+          "home": 7,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Goals",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Behinds",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        }
+      ]
+    },
+    "Q4": {
+      "period": "Q3",
+      "rows": [
+        {
+          "name": "Disposals",
+          "home": 60,
+          "away": 51,
+          "diff": "+9"
+        },
+        {
+          "name": "Kicks",
+          "home": 26,
+          "away": 26,
+          "diff": "+8"
+        },
+        {
+          "name": "Handballs",
+          "home": 34,
+          "away": 17,
+          "diff": "+17"
+        },
+        {
+          "name": "Contested Possesions",
+          "home": 41,
+          "away": 25,
+          "diff": "+16"
+        },
+        {
+          "name": "Total Groundball Gets",
+          "home": 31,
+          "away": 22,
+          "diff": "+9"
+        },
+        {
+          "name": "Hard Ball Gets",
+          "home": 11,
+          "away": 3,
+          "diff": "+8"
+        },
+        {
+          "name": "Loose Ball Gets",
+          "home": 20,
+          "away": 19,
+          "diff": "+1"
+        },
+        {
+          "name": "Intercept Possessions",
+          "home": 16,
+          "away": 16,
+          "diff": "+5"
+        },
+        {
+          "name": "Gathers",
+          "home": 9,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Handball Receives",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Marks",
+          "home": 10,
+          "away": 3,
+          "diff": "+7"
+        },
+        {
+          "name": "Contested Marks",
+          "home": 1,
+          "away": 0,
+          "diff": "+1"
+        },
+        {
+          "name": "Uncontested Marks",
+          "home": 9,
+          "away": 3,
+          "diff": "+6"
+        },
+        {
+          "name": "Intercept Marks",
+          "home": 4,
+          "away": 1,
+          "diff": "+3"
+        },
+        {
+          "name": "Marks Inside 50",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "Ranking Points",
+          "home": 289,
+          "away": 249,
+          "diff": "+40"
+        },
+        {
+          "name": "Hit Outs",
+          "home": 18,
+          "away": 4,
+          "diff": "+14"
+        },
+        {
+          "name": "Hit Outs to Advantage",
+          "home": 5,
+          "away": 1,
+          "diff": "+4"
+        },
+        {
+          "name": "Clearances",
+          "home": 8,
+          "away": 8,
+          "diff": "+3"
+        },
+        {
+          "name": "Centre Clearances",
+          "home": 3,
+          "away": 0,
+          "diff": "+3"
+        },
+        {
+          "name": "Ball Up Clearances",
+          "home": 2,
+          "away": 2,
+          "diff": "+2"
+        },
+        {
+          "name": "Throw In Clearances",
+          "home": 3,
+          "away": 3,
+          "diff": "+4"
+        },
+        {
+          "name": "Inside 50s",
+          "home": 9,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Rebound 50s",
+          "home": 6,
+          "away": 6,
+          "diff": "+3"
+        },
+        {
+          "name": "Frees For",
+          "home": 2,
+          "away": 2,
+          "diff": "+1"
+        },
+        {
+          "name": "Kick Ins",
+          "home": 0,
+          "away": 0,
+          "diff": "+2"
+        },
+        {
+          "name": "1%ers",
+          "home": 8,
+          "away": 6,
+          "diff": "+2"
+        },
+        {
+          "name": "Turnovers",
+          "home": 20,
+          "away": 20,
+          "diff": "-4"
+        },
+        {
+          "name": "Back Turnovers",
+          "home": 6,
+          "away": 6,
+          "diff": "-5"
+        },
+        {
+          "name": "Midfield Turnovers",
+          "home": 6,
+          "away": 8,
+          "diff": "-2"
+        },
+        {
+          "name": "Forward Turnovers",
+          "home": 8,
+          "away": 8,
+          "diff": "-1"
+        },
+        {
+          "name": "Overall Pressure",
+          "home": 28,
+          "away": 28,
+          "diff": "+4"
+        },
+        {
+          "name": "Pressure Acts",
+          "home": 14,
+          "away": 8,
+          "diff": "+6"
+        },
+        {
+          "name": "Chases",
+          "home": 1,
+          "away": 1,
+          "diff": "0"
+        },
+        {
+          "name": "Smothers",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Spoils",
+          "home": 5,
+          "away": 3,
+          "diff": "+2"
+        },
+        {
+          "name": "Tackles",
+          "home": 12,
+          "away": 12,
+          "diff": "+9"
+        },
+        {
+          "name": "Tackles Eff",
+          "home": 11,
+          "away": 11,
+          "diff": "+5"
+        },
+        {
+          "name": "Forward 50 Tackles",
+          "home": 1,
+          "away": 1,
+          "diff": "+5"
+        },
+        {
+          "name": "Midfield Tackles",
+          "home": 4,
+          "away": 4,
+          "diff": "+2"
+        },
+        {
+          "name": "Back 50 Tackles",
+          "home": 7,
+          "away": 7,
+          "diff": "+2"
+        },
+        {
+          "name": "Goals",
+          "home": 1,
+          "away": 1,
+          "diff": "+1"
+        },
+        {
+          "name": "Behinds",
+          "home": 2,
+          "away": 0,
+          "diff": "+2"
+        }
+      ]
+    }
+  },
+  "player_stats": [],
+  "_meta": {
+    "season": 2025,
+    "round": "5",
+    "card_label": "17/05/2025 | ROUND 4 | PEGS AGSV |  | 39 |  | 5.9 |  | VS |  | 38 |  | 5.8 |  | ASSUMPTION COLLEGE",
+    "slug": "17_05_2025_vs_assumption_college"
+  }
+}

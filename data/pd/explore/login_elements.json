@@ -1,0 +1,82 @@
+[
+  {
+    "tag": "INPUT",
+    "type": "hidden",
+    "name": "__RequestVerificationToken",
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "",
+    "className": null
+  },
+  {
+    "tag": "INPUT",
+    "type": "text",
+    "name": "_model.Usercode",
+    "id": null,
+    "placeholder": "Username",
+    "aria": null,
+    "text": "",
+    "className": "valid"
+  },
+  {
+    "tag": "INPUT",
+    "type": "password",
+    "name": "_model.Password",
+    "id": null,
+    "placeholder": "Password",
+    "aria": null,
+    "text": "",
+    "className": "valid"
+  },
+  {
+    "tag": "INPUT",
+    "type": "submit",
+    "name": null,
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "",
+    "className": "button primary max mb-3"
+  },
+  {
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": null,
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "REGISTER AS A COACH",
+    "className": "primary slim"
+  },
+  {
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": null,
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "REGISTER AS A PLAYER",
+    "className": "primary slim"
+  },
+  {
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": null,
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "RESET",
+    "className": "link"
+  },
+  {
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": null,
+    "id": null,
+    "placeholder": null,
+    "aria": null,
+    "text": "UNSUBSCRIBE",
+    "className": "link"
+  }
+]

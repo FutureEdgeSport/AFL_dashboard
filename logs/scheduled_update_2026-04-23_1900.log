@@ -1,0 +1,40 @@
+2026-04-23 19:00:04,345 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-23_1900.log
+2026-04-23 19:00:04,345 [INFO] ============================================================
+2026-04-23 19:00:04,345 [INFO] AFL Dashboard – Scheduled Data Update
+2026-04-23 19:00:04,345 [INFO] Date: Thursday 23 April 2026 19:00
+2026-04-23 19:00:04,345 [INFO] Mode: FULL
+2026-04-23 19:00:04,345 [INFO] ============================================================
+2026-04-23 19:00:04,345 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-04-23 19:00:04,345 [INFO] 
+Steps to run (1):
+2026-04-23 19:00:04,345 [INFO]   • team_selections: Scrape team selections & fixture from FootyWire + Squiggle API
+2026-04-23 19:00:04,345 [INFO] 
+2026-04-23 19:00:04,345 [INFO] START [team_selections] Scrape team selections & fixture from FootyWire + Squiggle API
+2026-04-23 19:00:04,345 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_team_selections.py 
+2026-04-23 19:00:11,181 [ERROR]   FAILED [team_selections] exit code 1 (6.8s)
+2026-04-23 19:00:11,181 [ERROR]     |     return self.request("GET", url, **kwargs)
+2026-04-23 19:00:11,181 [ERROR]     |   File "/Users/marcuswagner/coding/AFL_dashboard/utils/http_utils.py", line 69, in _request_with_timeout
+2026-04-23 19:00:11,181 [ERROR]     |     return _orig_request(*args, **kwargs)
+2026-04-23 19:00:11,181 [ERROR]     |   File "/opt/homebrew/Caskroom/miniconda/base/envs/afl/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+2026-04-23 19:00:11,182 [ERROR]     |     resp = self.send(prep, **send_kwargs)
+2026-04-23 19:00:11,182 [ERROR]     |   File "/opt/homebrew/Caskroom/miniconda/base/envs/afl/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+2026-04-23 19:00:11,182 [ERROR]     |     r = adapter.send(request, **kwargs)
+2026-04-23 19:00:11,182 [ERROR]     |   File "/opt/homebrew/Caskroom/miniconda/base/envs/afl/lib/python3.10/site-packages/requests/adapters.py", line 677, in send
+2026-04-23 19:00:11,182 [ERROR]     |     raise ConnectionError(e, request=request)
+2026-04-23 19:00:11,182 [ERROR]     | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.squiggle.com.au', port=443): Max retries exceeded with url: /?q=games&year=2026 (Caused by NameResolutionError("HTTPSConnection(host='api.squiggle.com.au', port=443): Failed to resolve 'api.squiggle.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 19:00:11,182 [INFO] 
+2026-04-23 19:00:11,182 [INFO] ============================================================
+2026-04-23 19:00:11,182 [INFO] UPDATE SUMMARY
+2026-04-23 19:00:11,182 [INFO] ============================================================
+2026-04-23 19:00:11,182 [INFO]   ✗ team_selections: FAILED: Exit code 1
+2026-04-23 19:00:11,182 [INFO] 
+2026-04-23 19:00:11,182 [INFO] Results: 0 passed, 1 failed, 0 skipped
+2026-04-23 19:00:11,182 [INFO] Total time: 7s (0.1 min)
+2026-04-23 19:00:11,182 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-04-23_1900.log
+2026-04-23 19:00:11,187 [INFO] Log rotation: removed 1 old log file(s)
+2026-04-23 19:00:11,207 [INFO] Stopped Streamlit (PIDs: 59759)
+2026-04-23 19:00:13,288 [INFO] Restarted Streamlit app.
+2026-04-23 19:00:13,288 [WARNING] 
+⚠️  1 step(s) failed. Check log for details.
+2026-04-23 19:00:13,430 [WARNING] SMTP email failed: [Errno 8] nodename nor servname provided, or not known
+2026-04-23 19:00:13,450 [INFO] Email sent via mailx to marcus.wagner@futureedgesport.com.au

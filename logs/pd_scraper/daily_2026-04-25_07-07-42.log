@@ -1,0 +1,39 @@
+2026-04-25 07:07:45,133 INFO [pd_scraper.auth]: Performing fresh login…
+2026-04-25 07:07:47,843 INFO [pd_scraper.auth]: Login successful for brentonsanderson.mentone
+2026-04-25 07:07:47,872 INFO [pd_scraper.auth]: Session state saved to /Users/marcuswagner/coding/AFL_dashboard/data/pd/session_state.json
+2026-04-25 07:07:51,270 INFO [pd_scraper.scrape_season]: Switched season → Mentone Grammar (2025)
+2026-04-25 07:07:51,306 INFO [pd_scraper.scrape_season]: Season 2025 rounds: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'SF']
+2026-04-25 07:07:52,542 INFO [pd_scraper.scrape_season]:   Round 1: 1 clickable fixtures
+2026-04-25 07:07:52,542 INFO [pd_scraper.scrape_season]:     SKIP (exists): 10_05_2025_vs_pegs_agsv.json
+2026-04-25 07:07:53,779 INFO [pd_scraper.scrape_season]:   Round 2: 2 clickable fixtures
+2026-04-25 07:08:34,156 INFO [pd_scraper.scrape_season]:     wrote 10_05_2025_vs_pegs_agsv.json (355 KB)
+2026-04-25 07:08:36,615 INFO [pd_scraper.scrape_season]:     SKIP (exists): 03_05_2025_vs_mentone_grammar.json
+2026-04-25 07:08:37,843 INFO [pd_scraper.scrape_season]:   Round 3: 1 clickable fixtures
+2026-04-25 07:08:37,843 INFO [pd_scraper.scrape_season]:     SKIP (exists): 10_05_2025_vs_pegs_agsv.json
+2026-04-25 07:08:39,083 INFO [pd_scraper.scrape_season]:   Round 4: 2 clickable fixtures
+2026-04-25 07:09:19,053 INFO [pd_scraper.scrape_season]:     wrote 10_05_2025_vs_pegs_agsv.json (355 KB)
+2026-04-25 07:09:21,520 INFO [pd_scraper.scrape_season]:     SKIP (exists): 17_05_2025_vs_assumption_college.json
+2026-04-25 07:09:22,756 INFO [pd_scraper.scrape_season]:   Round 5: 2 clickable fixtures
+2026-04-25 07:09:22,759 INFO [pd_scraper.scrape_season]:     SKIP (exists): 17_05_2025_vs_mentone_grammar.json
+2026-04-25 07:18:25,689 INFO [pd_scraper.scrape_season]:     wrote 17_05_2025_vs_assumption_college.json (67 KB)
+2026-04-25 07:18:26,943 WARNING [pd_scraper.scrape_season]:     lost round context; aborting round 5
+2026-04-25 07:18:26,946 WARNING [pd_scraper.scrape_season]: Could not click round 6
+2026-04-25 07:18:26,948 WARNING [pd_scraper.scrape_season]: Could not click round 7
+2026-04-25 07:18:26,950 WARNING [pd_scraper.scrape_season]: Could not click round 8
+2026-04-25 07:18:26,952 WARNING [pd_scraper.scrape_season]: Could not click round 9
+2026-04-25 07:18:26,953 WARNING [pd_scraper.scrape_season]: Could not click round SF
+2026-04-25 07:18:28,830 WARNING [pd_scraper.scrape_season]: Could not find season 2026 in team dropdown
+2026-04-25 07:18:28,833 WARNING [pd_scraper.scrape_season]: Skipping season 2026 (could not switch)
+2026-04-25 07:18:31,581 INFO [pd_scraper.auth]: Performing fresh login…
+2026-04-25 07:18:35,885 INFO [pd_scraper.auth]: Login successful for brentonsanderson.mentone
+2026-04-25 07:18:35,888 INFO [pd_scraper.auth]: Session state saved to /Users/marcuswagner/coding/AFL_dashboard/data/pd/session_state.json
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]: Season 2025 — rounds to download PDFs for: [2, 4, 5, 6, 7]
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]:   R02: already have PDF, skipping
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]:   R04: already have PDF, skipping
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]:   R05: already have PDF, skipping
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]:   R06: already have PDF, skipping
+2026-04-25 07:18:37,119 INFO [pd_scraper.scrape_match_pdfs]:   R07: already have PDF, skipping
+2026-04-25 07:18:39,278 INFO [pd_scraper.scrape_match_pdfs]: Season 2026 — rounds to download PDFs for: [1]
+2026-04-25 07:18:39,278 INFO [pd_scraper.scrape_match_pdfs]:   R01: already have PDF, skipping
+2026-04-25 07:18:39,323 INFO [pd_scraper.scrape_match_pdfs]: Total PDFs saved: 0
+Ingested 30 match files → SQLite

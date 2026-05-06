@@ -1,0 +1,4 @@
+# PD TeamTracker scraper — requires Playwright + python-dotenv
+playwright>=1.45
+python-dotenv>=1.0
+beautifulsoup4>=4.12

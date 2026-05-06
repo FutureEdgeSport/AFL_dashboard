@@ -21401,14 +21401,15 @@ elif page == "Player Rating Matrix":
 
             col_f1, col_f2 = st.columns(2)
             with col_f1:
-                selected_team = st.selectbox("Team", teams_available, index=0) if teams_available else None
+                _team_options = ["All Teams"] + list(teams_available) if teams_available else []
+                selected_team = st.selectbox("Team", _team_options, index=0) if _team_options else None
             with col_f2:
                 round_range = st.slider("Rounds", int(min(rounds_available)), int(max(rounds_available)),
                                         (int(min(rounds_available)), int(max(rounds_available)))) if len(rounds_available) > 1 else (int(rounds_available[0]), int(rounds_available[0]))
 
             # Filter data
             mask = pd.Series(True, index=_mr_source_df.index)
-            if selected_team:
+            if selected_team and selected_team != "All Teams":
                 mask &= _mr_source_df["Team"] == selected_team
             mask &= _mr_source_df["Round"].between(round_range[0], round_range[1])
             df_filt = _mr_source_df[mask].copy()
@@ -21435,7 +21436,7 @@ elif page == "Player Rating Matrix":
                         _has_history = not _trait_hist.empty and {"Player", "Round", "Overall_Rating"}.issubset(_trait_hist.columns)
 
                         # Filter traits to selected team
-                        _t_team = _traits_df[_traits_df["Team"] == selected_team] if selected_team and "Team" in _traits_df.columns else _traits_df
+                        _t_team = _traits_df[_traits_df["Team"] == selected_team] if selected_team and selected_team != "All Teams" and "Team" in _traits_df.columns else _traits_df
                         _trait_map = dict(zip(_t_team["Player"], pd.to_numeric(_t_team["Overall_Rating"], errors="coerce")))
                         # Keep only players that actually have a trait rating
                         _trait_map = {p: v for p, v in _trait_map.items() if pd.notna(v)}
@@ -21465,7 +21466,7 @@ elif page == "Player Rating Matrix":
 
                         if _has_history:
                             # Build per-round lookup: {(player, round): rating}
-                            if selected_team and "Team" in _trait_hist.columns:
+                            if selected_team and selected_team != "All Teams" and "Team" in _trait_hist.columns:
                                 _th_team = _trait_hist[_trait_hist["Team"] == selected_team]
                             else:
                                 _th_team = _trait_hist
@@ -21863,13 +21864,13 @@ Scale: 1.0 – 5.0
                     if _sos_hist_path.exists():
                         _sos_hist = pd.read_csv(_sos_hist_path)
                         # Filter to selected team if applicable
-                        if selected_team and "Team" in _sos_hist.columns:
+                        if selected_team and selected_team != "All Teams" and "Team" in _sos_hist.columns:
                             _sos_hist = _sos_hist[_sos_hist["Team"] == selected_team]
                         if not _sos_hist.empty and "Round" in _sos_hist.columns and "Overall_Rating" in _sos_hist.columns:
                             _sos_hist["Overall_Rating"] = pd.to_numeric(_sos_hist["Overall_Rating"], errors="coerce")
                             _earliest_rnd = _sos_hist["Round"].min()
                             _start_snap = _sos_hist[_sos_hist["Round"] == _earliest_rnd].dropna(subset=["Overall_Rating"])
-                            _start_snap = _start_snap.set_index("Player")["Overall_Rating"]
+                            _start_snap = _start_snap.drop_duplicates(subset=["Player"], keep="first").set_index("Player")["Overall_Rating"]
                             # Current values from pivot (which has "Avg" per player)
                             _cur_vals = pivot["Avg"]
                             _both = pd.DataFrame({"CurAvg": _cur_vals, "PriAvg": _start_snap}).dropna()

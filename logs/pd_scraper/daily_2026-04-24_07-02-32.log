@@ -1,0 +1,32 @@
+2026-04-24 07:02:36,228 INFO [pd_scraper.auth]: Performing fresh login…
+2026-04-24 07:18:12,355 ERROR [pd_scraper.auth]: Saved failure artefacts to /Users/marcuswagner/coding/AFL_dashboard/data/pd/explore/login_username_not_found
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/cli.py", line 78, in <module>
+    raise SystemExit(_cli())
+                     ^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/cli.py", line 64, in _cli
+    asyncio.run(_go())
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/cli.py", line 63, in _go
+    await run_seasons([2025, 2026], skip_existing=True, headless=True)
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/scrape_season.py", line 255, in run
+    async with authed_context(headless=headless) as (_b, _ctx, page):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.12/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/auth.py", line 133, in authed_context
+    await _perform_login(page)
+  File "/Users/marcuswagner/coding/AFL_dashboard/pd_scraper/auth.py", line 66, in _perform_login
+    raise RuntimeError("Could not find username input on login page")
+RuntimeError: Could not find username input on login page

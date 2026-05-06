@@ -1,0 +1,2371 @@
+
+
+===== data/pd/explore/section_fixtures.html (35308 bytes) =====
+  (total 404 content lines)
+<body {'class': ''}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: AGSV 2025
+          <div {'class': 'footer'}>
+            <div {'class': 'flex wrap mt-1 mx-auto'}>
+              <div {'class': 'flex around mx-auto'}>
+                <button {'class': ''}>
+                  TEXT: 1
+                <button {'class': ''}>
+                  TEXT: 2
+                <button {'class': 'active'}>
+                  TEXT: 3
+                <button {'class': ''}>
+                  TEXT: 4
+                <button {'class': ''}>
+                  TEXT: 5
+                <button {'class': ''}>
+                  TEXT: 6
+                <button {'class': ''}>
+                  TEXT: 7
+                <button {'class': ''}>
+                  TEXT: 8
+                <button {'class': ''}>
+                  TEXT: 9
+                <button {'class': ''}>
+                  TEXT: SF
+              <div {'class': 'mx-2'}>
+                <button {'id': 'sfdropdownbutton793b4827-6774-4cb6-a5b5-363990a87779', 'aria-label': 'All Opponents dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn  custom-dropdown team-select'}>
+                  TEXT: All Opponents
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+        <div {'class': 'background-logo'}>
+    <section {'id': 'side-nav'}>
+      <div {'class': 'side-bar open menu-permanent'}>
+        <div {'class': 'content'}>
+          <div {'class': 'show-hide'}>
+            <label {'class': 'color-light'}>
+              TEXT: Keep Open
+            <input>
+            <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+              <button>
+                <circle>
+            <div>
+              <div {'class': 'home-navigation', 'id': 'small-options'}>
+              <div {'class': 'home-navigation-container'}>
+                <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                  <div {'class': 'menu-items flex flex-column gap-1'}>
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Dashboard
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Team Summary
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Squad List
+                    <button {'class': 'tile dashboard side-nav active'}>
+                      <h2>
+                        TEXT: Fixtures
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Leaders
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Video Library
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Vision Editor
+                    <button {'class': 'red-btn tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Match Reports
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Club Admin
+                <div {'class': 'bannerad-sticky'}>
+          <button {'class': 'menu-icon me-auto close'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+      <section {'id': 'body', 'class': 'pagebody hide-overflow'}>
+        <div {'class': 'main-grid-header'}>
+          <section>
+        <div {'id': 'body', 'class': 'layout-body main-grid   '}>
+          <section {'class': 'column column-left'}>
+            <div {'class': 'flex-column gap-3'}>
+              <div {'class': 'flex gap-1'}>
+                <button {'class': 'card fixture   away clickable'}>
+                  <div {'class': 'head'}>
+                    <h4>
+                      TEXT: 10/05/2025
+                    <h4 {'class': 'mx-auto'}>
+                      TEXT: Round 3
+                    <div {'class': 'header-buttons mx-auto'}>
+                  <div {'class': 'body '}>
+                    <div {'class': 'home'}>
+                      <h3 {'class': 'team-name ms-1 me-auto'}>
+                        TEXT: Mentone Grammar
+                    <div {'class': 'result'}>
+                      <div {'class': 'score'}>
+                        <p {'class': 'home-score'}>
+                          TEXT: 37
+                        <p>
+                          TEXT: 5.7
+                      <h3 {'class': 'vs'}>
+                        TEXT: VS
+                      <div {'class': 'score'}>
+                        <p {'class': 'away-score'}>
+                          TEXT: 143
+                        <p>
+                          TEXT: 22.11
+                    <div {'class': 'away'}>
+                      <h3 {'class': 'team-name me-1 ms-auto'}>
+                        TEXT: PEGS AGSV
+                  <div {'class': 'footer '}>
+                    <div {'class': 'footer-body'}>
+                      TEXT: 10/05/2025
+                    <div {'class': 'footer-buttons'}>
+                      <div {'class': 'buttons'}>
+                        <button {'class': 'primary'}>
+                        <button {'class': 'primary'}>
+                        <button {'class': 'primary button-editor'}>
+              <div {'class': 'banner-container'}>
+                <div>
+              <div {'class': 'flex gap-1'}>
+                <button {'class': 'card fixture   away '}>
+                  <div {'class': 'head'}>
+                    <h4>
+                      TEXT: 05/09/2025
+                    <h4 {'class': 'mx-auto'}>
+                      TEXT: Round 3
+                    <div {'class': 'header-buttons mx-auto'}>
+                  <div {'class': 'body '}>
+                    <div {'class': 'home'}>
+                      <h3 {'class': 'team-name ms-1 me-auto'}>
+                        TEXT: Camberwell Grammar
+                    <div {'class': 'result'}>
+                      <div {'class': 'score'}>
+                        <p {'class': 'home-score'}>
+                          TEXT: 39
+                        <p>
+                          TEXT: 5.9
+                      <h3 {'class': 'vs'}>
+                        TEXT: VS
+                      <div {'class': 'score'}>
+                        <p {'class': 'away-score'}>
+                          TEXT: 103
+                        <p>
+                          TEXT: 16.7
+                    <div {'class': 'away'}>
+                      <h3 {'class': 'team-name ms-auto me-1'}>
+                        TEXT: Ivanhoe Grammar
+                  <div {'class': 'footer '}>
+                    <div {'class': 'footer-body'}>
+                      TEXT: 05/09/2025
+                    <div {'class': 'footer-buttons'}>
+                      <div {'class': 'buttons'}>
+              <div {'class': 'flex gap-1'}>
+                <button {'class': 'card fixture   home '}>
+                  <div {'class': 'head'}>
+                    <h4>
+                      TEXT: 09/05/2025
+                    <h4 {'class': 'mx-auto'}>
+                      TEXT: Round 3
+                    <div {'class': 'header-buttons mx-auto'}>
+                  <div {'class': 'body '}>
+                    <div {'class': 'home'}>
+                      <h3 {'class': 'team-name ms-1 me-auto'}>
+                        TEXT: Trinity Grammar
+                    <div {'class': 'result'}>
+                      <div {'class': 'score'}>
+                        <p {'class': 'home-score'}>
+                          TEXT: 64
+                        <p>
+                          TEXT: 10.4
+                      <h3 {'class': 'vs'}>
+                        TEXT: VS
+                      <div {'class': 'score'}>
+                        <p {'class': 'away-score'}>
+                          TEXT: 43
+                        <p>
+                          TEXT: 6.7
+                    <div {'class': 'away'}>
+                      <h3 {'class': 'team-name ms-auto me-1'}>
+                        TEXT: PEGS AGSV
+                  <div {'class': 'footer '}>
+                    <div {'class': 'footer-body'}>
+                      TEXT: 09/05/2025
+                    <div {'class': 'footer-buttons'}>
+                      <div {'class': 'buttons'}>
+              <div {'class': 'flex gap-1'}>
+                <button {'class': 'card fixture   away '}>
+                  <div {'class': 'head'}>
+                    <h4>
+                      TEXT: 10/05/2025
+                    <h4 {'class': 'mx-auto'}>
+                      TEXT: Round 3
+                    <div {'class': 'header-buttons mx-auto'}>
+                  <div {'class': 'body '}>
+                    <div {'class': 'home'}>
+                      <h3 {'class': 'team-name ms-1 me-auto'}>
+                        TEXT: Yarra Valley Grammar
+                    <div {'class': 'result'}>
+                      <div {'class': 'score'}>
+                        <p {'class': 'home-score'}>
+                          TEXT: 39
+                        <p>
+                          TEXT: 5.9
+                      <h3 {'class': 'vs'}>
+                        TEXT: VS
+                      <div {'class': 'score'}>
+                        <p {'class': 'away-score'}>
+                          TEXT: 62
+                        <p>
+                          TEXT: 9.8
+                    <div {'class': 'away'}>
+                      <h3 {'class': 'team-name ms-auto me-1'}>
+                        TEXT: Marcellin College
+                  <div {'class': 'footer '}>
+                    <div {'class': 'footer-body'}>
+                      TEXT: 10/05/2025
+                    <div {'class': 'footer-buttons'}>
+                      <div {'class': 'buttons'}>
+          <section {'class': 'column column-right'}>
+            <section {'class': 'widget index   '}>
+              <div {'class': 'header'}>
+              <div {'class': 'body'}>
+                <div {'class': 'header'}>
+                  <h2 {'class': 'me-3'}>
+                    TEXT: Table
+                  <div {'class': 'e-switch-wrapper e-wrapper my-auto'}>
+                    <input {'class': 'e-control e-switch e-lib', 'aria-label': 'switch'}>
+                      <span {'class': 'e-switch-inner e-switch-active'}>
+                        <span {'class': 'e-switch-on'}>
+                          TEXT: Basic
+                        <span {'class': 'e-switch-off'}>
+                          TEXT: Advanced
+                      <span {'class': 'e-switch-handle e-switch-active'}>
+                  <div {'class': 'ladder basic'}>
+                    <div>
+                    <label {'class': 'head'}>
+                      TEXT: PTS
+                    <label {'class': 'head'}>
+                      TEXT: W
+                    <label {'class': 'head'}>
+                      TEXT: L
+                    <label {'class': 'head'}>
+                      TEXT: D
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 1
+                        <div {'id': 'tooltip-9c40dc74-c305-4f7b-b40f-8b1bee103250', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Marcellin College
+                    <label>
+                      TEXT: 24
+                    <label>
+                      TEXT: 6
+                    <label>
+                      TEXT: 0
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 2
+                        <div {'id': 'tooltip-77d97d31-5ab1-45d8-83a6-1ca84ef71124', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: PEGS AGSV
+                    <label>
+                      TEXT: 16
+                    <label>
+                      TEXT: 4
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 3
+                        <div {'id': 'tooltip-7a6e2b16-59e8-4605-9309-f05a905eeb8c', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Yarra Valley Grammar
+                    <label>
+                      TEXT: 16
+                    <label>
+                      TEXT: 4
+                    <label>
+                      TEXT: 1
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 4
+                        <div {'id': 'tooltip-7aace2f0-5c43-470f-99cc-1cc908e5a22e', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Ivanhoe Grammar
+                    <label>
+                      TEXT: 16
+                    <label>
+                      TEXT: 4
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 5
+                        <div {'id': 'tooltip-a4b8a36c-ddeb-44c2-8eb0-434b6bfb9537', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Trinity Grammar
+                    <label>
+                      TEXT: 8
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 6
+                        <div {'id': 'tooltip-33d6ad68-6622-47db-a145-31f8a13978fb', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Assumption College
+                    <label>
+                      TEXT: 8
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 6
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 7
+                        <div {'id': 'tooltip-723584ec-2edf-4f10-b908-1df1d590e027', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Mentone Grammar
+                    <label>
+                      TEXT: 8
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 5
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 8
+                        <div {'id': 'tooltip-b9ab3489-6f3d-4413-b6d8-afc8106f4cd3', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Camberwell Grammar
+                    <label>
+                      TEXT: 8
+                    <label>
+                      TEXT: 2
+                    <label>
+                      TEXT: 4
+                    <label>
+                      TEXT: 0
+                    <button>
+                      <div {'class': 'flex flex-row gap-2'}>
+                        <label {'class': 'primary'}>
+                          TEXT: 9
+                        <div {'id': 'tooltip-aa540b80-1e2d-4fa6-af01-1f8a28d43bf8', 'class': 'e-control e-tooltip e-lib'}>
+                        <label {'class': 'name'}>
+                          TEXT: Peninsula Grammar
+                    <label>
+                      TEXT: 4
+                    <label>
+                      TEXT: 1
+                    <label>
+                      TEXT: 5
+                    <label>
+                      TEXT: 0
+              <div {'class': 'banner-container'}>
+                <div {'class': 'bannerad-sticky mx-auto'}>
+
+
+===== data/pd/explore/section_match_reports.html (18995 bytes) =====
+  (total 121 content lines)
+<body {'class': ''}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: AGSV 2025 Reports
+          <div {'class': 'footer'}>
+            <div {'class': 'flex wrap mt-1 mx-auto'}>
+              <div {'class': 'flex around mx-auto'}>
+                <button {'class': ''}>
+                  TEXT: 1
+                <button {'class': ''}>
+                  TEXT: 2
+                <button {'class': 'active'}>
+                  TEXT: 3
+                <button {'class': ''}>
+                  TEXT: 4
+                <button {'class': ''}>
+                  TEXT: 5
+                <button {'class': ''}>
+                  TEXT: 6
+                <button {'class': ''}>
+                  TEXT: 7
+                <button {'class': ''}>
+                  TEXT: 8
+                <button {'class': ''}>
+                  TEXT: 9
+                <button {'class': ''}>
+                  TEXT: SF
+        <div {'class': 'background-logo'}>
+    <section {'id': 'side-nav'}>
+      <div {'class': 'side-bar open menu-permanent'}>
+        <div {'class': 'content'}>
+          <div {'class': 'show-hide'}>
+            <label {'class': 'color-light'}>
+              TEXT: Keep Open
+            <input>
+            <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+              <button>
+                <circle>
+            <div>
+              <div {'class': 'home-navigation', 'id': 'small-options'}>
+              <div {'class': 'home-navigation-container'}>
+                <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                  <div {'class': 'menu-items flex flex-column gap-1'}>
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Dashboard
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Team Summary
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Squad List
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Fixtures
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Leaders
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Video Library
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Vision Editor
+                    <button {'class': 'red-btn tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Match Reports
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Club Admin
+                <div {'class': 'bannerad-sticky'}>
+          <button {'class': 'menu-icon me-auto close'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+      <section {'id': 'body', 'class': 'pagebody hide-overflow'}>
+        <div {'class': 'fixture-cards-container'}>
+          <div {'class': 'flex flex-row wrap gap-3 p-3'}>
+            <div {'class': 'card gap-2'}>
+              <button {'class': 'card fixture mini clickable away'}>
+                <div {'class': 'head'}>
+                  <h4 {'class': 'mx-auto'}>
+                    TEXT: Round 3
+                <div {'class': 'body'}>
+                  <div {'class': 'home'}>
+                    <h3 {'class': 'team-name ms-3'}>
+                      TEXT: Mentone Grammar
+                    <p {'class': 'home-score ms-auto'}>
+                      TEXT: 37
+                  <div {'class': 'away'}>
+                    <h3 {'class': 'team-name ms-3'}>
+                      TEXT: PEGS AGSV
+                    <p {'class': 'away-score ms-auto'}>
+                      TEXT: 143
+        <div {'id': 'body', 'class': 'layout-body  side-open '}>
+          <section {'class': 'container full  '}>
+            <div {'class': 'text-center p-5'}>
+              <h3>
+                TEXT: Select a Fixture
+              <p>
+                TEXT: Click on a fixture card above to view its match report.
+
+
+===== data/pd/explore/section_team_summary.html (252576 bytes) =====
+  (total 2818 content lines)
+<body {'class': ''}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: Mentone Grammar Team Summary
+          <div {'class': 'footer'}>
+            <div {'class': 'flex flex-row'}>
+              <div {'class': 'team-dropdown'}>
+                <span {'class': 'e-ddl e-lib e-input-group e-control-container e-control-wrapper team-dropdown e-keyboard', 'role': 'combobox', 'tabindex': '0'}>
+                  <input {'id': 'dropdownlist-26c4ed5b-b8aa-4216-b287-1875ba97f41b', 'class': 'e-control e-dropdownlist e-lib e-input', 'tabindex': '-1', 'aria-label': 'dropdownlist'}>
+                    <span {'class': 'e-input-group-icon e-ddl-icon e-icons'}>
+                      <div {'class': 'e-spinner-pane e-spin-hide', 'role': 'alert', 'aria-label': 'Loading'}>
+                        <div {'class': 'e-spinner-inner'}>
+          <div {'class': 'background-logo'}>
+      <section {'id': 'side-nav'}>
+        <div {'class': 'side-bar open menu-permanent'}>
+          <div {'class': 'content'}>
+            <div {'class': 'show-hide'}>
+              <label {'class': 'color-light'}>
+                TEXT: Keep Open
+              <input>
+              <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+                <button>
+                  <circle>
+              <div>
+                <div {'class': 'home-navigation', 'id': 'small-options'}>
+                <div {'class': 'home-navigation-container'}>
+                  <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                    <div {'class': 'menu-items flex flex-column gap-1'}>
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Dashboard
+                      <button {'class': 'tile dashboard side-nav active'}>
+                        <h2>
+                          TEXT: Team Summary
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Squad List
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Fixtures
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Leaders
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Video Library
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Vision Editor
+                      <button {'class': 'red-btn tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Match Reports
+                      <button {'class': 'tile dashboard side-nav '}>
+                        <h2>
+                          TEXT: Club Admin
+                  <div {'class': 'bannerad-sticky'}>
+            <button {'class': 'menu-icon me-auto close'}>
+              <div {'class': 'bar'}>
+              <div {'class': 'bar'}>
+              <div {'class': 'bar'}>
+        <section {'id': 'body', 'class': 'pagebody'}>
+          <div {'class': 'team-summary-container'}>
+            <div {'class': 'main-grid-header'}>
+              <section>
+            <div {'id': 'body', 'class': 'layout-body main-grid   scroll-container'}>
+              <section {'class': 'column column-left'}>
+                <div {'id': 'tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7', 'class': 'e-control e-tab e-lib default-tab e-fill e-keyboard'}>
+                  <div {'class': 'e-control e-toolbar e-lib e-tab-header e-keyboard', 'role': 'tablist'}>
+                    <div {'class': 'e-toolbar-items'}>
+                      <div {'class': 'e-indicator e-ignore'}>
+                      <div {'class': 'e-toolbar-item e-template e-ileft e-active', 'id': 'e-item-tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7_0'}>
+                        <div {'class': 'e-tab-wrap', 'tabindex': '0', 'role': 'tab'}>
+                          <div {'class': 'e-text-wrap'}>
+                            <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                              TEXT: Key Stats
+                            <span {'class': 'e-icons e-close-icon'}>
+                      <div {'class': 'e-toolbar-item e-template e-ileft', 'id': 'e-item-tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7_1'}>
+                        <div {'class': 'e-tab-wrap', 'tabindex': '-1', 'role': 'tab'}>
+                          <div {'class': 'e-text-wrap'}>
+                            <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                              TEXT: Efficiencies
+                            <span {'class': 'e-icons e-close-icon'}>
+                      <div {'class': 'e-toolbar-item e-template e-ileft', 'id': 'e-item-tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7_2'}>
+                        <div {'class': 'e-tab-wrap', 'tabindex': '-1', 'role': 'tab'}>
+                          <div {'class': 'e-text-wrap'}>
+                            <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                              TEXT: Stoppage Efficiency
+                            <span {'class': 'e-icons e-close-icon'}>
+                      <div {'class': 'e-toolbar-item e-template e-ileft', 'id': 'e-item-tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7_3'}>
+                        <div {'class': 'e-tab-wrap', 'tabindex': '-1', 'role': 'tab'}>
+                          <div {'class': 'e-text-wrap'}>
+                            <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                              TEXT: Score Sources
+                            <span {'class': 'e-icons e-close-icon'}>
+                    <div {'class': 'e-blazor-toolbar-items'}>
+                  <div {'class': 'e-content'}>
+                    <div {'class': 'e-item e-active', 'id': 'e-content-tab-7cb396f4-cc70-4ceb-ad10-d29f6d7b32c7_0', 'role': 'tabpanel'}>
+                      <div {'class': 'tab-content-scroll'}>
+                        <div {'class': 'tab-header'}>
+                          <h2>
+                            TEXT: Statistic Summary
+                          <div>
+                            <div {'class': 'e-switch-wrapper e-wrapper ms-4 mt-2'}>
+                              <input {'class': 'e-control e-switch e-lib', 'aria-label': 'switch'}>
+                                <span {'class': 'e-switch-inner e-switch-active'}>
+                                  <span {'class': 'e-switch-on'}>
+                                    TEXT: Average
+                                  <span {'class': 'e-switch-off'}>
+                                    TEXT: Total
+                                <span {'class': 'e-switch-handle e-switch-active'}>
+                          <div {'class': 'tab-body'}>
+                            <div {'class': ' grid basic col-xs-2 col-sm-2 '}>
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 250.6
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Disposals
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                                  <div>
+                                    TEXT: Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 153.1
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Kicks
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                                  <div>
+                                    TEXT: Below Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 97.4
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Handball
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                                  <div>
+                                    TEXT: Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 119.1
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Contested Possesions
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                                  <div>
+                                    TEXT: Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 31.0
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Clearances
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                                  <div>
+                                    TEXT: Below Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 53.1
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Marks
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                                  <div>
+                                    TEXT: Below Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 39.7
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Inside 50s
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                                  <div>
+                                    TEXT: Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 36.6
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Tackles Eff
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                                  <div>
+                                    TEXT: Below Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 6.6
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Goals
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                                  <div>
+                                    TEXT: Average
+                              <div {'class': 'stat-card'}>
+                                <div {'class': 'flex flex-row'}>
+                                  <div {'class': 'stat-value'}>
+                                    TEXT: 1124.7
+                                <div {'class': 'stat-name'}>
+                                  TEXT: Ranking Points
+                                <div {'class': 'rank-label flex flex-row around'}>
+                                  <div>
+                                    <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                                  <div>
+                                    TEXT: Below Average
+                  <div {'id': 'tab-091f401d-c933-4fdb-a98c-5f22c7899673', 'class': 'e-control e-tab e-lib default-tab e-fill e-keyboard'}>
+                    <div {'class': 'e-control e-toolbar e-lib e-tab-header e-keyboard', 'role': 'tablist'}>
+                      <div {'class': 'e-toolbar-items'}>
+                        <div {'class': 'e-indicator e-ignore'}>
+                        <div {'class': 'e-toolbar-item e-template e-ileft e-active', 'id': 'e-item-tab-091f401d-c933-4fdb-a98c-5f22c7899673_0'}>
+                          <div {'class': 'e-tab-wrap', 'tabindex': '0', 'role': 'tab'}>
+                            <div {'class': 'e-text-wrap'}>
+                              <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                                TEXT: Team Statistics
+                              <span {'class': 'e-icons e-close-icon'}>
+                        <div {'class': 'e-toolbar-item e-template e-ileft', 'id': 'e-item-tab-091f401d-c933-4fdb-a98c-5f22c7899673_1'}>
+                          <div {'class': 'e-tab-wrap', 'tabindex': '-1', 'role': 'tab'}>
+                            <div {'class': 'e-text-wrap'}>
+                              <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                                TEXT: Player Statistics
+                              <span {'class': 'e-icons e-close-icon'}>
+                      <div {'class': 'e-blazor-toolbar-items'}>
+                    <div {'class': 'e-content'}>
+                      <div {'class': 'e-item e-active', 'id': 'e-content-tab-091f401d-c933-4fdb-a98c-5f22c7899673_0', 'role': 'tabpanel'}>
+                        <div {'class': 'tab-content-no-scroll'}>
+                          <div {'class': 'tab-header'}>
+                            <h2>
+                              TEXT: Match Statistics
+                          <div {'class': 'table-scroll-container'}>
+                            <div {'id': 'sfgridvwygndsdxcy', 'tabindex': '-1', 'class': 'recruiter sf-grid e-grid e-control e-responsive e-default e-gridhover e-resize-lines e-grid-min-height e-lib e-keyboard', 'role': 'grid'}>
+                              <div {'class': 'e-control e-toolbar e-lib e-keyboard', 'role': 'toolbar'}>
+                                <div {'class': 'e-toolbar-items'}>
+                                  <div {'class': 'e-toolbar-item e-template ', 'id': 'e-toolbar-item-b74d0b64-07b9-4f95-bb25-172d0c593fdd'}>
+                                    <div {'tabindex': '-1'}>
+                                      <button {'id': 'for', 'class': 'e-control e-btn e-lib primary outline slim active'}>
+                                        TEXT: For
+                                      <button {'id': 'against', 'class': 'e-control e-btn e-lib primary outline slim'}>
+                                        TEXT: Against
+                                      <button {'id': 'diff', 'class': 'e-control e-btn e-lib primary outline slim'}>
+                                        TEXT: Differential
+                                <div {'class': 'e-blazor-toolbar-items'}>
+                              <div {'class': 'e-spinner-pane e-spin-hide', 'role': 'alert', 'aria-label': 'Loading'}>
+                                <div {'class': 'e-spinner-inner'}>
+                              <div {'class': 'e-gridheader'}>
+                                <div {'class': 'e-headercontent'}>
+                                  <table {'class': 'e-table e-sortfilter', 'id': 'sfgridvwygndsdxcy_header_table', 'role': 'presentation'}>
+                                    <caption {'class': 'e-hide'}>
+                                      TEXT: sfgridvwygndsdxcy_header_table
+                                    <colgroup {'id': 'sfgridvwygndsdxcyheadercolGroup'}>
+                                      <col>
+                                        <col>
+                                          <col>
+                                            <col>
+                                              <col>
+                                                <col>
+                                                  <col>
+                                                    <col>
+                                                      <col>
+                                                        <col>
+                                                          <col>
+                                                            <col>
+                                                              <col>
+                                                                <col>
+                                                                  <col>
+                                                                    <col>
+                                                                      <col>
+                                                                        <col>
+                                                                          <col>
+                                                                            <col>
+                                                                              <col>
+                                                                                <col>
+                                                                                  <col>
+                                                                                    <col>
+                                                                                      <col>
+                                                                                        <col>
+                                                                                          <col>
+                                                                                            <col>
+                                                                                              <col>
+                                                                                                <col>
+                                                                                                  <col>
+                                                                                                    <col>
+                                                                                                      <col>
+                                                                                                        <col>
+                                                                                                          <col>
+                                                                                                            <col>
+                                                                                                              <col>
+                                                                                                                <col>
+                                                                                                                  <col>
+                                                                                                                    <col>
+                                                                                                                      <col>
+                                                                                                                        <col>
+                                                                                                                          <col>
+                                                                                                                            <col>
+                                                                                                                              <col>
+                                                                                                                                <col>
+                                                                                                                                  <col>
+                                                                                                                                    <col>
+                                                                                                                                      <col>
+                                                                                                                                        <col>
+                                                                                                                                          <col>
+                                                                                                                                            <col>
+                                                                                                                                              <col>
+                                                                                                                                                <col>
+                                                                                                                                                  <col>
+                                                                                                                                                    <col>
+                                                                                                                                                      <col>
+                                                                                                                                                        <col>
+                                                                                                                                                          <col>
+                                                                                                                                                            <col>
+                                                                                                                                                              <col>
+                                                                                                                                                                <col>
+                                                                                                                                                                  <col>
+                                                                                                                                                                    <col>
+                                                                                                                                                                    <thead {'role': 'rowgroup'}>
+                                                                                                                                                                      <tr {'role': 'row', 'class': 'e-columnheader'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-leftalign e-mousepointer e-leftfreeze  ', 'role': 'columnheader', 'tabindex': '0'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-leftalign'}>
+                                                                                                                                                                            <span {'class': 'e-headertext'}>
+                                                                                                                                                                              TEXT: Opponent
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717891'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-leftfreeze e-freezeleftborder  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <span {'class': 'e-headertext'}>
+                                                                                                                                                                              TEXT: Round
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717892'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <span {'class': 'e-headertext'}>
+                                                                                                                                                                              TEXT: Result
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717893'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <span {'class': 'e-headertext'}>
+                                                                                                                                                                              TEXT: Vision
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717894'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-c9ff9401-4a0f-4c87-9aa3-bf9a47ed14e3', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: D
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717895'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-e7e6e20b-e6be-4c86-bf1b-43168b15d48a', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: K
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717896'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-ccf9c789-5470-404f-9dc2-af620ceb9507', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: HB
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717897'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-4c091726-3ea9-402e-a7ef-75c3a8e47a3f', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: CP
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717898'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-5d2c95b3-62fe-4a21-98ae-c4d08c6c27b6', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: TGB
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717899'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-40bf7cc9-beca-4c3e-a546-8cf70d5f9d68', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: HBG
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717900'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-51feb70d-4ee1-4d13-a978-0513761671bd', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: LBG
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717901'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-f6827ece-576c-4295-ab7e-ca907fa39de6', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: IP
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717902'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-fd906bec-b9e5-4a1a-8d99-865cef53fa5b', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: GTH
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717903'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-dcdc407d-c655-49bf-8366-9c04ca20a6f4', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: HR
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717904'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-63cf2ff3-4c0f-419b-9e8c-5a0eea8bbcc7', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: M
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717905'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-b0b08dad-6606-4569-810c-ea41c286b3bd', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: CM
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717906'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+                                                                                                                                                                          <div {'class': 'e-rhandler e-rcursor'}>
+                                                                                                                                                                        <th {'class': 'e-headercell e-centeralign e-mousepointer e-unfreeze  ', 'role': 'columnheader', 'tabindex': '-1'}>
+                                                                                                                                                                          <div {'class': 'e-headercelldiv e-centeralign'}>
+                                                                                                                                                                            <div {'id': 'tooltip-5e13e026-f793-453f-a957-4f03fa66f2d3', 'class': 'e-control e-tooltip e-lib'}>
+                                                                                                                                                                              <span {'class': 'e-headertext'}>
+                                                                                                                                                                                TEXT: UM
+                                                                                                                                                                          <span {'id': 'headerTitle-grid-column717907'}>
+                                                                                                                                                                            TEXT: Press Enter to sort
+                                                                                                                                                                          <div {'class': 'e-sortfilterdiv e-icons '}>
+
+
+===== data/pd/explore/section_squad_list.html (42411 bytes) =====
+  (total 409 content lines)
+<body {'class': 'e-dlg-target e-scroll-disabled'}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: Squad List
+          <div {'class': 'footer'}>
+        <div {'class': 'background-logo'}>
+    <section {'id': 'side-nav'}>
+      <div {'class': 'side-bar open menu-permanent'}>
+        <div {'class': 'content'}>
+          <div {'class': 'show-hide'}>
+            <label {'class': 'color-light'}>
+              TEXT: Keep Open
+            <input>
+            <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+              <button>
+                <circle>
+            <div>
+              <div {'class': 'home-navigation', 'id': 'small-options'}>
+              <div {'class': 'home-navigation-container'}>
+                <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                  <div {'class': 'menu-items flex flex-column gap-1'}>
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Dashboard
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Team Summary
+                    <button {'class': 'tile dashboard side-nav active'}>
+                      <h2>
+                        TEXT: Squad List
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Fixtures
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Leaders
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Video Library
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Vision Editor
+                    <button {'class': 'red-btn tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Match Reports
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Club Admin
+                <div {'class': 'bannerad-sticky'}>
+          <button {'class': 'menu-icon me-auto close'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+      <section {'id': 'body', 'class': 'pagebody hide-overflow'}>
+        <div {'id': 'body', 'class': 'layout-body no-scroll side-open '}>
+          <section {'class': 'container full transparent '}>
+            <div {'id': 'tab-059d43aa-366d-4341-974b-3da7d8918cc5', 'class': 'e-control e-tab e-lib default-tab e-fill e-keyboard'}>
+              <div {'class': 'e-control e-toolbar e-lib e-tab-header e-keyboard', 'role': 'tablist'}>
+                <div {'class': 'e-toolbar-items'}>
+                  <div {'class': 'e-indicator e-ignore'}>
+                  <div {'class': 'e-toolbar-item e-template e-ileft e-active', 'id': 'e-item-tab-059d43aa-366d-4341-974b-3da7d8918cc5_0'}>
+                    <div {'class': 'e-tab-wrap', 'tabindex': '0', 'role': 'tab'}>
+                      <div {'class': 'e-text-wrap'}>
+                        <div {'class': 'e-tab-text', 'role': 'presentation'}>
+                          TEXT: Squad List
+                        <span {'class': 'e-icons e-close-icon'}>
+                <div {'class': 'e-blazor-toolbar-items'}>
+              <div {'class': 'e-content'}>
+                <div {'class': 'e-item e-active', 'id': 'e-content-tab-059d43aa-366d-4341-974b-3da7d8918cc5_0', 'role': 'tabpanel'}>
+                  <div {'class': 'tab-content-scroll'}>
+                    <div {'class': 'tab-header'}>
+                      <div {'class': 'flex gap-4 wrap'}>
+                        <div {'class': 'input-group-flex inline'}>
+                          <label {'class': 'light'}>
+                            TEXT: Sort By
+                          <select>
+                            <option>
+                              TEXT: Position
+                            <option>
+                              TEXT: Number
+                            <option>
+                              TEXT: First Name
+                            <option>
+                              TEXT: Last Name
+                    <div {'class': 'tab-body widget flex-column gap-2 max-width'}>
+                      <div {'class': 'drop-target'}>
+                        <div {'class': 'flex-column grid-column-gap'}>
+                          <h3>
+                            TEXT: Rucks
+                          <div {'class': 'flex wrap gap-2 mt-2'}>
+                      <div {'class': 'drop-target'}>
+                        <div {'class': 'flex-column grid-column-gap'}>
+                          <h3>
+                            TEXT: Defenders
+                          <div {'class': 'flex wrap gap-2 mt-2'}>
+                      <div {'class': 'drop-target'}>
+                        <div {'class': 'flex-column grid-column-gap'}>
+                          <h3>
+                            TEXT: Midfield
+                          <div {'class': 'flex wrap gap-2 mt-2'}>
+                      <div {'class': 'drop-target'}>
+                        <div {'class': 'flex-column grid-column-gap'}>
+                          <h3>
+                            TEXT: Forwards
+                          <div {'class': 'flex wrap gap-2 mt-2'}>
+                      <div {'class': 'drop-target'}>
+                        <div {'class': 'flex-column grid-column-gap'}>
+                          <h3>
+                            TEXT: Bench
+                          <div {'class': 'flex wrap gap-2 mt-2'}>
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #37 Angus Aujard
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #36 Angus Skinner
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #18 Ben Brady
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #4 Blake Durston
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #24 Darcy Hodgson
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #14 Elliot Grant
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #10 Harry Block
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #21 Henry Garside
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #51 Jack Henderson
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #15 Jake O'Brien
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #3 James Georgiou
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #52 Josh Mooney
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #17 Julian Lau
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #11 Lachlan Hecker
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #13 Lenny Reark
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #12 Liam McNamara
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #25 Luca Scott
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #19 Luke Mcginness
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #22 Luke Papadopoulos
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #6 Luke Georgiou
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #24 Max Parsons
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #52 Mentone #52
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #51 Mentone #51
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #24 Mentone 24
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #17 Mentone 17
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #37 Mentone 37
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #22 Mentone 22
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #30 Mentone 30
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #18 MG 18
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #9 Mitchell Reed
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #8 Oliver Seers
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #7 Ollie Sutherland
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #16 Rory Tebb
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #26 Sonny Lockyear
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #30 Thomas Hutchinson
+                            <div>
+                              <button {'class': 'card smallhorizontal flex flex-row'}>
+                                <div {'class': 'body flex flex-row gap-2'}>
+                                  <div {'class': 'avatar'}>
+                                  <div {'class': 'flex flex-column justify-content-end ms-auto'}>
+                                    <div>
+                                      TEXT: #20 Zach Hawkins
+        <div {'class': 'e-dlg-ref-element'}>
+        <dialog {'class': 'modal modal  '}>
+          <div {'class': 'modal-content'}>
+            <button {'class': 'modal-close'}>
+            <div {'class': 'content'}>
+    <div {'id': 'modal-dialog-8ced6e3f-3693-4075-b3f7-365e856803d2', 'class': 'e-dlg-container '}>
+      <div {'id': 'dialog-8ced6e3f-3693-4075-b3f7-365e856803d2', 'class': 'e-dialog e-lib e-dlg-resizable e-dlg-modal e-draggable e-popup e-control e-resize-viewport e-popup-open', 'role': 'dialog', 'tabindex': '-1'}>
+        <div {'id': 'dialog-8ced6e3f-3693-4075-b3f7-365e856803d2_dialog-header', 'class': 'e-dlg-header-content'}>
+          <button {'aria-label': 'Close', 'class': 'e-control e-btn e-lib e-dlg-closeicon-btn e-flat  e-icon-btn'}>
+            <span {'class': 'e-icon-dlg-close e-icons e-btn-icon'}>
+          <div {'id': 'dialog-8ced6e3f-3693-4075-b3f7-365e856803d2_title', 'class': 'e-dlg-header'}>
+            TEXT: You still have players on the Bench
+        <div {'id': 'dialog-8ced6e3f-3693-4075-b3f7-365e856803d2_dialog-content', 'class': 'e-dlg-content'}>
+          <div {'class': 'm-4'}>
+            <h3>
+              TEXT: For best results you need to allocate each player to a position
+            <div>
+              TEXT: This message will continue to show until all players are allocated to a position
+        <span {'class': 'e-dialog-border-resize e-south'}>
+        <span {'class': 'e-dialog-border-resize e-north'}>
+        <span {'class': 'e-dialog-border-resize e-east'}>
+        <span {'class': 'e-dialog-border-resize e-west'}>
+        <div {'class': 'e-icons e-resize-handle e-north-east'}>
+        <div {'class': 'e-icons e-resize-handle e-north-west'}>
+        <div {'class': 'e-icons e-resize-handle e-south-east'}>
+        <div {'class': 'e-icons e-resize-handle e-south-west'}>
+      <div {'class': 'e-dlg-overlay'}>
+
+
+===== data/pd/explore/section_leaders.html (229579 bytes) =====
+  (total 2991 content lines)
+<body {'class': ''}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: Leaderboards
+          <div {'class': 'footer'}>
+            <div {'class': 'header-footer'}>
+              <div {'class': 'header-buttons-group'}>
+                <button {'class': 'primary outline slim '}>
+                  TEXT: Totals
+                <button {'class': 'primary outline slim active'}>
+                  TEXT: Averages
+                <span {'class': 'separator'}>
+                  TEXT: |
+                <button {'class': 'primary outline slim '}>
+                  TEXT: Players
+                <button {'class': 'primary outline slim active'}>
+                  TEXT: Teams
+              <span {'class': 'separator group-separator'}>
+                TEXT: |
+              <div {'class': 'header-dropdowns-group'}>
+                <button {'id': 'sfdropdownbuttonc47ab3b6-e5ea-4124-8716-9dcda3fb18d2', 'aria-label': 'Select a Leaderboard dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn leaders-dropdown'}>
+                  TEXT: Select a Leaderboard
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbutton677f63b2-8124-42f1-9efc-f3ee6f561f20', 'aria-label': 'Select a Round dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn leaders-dropdown'}>
+                  TEXT: Select a Round
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+        <div {'class': 'background-logo'}>
+    <section {'id': 'side-nav'}>
+      <div {'class': 'side-bar open menu-permanent'}>
+        <div {'class': 'content'}>
+          <div {'class': 'show-hide'}>
+            <label {'class': 'color-light'}>
+              TEXT: Keep Open
+            <input>
+            <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+              <button>
+                <circle>
+            <div>
+              <div {'class': 'home-navigation', 'id': 'small-options'}>
+              <div {'class': 'home-navigation-container'}>
+                <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                  <div {'class': 'menu-items flex flex-column gap-1'}>
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Dashboard
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Team Summary
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Squad List
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Fixtures
+                    <button {'class': 'tile dashboard side-nav active'}>
+                      <h2>
+                        TEXT: Leaders
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Video Library
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Vision Editor
+                    <button {'class': 'red-btn tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Match Reports
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Club Admin
+                <div {'class': 'bannerad-sticky'}>
+          <button {'class': 'menu-icon me-auto close'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+      <section {'id': 'body', 'class': 'pagebody hide-overflow'}>
+        <div {'id': 'body', 'class': 'layout-body  side-open '}>
+          <section {'class': 'container leaderboard  '}>
+            <section {'class': 'section__carousel'}>
+              <div {'class': 'carousel slide '}>
+                <div {'id': 'carouselItems', 'class': 'wrapper gap-2'}>
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Disposals
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 292
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 274
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Camberwell Grammar
+                        <span>
+                          TEXT: 271
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Ivanhoe Grammar
+                        <span>
+                          TEXT: 256
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 250
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Kicks
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 173
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Ivanhoe Grammar
+                        <span>
+                          TEXT: 169
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Camberwell Grammar
+                        <span>
+                          TEXT: 168
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Marcellin College
+                        <span>
+                          TEXT: 163
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 155
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Handball
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 136
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Camberwell Grammar
+                        <span>
+                          TEXT: 103
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 101
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Trinity Grammar
+                        <span>
+                          TEXT: 100
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 97
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Contested Possesions
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 131
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 127
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Peninsula Grammar
+                        <span>
+                          TEXT: 120
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 119
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Marcellin College
+                        <span>
+                          TEXT: 114
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Total Groundball Gets
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 87
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 86
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 75
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Peninsula Grammar
+                        <span>
+                          TEXT: 75
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Ivanhoe Grammar
+                        <span>
+                          TEXT: 71
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Hard Ball Gets
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 33
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 25
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Peninsula Grammar
+                        <span>
+                          TEXT: 23
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 22
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Assumption College
+                        <span>
+                          TEXT: 20
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Loose Ball Gets
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 61
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 54
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 53
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Peninsula Grammar
+                        <span>
+                          TEXT: 52
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Ivanhoe Grammar
+                        <span>
+                          TEXT: 51
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Intercept Possessions
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: Ivanhoe Grammar
+                        <span>
+                          TEXT: 70
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 66
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 65
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Trinity Grammar
+                        <span>
+                          TEXT: 64
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Marcellin College
+                        <span>
+                          TEXT: 63
+                  <tt.shared.components.carouselitem>
+                    <div {'class': 'card leaderboard'}>
+                      <div {'class': 'head primary'}>
+                        <h3>
+                          TEXT: Handball Receives
+                      <div {'class': 'leaderboard-rank first'}>
+                        <div {'class': 'avatar'}>
+                        <a>
+                          TEXT: Yarra Valley Grammar
+                        <span>
+                          TEXT: 11
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 2
+                        <a>
+                          TEXT: Trinity Grammar
+                        <span>
+                          TEXT: 10
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 3
+                        <a>
+                          TEXT: PEGS AGSV
+                        <span>
+                          TEXT: 8
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 4
+                        <a>
+                          TEXT: Camberwell Grammar
+                        <span>
+                          TEXT: 4
+                      <div {'class': 'leaderboard-rank '}>
+                        <span>
+                          TEXT: 5
+                        <a>
+                          TEXT: Mentone Grammar
+                        <span>
+                          TEXT: 4
+            <div {'class': 'flex flex-column p-2 leaders-grid-wrapper'}>
+              <div {'id': 'stat-tooltip', 'class': 'stat-tooltip'}>
+                <div {'class': 'stat-tooltip-player'}>
+                <div {'class': 'stat-tooltip-stat'}>
+              <div {'class': 'leaderboard-outer-wrapper'}>
+                <div {'class': 'leaderboard-search-bar'}>
+                  <span {'class': 'e-input-group'}>
+                    <input {'class': 'e-input'}>
+                      <span {'class': 'e-icons e-search-icon'}>
+                  <div {'class': 'leaderboard-grid-container'}>
+                    <div {'id': 'sfgrid1yapbw1111z', 'tabindex': '-1', 'class': 'recruiter sf-grid e-grid e-control e-responsive e-default e-gridhover e-resize-lines e-grid-min-height e-lib e-keyboard', 'role': 'grid'}>
+                      <div {'class': 'e-spinner-pane e-spin-hide', 'role': 'alert', 'aria-label': 'Loading'}>
+                        <div {'class': 'e-spinner-inner'}>
+                      <div {'class': 'e-gridheader'}>
+                        <div {'class': 'e-headercontent e-lib e-droppable'}>
+                          <table {'class': 'e-table e-sortfilter', 'id': 'sfgrid1yapbw1111z_header_table', 'role': 'presentation'}>
+                            <caption {'class': 'e-hide'}>
+                              TEXT: sfgrid1yapbw1111z_header_table
+                            <colgroup {'id': 'sfgrid1yapbw1111zheadercolGroup'}>
+                              <col>
+                                <col>
+                                  <col>
+                                    <col>
+                                      <col>
+                                        <col>
+                                          <col>
+                                            <col>
+                                              <col>
+                                                <col>
+                                                  <col>
+                                                    <col>
+                                                      <col>
+                                                        <col>
+                                                          <col>
+                                                            <col>
+                                                              <col>
+                                                                <col>
+                                                                  <col>
+                                                                    <col>
+                                                                      <col>
+                                                                        <col>
+                                                                          <col>
+                                                                            <col>
+                                                                              <col>
+                                                                                <col>
+                                                                                  <col>
+                                                                                    <col>
+                                                                                      <col>
+                                                                                        <col>
+
+
+===== data/pd/explore/00_landing_after_login.html (34686 bytes) =====
+  (total 413 content lines)
+<body {'class': ''}>
+  <div {'class': 'alert snackbar  '}>
+  <section {'class': 'page-layout  '}>
+    <section {'id': 'top-nav', 'class': ''}>
+      <section {'class': 'page-header  side-nav'}>
+        <div {'class': 'banner side-nav'}>
+          <div {'class': 'options user-options'}>
+            <div {'id': 'user-buttons', 'class': 'user-buttons-flex'}>
+              <div {'class': 'left-buttons'}>
+                <button {'class': 'button-icon user-nav primary home-button'}>
+                  <span>
+                <button {'class': 'button-icon user-nav primary back-button'}>
+                  <span>
+              <div {'class': 'right-buttons'}>
+                <button {'id': 'sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa', 'aria-label': 'Mentone Grammar (2025) dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select'}>
+                  TEXT: Mentone Grammar (2025)
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+                <button {'id': 'sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283', 'aria-label': 'Brenton dropdownbutton', 'class': 'e-control e-btn e-lib e-dropdown-btn user-nav'}>
+                  TEXT: Brenton
+                  <span {'class': 'e-btn-icon e-icons e-caret'}>
+          <div {'class': 'headcenter mx-auto title-wrapper'}>
+            <div>
+            <h1 {'class': 'title', 'tabindex': '-1'}>
+              TEXT: Dashboard
+          <div {'class': 'footer'}>
+        <div {'class': 'background-logo'}>
+    <section {'id': 'side-nav'}>
+      <div {'class': 'side-bar open menu-permanent'}>
+        <div {'class': 'content'}>
+          <div {'class': 'show-hide'}>
+            <label {'class': 'color-light'}>
+              TEXT: Keep Open
+            <input>
+            <div {'class': 'flex-column mb-3 p-1 logo-wrapper'}>
+              <button>
+                <circle>
+            <div>
+              <div {'class': 'home-navigation', 'id': 'small-options'}>
+              <div {'class': 'home-navigation-container'}>
+                <div {'class': 'content2 home-navigation flex gap-2 wrap side-nav'}>
+                  <div {'class': 'menu-items flex flex-column gap-1'}>
+                    <button {'class': 'tile dashboard side-nav active'}>
+                      <h2>
+                        TEXT: Dashboard
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Team Summary
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Squad List
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Fixtures
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Leaders
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Video Library
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Vision Editor
+                    <button {'class': 'red-btn tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Match Reports
+                    <button {'class': 'tile dashboard side-nav '}>
+                      <h2>
+                        TEXT: Club Admin
+                <div {'class': 'bannerad-sticky'}>
+          <button {'class': 'menu-icon me-auto close'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+            <div {'class': 'bar'}>
+      <section {'id': 'body', 'class': 'pagebody '}>
+        <div {'class': 'main-grid-header'}>
+          <section>
+        <div {'id': 'body', 'class': 'layout-body main-grid   scroll-container'}>
+          <section {'class': 'column column-left'}>
+            <button {'class': 'card fixture alt  draw '}>
+              <div {'class': 'head'}>
+                <h4>
+                  TEXT: 28/06/2025
+                <h4 {'class': 'mx-auto'}>
+                  TEXT: Round 9
+                <div {'class': 'header-buttons mx-auto'}>
+              <div {'class': 'body '}>
+                <div {'class': 'home'}>
+                  <h3 {'class': 'team-name ms-1 me-auto'}>
+                    TEXT: Mentone Grammar
+                <div {'class': 'result'}>
+                  <div {'class': 'score'}>
+                    <p {'class': 'home-score'}>
+                      TEXT: 0
+                    <p>
+                      TEXT: 0.0
+                  <h3 {'class': 'vs'}>
+                    TEXT: VS
+                  <div {'class': 'score'}>
+                    <p {'class': 'away-score'}>
+                      TEXT: 0
+                    <p>
+                      TEXT: 0.0
+                <div {'class': 'away'}>
+                  <h3 {'class': 'team-name ms-auto me-1'}>
+                    TEXT: Trinity Grammar
+              <div {'class': 'footer '}>
+                <div {'class': 'footer-body'}>
+                  TEXT: 28/06/2025
+                <div {'class': 'footer-buttons'}>
+                  <div {'class': 'buttons'}>
+            <section {'class': 'widget index   '}>
+              <div {'class': 'header'}>
+              <div {'class': 'body'}>
+                <div {'class': 'header'}>
+                  <h2 {'class': 'me-3'}>
+                    TEXT: Mentone Grammar Stat Summary
+                  <div {'class': 'ms-auto flex row'}>
+                    <div>
+                      <div {'class': 'e-switch-wrapper e-wrapper my-auto'}>
+                        <input {'class': 'e-control e-switch e-lib', 'aria-label': 'switch'}>
+                          <span {'class': 'e-switch-inner e-switch-active'}>
+                            <span {'class': 'e-switch-on'}>
+                              TEXT: Average
+                            <span {'class': 'e-switch-off'}>
+                              TEXT: Total
+                          <span {'class': 'e-switch-handle e-switch-active'}>
+                      <div>
+                        <label>
+                          <input {'id': 'Rank'}>
+                            TEXT: Rank
+                    <div {'class': 'mx-4 my-3 grid basic col-xs-2 col-sm-2 '}>
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 250.6
+                        <div {'class': 'stat-name'}>
+                          TEXT: Disposals
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                          <div>
+                            TEXT: Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 153.1
+                        <div {'class': 'stat-name'}>
+                          TEXT: Kicks
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                          <div>
+                            TEXT: Below Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 97.4
+                        <div {'class': 'stat-name'}>
+                          TEXT: Handball
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                          <div>
+                            TEXT: Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 119.1
+                        <div {'class': 'stat-name'}>
+                          TEXT: Contested Possesions
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                          <div>
+                            TEXT: Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 31.0
+                        <div {'class': 'stat-name'}>
+                          TEXT: Clearances
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                          <div>
+                            TEXT: Below Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 53.1
+                        <div {'class': 'stat-name'}>
+                          TEXT: Marks
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                          <div>
+                            TEXT: Below Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 39.7
+                        <div {'class': 'stat-name'}>
+                          TEXT: Inside 50s
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                          <div>
+                            TEXT: Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 36.6
+                        <div {'class': 'stat-name'}>
+                          TEXT: Tackles Eff
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                          <div>
+                            TEXT: Below Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 6.6
+                        <div {'class': 'stat-name'}>
+                          TEXT: Goals
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-right-fill e-medium'}>
+                          <div>
+                            TEXT: Average
+                      <div {'class': 'stat-card'}>
+                        <div {'class': 'flex flex-row'}>
+                          <div {'class': 'stat-value'}>
+                            TEXT: 1124.7
+                        <div {'class': 'stat-name'}>
+                          TEXT: Ranking Points
+                        <div {'class': 'rank-label flex flex-row around'}>
+                          <div>
+                            <span {'class': 'e-icons e-chevron-down-fill e-medium'}>
+                          <div>
+                            TEXT: Below Average
+                <section {'class': 'widget index   '}>
+                  <div {'class': 'header'}>
+                  <div {'class': 'body'}>
+                    <div {'class': 'commlist-carousel'}>
+                      <div {'class': 'icon'}>
+                        <button>
+                          <span>
+                      <section {'class': 'section__carousel py-3'}>
+                        <div {'class': 'carousel slide index'}>
+                          <div {'id': 'carouselItems', 'class': 'wrapper gap-2'}>
+              <section {'class': 'column column-right'}>
+                <section {'class': 'widget index   '}>
+                  <div {'class': 'header'}>
+                  <div {'class': 'body'}>
+                    <div {'class': 'header'}>
+                      <h2 {'class': 'me-3'}>
+                        TEXT: Table
+                      <div {'class': 'e-switch-wrapper e-wrapper my-auto'}>
+                        <input {'class': 'e-control e-switch e-lib', 'aria-label': 'switch'}>
+                          <span {'class': 'e-switch-inner e-switch-active'}>
+                            <span {'class': 'e-switch-on'}>
+                              TEXT: Basic
+                            <span {'class': 'e-switch-off'}>
+                              TEXT: Advanced
+                          <span {'class': 'e-switch-handle e-switch-active'}>
+                      <div {'class': 'ladder basic'}>
+                        <div>
+                        <label {'class': 'head'}>
+                          TEXT: PTS
+                        <label {'class': 'head'}>
+                          TEXT: W
+                        <label {'class': 'head'}>
+                          TEXT: L
+                        <label {'class': 'head'}>
+                          TEXT: D
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 1
+                            <div {'id': 'tooltip-9aa97a98-3fb3-49e7-b38b-73050faa7bf2', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Marcellin College
+                        <label>
+                          TEXT: 24
+                        <label>
+                          TEXT: 6
+                        <label>
+                          TEXT: 0
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 2
+                            <div {'id': 'tooltip-16096aac-2e98-4ca2-adea-0bec1a829d3a', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: PEGS AGSV
+                        <label>
+                          TEXT: 16
+                        <label>
+                          TEXT: 4
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 3
+                            <div {'id': 'tooltip-1917aa2e-e9b8-4fdf-a936-1033c557c3f6', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Yarra Valley Grammar
+                        <label>
+                          TEXT: 16
+                        <label>
+                          TEXT: 4
+                        <label>
+                          TEXT: 1
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 4
+                            <div {'id': 'tooltip-e023c1f0-a30f-4b53-b7d6-65e2d1b1317e', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Ivanhoe Grammar
+                        <label>
+                          TEXT: 16
+                        <label>
+                          TEXT: 4
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 5
+                            <div {'id': 'tooltip-03d5a107-6a14-4edb-9e55-31457b5366ee', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Trinity Grammar
+                        <label>
+                          TEXT: 8
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 6
+                            <div {'id': 'tooltip-bddfaa77-2e9d-4559-acc0-21825fda4aa9', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Assumption College
+                        <label>
+                          TEXT: 8
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 6
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 7
+                            <div {'id': 'tooltip-b7fcc103-fe08-4303-be03-05d4e4b71cbf', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Mentone Grammar
+                        <label>
+                          TEXT: 8
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 5
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 8
+                            <div {'id': 'tooltip-cf94c187-196c-49ee-ac7f-2e4dd2256f94', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Camberwell Grammar
+                        <label>
+                          TEXT: 8
+                        <label>
+                          TEXT: 2
+                        <label>
+                          TEXT: 4
+                        <label>
+                          TEXT: 0
+                        <button>
+                          <div {'class': 'flex flex-row gap-2'}>
+                            <label {'class': 'primary'}>
+                              TEXT: 9
+                            <div {'id': 'tooltip-764b0841-a10b-4b98-bd61-a34a03256904', 'class': 'e-control e-tooltip e-lib'}>
+                            <label {'class': 'name'}>
+                              TEXT: Peninsula Grammar
+                        <label>
+                          TEXT: 4
+                        <label>
+                          TEXT: 1
+                        <label>
+                          TEXT: 5
+                        <label>
+                          TEXT: 0
+                  <div {'class': 'banner-container'}>
+                    <div {'class': 'bannerad-sticky mx-auto'}>

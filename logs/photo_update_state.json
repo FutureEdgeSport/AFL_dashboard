@@ -1,12 +1,7 @@
 {
-  "last_run": "2026-04-21T08:57:03.712564",
+  "last_run": "2026-05-06T09:40:12.438681",
   "total_downloaded": 171,
   "failed_players": [
-    {
-      "name": "Leo Lombard",
-      "team": "Gold Coast",
-      "reason": "Not found in team data"
-    },
     {
       "name": "Lachlan Weller",
       "team": "Gold Coast",
@@ -65,6 +60,11 @@
     {
       "name": "Oliver Wines",
       "team": "Port Adelaide",
+      "reason": "Not found in team data"
+    },
+    {
+      "name": "Thomas Burton",
+      "team": "Richmond",
       "reason": "Not found in team data"
     },
     {

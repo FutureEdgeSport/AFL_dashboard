@@ -1,0 +1,30 @@
+2026-05-01 19:00:05,974 [INFO] Log file: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-05-01_1900.log
+2026-05-01 19:00:05,974 [INFO] ============================================================
+2026-05-01 19:00:05,974 [INFO] AFL Dashboard – Scheduled Data Update
+2026-05-01 19:00:05,975 [INFO] Date: Friday 01 May 2026 19:00
+2026-05-01 19:00:05,975 [INFO] Mode: FULL
+2026-05-01 19:00:05,975 [INFO] ============================================================
+2026-05-01 19:00:05,975 [INFO] Python: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python
+2026-05-01 19:00:05,975 [INFO] 
+Steps to run (1):
+2026-05-01 19:00:05,975 [INFO]   • team_selections: Scrape team selections & fixture from FootyWire + Squiggle API
+2026-05-01 19:00:05,975 [INFO] 
+2026-05-01 19:00:05,975 [INFO] START [team_selections] Scrape team selections & fixture from FootyWire + Squiggle API
+2026-05-01 19:00:05,975 [INFO]   Running: /opt/homebrew/Caskroom/miniconda/base/envs/afl/bin/python /Users/marcuswagner/coding/AFL_dashboard/scrape_team_selections.py 
+2026-05-01 19:00:09,241 [INFO]   DONE [team_selections] in 3.3s
+2026-05-01 19:00:09,241 [INFO]     | 
+2026-05-01 19:00:09,241 [INFO] 
+2026-05-01 19:00:09,241 [INFO] ============================================================
+2026-05-01 19:00:09,241 [INFO] UPDATE SUMMARY
+2026-05-01 19:00:09,241 [INFO] ============================================================
+2026-05-01 19:00:09,241 [INFO]   ✓ team_selections: OK
+2026-05-01 19:00:09,241 [INFO] 
+2026-05-01 19:00:09,241 [INFO] Results: 1 passed, 0 failed, 0 skipped
+2026-05-01 19:00:09,241 [INFO] Total time: 3s (0.1 min)
+2026-05-01 19:00:09,241 [INFO] Log: /Users/marcuswagner/coding/AFL_dashboard/logs/scheduled_update_2026-05-01_1900.log
+2026-05-01 19:00:09,243 [INFO] Log rotation: removed 1 old log file(s)
+2026-05-01 19:00:09,256 [INFO] Stopped Streamlit (PIDs: 21302)
+2026-05-01 19:00:11,273 [INFO] Restarted Streamlit app.
+2026-05-01 19:00:11,274 [INFO] 
+✅ All steps completed successfully!
+2026-05-01 19:00:18,224 [INFO] Email sent to marcus.wagner@futureedgesport.com.au

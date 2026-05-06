@@ -1,0 +1,15 @@
+2026-04-22 10:38:51,157 INFO [pd_scraper.auth]: Performing fresh login…
+2026-04-22 10:38:53,436 INFO [pd_scraper.auth]: Login successful for brentonsanderson.mentone
+2026-04-22 10:38:53,440 INFO [pd_scraper.auth]: Session state saved to /Users/marcuswagner/coding/AFL_dashboard/data/pd/session_state.json
+2026-04-22 10:38:56,844 INFO [pd_scraper.scrape_season]: Switched season → Mentone Grammar (2026)
+2026-04-22 10:38:56,890 INFO [pd_scraper.scrape_season]: Season 2026 rounds: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+2026-04-22 10:38:58,121 INFO [pd_scraper.scrape_season]:   Round 1: 0 clickable fixtures
+2026-04-22 10:38:59,362 INFO [pd_scraper.scrape_season]:   Round 2: 0 clickable fixtures
+2026-04-22 10:39:00,609 INFO [pd_scraper.scrape_season]:   Round 3: 0 clickable fixtures
+2026-04-22 10:39:01,844 INFO [pd_scraper.scrape_season]:   Round 4: 0 clickable fixtures
+2026-04-22 10:39:03,079 INFO [pd_scraper.scrape_season]:   Round 5: 0 clickable fixtures
+2026-04-22 10:39:04,307 INFO [pd_scraper.scrape_season]:   Round 6: 0 clickable fixtures
+2026-04-22 10:39:05,536 INFO [pd_scraper.scrape_season]:   Round 7: 0 clickable fixtures
+2026-04-22 10:39:06,770 INFO [pd_scraper.scrape_season]:   Round 8: 0 clickable fixtures
+2026-04-22 10:39:08,006 INFO [pd_scraper.scrape_season]:   Round 9: 0 clickable fixtures
+Ingested 17 match files → SQLite

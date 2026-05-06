@@ -1,0 +1,213 @@
+2026-04-23 08:13:27,949 [INFO] ============================================================
+2026-04-23 08:13:27,949 [INFO] AFL Player Photo Auto-Updater
+2026-04-23 08:13:27,949 [INFO] Started at: 2026-04-23 08:13:27
+2026-04-23 08:13:27,949 [INFO] ============================================================
+2026-04-23 08:13:27,960 [INFO] Loaded 790 players from squads_2026.csv
+2026-04-23 08:13:28,217 [INFO] Loaded 903 players from Excel
+2026-04-23 08:13:28,219 [INFO] Found 75 players without photos
+2026-04-23 08:13:28,220 [INFO] [1/75]  Cameron Rayner (Brisbane)
+2026-04-23 08:13:28,220 [DEBUG]   Fetching Brisbane player data...
+2026-04-23 08:13:28,222 [DEBUG] Starting new HTTPS connection (1): www.lions.com.au:443
+2026-04-23 08:13:28,223 [DEBUG] Error getting team data for Brisbane: HTTPSConnectionPool(host='www.lions.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.lions.com.au', port=443): Failed to resolve 'www.lions.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:29,819 [WARNING]   Could not load team player data
+2026-04-23 08:13:29,820 [INFO] [2/75]  Matt Carroll (Carlton)
+2026-04-23 08:13:29,820 [DEBUG]   Fetching Carlton player data...
+2026-04-23 08:13:29,823 [DEBUG] Starting new HTTPS connection (1): www.carltonfc.com.au:443
+2026-04-23 08:13:29,825 [DEBUG] Error getting team data for Carlton: HTTPSConnectionPool(host='www.carltonfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.carltonfc.com.au', port=443): Failed to resolve 'www.carltonfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:31,357 [WARNING]   Could not load team player data
+2026-04-23 08:13:31,358 [INFO] [3/75]  Matt Cottrell (Carlton)
+2026-04-23 08:13:31,358 [WARNING]   Could not load team player data
+2026-04-23 08:13:31,358 [INFO] [4/75]  Lachlan Fogarty (Carlton)
+2026-04-23 08:13:31,358 [WARNING]   Could not load team player data
+2026-04-23 08:13:31,358 [INFO] [5/75]  Zachary Williams (Carlton)
+2026-04-23 08:13:31,358 [WARNING]   Could not load team player data
+2026-04-23 08:13:31,358 [INFO] [6/75]  Will Hayes (Collingwood)
+2026-04-23 08:13:31,359 [DEBUG]   Fetching Collingwood player data...
+2026-04-23 08:13:31,362 [DEBUG] Starting new HTTPS connection (1): www.collingwoodfc.com.au:443
+2026-04-23 08:13:31,364 [DEBUG] Error getting team data for Collingwood: HTTPSConnectionPool(host='www.collingwoodfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.collingwoodfc.com.au', port=443): Failed to resolve 'www.collingwoodfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:33,007 [WARNING]   Could not load team player data
+2026-04-23 08:13:33,008 [INFO] [7/75]  Lachlan Schultz (Collingwood)
+2026-04-23 08:13:33,008 [WARNING]   Could not load team player data
+2026-04-23 08:13:33,008 [INFO] [8/75]  Lachie Sullivan (Collingwood)
+2026-04-23 08:13:33,008 [WARNING]   Could not load team player data
+2026-04-23 08:13:33,008 [INFO] [9/75]  Samuel Swadling (Collingwood)
+2026-04-23 08:13:33,008 [WARNING]   Could not load team player data
+2026-04-23 08:13:33,008 [INFO] [10/75]  Nikolas Cox (Essendon)
+2026-04-23 08:13:33,008 [DEBUG]   Fetching Essendon player data...
+2026-04-23 08:13:33,011 [DEBUG] Starting new HTTPS connection (1): www.essendonfc.com.au:443
+2026-04-23 08:13:33,013 [DEBUG] Error getting team data for Essendon: HTTPSConnectionPool(host='www.essendonfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.essendonfc.com.au', port=443): Failed to resolve 'www.essendonfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:54,550 [WARNING]   Could not load team player data
+2026-04-23 08:13:54,551 [INFO] [11/75]  Tom Edwards (Essendon)
+2026-04-23 08:13:54,551 [WARNING]   Could not load team player data
+2026-04-23 08:13:54,551 [INFO] [12/75]  Nicholas Martin (Essendon)
+2026-04-23 08:13:54,551 [WARNING]   Could not load team player data
+2026-04-23 08:13:54,551 [INFO] [13/75]  Archie May (Essendon)
+2026-04-23 08:13:54,551 [WARNING]   Could not load team player data
+2026-04-23 08:13:54,551 [INFO] [14/75]  Zachary Merrett (Essendon)
+2026-04-23 08:13:54,551 [WARNING]   Could not load team player data
+2026-04-23 08:13:54,551 [INFO] [15/75]  Josh Draper (Fremantle)
+2026-04-23 08:13:54,552 [DEBUG]   Fetching Fremantle player data...
+2026-04-23 08:13:54,554 [DEBUG] Starting new HTTPS connection (1): www.fremantlefc.com.au:443
+2026-04-23 08:13:54,556 [DEBUG] Error getting team data for Fremantle: HTTPSConnectionPool(host='www.fremantlefc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.fremantlefc.com.au', port=443): Failed to resolve 'www.fremantlefc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:56,205 [WARNING]   Could not load team player data
+2026-04-23 08:13:56,205 [INFO] [16/75]  Matt Johnson (Fremantle)
+2026-04-23 08:13:56,206 [WARNING]   Could not load team player data
+2026-04-23 08:13:56,206 [INFO] [17/75]  Chris Scerri (Fremantle)
+2026-04-23 08:13:56,206 [WARNING]   Could not load team player data
+2026-04-23 08:13:56,206 [INFO] [18/75]  Bradley Close (Geelong)
+2026-04-23 08:13:56,206 [DEBUG]   Fetching Geelong player data...
+2026-04-23 08:13:56,208 [DEBUG] Starting new HTTPS connection (1): www.geelongcats.com.au:443
+2026-04-23 08:13:56,211 [DEBUG] Error getting team data for Geelong: HTTPSConnectionPool(host='www.geelongcats.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.geelongcats.com.au', port=443): Failed to resolve 'www.geelongcats.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:57,758 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,758 [INFO] [19/75]  Ollie Dempsey (Geelong)
+2026-04-23 08:13:57,758 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,758 [INFO] [20/75]  Nick Driscoll (Geelong)
+2026-04-23 08:13:57,758 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,759 [INFO] [21/75]  Lennox Hoffman (Geelong)
+2026-04-23 08:13:57,759 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,759 [INFO] [22/75]  Mitchell Knevitt (Geelong)
+2026-04-23 08:13:57,759 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,759 [INFO] [23/75]  Thomas Stewart (Geelong)
+2026-04-23 08:13:57,759 [WARNING]   Could not load team player data
+2026-04-23 08:13:57,759 [INFO] [24/75]  Samuel Collins (Gold Coast)
+2026-04-23 08:13:57,759 [DEBUG]   Fetching Gold Coast player data...
+2026-04-23 08:13:57,761 [DEBUG] Starting new HTTPS connection (1): www.goldcoastfc.com.au:443
+2026-04-23 08:13:57,763 [DEBUG] Error getting team data for Gold Coast: HTTPSConnectionPool(host='www.goldcoastfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.goldcoastfc.com.au', port=443): Failed to resolve 'www.goldcoastfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:13:59,408 [WARNING]   Could not load team player data
+2026-04-23 08:13:59,408 [INFO] [25/75]  Nicholas Holman (Gold Coast)
+2026-04-23 08:13:59,408 [WARNING]   Could not load team player data
+2026-04-23 08:13:59,408 [INFO] [26/75]  Leo Lombard (Gold Coast)
+2026-04-23 08:13:59,409 [WARNING]   Could not load team player data
+2026-04-23 08:13:59,409 [INFO] [27/75]  Lachlan Weller (Gold Coast)
+2026-04-23 08:13:59,409 [WARNING]   Could not load team player data
+2026-04-23 08:13:59,409 [INFO] [28/75]  Lachlan Ash (GWS Giants)
+2026-04-23 08:13:59,409 [DEBUG]   Fetching GWS Giants player data...
+2026-04-23 08:13:59,412 [DEBUG] Starting new HTTPS connection (1): www.gwsgiants.com.au:443
+2026-04-23 08:13:59,414 [DEBUG] Error getting team data for GWS Giants: HTTPSConnectionPool(host='www.gwsgiants.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.gwsgiants.com.au', port=443): Failed to resolve 'www.gwsgiants.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:14:01,015 [WARNING]   Could not load team player data
+2026-04-23 08:14:01,016 [INFO] [29/75]  Joseph Fonti (GWS Giants)
+2026-04-23 08:14:01,016 [WARNING]   Could not load team player data
+2026-04-23 08:14:01,016 [INFO] [30/75]  Harrison Himmelberg (GWS Giants)
+2026-04-23 08:14:01,016 [WARNING]   Could not load team player data
+2026-04-23 08:14:01,016 [INFO] [31/75]  Joshua Kelly (GWS Giants)
+2026-04-23 08:14:01,016 [WARNING]   Could not load team player data
+2026-04-23 08:14:01,016 [INFO] [32/75]  Nick Madden (GWS Giants)
+2026-04-23 08:14:01,016 [WARNING]   Could not load team player data
+2026-04-23 08:14:01,016 [INFO] [33/75]  Ollie Greeves (Hawthorn)
+2026-04-23 08:14:01,016 [DEBUG]   Fetching Hawthorn player data...
+2026-04-23 08:14:01,019 [DEBUG] Starting new HTTPS connection (1): www.hawthornfc.com.au:443
+2026-04-23 08:14:01,021 [DEBUG] Error getting team data for Hawthorn: HTTPSConnectionPool(host='www.hawthornfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.hawthornfc.com.au', port=443): Failed to resolve 'www.hawthornfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:14:02,667 [WARNING]   Could not load team player data
+2026-04-23 08:14:02,667 [INFO] [34/75]  Mitchell Lewis (Hawthorn)
+2026-04-23 08:14:02,668 [WARNING]   Could not load team player data
+2026-04-23 08:14:02,668 [INFO] [35/75]  Cameron Mackenzie (Hawthorn)
+2026-04-23 08:14:02,668 [WARNING]   Could not load team player data
+2026-04-23 08:14:02,668 [INFO] [36/75]  Joshua Weddle (Hawthorn)
+2026-04-23 08:14:02,668 [WARNING]   Could not load team player data
+2026-04-23 08:14:02,668 [INFO] [37/75]  Lachlan Jones (Port Adelaide)
+2026-04-23 08:14:02,668 [DEBUG]   Fetching Port Adelaide player data...
+2026-04-23 08:14:02,670 [DEBUG] Starting new HTTPS connection (1): www.portadelaidefc.com.au:443
+2026-04-23 08:14:02,673 [DEBUG] Error getting team data for Port Adelaide: HTTPSConnectionPool(host='www.portadelaidefc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.portadelaidefc.com.au', port=443): Failed to resolve 'www.portadelaidefc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:14:04,322 [WARNING]   Could not load team player data
+2026-04-23 08:14:04,322 [INFO] [38/75]  Oliver Wines (Port Adelaide)
+2026-04-23 08:14:04,322 [WARNING]   Could not load team player data
+2026-04-23 08:14:04,322 [INFO] [39/75]  Samuel Grlj (Richmond)
+2026-04-23 08:14:04,322 [DEBUG]   Fetching Richmond player data...
+2026-04-23 08:14:04,324 [DEBUG] Starting new HTTPS connection (1): www.richmondfc.com.au:443
+2026-04-23 08:14:04,327 [DEBUG] Error getting team data for Richmond: HTTPSConnectionPool(host='www.richmondfc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.richmondfc.com.au', port=443): Failed to resolve 'www.richmondfc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:05,668 [WARNING]   Could not load team player data
+2026-04-23 08:29:05,669 [INFO] [40/75]  Daniel Butler (St Kilda)
+2026-04-23 08:29:05,669 [DEBUG]   Fetching St Kilda player data...
+2026-04-23 08:29:05,671 [DEBUG] Starting new HTTPS connection (1): www.saints.com.au:443
+2026-04-23 08:29:05,673 [DEBUG] Error getting team data for St Kilda: HTTPSConnectionPool(host='www.saints.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.saints.com.au', port=443): Failed to resolve 'www.saints.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:07,312 [WARNING]   Could not load team player data
+2026-04-23 08:29:07,312 [INFO] [41/75]  Jackson Macrae (St Kilda)
+2026-04-23 08:29:07,312 [WARNING]   Could not load team player data
+2026-04-23 08:29:07,312 [INFO] [42/75]  Kobe McDonald (St Kilda)
+2026-04-23 08:29:07,312 [WARNING]   Could not load team player data
+2026-04-23 08:29:07,313 [INFO] [43/75]  Mitchito Owens (St Kilda)
+2026-04-23 08:29:07,313 [WARNING]   Could not load team player data
+2026-04-23 08:29:07,313 [INFO] [44/75]  Will Edwards (Sydney)
+2026-04-23 08:29:07,313 [DEBUG]   Fetching Sydney player data...
+2026-04-23 08:29:07,316 [DEBUG] Starting new HTTPS connection (1): www.sydneyswans.com.au:443
+2026-04-23 08:29:07,318 [DEBUG] Error getting team data for Sydney: HTTPSConnectionPool(host='www.sydneyswans.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.sydneyswans.com.au', port=443): Failed to resolve 'www.sydneyswans.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:08,883 [WARNING]   Could not load team player data
+2026-04-23 08:29:08,883 [INFO] [45/75]  Will Green (Sydney)
+2026-04-23 08:29:08,883 [WARNING]   Could not load team player data
+2026-04-23 08:29:08,883 [INFO] [46/75]  Matthew Roberts (Sydney)
+2026-04-23 08:29:08,883 [WARNING]   Could not load team player data
+2026-04-23 08:29:08,884 [INFO] [47/75]  Matthew Flynn (West Coast)
+2026-04-23 08:29:08,884 [DEBUG]   Fetching West Coast player data...
+2026-04-23 08:29:08,887 [DEBUG] Starting new HTTPS connection (1): www.westcoasteagles.com.au:443
+2026-04-23 08:29:08,889 [DEBUG] Error getting team data for West Coast: HTTPSConnectionPool(host='www.westcoasteagles.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.westcoasteagles.com.au', port=443): Failed to resolve 'www.westcoasteagles.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:19,411 [WARNING]   Could not load team player data
+2026-04-23 08:29:19,411 [INFO] [48/75]  Matt Owies (West Coast)
+2026-04-23 08:29:19,411 [WARNING]   Could not load team player data
+2026-04-23 08:29:19,411 [INFO] [49/75]  Nicholas Coffield (Western Bulldogs)
+2026-04-23 08:29:19,412 [DEBUG]   Fetching Western Bulldogs player data...
+2026-04-23 08:29:19,414 [DEBUG] Starting new HTTPS connection (1): www.westernbulldogs.com.au:443
+2026-04-23 08:29:19,416 [DEBUG] Error getting team data for Western Bulldogs: HTTPSConnectionPool(host='www.westernbulldogs.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.westernbulldogs.com.au', port=443): Failed to resolve 'www.westernbulldogs.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:21,015 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,015 [INFO] [50/75]  Timothy English (Western Bulldogs)
+2026-04-23 08:29:21,015 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,016 [INFO] [51/75]  Thomas Liberatore (Western Bulldogs)
+2026-04-23 08:29:21,016 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,016 [INFO] [52/75]  Taylor Duryea (Western Bulldogs)
+2026-04-23 08:29:21,016 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,016 [INFO] [53/75]  Travis Boak (Port Adelaide)
+2026-04-23 08:29:21,016 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,016 [INFO] [54/75]  Willie Rioli (Port Adelaide)
+2026-04-23 08:29:21,016 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,016 [INFO] [55/75]  Jeremy Finlayson (Port Adelaide)
+2026-04-23 08:29:21,016 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,017 [INFO] [56/75]  Ryan Burton (Port Adelaide)
+2026-04-23 08:29:21,017 [WARNING]   Could not load team player data
+2026-04-23 08:29:21,017 [INFO] [57/75]  Matt Crouch (Adelaide)
+2026-04-23 08:29:21,017 [DEBUG]   Fetching Adelaide player data...
+2026-04-23 08:29:21,019 [DEBUG] Starting new HTTPS connection (1): www.afc.com.au:443
+2026-04-23 08:29:21,021 [DEBUG] Error getting team data for Adelaide: HTTPSConnectionPool(host='www.afc.com.au', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError("HTTPSConnection(host='www.afc.com.au', port=443): Failed to resolve 'www.afc.com.au' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-04-23 08:29:22,668 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,669 [INFO] [58/75]  Harry Boyd (St Kilda)
+2026-04-23 08:29:22,669 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,669 [INFO] [59/75]  Arie Schoenmaker (St Kilda)
+2026-04-23 08:29:22,669 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,669 [INFO] [60/75]  Jimmy Webster (St Kilda)
+2026-04-23 08:29:22,669 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,669 [INFO] [61/75]  Zaine Cordy (St Kilda)
+2026-04-23 08:29:22,669 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,669 [INFO] [62/75]  Zak Jones (St Kilda)
+2026-04-23 08:29:22,669 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,670 [INFO] [63/75]  Ted Clohesy (Geelong)
+2026-04-23 08:29:22,670 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,670 [INFO] [64/75]  Liam Jones (Western Bulldogs)
+2026-04-23 08:29:22,670 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,670 [INFO] [65/75]  Lachlan Murphy (Adelaide)
+2026-04-23 08:29:22,670 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,670 [INFO] [66/75]  Jason Johannisen (Western Bulldogs)
+2026-04-23 08:29:22,670 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,670 [INFO] [67/75]  Rory Atkins (Port Adelaide)
+2026-04-23 08:29:22,670 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [68/75]  Brodie Smith (Adelaide)
+2026-04-23 08:29:22,671 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [69/75]  Mitch Duncan (Geelong)
+2026-04-23 08:29:22,671 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [70/75]  Caleb Poulter (Western Bulldogs)
+2026-04-23 08:29:22,671 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [71/75]  Jed McEntee (Port Adelaide)
+2026-04-23 08:29:22,671 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [72/75]  Angus McLennan (St Kilda)
+2026-04-23 08:29:22,671 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,671 [INFO] [73/75]  Hugh Jackson (Port Adelaide)
+2026-04-23 08:29:22,672 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,672 [INFO] [74/75]  Dylan Williams (Port Adelaide)
+2026-04-23 08:29:22,672 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,672 [INFO] [75/75]  Chris Burgess (Adelaide)
+2026-04-23 08:29:22,672 [WARNING]   Could not load team player data
+2026-04-23 08:29:22,690 [INFO] ============================================================
+2026-04-23 08:29:22,690 [INFO] SUMMARY
+2026-04-23 08:29:22,690 [INFO]   Downloaded (new): 0
+2026-04-23 08:29:22,690 [INFO]   Downloaded (team changes): 0
+2026-04-23 08:29:22,690 [INFO]   Total downloaded: 0
+2026-04-23 08:29:22,690 [INFO]   Failed: 75
+2026-04-23 08:29:22,690 [INFO]   Remaining: 0
+2026-04-23 08:29:22,690 [INFO] ============================================================

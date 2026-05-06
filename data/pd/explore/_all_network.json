@@ -1,0 +1,60 @@
+[
+  {
+    "phase": "response",
+    "status": 200,
+    "url": "https://servedby.revive-adserver.net/asyncjs.php?ts=1776815275098",
+    "content_type": "text/javascript;charset=UTF-8"
+  },
+  {
+    "phase": "request",
+    "method": "POST",
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&_s=2&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2F&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FAuth%2FLogin&sid=1776815274&sct=1&seg=1&dt=Dashboard&en=page_view&_et=1445&upn.person_id=95944&up.sport_name=Australian%20Rules%20Football&up.club_name=Mentone%20Grammar&up.competition_name=AGSV%202026&upn.season_name=2026&up.team_name=Mentone%20Grammar&up.is_coach=true&tfd=4549",
+    "resource_type": "fetch",
+    "post_data": null
+  },
+  {
+    "phase": "response",
+    "status": 204,
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&_s=2&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2F&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FAuth%2FLogin&sid=1776815274&sct=1&seg=1&dt=Dashboard&en=page_view&_et=1445&upn.person_id=95944&up.sport_name=Australian%20Rules%20Football&up.club_name=Mentone%20Grammar&up.competition_name=AGSV%202026&upn.season_name=2026&up.team_name=Mentone%20Grammar&up.is_coach=true&tfd=4549",
+    "content_type": "text/plain"
+  },
+  {
+    "phase": "request",
+    "method": "POST",
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&_s=3&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&sid=1776815274&sct=1&seg=1&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FTeamSummary%2F6576&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FAuth%2FLogin&dt=Dashboard&en=team_summary&_ee=1&ep.teamName=Mentone%20Grammar&ep.viewedBy=Brenton%20Sanderson&ep.viewClub=Mentone%20Grammar&_et=994&tfd=5515",
+    "resource_type": "fetch",
+    "post_data": null
+  },
+  {
+    "phase": "response",
+    "status": 204,
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&_s=3&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&sid=1776815274&sct=1&seg=1&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FTeamSummary%2F6576&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FAuth%2FLogin&dt=Dashboard&en=team_summary&_ee=1&ep.teamName=Mentone%20Grammar&ep.viewedBy=Brenton%20Sanderson&ep.viewClub=Mentone%20Grammar&_et=994&tfd=5515",
+    "content_type": "text/plain"
+  },
+  {
+    "phase": "request",
+    "method": "GET",
+    "url": "https://servedby.revive-adserver.net/asyncjs.php?ts=1776815280681",
+    "resource_type": "script",
+    "post_data": null
+  },
+  {
+    "phase": "response",
+    "status": 200,
+    "url": "https://servedby.revive-adserver.net/asyncjs.php?ts=1776815280681",
+    "content_type": "text/javascript;charset=UTF-8"
+  },
+  {
+    "phase": "request",
+    "method": "POST",
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FTeamSummary%2F6576&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2F&sid=1776815274&sct=1&seg=1&dt=Team%20Summary&_s=4&tfd=10518",
+    "resource_type": "fetch",
+    "post_data": "en=page_view&_et=961\r\nen=page_view&_et=1735&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FPlayers&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FTeamSummary%2F6576&dt=Squad%20List\r\nen=page_view&_et=1817&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FFixtures&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FPlayers&dt=Fixtures"
+  },
+  {
+    "phase": "response",
+    "status": 204,
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-RD8CTSV832&gtm=45je64h1v9220097598za200zd9220097598&_p=1776815272899&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=450980516.1776815274&frm=0&pscdl=noapi&rcb=16&sr=1600x900&uaa=arm&uab=64&uafvl=Not%253AA-Brand%3B99.0.0.0%7CHeadlessChrome%3B145.0.7632.6%7CChromium%3B145.0.7632.6&uam=&uamb=0&uap=macOS&uapv=26.2.0&uaw=0&ul=en-us&tag_exp=0~115616986~115938466~115938469~117266400~117384405~117512543&dl=https%3A%2F%2Fpdapp2.advancedhp.com.au%2FTeamSummary%2F6576&dr=https%3A%2F%2Fpdapp2.advancedhp.com.au%2F&sid=1776815274&sct=1&seg=1&dt=Team%20Summary&_s=4&tfd=10518",
+    "content_type": "text/plain"
+  }
+]

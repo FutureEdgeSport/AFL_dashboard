@@ -1,0 +1,238 @@
+=== SCORE SOURCES donuts ===
+[
+  {
+    "side": "home",
+    "label": "Scoring Efficiency",
+    "value": "33%"
+  },
+  {
+    "side": "home",
+    "label": "Goal Accuracy",
+    "value": "66%"
+  },
+  {
+    "side": "away",
+    "label": "Scoring Efficiency",
+    "value": "16%"
+  },
+  {
+    "side": "away",
+    "label": "Goal Accuracy",
+    "value": "100%"
+  }
+]
+=== SCORE SOURCES first 8 rows ===
+[
+  {
+    "parent": null,
+    "name": "Turnovers",
+    "home_scoreline": "1 . 1 (7)",
+    "home_pct": "12%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "Back Turnovers",
+    "home_scoreline": "0 . 0 (0)",
+    "home_pct": "0%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "Mid Turnovers",
+    "home_scoreline": "0 . 1 (1)",
+    "home_pct": "1%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "F50 Turnovers",
+    "home_scoreline": "1 . 0 (6)",
+    "home_pct": "10%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "Stoppages",
+    "home_scoreline": "1 . 0 (6)",
+    "home_pct": "10%",
+    "away_pct": "16%",
+    "away_scoreline": "1 . 0 (6)"
+  },
+  {
+    "parent": null,
+    "name": "Center Bounces",
+    "home_scoreline": "0 . 0 (0)",
+    "home_pct": "0%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "Ball Ups",
+    "home_scoreline": "0 . 0 (0)",
+    "home_pct": "0%",
+    "away_pct": "0%",
+    "away_scoreline": "0 . 0 (0)"
+  },
+  {
+    "parent": null,
+    "name": "Throw Ins",
+    "home_scoreline": "1 . 0 (6)",
+    "home_pct": "10%",
+    "away_pct": "16%",
+    "away_scoreline": "1 . 0 (6)"
+  }
+]
+score_sources rows total: 15
+=== EFFICIENCIES sections count: 3
+=== EFFICIENCIES first section ===
+{
+  "name": "Efficiency Ratio",
+  "stats": [
+    {
+      "name": "Total Disposal %",
+      "home_pct": "71%",
+      "home_ratio": "52/73",
+      "away_pct": "54%",
+      "away_ratio": "27/50"
+    },
+    {
+      "name": "Kick %",
+      "home_pct": "65%",
+      "home_ratio": "33/51",
+      "away_pct": "50%",
+      "away_ratio": "19/38"
+    },
+    {
+      "name": "Handball %",
+      "home_pct": "86%",
+      "home_ratio": "19/22",
+      "away_pct": "66%",
+      "away_ratio": "8/12"
+    },
+    {
+      "name": "Clearance %",
+      "home_pct": "71%",
+      "home_ratio": "5/7",
+      "away_pct": "71%",
+      "away_ratio": "5/7"
+    }
+  ]
+}
+=== EFFICIENCIES pies count: 4
+[
+  {
+    "section": "Stoppages",
+    "name": "Centre Clearances",
+    "value": "4",
+    "labels": [
+      "Neutral 2",
+      "Won 2",
+      "Won 0"
+    ],
+    "side": "home"
+  },
+  {
+    "section": "Stoppages",
+    "name": "Clearances",
+    "value": "17",
+    "labels": [
+      "Neutral 3",
+      "Won 7",
+      "Won 7"
+    ],
+    "side": null
+  }
+]
+=== SHOT MAP rows: 4
+[
+  {
+    "View": "",
+    "Time": "Q4 01:14",
+    "Type": "Goal",
+    "Team": "Assumption College",
+    "Player": "Jonah Korstan",
+    "Source": "Boundary Throw",
+    "Assist": "Riley Callaghan"
+  },
+  {
+    "View": "",
+    "Time": "Q4 07:26",
+    "Type": "Behind",
+    "Team": "Yarra Valley Grammar",
+    "Player": "Aaron Sharkie",
+    "Source": "Turnover",
+    "Assist": "Steffen Zoumboukos"
+  },
+  {
+    "View": "",
+    "Time": "Q4 08:48",
+    "Type": "Goal",
+    "Team": "Yarra Valley Grammar",
+    "Player": "Darcy McCall",
+    "Source": "Boundary Throw",
+    "Assist": "Mitchell Venter"
+  }
+]
+=== FREE KICKS count: 6
+[
+  {
+    "name": "Push in the back",
+    "home": 3,
+    "away": 0,
+    "diff": "+3"
+  },
+  {
+    "name": "Holding the man",
+    "home": 2,
+    "away": 0,
+    "diff": "+2"
+  },
+  {
+    "name": "Holding the ball",
+    "home": 1,
+    "away": 0,
+    "diff": "+1"
+  },
+  {
+    "name": "High contacts",
+    "home": 1,
+    "away": 0,
+    "diff": "+1"
+  },
+  {
+    "name": "Front On Contact",
+    "home": 1,
+    "away": 0,
+    "diff": "+1"
+  }
+]
+=== PLAYER BASIC count: 44
+keys: ['col_0', 'Name', 'K', 'HB', 'D', 'CP', 'M', 'I50', 'R50', '1%', 'T', 'Cl', 'G', 'RP', 'jumper', 'player']
+{
+  "col_0": "",
+  "Name": "4 Rory Kennedy",
+  "K": 6,
+  "HB": 1,
+  "D": 7,
+  "CP": 4,
+  "M": 2,
+  "I50": 3,
+  "R50": 1,
+  "1%": 1,
+  "T": 1,
+  "Cl": 4,
+  "G": 0,
+  "RP": 38,
+  "jumper": 4,
+  "player": "Rory Kennedy"
+}
+player_advanced count: 44
+keys: ['col_0', 'Name', 'DE%', 'IP', 'IM', 'CM', 'MI50', 'TO', 'TGB', 'HO', 'GA', 'GI', 'SI', 'jumper', 'player']
+player_involvements count: 44
+keys: ['col_0', 'Name', 'Sp', 'Ch', 'Sm', 'Bl', 'KO', 'PRA', 'T', 'FTKL', 'BTKL', 'MTKL', 'Total', 'jumper', 'player']

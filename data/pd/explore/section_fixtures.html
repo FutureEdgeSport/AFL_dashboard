@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en" style="--mobile-footer-offset: 0px;"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <base href="/">
+    <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet">
+    <link rel="stylesheet" href="_content/TeamTracker.Shared/app.css?version=1.7"><link rel="stylesheet" href="_content/TeamTracker.Shared/app-sf.css?version=1.7">
+    <link rel="stylesheet" href="_content/TeamTracker.Shared/site.css?version=1.7">
+    <link rel="stylesheet" href="_content/TeamTracker.Shared/app-mobile.css?version=1.7">
+    <link rel="stylesheet" href="TeamTracker.Web.styles.css?version=1.7"><link rel="stylesheet" href="_content/TeamTracker.Shared/pd.css?version=1.7"><script src="_content/TeamTracker.Shared/app.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Dialog.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Popper.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/DropTarget.razor.js?version=1.7" defer=""></script>
+    <script src="_content/TeamTracker.Shared/Controls/Carousel.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Video.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/VideoPlayer.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/SegmentTweenEditor.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/ShotMap.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/SwipeArea.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/PageSwipeNav.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/EyeDropper.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/StickyHeader.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Stats/StatCaptureGround.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Player/PlayerImageEditCard.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/ProfileEdit.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/Container.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Controls/RoundSelector.razor.js?version=1.7"></script>
+
+    <script src="_content/TeamTracker.Shared/Pages/Leaders.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Pages/VisionEditor.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Pages/AnnotationEditor.razor.js?version=1.7"></script>
+
+    <script src="_content/TeamTracker.Shared/Layout/NavMenu.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Layout/PageLayout.razor.js?version=1.7"></script>
+    <script src="_content/TeamTracker.Shared/Layout/MainLayout.razor.js?version=1.7"></script>
+
+    <script src="_content/Blazor-Analytics/blazor-analytics.js"></script>
+
+    <script src="_content/TeamTracker.Shared/js/deviceFingerprint.js"></script>
+
+    <!--!--><!--!--><!--!--><title>Fixtures</title><!--!--><!--!--><script async="" src="https://www.googletagmanager.com/gtag/js?id=G-RD8CTSV832"></script></head>
+
+<body class="" style=""><!--!--><!--!--><!--!--><!--!--><!--!--><!--!--><!--!-->
+
+
+
+
+<!--!--><!--!--><div class="alert snackbar  " style="border:1px solid black; background-color:black"><!--!--> </div><!--!--><!--!--><section class="page-layout  " b-eq76jj6g58=""><section id="top-nav" class="" b-eq76jj6g58=""><!--!--><style b-nae7o4vsod=""><!--!-->
+    :root {
+        --header-footer-height: 3rem<!--!-->;
+    }
+</style><section class="page-header  side-nav" b-nae7o4vsod=""><div class="banner side-nav" b-nae7o4vsod=""><div class="options user-options" b-nae7o4vsod=""><div id="user-buttons" class="user-buttons-flex" b-nae7o4vsod=""><div class="left-buttons" b-nae7o4vsod=""><!--!--><button class="button-icon user-nav primary home-button" b-0tr9ho41mu=""><span b-0tr9ho41mu=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z"></path>
+                <path d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"></path></svg></span></button><!--!-->
+                            <!--!--><button class="button-icon user-nav primary back-button" b-0tr9ho41mu=""><span b-0tr9ho41mu=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M9.195 18.44c1.25.713 2.805-.19 2.805-1.629v-2.34l6.945 3.968c1.25.714 2.805-.188 2.805-1.628V8.688c0-1.44-1.555-2.342-2.805-1.628L12 11.03v-2.34c0-1.44-1.555-2.343-2.805-1.629l-7.108 4.062c-1.26.72-1.26 2.536 0 3.256l7.108 4.061z"></path></svg></span></button></div><div class="right-buttons" b-nae7o4vsod=""><!--!--><!--!--><!--!--><button id="sfdropdownbutton9782a7b5-137e-4d05-b06c-8e83aa483cfa" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Mentone Grammar (2025) dropdownbutton" class="e-control e-btn e-lib e-dropdown-btn user-nav custom-dropdown team-select" _bl_445e5472-2aba-4f23-94b7-6f50a0c9cf7c="">Mentone Grammar (2025)<!--!-->
+    <!--!--><!--!--><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"></path></svg><!--!-->
+    <span class="e-btn-icon e-icons e-caret"></span><!--!-->
+    <!--!--></button><!--!--><!--!--><button id="sfdropdownbuttonb1bacf62-70a3-4018-a5a7-16c093e24283" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Brenton dropdownbutton" class="e-control e-btn e-lib e-dropdown-btn user-nav" _bl_54771340-87b9-4c8c-a8a6-a6f4d838373f="">Brenton<!--!-->
+    <!--!--><!--!--><!--!--><!--!--><!--!--><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"></path></svg><!--!-->
+                                        <!--!--><!--!--><!--!-->
+                                        <!--!--><!--!--><!--!-->
+                                        <!--!--><!--!--><!--!-->
+                                        <!--!--><!--!--><!--!--><!--!--><!--!-->
+                                        <!--!--><!--!--><!--!-->
+    <span class="e-btn-icon e-icons e-caret"></span><!--!-->
+    <!--!--></button></div></div></div><!--!-->
+                <div class="headcenter mx-auto title-wrapper" b-nae7o4vsod=""><!--!--><div b-nae7o4vsod=""></div>
+                    <h1 class="title" b-nae7o4vsod="" tabindex="-1">AGSV 2025</h1></div><!--!-->
+                <div class="footer" b-nae7o4vsod=""><div class="flex wrap mt-1 mx-auto" style="max-width: 100vw;" b-2hzyfaqctk=""><!--!--><div class="flex around mx-auto" b-e4s1o582u4="" _bl_cf78a45b-c2ec-4fe0-8028-799855d1ee99=""><button class="" b-e4s1o582u4="">1</button><button class="" b-e4s1o582u4="">2</button><button class="active" b-e4s1o582u4="">3</button><button class="" b-e4s1o582u4="">4</button><button class="" b-e4s1o582u4="">5</button><button class="" b-e4s1o582u4="">6</button><button class="" b-e4s1o582u4="">7</button><button class="" b-e4s1o582u4="">8</button><button class="" b-e4s1o582u4="">9</button><button class="" b-e4s1o582u4="">SF</button></div><!--!-->
+        <div class="mx-2" b-2hzyfaqctk=""><!--!--><!--!--><!--!--><button id="sfdropdownbutton793b4827-6774-4cb6-a5b5-363990a87779" type="button" aria-haspopup="true" aria-expanded="false" aria-label="All Opponents dropdownbutton" class="e-control e-btn e-lib e-dropdown-btn  custom-dropdown team-select" _bl_b042ff6d-68e1-40b2-ac38-70f1fe9f8919="">All Opponents<!--!-->
+    <!--!--><!--!--><!--!-->
+    <span class="e-btn-icon e-icons e-caret"></span><!--!-->
+    <!--!--></button></div></div></div></div><div class="background-logo" b-nae7o4vsod=""><img class="background-club-logo" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2100/2100_logo.png" b-nae7o4vsod=""></div></section></section><section id="side-nav" b-eq76jj6g58=""><!--!--><div class="side-bar open menu-permanent" b-lpisdl9x7e=""><div class="content" b-lpisdl9x7e=""><div class="show-hide" b-lpisdl9x7e=""><label class="color-light" b-lpisdl9x7e="">Keep Open</label><input type="checkbox" b-lpisdl9x7e="" style=""></div><!--!-->
+        <div class="flex-column mb-3 p-1 logo-wrapper" b-lpisdl9x7e=""><button b-lpisdl9x7e=""><!--!--><svg xmlns="http://www.w3.org/2000/svg" width="127" height="127" viewBox="0 0 127 127" fill="none" b-lpisdl9x7e=""><circle cx="63.5" cy="63.5" r="61.5" stroke="white" stroke-width="4" b-lpisdl9x7e=""></circle>
+                    <path d="M42.909 38.9045C42.9599 37.8383 43.8392 37 44.9067 37L61.9278 37C63.0602 37 63.9667 37.9392 63.9266 39.0709L62.0451 92.1441C62.0069 93.2209 61.1225 94.074 60.045 94.0733L41.8438 94.0614C40.9876 94.0608 40.3056 93.3449 40.3465 92.4898L42.909 38.9045Z" fill="#EF3644" b-lpisdl9x7e=""></path>
+                    <path d="M67.4347 21.9325C67.4711 20.8548 68.3553 20 69.4336 20L86.4452 20C87.5709 20 88.4749 20.9287 88.4445 22.0541L86.5526 92.0296C86.5233 93.1128 85.6369 93.9756 84.5533 93.9756L66.5515 93.9756C65.7032 93.9756 65.0237 93.2727 65.0523 92.4249L67.4347 21.9325Z" fill="#EF3644" b-lpisdl9x7e=""></path>
+                    <path d="M89.926 69.9231C89.9673 68.8493 90.8499 68 91.9246 68L109.422 68C110.556 68 111.464 68.943 111.42 70.0768L110.574 92.0769C110.533 93.1508 109.65 94.0001 108.575 94.0001L90.5588 94.0001C89.7078 94.0001 89.0272 93.2928 89.0599 92.4424L89.926 69.9231Z" fill="#EF3644" b-lpisdl9x7e=""></path>
+                    <path d="M17.7579 61.8623C17.8161 60.8006 18.6947 59.9701 19.7579 59.9717L36.9249 59.9969C38.0583 59.9986 38.9639 60.941 38.9204 62.0736L37.7712 92.0303C37.73 93.1043 36.8474 93.9537 35.7727 93.9537L17.5844 93.9537C16.7238 93.9537 16.0396 93.231 16.0867 92.3717L17.7579 61.8623Z" fill="#EF3644" b-lpisdl9x7e=""></path></svg></button></div><!--!-->
+        <div b-lpisdl9x7e=""><!--!--><div class="home-navigation" id="small-options" b-lpisdl9x7e=""></div>
+            <!--!--><div class="home-navigation-container" b-1dumyzoy84=""><div class="content2 home-navigation flex gap-2 wrap side-nav" style="justify-content: center;" b-1dumyzoy84=""><div class="menu-items flex flex-column gap-1" b-1dumyzoy84=""><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"></path></svg><!--!-->
+                <!--!--><h2 b-1dumyzoy84="">Dashboard</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zM9.75 17.25a.75.75 0 00-1.5 0V18a.75.75 0 001.5 0v-.75zm2.25-3a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0V18a.75.75 0 001.5 0v-5.25z" clip-rule="evenodd"></path>
+                <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z"></path></svg><!--!-->
+                            <!--!--><h2 b-1dumyzoy84="">Team Summary</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"></path></svg><!--!-->
+                            <!--!--><h2 b-1dumyzoy84="">Squad List</h2></button><button class="tile dashboard side-nav active" b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"></path></svg><!--!-->
+                    <!--!--><h2 b-1dumyzoy84="">Fixtures</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 00-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 00.75-.75 2.25 2.25 0 00-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.22 49.22 0 00-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 00-.657.744zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 013.16 5.337a45.6 45.6 0 012.006-.343v.256zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 01-2.863 3.207 6.72 6.72 0 00.857-3.294z" clip-rule="evenodd"></path></svg><!--!-->
+                        <!--!--><h2 b-1dumyzoy84="">Leaders</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M19.5 6h-15v9h15V6z"></path>
+                <path fill-rule="evenodd" d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v11.25C1.5 17.16 2.34 18 3.375 18H9.75v1.5H6A.75.75 0 006 21h12a.75.75 0 000-1.5h-3.75V18h6.375c1.035 0 1.875-.84 1.875-1.875V4.875C22.5 3.839 21.66 3 20.625 3H3.375zm0 13.5h17.25a.375.375 0 00.375-.375V4.875a.375.375 0 00-.375-.375H3.375A.375.375 0 003 4.875v11.25c0 .207.168.375.375.375z" clip-rule="evenodd"></path></svg><!--!-->
+                    <!--!--><h2 b-1dumyzoy84="">Video Library</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M19.5 6h-15v9h15V6z"></path>
+                <path fill-rule="evenodd" d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v11.25C1.5 17.16 2.34 18 3.375 18H9.75v1.5H6A.75.75 0 006 21h12a.75.75 0 000-1.5h-3.75V18h6.375c1.035 0 1.875-.84 1.875-1.875V4.875C22.5 3.839 21.66 3 20.625 3H3.375zm0 13.5h17.25a.375.375 0 00.375-.375V4.875a.375.375 0 00-.375-.375H3.375A.375.375 0 003 4.875v11.25c0 .207.168.375.375.375z" clip-rule="evenodd"></path></svg><!--!-->
+                        <!--!--><h2 b-1dumyzoy84="">Vision Editor</h2></button><button class="red-btn tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z"></path></svg><!--!-->
+                                    <!--!--><h2 b-1dumyzoy84="">Match Reports</h2></button><button class="tile dashboard side-nav " b-1dumyzoy84=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z"></path></svg><!--!-->
+                        <!--!--><h2 b-1dumyzoy84="">Club Admin</h2></button></div></div><div class="bannerad-sticky" b-1dumyzoy84=""><!--!--></div></div><!--!-->
+
+<!--!--></div></div><!--!-->
+    <button class="menu-icon me-auto close" b-lpisdl9x7e=""><!--!--><div class="bar" b-lpisdl9x7e=""></div>
+        <div class="bar" b-lpisdl9x7e=""></div>
+        <div class="bar" b-lpisdl9x7e=""></div></button></div></section><section id="body" class="pagebody hide-overflow" b-eq76jj6g58=""><!--!--><!--!--><!--!--><!--!-->
+<!--!--><!--!--><style b-baa38ojs0o=""><!--!-->
+    :root {
+    --container-width: 0<!--!-->;
+    }
+</style><div class="main-grid-header" b-baa38ojs0o=""><section b-baa38ojs0o=""></section></div><!--!-->
+            <div id="body" class="layout-body main-grid   " b-baa38ojs0o=""><section class="column column-left" style="padding-bottom: 6em;" b-baa38ojs0o=""><!--!--><div class="flex-column gap-3" style="width: 100%;" b-gtmfexjdn0=""><div class="flex gap-1" b-gtmfexjdn0=""><!--!--><button class="card fixture   away clickable" b-vrr9dnezqo=""><div class="head" b-vrr9dnezqo=""><h4 b-vrr9dnezqo="">10/05/2025</h4><!--!-->
+                <h4 class="mx-auto" b-vrr9dnezqo="">Round 3</h4><div class="header-buttons mx-auto" b-vrr9dnezqo=""></div></div><!--!-->
+            <div class="body " b-vrr9dnezqo=""><div class="home" b-vrr9dnezqo=""><h3 class="team-name ms-1 me-auto" b-vrr9dnezqo="">Mentone Grammar</h3><!--!-->
+                        <img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2100/2100_logo.png" alt="Mentone Grammar" b-vrr9dnezqo=""></div><!--!-->
+                    <div class="result" b-vrr9dnezqo=""><div class="score" b-vrr9dnezqo=""><p class="home-score" b-vrr9dnezqo="">37</p><p b-vrr9dnezqo="">5.7</p></div><!--!-->
+
+                        <!--!--><h3 class="vs" b-vrr9dnezqo="">VS</h3>
+
+                        <div class="score" b-vrr9dnezqo=""><p class="away-score" b-vrr9dnezqo="">143</p><p b-vrr9dnezqo="">22.11</p></div></div><!--!-->
+                    <div class="away" b-vrr9dnezqo=""><img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2104/2104_logo.png" alt="PEGS AGSV" b-vrr9dnezqo=""><!--!-->
+                        <h3 class="team-name me-1 ms-auto" b-vrr9dnezqo="">PEGS AGSV</h3></div></div><div class="footer " b-vrr9dnezqo=""><div class="footer-body" b-vrr9dnezqo="">10/05/2025</div><!--!-->
+
+                    <div class="footer-buttons" b-vrr9dnezqo=""><div class="buttons" b-vrr9dnezqo=""><button class="primary" title="Match Statistics" b-vrr9dnezqo=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zM9.75 17.25a.75.75 0 00-1.5 0V18a.75.75 0 001.5 0v-.75zm2.25-3a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0V18a.75.75 0 001.5 0v-5.25z" clip-rule="evenodd"></path>
+                <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z"></path></svg></button><button class="primary" title="Match Video" b-vrr9dnezqo=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z"></path></svg></button><button class="primary button-editor" title="Vision Editor" b-vrr9dnezqo=""><!--!--><svg class="icon " style="" viewBox="0 0 24 24"><!--!--><path d="M19.5 6h-15v9h15V6z"></path>
+                <path fill-rule="evenodd" d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v11.25C1.5 17.16 2.34 18 3.375 18H9.75v1.5H6A.75.75 0 006 21h12a.75.75 0 000-1.5h-3.75V18h6.375c1.035 0 1.875-.84 1.875-1.875V4.875C22.5 3.839 21.66 3 20.625 3H3.375zm0 13.5h17.25a.375.375 0 00.375-.375V4.875a.375.375 0 00-.375-.375H3.375A.375.375 0 003 4.875v11.25c0 .207.168.375.375.375z" clip-rule="evenodd"></path></svg></button></div></div></div></button><!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--></div><div class="banner-container" b-gtmfexjdn0=""><div b-gtmfexjdn0=""><!--!--></div></div><div class="flex gap-1" b-gtmfexjdn0=""><!--!--><button class="card fixture   away " b-vrr9dnezqo=""><div class="head" b-vrr9dnezqo=""><h4 b-vrr9dnezqo="">05/09/2025</h4><!--!-->
+                <h4 class="mx-auto" b-vrr9dnezqo="">Round 3</h4><div class="header-buttons mx-auto" b-vrr9dnezqo=""></div></div><!--!-->
+            <div class="body " b-vrr9dnezqo=""><div class="home" b-vrr9dnezqo=""><h3 class="team-name ms-1 me-auto" b-vrr9dnezqo="">Camberwell Grammar</h3><!--!-->
+                        <img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2103/2103_logo.png" alt="Camberwell Grammar" b-vrr9dnezqo=""></div><!--!-->
+                    <div class="result" b-vrr9dnezqo=""><div class="score" b-vrr9dnezqo=""><p class="home-score" b-vrr9dnezqo="">39</p><!--!-->
+                            <p b-vrr9dnezqo="">5.9</p></div><!--!-->
+
+                        <!--!--><h3 class="vs" b-vrr9dnezqo="">VS</h3>
+
+                        <div class="score" b-vrr9dnezqo=""><p class="away-score" b-vrr9dnezqo="">103</p><!--!-->
+                            <p b-vrr9dnezqo="">16.7</p></div></div><!--!-->
+                    <div class="away" b-vrr9dnezqo=""><img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2099/2099_logo.png" alt="Ivanhoe Grammar" b-vrr9dnezqo=""><!--!-->
+                        <h3 class="team-name ms-auto me-1" b-vrr9dnezqo="">Ivanhoe Grammar</h3></div></div><div class="footer " b-vrr9dnezqo=""><div class="footer-body" b-vrr9dnezqo="">05/09/2025</div><!--!-->
+
+                    <div class="footer-buttons" b-vrr9dnezqo=""><div class="buttons" b-vrr9dnezqo=""></div></div></div></button><!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--></div><div class="flex gap-1" b-gtmfexjdn0=""><!--!--><button class="card fixture   home " b-vrr9dnezqo=""><div class="head" b-vrr9dnezqo=""><h4 b-vrr9dnezqo="">09/05/2025</h4><!--!-->
+                <h4 class="mx-auto" b-vrr9dnezqo="">Round 3</h4><div class="header-buttons mx-auto" b-vrr9dnezqo=""></div></div><!--!-->
+            <div class="body " b-vrr9dnezqo=""><div class="home" b-vrr9dnezqo=""><h3 class="team-name ms-1 me-auto" b-vrr9dnezqo="">Trinity Grammar</h3><!--!-->
+                        <img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2105/2105_logo.png" alt="Trinity Grammar" b-vrr9dnezqo=""></div><!--!-->
+                    <div class="result" b-vrr9dnezqo=""><div class="score" b-vrr9dnezqo=""><p class="home-score" b-vrr9dnezqo="">64</p><!--!-->
+                            <p b-vrr9dnezqo="">10.4</p></div><!--!-->
+
+                        <!--!--><h3 class="vs" b-vrr9dnezqo="">VS</h3>
+
+                        <div class="score" b-vrr9dnezqo=""><p class="away-score" b-vrr9dnezqo="">43</p><!--!-->
+                            <p b-vrr9dnezqo="">6.7</p></div></div><!--!-->
+                    <div class="away" b-vrr9dnezqo=""><img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2104/2104_logo.png" alt="PEGS AGSV" b-vrr9dnezqo=""><!--!-->
+                        <h3 class="team-name ms-auto me-1" b-vrr9dnezqo="">PEGS AGSV</h3></div></div><div class="footer " b-vrr9dnezqo=""><div class="footer-body" b-vrr9dnezqo="">09/05/2025</div><!--!-->
+
+                    <div class="footer-buttons" b-vrr9dnezqo=""><div class="buttons" b-vrr9dnezqo=""></div></div></div></button><!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--></div><div class="flex gap-1" b-gtmfexjdn0=""><!--!--><button class="card fixture   away " b-vrr9dnezqo=""><div class="head" b-vrr9dnezqo=""><h4 b-vrr9dnezqo="">10/05/2025</h4><!--!-->
+                <h4 class="mx-auto" b-vrr9dnezqo="">Round 3</h4><div class="header-buttons mx-auto" b-vrr9dnezqo=""></div></div><!--!-->
+            <div class="body " b-vrr9dnezqo=""><div class="home" b-vrr9dnezqo=""><h3 class="team-name ms-1 me-auto" b-vrr9dnezqo="">Yarra Valley Grammar</h3><!--!-->
+                        <img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2106/2106_logo.png" alt="Yarra Valley Grammar" b-vrr9dnezqo=""></div><!--!-->
+                    <div class="result" b-vrr9dnezqo=""><div class="score" b-vrr9dnezqo=""><p class="home-score" b-vrr9dnezqo="">39</p><!--!-->
+                            <p b-vrr9dnezqo="">5.9</p></div><!--!-->
+
+                        <!--!--><h3 class="vs" b-vrr9dnezqo="">VS</h3>
+
+                        <div class="score" b-vrr9dnezqo=""><p class="away-score" b-vrr9dnezqo="">62</p><!--!-->
+                            <p b-vrr9dnezqo="">9.8</p></div></div><!--!-->
+                    <div class="away" b-vrr9dnezqo=""><img src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2102/2102_logo.png" alt="Marcellin College" b-vrr9dnezqo=""><!--!-->
+                        <h3 class="team-name ms-auto me-1" b-vrr9dnezqo="">Marcellin College</h3></div></div><div class="footer " b-vrr9dnezqo=""><div class="footer-body" b-vrr9dnezqo="">10/05/2025</div><!--!-->
+
+                    <div class="footer-buttons" b-vrr9dnezqo=""><div class="buttons" b-vrr9dnezqo=""></div></div></div></button><!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--><!--!-->
+
+<!--!--></div></div></section><!--!-->
+                <section class="column column-right" style="padding-bottom: 6em;" b-baa38ojs0o=""><!--!--><section class="widget index   " style="" b-is9eoaro0y=""><div class="header" b-is9eoaro0y=""></div><!--!-->
+    <div class="body" b-is9eoaro0y=""><!--!--><div class="header" b-tkze2vt11n=""><!--!--><h2 class="me-3" b-tkze2vt11n="">Table</h2>
+            <!--!--><div class="e-switch-wrapper e-wrapper my-auto" aria-disabled="false"><input class="e-control e-switch e-lib" type="checkbox" aria-label="switch" _bl_653ba32a-dc81-4f7d-934d-fe97405d2842=""><!--!-->
+    <span class="e-switch-inner e-switch-active"><span class="e-switch-on">Basic</span><!--!-->
+        <span class="e-switch-off">Advanced</span></span><!--!-->
+    <span class="e-switch-handle e-switch-active"></span></div></div><!--!-->
+        <div class="ladder basic" b-tkze2vt11n=""><!--!--><div b-tkze2vt11n=""></div><!--!--><label class="head" b-tkze2vt11n="">PTS</label>
+                <!--!--><label class="head" b-tkze2vt11n="">W</label>
+                <!--!--><label class="head" b-tkze2vt11n="">L</label>
+                <!--!--><label class="head" b-tkze2vt11n="">D</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">1</label><!--!-->
+                        <!--!--><div id="tooltip-9c40dc74-c305-4f7b-b40f-8b1bee103250" class="e-control e-tooltip e-lib" _bl_6564c756-653b-4976-833d-d3b3b709a17e=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2102/2102_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Marcellin College</label></div></button><label b-tkze2vt11n="">24</label><!--!-->
+                    <label b-tkze2vt11n="">6</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">2</label><!--!-->
+                        <!--!--><div id="tooltip-77d97d31-5ab1-45d8-83a6-1ca84ef71124" class="e-control e-tooltip e-lib" _bl_58f96c50-83cd-4ba6-accb-9e4fef81d6d3=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2104/2104_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">PEGS AGSV</label></div></button><label b-tkze2vt11n="">16</label><!--!-->
+                    <label b-tkze2vt11n="">4</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">3</label><!--!-->
+                        <!--!--><div id="tooltip-7a6e2b16-59e8-4605-9309-f05a905eeb8c" class="e-control e-tooltip e-lib" _bl_9e71c8cb-02de-4aaf-bbe7-8c38a851afff=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2106/2106_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Yarra Valley Grammar</label></div></button><label b-tkze2vt11n="">16</label><!--!-->
+                    <label b-tkze2vt11n="">4</label><!--!-->
+                    <label b-tkze2vt11n="">1</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">4</label><!--!-->
+                        <!--!--><div id="tooltip-7aace2f0-5c43-470f-99cc-1cc908e5a22e" class="e-control e-tooltip e-lib" _bl_456e898b-5aed-4596-be81-70ec8b266220=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2099/2099_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Ivanhoe Grammar</label></div></button><label b-tkze2vt11n="">16</label><!--!-->
+                    <label b-tkze2vt11n="">4</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">5</label><!--!-->
+                        <!--!--><div id="tooltip-a4b8a36c-ddeb-44c2-8eb0-434b6bfb9537" class="e-control e-tooltip e-lib" _bl_74cf28ef-8162-4b77-92f5-dc9ba80b8af1=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2105/2105_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Trinity Grammar</label></div></button><label b-tkze2vt11n="">8</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">6</label><!--!-->
+                        <!--!--><div id="tooltip-33d6ad68-6622-47db-a145-31f8a13978fb" class="e-control e-tooltip e-lib" _bl_13ddc23f-98f1-43bc-b7b7-e0db3efd3f9b=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2098/2098_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Assumption College </label></div></button><label b-tkze2vt11n="">8</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">6</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">7</label><!--!-->
+                        <!--!--><div id="tooltip-723584ec-2edf-4f10-b908-1df1d590e027" class="e-control e-tooltip e-lib" _bl_66ab3081-0ba1-4b7e-b6b9-7a99bf44d98d=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2100/2100_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Mentone Grammar</label></div></button><label b-tkze2vt11n="">8</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">5</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">8</label><!--!-->
+                        <!--!--><div id="tooltip-b9ab3489-6f3d-4413-b6d8-afc8106f4cd3" class="e-control e-tooltip e-lib" _bl_1b0d8af3-5521-4bab-8a2e-185a0aa92954=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2103/2103_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Camberwell Grammar</label></div></button><label b-tkze2vt11n="">8</label><!--!-->
+                    <label b-tkze2vt11n="">2</label><!--!-->
+                    <label b-tkze2vt11n="">4</label><!--!-->
+                    <label b-tkze2vt11n="">0</label><button b-tkze2vt11n=""><div class="flex flex-row gap-2" b-tkze2vt11n=""><label class="primary" b-tkze2vt11n="">9</label><!--!-->
+                        <!--!--><div id="tooltip-aa540b80-1e2d-4fa6-af01-1f8a28d43bf8" class="e-control e-tooltip e-lib" _bl_dce0c256-f337-41d3-a35b-291238e4b805=""><!--!--><img class="img" src="https://premierdata01.s3.ap-southeast-2.amazonaws.com/clubs/2101/2101_logo.png" b-tkze2vt11n=""></div><!--!-->
+                        <label class="name" b-tkze2vt11n="">Peninsula Grammar</label></div></button><label b-tkze2vt11n="">4</label><!--!-->
+                    <label b-tkze2vt11n="">1</label><!--!-->
+                    <label b-tkze2vt11n="">5</label><!--!-->
+                    <label b-tkze2vt11n="">0</label></div></div></section><div class="banner-container" b-2hzyfaqctk=""><div class="bannerad-sticky mx-auto" b-2hzyfaqctk=""><!--!--></div></div></section></div><!--!--></section></section><!--!--><!--!-->
+        <!--!-->
+    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+    <script src="_framework/blazor.web.js"></script><script id="revive-async" async="" type="text/javascript" src="https://servedby.revive-adserver.net/asyncjs.php?ts=1776815280681"></script></body></html>

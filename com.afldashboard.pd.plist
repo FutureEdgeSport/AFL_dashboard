@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- launchd job: scrape PD TeamTracker daily at 07:00 Fri/Sat/Sun/Mon/Tue/Wed.
+     Install:
+         cp com.afldashboard.pd.plist ~/Library/LaunchAgents/
+         launchctl load -w ~/Library/LaunchAgents/com.afldashboard.pd.plist
+     Uninstall:
+         launchctl unload ~/Library/LaunchAgents/com.afldashboard.pd.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.afldashboard.pd</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/marcuswagner/coding/AFL_dashboard/run_pd_daily.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard</string>
+
+    <!-- 07:00 on Fri(5), Sat(6), Sun(0), Mon(1), Tue(2), Wed(3).
+         Skips Thursday (=4). -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Weekday</key><integer>0</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Weekday</key><integer>6</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/pd_scraper/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/marcuswagner/coding/AFL_dashboard/logs/pd_scraper/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

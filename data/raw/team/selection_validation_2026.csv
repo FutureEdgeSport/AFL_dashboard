@@ -1,44 +1,80 @@
 Season,Round,Team,Player,Type,Detail
-2026,6,GWS Giants,J Hogan,late_withdrawal,Announced but did not play
-2026,6,GWS Giants,Callum Brown,late_inclusion,Played but was not in announced squad
-2026,6,Essendon,A D-Wicks,late_withdrawal,Announced but did not play
 2026,6,Essendon,S E-Hawli,late_withdrawal,Announced but did not play
+2026,6,Essendon,A D-Wicks,late_withdrawal,Announced but did not play
 2026,6,Essendon,Archer Day-Wicks,late_inclusion,Played but was not in announced squad
 2026,6,Essendon,Saad El-Hawli,late_inclusion,Played but was not in announced squad
-2026,6,Port Adelaide,D B-Jones,late_withdrawal,Announced but did not play
 2026,6,Port Adelaide,J H-Francis,late_withdrawal,Announced but did not play
+2026,6,Port Adelaide,D B-Jones,late_withdrawal,Announced but did not play
 2026,6,Port Adelaide,Jason Horne-Francis,late_inclusion,Played but was not in announced squad
 2026,6,Port Adelaide,Darcy Byrne-Jones,late_inclusion,Played but was not in announced squad
 2026,6,Adelaide,A N-Bullen,late_withdrawal,Announced but did not play
 2026,6,Adelaide,Alex Neal-Bullen,late_inclusion,Played but was not in announced squad
 2026,6,St Kilda,N W-Milera,late_withdrawal,Announced but did not play
 2026,6,St Kilda,Nasiah Wanganeen-Milera,late_inclusion,Played but was not in announced squad
-2026,6,North Melbourne,L D-Uniacke,late_withdrawal,Announced but did not play
-2026,6,North Melbourne,C C-Jones,late_withdrawal,Announced but did not play
-2026,6,North Melbourne,Callum Coleman-Jones,late_inclusion,Played but was not in announced squad
-2026,6,North Melbourne,Luke Davies-Uniacke,late_inclusion,Played but was not in announced squad
-2026,6,West Coast,C D-Tytler,late_withdrawal,Announced but did not play
-2026,6,West Coast,Cooper Duff-Tytler,late_inclusion,Played but was not in announced squad
-2026,6,Brisbane Lions,T Gallop,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,N Answerth,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,O Allen,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,K Coleman,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,J Berry,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,J Fletcher,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,Z Bailey,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,R Lester,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,L Neale,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,J Dunkley,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,L McCarthy,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,C Rayner,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,B Reville,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,H Andrews,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,D Fort,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,L Morris,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,D Wilmot,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,C Cameron,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,W Ashcroft,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,K Lohmann,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,L Ashcroft,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,S Draper,late_withdrawal,Announced but did not play
-2026,6,Brisbane Lions,H McCluggage,late_withdrawal,Announced but did not play
+2026,7,Gold Coast,J U-Hagan,late_withdrawal,Announced but did not play
+2026,7,Gold Coast,Jamarra Ugle-Hagan,late_inclusion,Played but was not in announced squad
+2026,7,Essendon,S E-Hawli,late_withdrawal,Announced but did not play
+2026,7,Essendon,A D-Wicks,late_withdrawal,Announced but did not play
+2026,7,Essendon,Archer Day-Wicks,late_inclusion,Played but was not in announced squad
+2026,7,Essendon,Saad El-Hawli,late_inclusion,Played but was not in announced squad
+2026,7,Port Adelaide,T Marshall,late_withdrawal,Announced but did not play
+2026,7,Port Adelaide,J H-Francis,late_withdrawal,Announced but did not play
+2026,7,Port Adelaide,D B-Jones,late_withdrawal,Announced but did not play
+2026,7,Port Adelaide,Jason Horne-Francis,late_inclusion,Played but was not in announced squad
+2026,7,Port Adelaide,Jack Watkins,late_inclusion,Played but was not in announced squad
+2026,7,Port Adelaide,Darcy Byrne-Jones,late_inclusion,Played but was not in announced squad
+2026,7,Geelong,S De Koning,late_withdrawal,Announced but did not play
+2026,7,Geelong,Brad Close,late_inclusion,Played but was not in announced squad
+2026,7,Fremantle,P Voss,late_withdrawal,Announced but did not play
+2026,7,Fremantle,Jeremy Sharp,late_inclusion,Played but was not in announced squad
+2026,7,Carlton,O Hollands,late_withdrawal,Announced but did not play
+2026,7,Carlton,Matthew Cottrell,late_inclusion,Played but was not in announced squad
+2026,8,Adelaide,A N-Bullen,late_withdrawal,Announced but did not play
+2026,8,Adelaide,Alex Neal-Bullen,late_inclusion,Played but was not in announced squad
+2026,8,Port Adelaide,J H-Francis,late_withdrawal,Announced but did not play
+2026,8,Port Adelaide,D B-Jones,late_withdrawal,Announced but did not play
+2026,8,Port Adelaide,Jason Horne-Francis,late_inclusion,Played but was not in announced squad
+2026,8,Port Adelaide,Darcy Byrne-Jones,late_inclusion,Played but was not in announced squad
+2026,8,Essendon,S E-Hawli,late_withdrawal,Announced but did not play
+2026,8,Essendon,A D-Wicks,late_withdrawal,Announced but did not play
+2026,8,Essendon,Archer Day-Wicks,late_inclusion,Played but was not in announced squad
+2026,8,Essendon,Saad El-Hawli,late_inclusion,Played but was not in announced squad
+2026,8,Brisbane Lions,L Morris,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,T Gallop,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,W Ashcroft,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,C Rayner,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,C Curtin,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,L Ashcroft,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,D Zorko,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,Z Bailey,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,C McKenna,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,B Reville,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,J Fletcher,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,S Draper,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,H McCluggage,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,H Andrews,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,L McCarthy,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,K Coleman,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,C Cameron,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,R Lester,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,D Wilmot,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,L Neale,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,J Dunkley,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,D Fort,late_withdrawal,Announced but did not play
+2026,8,Brisbane Lions,K Lohmann,late_withdrawal,Announced but did not play
+2026,8,West Coast,C D-Tytler,late_withdrawal,Announced but did not play
+2026,8,West Coast,Cooper Duff-Tytler,late_inclusion,Played but was not in announced squad
+2026,8,Richmond,O H-Brown,late_withdrawal,Announced but did not play
+2026,8,Richmond,Oliver Hayes-Brown,late_inclusion,Played but was not in announced squad
+2026,8,Geelong,J Henry,late_withdrawal,Announced but did not play
+2026,8,Geelong,Jack Bowes,late_inclusion,Played but was not in announced squad
+2026,8,North Melbourne,L D-Uniacke,late_withdrawal,Announced but did not play
+2026,8,North Melbourne,Luke Davies-Uniacke,late_inclusion,Played but was not in announced squad
+2026,8,St Kilda,J Higgins,late_withdrawal,Announced but did not play
+2026,8,St Kilda,D Wilson,late_withdrawal,Announced but did not play
+2026,8,St Kilda,N W-Milera,late_withdrawal,Announced but did not play
+2026,8,St Kilda,Nasiah Wanganeen-Milera,late_inclusion,Played but was not in announced squad
+2026,8,St Kilda,Jack Macrae,late_inclusion,Played but was not in announced squad
+2026,8,St Kilda,Liam O'Connell,late_inclusion,Played but was not in announced squad
+2026,8,Gold Coast,J U-Hagan,late_withdrawal,Announced but did not play
+2026,8,Gold Coast,Jamarra Ugle-Hagan,late_inclusion,Played but was not in announced squad

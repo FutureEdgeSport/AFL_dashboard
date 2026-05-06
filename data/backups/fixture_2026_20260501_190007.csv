@@ -1,0 +1,217 @@
+Season,Round,GameId,HomeTeam,AwayTeam,Venue,GameDate,GameDay,Status
+2026,0,38494,Sydney,Carlton,S.C.G.,2026-03-05 19:30,Thursday,Complete
+2026,0,38495,Gold Coast,Geelong,Carrara,2026-03-06 20:05,Friday,Complete
+2026,0,38496,GWS Giants,Hawthorn,Sydney Showground,2026-03-07 16:15,Saturday,Complete
+2026,0,38497,Brisbane Lions,Western Bulldogs,Gabba,2026-03-07 19:35,Saturday,Complete
+2026,0,38498,St Kilda,Collingwood,M.C.G.,2026-03-08 19:20,Sunday,Complete
+2026,1,38499,Carlton,Richmond,M.C.G.,2026-03-12 19:30,Thursday,Complete
+2026,1,38500,Essendon,Hawthorn,M.C.G.,2026-03-13 19:40,Friday,Complete
+2026,1,38501,Western Bulldogs,GWS Giants,Docklands,2026-03-14 13:15,Saturday,Complete
+2026,1,38502,Geelong,Fremantle,Kardinia Park,2026-03-14 16:15,Saturday,Complete
+2026,1,38503,Sydney,Brisbane Lions,S.C.G.,2026-03-14 19:10,Saturday,Complete
+2026,1,38504,Collingwood,Adelaide,M.C.G.,2026-03-14 19:35,Saturday,Complete
+2026,1,38505,North Melbourne,Port Adelaide,Docklands,2026-03-15 13:10,Sunday,Complete
+2026,1,38506,Melbourne,St Kilda,M.C.G.,2026-03-15 15:15,Sunday,Complete
+2026,1,38507,Gold Coast,West Coast,Carrara,2026-03-15 18:10,Sunday,Complete
+2026,2,38508,Hawthorn,Sydney,M.C.G.,2026-03-19 19:30,Thursday,Complete
+2026,2,38509,Adelaide,Western Bulldogs,Adelaide Oval,2026-03-20 19:40,Friday,Complete
+2026,2,38510,Richmond,Gold Coast,M.C.G.,2026-03-21 13:15,Saturday,Complete
+2026,2,38511,GWS Giants,St Kilda,Sydney Showground,2026-03-21 16:15,Saturday,Complete
+2026,2,38512,Fremantle,Melbourne,Perth Stadium,2026-03-21 19:35,Saturday,Complete
+2026,2,38513,Port Adelaide,Essendon,Adelaide Oval,2026-03-22 15:15,Sunday,Complete
+2026,2,38514,West Coast,North Melbourne,Perth Stadium,2026-03-22 18:10,Sunday,Complete
+2026,3,38515,Geelong,Adelaide,Kardinia Park,2026-03-26 19:30,Thursday,Complete
+2026,3,38516,Collingwood,GWS Giants,Docklands,2026-03-27 19:40,Friday,Complete
+2026,3,38517,St Kilda,Brisbane Lions,Docklands,2026-03-28 12:35,Saturday,Complete
+2026,3,38518,Fremantle,Richmond,Perth Stadium,2026-03-28 16:15,Saturday,Complete
+2026,3,38519,Essendon,North Melbourne,Docklands,2026-03-28 19:35,Saturday,Complete
+2026,3,38520,Port Adelaide,West Coast,Adelaide Oval,2026-03-29 12:30,Sunday,Complete
+2026,3,38521,Carlton,Melbourne,M.C.G.,2026-03-29 15:15,Sunday,Complete
+2026,4,38522,Brisbane Lions,Collingwood,Gabba,2026-04-02 19:30,Thursday,Complete
+2026,4,38523,North Melbourne,Carlton,Docklands,2026-04-03 15:15,Friday,Complete
+2026,4,38524,Adelaide,Fremantle,Adelaide Oval,2026-04-03 19:15,Friday,Complete
+2026,4,38525,Richmond,Port Adelaide,M.C.G.,2026-04-04 16:15,Saturday,Complete
+2026,4,38526,West Coast,Sydney,Perth Stadium,2026-04-04 19:35,Saturday,Complete
+2026,4,38527,Melbourne,Gold Coast,M.C.G.,2026-04-05 15:15,Sunday,Complete
+2026,4,38528,Western Bulldogs,Essendon,Docklands,2026-04-05 19:20,Sunday,Complete
+2026,4,38529,Hawthorn,Geelong,M.C.G.,2026-04-06 15:15,Monday,Complete
+2026,5,38530,Adelaide,Carlton,Adelaide Oval,2026-04-09 19:40,Thursday,Complete
+2026,5,38531,Collingwood,Fremantle,Adelaide Oval,2026-04-10 19:40,Friday,Complete
+2026,5,38532,North Melbourne,Brisbane Lions,Barossa Park,2026-04-11 12:35,Saturday,Complete
+2026,5,38533,Essendon,Melbourne,Adelaide Oval,2026-04-11 13:15,Saturday,Complete
+2026,5,38534,Sydney,Gold Coast,Norwood Oval,2026-04-11 16:15,Saturday,Complete
+2026,5,38535,Hawthorn,Western Bulldogs,Adelaide Oval,2026-04-11 19:35,Saturday,Complete
+2026,5,38536,Geelong,West Coast,Norwood Oval,2026-04-12 12:30,Sunday,Complete
+2026,5,38537,GWS Giants,Richmond,Barossa Park,2026-04-12 15:15,Sunday,Complete
+2026,5,38538,Port Adelaide,St Kilda,Adelaide Oval,2026-04-12 19:15,Sunday,Complete
+2026,6,38539,Carlton,Collingwood,M.C.G.,2026-04-16 19:30,Thursday,Complete
+2026,6,38540,Geelong,Western Bulldogs,Kardinia Park,2026-04-17 19:20,Friday,Complete
+2026,6,38541,Sydney,GWS Giants,S.C.G.,2026-04-17 19:50,Friday,Complete
+2026,6,38542,Gold Coast,Essendon,Carrara,2026-04-18 13:15,Saturday,Complete
+2026,6,38543,Hawthorn,Port Adelaide,Docklands,2026-04-18 16:15,Saturday,Complete
+2026,6,38544,Adelaide,St Kilda,Adelaide Oval,2026-04-18 19:35,Saturday,Complete
+2026,6,38545,North Melbourne,Richmond,Docklands,2026-04-19 13:10,Sunday,Complete
+2026,6,38546,Melbourne,Brisbane Lions,M.C.G.,2026-04-19 15:15,Sunday,Complete
+2026,6,38547,West Coast,Fremantle,Perth Stadium,2026-04-19 17:10,Sunday,Complete
+2026,7,38548,Western Bulldogs,Sydney,Docklands,2026-04-23 19:30,Thursday,Complete
+2026,7,38549,Richmond,Melbourne,M.C.G.,2026-04-24 19:40,Friday,Complete
+2026,7,38550,Hawthorn,Gold Coast,York Park,2026-04-25 12:15,Saturday,Complete
+2026,7,38551,Essendon,Collingwood,M.C.G.,2026-04-25 15:15,Saturday,Complete
+2026,7,38552,Port Adelaide,Geelong,Adelaide Oval,2026-04-25 18:35,Saturday,Complete
+2026,7,38553,Fremantle,Carlton,Perth Stadium,2026-04-25 20:15,Saturday,Complete
+2026,7,38554,St Kilda,West Coast,Docklands,2026-04-26 13:10,Sunday,Complete
+2026,7,38555,Brisbane Lions,Adelaide,Gabba,2026-04-26 15:15,Sunday,Complete
+2026,7,38556,GWS Giants,North Melbourne,Manuka Oval,2026-04-26 16:40,Sunday,Complete
+2026,8,38557,Collingwood,Hawthorn,M.C.G.,2026-04-30 19:30,Thursday,Complete
+2026,8,38558,Western Bulldogs,Fremantle,Docklands,2026-05-01 19:30,Friday,Scheduled
+2026,8,38559,Adelaide,Port Adelaide,Adelaide Oval,2026-05-01 20:10,Friday,Scheduled
+2026,8,38560,Essendon,Brisbane Lions,Docklands,2026-05-02 12:35,Saturday,Scheduled
+2026,8,38561,West Coast,Richmond,Perth Stadium,2026-05-02 16:15,Saturday,Scheduled
+2026,8,38562,Geelong,North Melbourne,Kardinia Park,2026-05-02 16:35,Saturday,Scheduled
+2026,8,38563,Carlton,St Kilda,Docklands,2026-05-02 19:35,Saturday,Scheduled
+2026,8,38564,Sydney,Melbourne,S.C.G.,2026-05-03 15:15,Sunday,Scheduled
+2026,8,38565,Gold Coast,GWS Giants,Carrara,2026-05-03 19:20,Sunday,Scheduled
+2026,9,38566,Fremantle,Hawthorn,Perth Stadium,2026-05-07 20:10,Thursday,Scheduled
+2026,9,38567,Brisbane Lions,Carlton,Gabba,2026-05-08 19:30,Friday,Scheduled
+2026,9,38568,Port Adelaide,Western Bulldogs,Adelaide Oval,2026-05-08 20:10,Friday,Scheduled
+2026,9,38569,North Melbourne,Sydney,Docklands,2026-05-09 13:15,Saturday,Scheduled
+2026,9,38570,GWS Giants,Essendon,Sydney Showground,2026-05-09 16:15,Saturday,Scheduled
+2026,9,38571,Gold Coast,St Kilda,Marrara Oval,2026-05-09 19:10,Saturday,Scheduled
+2026,9,38572,Geelong,Collingwood,M.C.G.,2026-05-09 19:35,Saturday,Scheduled
+2026,9,38573,Melbourne,West Coast,Docklands,2026-05-10 13:10,Sunday,Scheduled
+2026,9,38574,Richmond,Adelaide,M.C.G.,2026-05-10 15:15,Sunday,Scheduled
+2026,10,38575,Brisbane Lions,Geelong,Gabba,2026-05-14 19:30,Thursday,Scheduled
+2026,10,38576,Sydney,Collingwood,S.C.G.,2026-05-15 19:30,Friday,Scheduled
+2026,10,38577,Gold Coast,Port Adelaide,Marrara Oval,2026-05-15 20:10,Friday,Scheduled
+2026,10,38578,Adelaide,North Melbourne,Adelaide Oval,2026-05-16 13:15,Saturday,Scheduled
+2026,10,38579,Melbourne,Hawthorn,M.C.G.,2026-05-16 16:15,Saturday,Scheduled
+2026,10,38580,Carlton,Western Bulldogs,Docklands,2026-05-16 19:35,Saturday,Scheduled
+2026,10,38581,Essendon,Fremantle,M.C.G.,2026-05-17 13:10,Sunday,Scheduled
+2026,10,38582,St Kilda,Richmond,Docklands,2026-05-17 15:15,Sunday,Scheduled
+2026,10,38583,West Coast,GWS Giants,Perth Stadium,2026-05-17 18:15,Sunday,Scheduled
+2026,11,38584,Hawthorn,Adelaide,York Park,2026-05-21 19:30,Thursday,Scheduled
+2026,11,38585,Richmond,Essendon,M.C.G.,2026-05-22 19:40,Friday,Scheduled
+2026,11,38586,Fremantle,St Kilda,Perth Stadium,2026-05-22 20:30,Friday,Scheduled
+2026,11,38587,North Melbourne,Gold Coast,Docklands,2026-05-23 13:15,Saturday,Scheduled
+2026,11,38588,Geelong,Sydney,Kardinia Park,2026-05-23 16:15,Saturday,Scheduled
+2026,11,38589,Collingwood,West Coast,M.C.G.,2026-05-23 16:35,Saturday,Scheduled
+2026,11,38590,Port Adelaide,Carlton,Adelaide Oval,2026-05-23 19:35,Saturday,Scheduled
+2026,11,38591,GWS Giants,Brisbane Lions,Sydney Showground,2026-05-24 12:30,Sunday,Scheduled
+2026,11,38592,Western Bulldogs,Melbourne,Docklands,2026-05-24 15:15,Sunday,Scheduled
+2026,12,38593,St Kilda,Hawthorn,Docklands,2026-05-28 19:30,Thursday,Scheduled
+2026,12,38594,Carlton,Geelong,M.C.G.,2026-05-29 19:40,Friday,Scheduled
+2026,12,38595,Sydney,Richmond,S.C.G.,2026-05-30 13:15,Saturday,Scheduled
+2026,12,38596,Brisbane Lions,Fremantle,Gabba,2026-05-30 16:15,Saturday,Scheduled
+2026,12,38597,Western Bulldogs,Collingwood,Docklands,2026-05-30 19:35,Saturday,Scheduled
+2026,12,38598,Melbourne,GWS Giants,Traeger Park,2026-05-31 15:15,Sunday,Scheduled
+2026,12,38599,West Coast,Essendon,Perth Stadium,2026-05-31 19:20,Sunday,Scheduled
+2026,13,38600,Adelaide,Geelong,Adelaide Oval,2026-06-04 19:30,Thursday,Scheduled
+2026,13,38601,Hawthorn,Western Bulldogs,M.C.G.,2026-06-05 19:40,Friday,Scheduled
+2026,13,38602,North Melbourne,Fremantle,Hands Oval,2026-06-06 14:15,Saturday,Scheduled
+2026,13,38603,Gold Coast,Brisbane Lions,Carrara,2026-06-06 17:15,Saturday,Scheduled
+2026,13,38604,West Coast,Port Adelaide,Perth Stadium,2026-06-06 20:15,Saturday,Scheduled
+2026,13,38605,Sydney,St Kilda,S.C.G.,2026-06-07 15:15,Sunday,Scheduled
+2026,13,38606,Essendon,Carlton,M.C.G.,2026-06-07 19:20,Sunday,Scheduled
+2026,13,38607,Collingwood,Melbourne,M.C.G.,2026-06-08 15:15,Monday,Scheduled
+2026,14,38608,Western Bulldogs,Adelaide,Docklands,2026-06-11 19:30,Thursday,Scheduled
+2026,14,38609,Geelong,Gold Coast,Kardinia Park,2026-06-12 19:40,Friday,Scheduled
+2026,14,38610,Melbourne,Essendon,M.C.G.,2026-06-13 13:15,Saturday,Scheduled
+2026,14,38611,North Melbourne,West Coast,Perth Stadium,2026-06-13 16:15,Saturday,Scheduled
+2026,14,38612,Port Adelaide,Sydney,Adelaide Oval,2026-06-13 19:35,Saturday,Scheduled
+2026,14,38613,Richmond,Brisbane Lions,Bellerive Oval,2026-06-14 13:10,Sunday,Scheduled
+2026,14,38614,St Kilda,GWS Giants,Docklands,2026-06-14 15:15,Sunday,Scheduled
+2026,15,38615,Fremantle,Geelong,Perth Stadium,2026-06-18 20:10,Thursday,Scheduled
+2026,15,38616,Gold Coast,Hawthorn,Carrara,2026-06-19 19:40,Friday,Scheduled
+2026,15,38617,Adelaide,Melbourne,Adelaide Oval,2026-06-20 13:15,Saturday,Scheduled
+2026,15,38618,GWS Giants,Carlton,Sydney Showground,2026-06-20 16:15,Saturday,Scheduled
+2026,15,38619,Collingwood,Port Adelaide,M.C.G.,2026-06-20 19:35,Saturday,Scheduled
+2026,15,38620,Richmond,North Melbourne,M.C.G.,2026-06-21 13:10,Sunday,Scheduled
+2026,15,38621,St Kilda,Western Bulldogs,Docklands,2026-06-21 15:15,Sunday,Scheduled
+2026,16,38622,Brisbane Lions,Sydney,Gabba,2026-06-22 12:00,Monday,Scheduled
+2026,16,38623,Carlton,West Coast,Docklands,2026-06-22 12:00,Monday,Scheduled
+2026,16,38624,Collingwood,Richmond,M.C.G.,2026-06-22 12:00,Monday,Scheduled
+2026,16,38625,Hawthorn,GWS Giants,M.C.G.,2026-06-22 12:00,Monday,Scheduled
+2026,16,38626,North Melbourne,Essendon,Docklands,2026-06-22 12:00,Monday,Scheduled
+2026,16,38627,Port Adelaide,Adelaide,Adelaide Oval,2026-06-22 12:30,Monday,Scheduled
+2026,16,38628,Fremantle,Gold Coast,Perth Stadium,2026-06-22 14:00,Monday,Scheduled
+2026,17,38629,Essendon,St Kilda,Docklands,2026-06-29 12:00,Monday,Scheduled
+2026,17,38630,Geelong,Brisbane Lions,Kardinia Park,2026-06-29 12:00,Monday,Scheduled
+2026,17,38631,Gold Coast,Collingwood,Carrara,2026-06-29 12:00,Monday,Scheduled
+2026,17,38632,GWS Giants,Fremantle,Manuka Oval,2026-06-29 12:00,Monday,Scheduled
+2026,17,38633,Hawthorn,Melbourne,York Park,2026-06-29 12:00,Monday,Scheduled
+2026,17,38634,Richmond,Carlton,M.C.G.,2026-06-29 12:00,Monday,Scheduled
+2026,17,38635,Sydney,Western Bulldogs,S.C.G.,2026-06-29 12:00,Monday,Scheduled
+2026,17,38636,Port Adelaide,North Melbourne,Adelaide Oval,2026-06-29 12:30,Monday,Scheduled
+2026,17,38637,West Coast,Adelaide,Perth Stadium,2026-06-29 14:00,Monday,Scheduled
+2026,18,38638,Brisbane Lions,Essendon,Gabba,2026-07-06 12:00,Monday,Scheduled
+2026,18,38639,Carlton,Hawthorn,M.C.G.,2026-07-06 12:00,Monday,Scheduled
+2026,18,38640,Collingwood,North Melbourne,Docklands,2026-07-06 12:00,Monday,Scheduled
+2026,18,38641,GWS Giants,Geelong,Sydney Showground,2026-07-06 12:00,Monday,Scheduled
+2026,18,38642,Melbourne,Richmond,M.C.G.,2026-07-06 12:00,Monday,Scheduled
+2026,18,38643,St Kilda,Port Adelaide,Docklands,2026-07-06 12:00,Monday,Scheduled
+2026,18,38644,Western Bulldogs,West Coast,Docklands,2026-07-06 12:00,Monday,Scheduled
+2026,18,38645,Adelaide,Gold Coast,Adelaide Oval,2026-07-06 12:30,Monday,Scheduled
+2026,18,38646,Fremantle,Sydney,Perth Stadium,2026-07-06 14:00,Monday,Scheduled
+2026,19,38647,Collingwood,Carlton,M.C.G.,2026-07-13 12:00,Monday,Scheduled
+2026,19,38648,Essendon,GWS Giants,Docklands,2026-07-13 12:00,Monday,Scheduled
+2026,19,38649,Geelong,St Kilda,Kardinia Park,2026-07-13 12:00,Monday,Scheduled
+2026,19,38650,Gold Coast,Western Bulldogs,Carrara,2026-07-13 12:00,Monday,Scheduled
+2026,19,38651,North Melbourne,Melbourne,Docklands,2026-07-13 12:00,Monday,Scheduled
+2026,19,38652,Richmond,Hawthorn,M.C.G.,2026-07-13 12:00,Monday,Scheduled
+2026,19,38653,Sydney,Adelaide,S.C.G.,2026-07-13 12:00,Monday,Scheduled
+2026,19,38654,Port Adelaide,Fremantle,Adelaide Oval,2026-07-13 12:30,Monday,Scheduled
+2026,19,38655,West Coast,Brisbane Lions,Perth Stadium,2026-07-13 14:00,Monday,Scheduled
+2026,20,38656,Brisbane Lions,Port Adelaide,Gabba,2026-07-20 12:00,Monday,Scheduled
+2026,20,38657,Carlton,Gold Coast,Docklands,2026-07-20 12:00,Monday,Scheduled
+2026,20,38658,GWS Giants,Sydney,Sydney Showground,2026-07-20 12:00,Monday,Scheduled
+2026,20,38659,Hawthorn,Essendon,M.C.G.,2026-07-20 12:00,Monday,Scheduled
+2026,20,38661,Melbourne,Geelong,M.C.G.,2026-07-20 12:00,Monday,Scheduled
+2026,20,38660,North Melbourne,St Kilda,Docklands,2026-07-20 12:00,Monday,Scheduled
+2026,20,38662,Western Bulldogs,Richmond,Docklands,2026-07-20 12:00,Monday,Scheduled
+2026,20,38663,Adelaide,Collingwood,Adelaide Oval,2026-07-20 12:30,Monday,Scheduled
+2026,20,38664,Fremantle,West Coast,Perth Stadium,2026-07-20 14:00,Monday,Scheduled
+2026,21,38665,Carlton,Brisbane Lions,Docklands,2026-07-27 12:00,Monday,Scheduled
+2026,21,38666,Collingwood,Geelong,M.C.G.,2026-07-27 12:00,Monday,Scheduled
+2026,21,38667,Essendon,Adelaide,Docklands,2026-07-27 12:00,Monday,Scheduled
+2026,21,38668,Gold Coast,Melbourne,Carrara,2026-07-27 12:00,Monday,Scheduled
+2026,21,38669,Hawthorn,North Melbourne,York Park,2026-07-27 12:00,Monday,Scheduled
+2026,21,38670,Richmond,West Coast,M.C.G.,2026-07-27 12:00,Monday,Scheduled
+2026,21,38671,St Kilda,Sydney,Docklands,2026-07-27 12:00,Monday,Scheduled
+2026,21,38672,Port Adelaide,GWS Giants,Adelaide Oval,2026-07-27 12:30,Monday,Scheduled
+2026,21,38673,Fremantle,Western Bulldogs,Perth Stadium,2026-07-27 14:00,Monday,Scheduled
+2026,22,38674,Brisbane Lions,Hawthorn,Gabba,2026-08-03 12:00,Monday,Scheduled
+2026,22,38675,Geelong,Essendon,Kardinia Park,2026-08-03 12:00,Monday,Scheduled
+2026,22,38676,GWS Giants,Gold Coast,Manuka Oval,2026-08-03 12:00,Monday,Scheduled
+2026,22,38677,Melbourne,Fremantle,M.C.G.,2026-08-03 12:00,Monday,Scheduled
+2026,22,38678,St Kilda,Carlton,Docklands,2026-08-03 12:00,Monday,Scheduled
+2026,22,38679,Sydney,Port Adelaide,S.C.G.,2026-08-03 12:00,Monday,Scheduled
+2026,22,38680,Western Bulldogs,North Melbourne,Docklands,2026-08-03 12:00,Monday,Scheduled
+2026,22,38681,Adelaide,Richmond,Adelaide Oval,2026-08-03 12:30,Monday,Scheduled
+2026,22,38682,West Coast,Collingwood,Perth Stadium,2026-08-03 14:00,Monday,Scheduled
+2026,23,38683,Brisbane Lions,Gold Coast,Gabba,2026-08-10 12:00,Monday,Scheduled
+2026,23,38684,Essendon,Sydney,M.C.G.,2026-08-10 12:00,Monday,Scheduled
+2026,23,38685,GWS Giants,West Coast,Sydney Showground,2026-08-10 12:00,Monday,Scheduled
+2026,23,38686,Hawthorn,Collingwood,M.C.G.,2026-08-10 12:00,Monday,Scheduled
+2026,23,38687,North Melbourne,Geelong,Docklands,2026-08-10 12:00,Monday,Scheduled
+2026,23,38688,Richmond,St Kilda,M.C.G.,2026-08-10 12:00,Monday,Scheduled
+2026,23,38689,Western Bulldogs,Carlton,Docklands,2026-08-10 12:00,Monday,Scheduled
+2026,23,38690,Port Adelaide,Melbourne,Adelaide Oval,2026-08-10 12:30,Monday,Scheduled
+2026,23,38691,Fremantle,Adelaide,Perth Stadium,2026-08-10 14:00,Monday,Scheduled
+2026,24,38693,Carlton,Fremantle,Docklands,2026-08-17 12:00,Monday,Scheduled
+2026,24,38692,Collingwood,Brisbane Lions,M.C.G.,2026-08-17 12:00,Monday,Scheduled
+2026,24,38694,Essendon,Port Adelaide,Docklands,2026-08-17 12:00,Monday,Scheduled
+2026,24,38695,Geelong,Richmond,Kardinia Park,2026-08-17 12:00,Monday,Scheduled
+2026,24,38696,Melbourne,Western Bulldogs,M.C.G.,2026-08-17 12:00,Monday,Scheduled
+2026,24,38697,St Kilda,Gold Coast,Docklands,2026-08-17 12:00,Monday,Scheduled
+2026,24,38698,Sydney,North Melbourne,S.C.G.,2026-08-17 12:00,Monday,Scheduled
+2026,24,38699,Adelaide,GWS Giants,Adelaide Oval,2026-08-17 12:30,Monday,Scheduled
+2026,24,38700,West Coast,Hawthorn,Perth Stadium,2026-08-17 14:00,Monday,Scheduled
+2026,25,38710,,,M.C.G.,2026-09-04 14:00,Friday,Scheduled
+2026,25,38711,,,M.C.G.,2026-09-04 14:00,Friday,Scheduled
+2026,25,38712,,,M.C.G.,2026-09-04 14:00,Friday,Scheduled
+2026,25,38713,,,M.C.G.,2026-09-04 14:00,Friday,Scheduled
+2026,26,38714,,,M.C.G.,2026-09-11 14:00,Friday,Scheduled
+2026,26,38715,,,M.C.G.,2026-09-11 14:00,Friday,Scheduled
+2026,27,38716,,,M.C.G.,2026-09-18 14:00,Friday,Scheduled
+2026,27,38717,,,M.C.G.,2026-09-18 14:00,Friday,Scheduled
+2026,28,38718,,,M.C.G.,2026-09-25 14:00,Friday,Scheduled
