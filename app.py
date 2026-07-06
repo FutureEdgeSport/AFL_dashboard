@@ -31,6 +31,11 @@ from config.constants import (
     safe_fmt, safe_first, normalise_team_col,
 )
 from config.player_names import get_resolver as _get_name_resolver
+from utils.player_positions import (
+    GENERIC_POSITIONS as CURRENT_POSITION_GENERIC_POSITIONS,
+    FOOTYWIRE_POSITION_MAP as CURRENT_POSITION_FW_MAP,
+    build_current_season_position_lookup,
+)
 
 # Import data pipeline for computed ratings (migration from Excel formulas)
 from data_pipeline.compute_ratings import (
@@ -1706,6 +1711,11 @@ def _load_player_summary_computed() -> pd.DataFrame:
         if csv_path.exists():
             df = pd.read_csv(csv_path)
             df.columns = df.columns.astype(str).str.strip()
+
+            # Guard against stale partial summaries after an interrupted or
+            # incomplete season-data rebuild; the depth chart expects all 18 teams.
+            if "Team" in df.columns and df["Team"].dropna().astype(str).str.strip().nunique() < 18:
+                df = dp_compute_player_summary(current_season=CURRENT_SEASON)
             
             # Ensure column compatibility with Excel version
             # Rename season-specific Rating column if needed (to match Excel column name)
@@ -1848,8 +1858,8 @@ def _enrich_from_match_ratings(df: pd.DataFrame, season: int) -> pd.DataFrame:
     """Enrich player DataFrame with stats from match_ratings CSV when columns are missing/zero.
 
     Computes per-player: RatingPoints_Avg, CoachesVotes_Avg, Matches, TimeOnGround
-    from the per-round match_ratings file.  Only overwrites a column when it is
-    missing or entirely zero/NaN.
+    from the per-round match_ratings file. Backfills are applied per-player for
+    missing/zero values so partially stale season rows are corrected.
     """
     if df.empty:
         return df
@@ -1868,22 +1878,48 @@ def _enrich_from_match_ratings(df: pd.DataFrame, season: int) -> pd.DataFrame:
             _mr_tog=("TimeOnGround", "mean"),
         )
         df["Player"] = df["Player"].astype(str).str.strip()
+        mr_matches = df["Player"].map(per_player["_mr_matches"])
+        has_mr_data = mr_matches.fillna(0) > 0
 
-        # Matches: overwrite if missing or all zero
-        if "Matches" not in df.columns or pd.to_numeric(df["Matches"], errors="coerce").fillna(0).sum() == 0:
-            df["Matches"] = df["Player"].map(per_player["_mr_matches"]).fillna(0).astype(int)
+        # Matches: fill per-player when missing/zero and match ratings exist.
+        if "Matches" not in df.columns:
+            df["Matches"] = mr_matches.fillna(0)
+        else:
+            existing_matches = pd.to_numeric(df["Matches"], errors="coerce")
+            needs_matches = existing_matches.isna() | (existing_matches <= 0)
+            fill_matches = needs_matches & has_mr_data
+            df.loc[fill_matches, "Matches"] = mr_matches[fill_matches]
+        df["Matches"] = pd.to_numeric(df["Matches"], errors="coerce").fillna(0).astype(int)
 
-        # RatingPoints_Avg
-        if "RatingPoints_Avg" not in df.columns or df["RatingPoints_Avg"].dropna().empty:
-            df["RatingPoints_Avg"] = df["Player"].map(per_player["_mr_rating"])
+        # RatingPoints_Avg: fill per-player when missing/zero and match ratings exist.
+        mr_rating = df["Player"].map(per_player["_mr_rating"])
+        if "RatingPoints_Avg" not in df.columns:
+            df["RatingPoints_Avg"] = mr_rating
+        else:
+            existing_rating = pd.to_numeric(df["RatingPoints_Avg"], errors="coerce")
+            needs_rating = existing_rating.isna() | (existing_rating <= 0)
+            fill_rating = needs_rating & has_mr_data
+            df.loc[fill_rating, "RatingPoints_Avg"] = mr_rating[fill_rating]
 
-        # CoachesVotes_Avg
-        if "CoachesVotes_Avg" not in df.columns or df["CoachesVotes_Avg"].dropna().empty:
-            df["CoachesVotes_Avg"] = df["Player"].map(per_player["_mr_coaches"])
+        # CoachesVotes_Avg: fill per-player when missing/zero and match ratings exist.
+        mr_coaches = df["Player"].map(per_player["_mr_coaches"])
+        if "CoachesVotes_Avg" not in df.columns:
+            df["CoachesVotes_Avg"] = mr_coaches
+        else:
+            existing_coaches = pd.to_numeric(df["CoachesVotes_Avg"], errors="coerce")
+            needs_coaches = existing_coaches.isna() | (existing_coaches <= 0)
+            fill_coaches = needs_coaches & has_mr_data
+            df.loc[fill_coaches, "CoachesVotes_Avg"] = mr_coaches[fill_coaches]
 
-        # TimeOnGround
-        if "TimeOnGround" not in df.columns or df["TimeOnGround"].dropna().empty:
-            df["TimeOnGround"] = df["Player"].map(per_player["_mr_tog"])
+        # TimeOnGround: fill per-player when missing/zero and match ratings exist.
+        mr_tog = df["Player"].map(per_player["_mr_tog"])
+        if "TimeOnGround" not in df.columns:
+            df["TimeOnGround"] = mr_tog
+        else:
+            existing_tog = pd.to_numeric(df["TimeOnGround"], errors="coerce")
+            needs_tog = existing_tog.isna() | (existing_tog <= 0)
+            fill_tog = needs_tog & has_mr_data
+            df.loc[fill_tog, "TimeOnGround"] = mr_tog[fill_tog]
     except Exception:
         pass
     return df
@@ -1981,15 +2017,19 @@ def load_players(season: int) -> pd.DataFrame:
     if df.empty:
         st.warning(f"⚠️ Could not load player data for {season}")
     
-    # Enrich generic positions (e.g. 2026 FootyWire data has "Forward" not "Key Forward")
-    # by looking up prior-season positions from player_summary.csv
+    # Enrich generic positions with current-season weekly data first, then fall
+    # back to historical labels only when there is no current-season signal.
     if not df.empty and "Position" in df.columns:
-        _GENERIC_POSITIONS = {"Forward", "Defender", "Midfield", "Ruck",
-                              "DefenderForward", "MidfieldForward", "ForwardRuck",
-                              "DefenderMidfield", "DefenderRuck"}
-        has_generic = df["Position"].isin(_GENERIC_POSITIONS).any()
+        has_generic = df["Position"].isin(CURRENT_POSITION_GENERIC_POSITIONS).any()
         if has_generic:
             try:
+                current_name_to_pos = build_current_season_position_lookup(season)
+                current_lastname_to_pos = {}
+                for pname, pos in current_name_to_pos.items():
+                    parts = pname.split()
+                    if len(parts) >= 2:
+                        current_lastname_to_pos[parts[-1]] = pos
+
                 summary_path = Path(__file__).parent / "data" / "computed" / "player_summary.csv"
                 if summary_path.exists():
                     sum_df = pd.read_csv(summary_path)
@@ -2008,9 +2048,17 @@ def load_players(season: int) -> pd.DataFrame:
                     
                     def _enrich_position(row):
                         cur_pos = str(row.get("Position", "")).strip()
-                        if cur_pos not in _GENERIC_POSITIONS:
+                        if cur_pos not in CURRENT_POSITION_GENERIC_POSITIONS:
                             return cur_pos
                         player = str(row.get("Player", "")).strip()
+                        current_pos = current_name_to_pos.get(player.lower())
+                        if current_pos:
+                            return current_pos
+                        parts = player.split()
+                        if len(parts) >= 2:
+                            current_pos = current_lastname_to_pos.get(parts[-1].lower())
+                            if current_pos:
+                                return current_pos
                         # Exact name match
                         enriched = name_to_pos.get(player.lower())
                         if enriched:
@@ -2022,13 +2070,7 @@ def load_players(season: int) -> pd.DataFrame:
                             if enriched:
                                 return enriched
                         # Map generic FootyWire positions to closest standard position
-                        _FW_MAP = {
-                            "Forward": "Gen. Forward", "Defender": "Gen. Defender",
-                            "Midfield": "Midfielder", "DefenderForward": "Gen. Defender",
-                            "MidfieldForward": "Mid-Forward", "ForwardRuck": "Ruck",
-                            "DefenderMidfield": "Gen. Defender", "DefenderRuck": "Gen. Defender",
-                        }
-                        return _FW_MAP.get(cur_pos, cur_pos)
+                        return CURRENT_POSITION_FW_MAP.get(cur_pos, cur_pos)
                     
                     df["Position"] = df.apply(_enrich_position, axis=1)
             except Exception:
@@ -10916,14 +10958,25 @@ elif page == "Depth Chart":
                     "GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"
                 })
                 _sq["Player"] = _sq["Player"].astype(str).str.strip()
+
+                # Keep build-time resolved positions (including Wing overlay) as source of truth.
+                if "Position_Resolved" in _sq.columns:
+                    _sq["Position"] = _sq["Position_Resolved"].where(
+                        _sq["Position_Resolved"].notna() & _sq["Position_Resolved"].astype(str).str.strip().ne(""),
+                        _sq.get("Position", ""),
+                    )
+                elif "Position_Clean" in _sq.columns:
+                    _sq["Position"] = _sq["Position_Clean"].where(
+                        _sq["Position_Clean"].notna() & _sq["Position_Clean"].astype(str).str.strip().ne(""),
+                        _sq.get("Position", ""),
+                    )
                 
-                # Merge rating columns AND detailed Position from Summary (ratings as fallback)
+                # Merge rating columns from Summary (ratings/matches as fallback)
                 _rating_cols_to_merge = []
                 for _rc in [str(CURRENT_SEASON), CURRENT_SEASON, "2025", 2025, "Last 2 Average", "Career", f"{CURRENT_SEASON} Matches", "2025 Matches", "Total Matches"]:
                     if _rc in summary_df.columns and _rc not in _rating_cols_to_merge:
                         _rating_cols_to_merge.append(_rc)
                 
-                # Also grab detailed Position from Summary (Key Defender, Wing, etc.)
                 _merge_cols = list(_rating_cols_to_merge)
                 if "Position" in summary_df.columns:
                     _merge_cols.append("Position")
@@ -10931,10 +10984,7 @@ elif page == "Depth Chart":
                 if _merge_cols:
                     _sum_subset = summary_df[["Player", "Team"] + _merge_cols].copy()
                     _sum_subset["Player"] = _sum_subset["Player"].astype(str).str.strip()
-                    _sum_subset["Team"] = _sum_subset["Team"].astype(str).str.strip().replace({
-                        "GWS": "GWS Giants", "Greater Western Sydney": "GWS Giants"
-                    })
-                    # Rename Position to avoid collision during merge
+                    _sum_subset["Team"] = _sum_subset["Team"].astype(str).str.strip().map(normalize_team_name)
                     if "Position" in _sum_subset.columns:
                         _sum_subset = _sum_subset.rename(columns={"Position": "Position_Detail"})
                         _merge_cols = [c if c != "Position" else "Position_Detail" for c in _merge_cols]
@@ -10985,11 +11035,19 @@ elif page == "Depth Chart":
                                 for _col in _merge_cols:
                                     _sq.loc[_sq["Player"] == _um_player, _col] = _sum_subset.loc[_match_idx, _col]
                     # ─────────────────────────────────────────────
-                    
-                    # Use detailed position from Summary where available
+
+                    # Hybrid position precedence:
+                    # 1) Keep squad Wing labels (persisted from build-time overlay).
+                    # 2) Keep specific squad roles (e.g. Key Forward) if already resolved.
+                    # 3) Use Summary detailed position for remaining generic non-wing players.
                     if "Position_Detail" in _sq.columns:
-                        _has_detail = _sq["Position_Detail"].notna()
-                        _sq.loc[_has_detail, "Position"] = _sq.loc[_has_detail, "Position_Detail"]
+                        _detail_present = _sq["Position_Detail"].notna() & _sq["Position_Detail"].astype(str).str.strip().ne("")
+                        _is_wing = _sq["Position"].astype(str).str.strip().eq("Wing")
+                        _specific_squad = _sq["Position"].astype(str).str.strip().isin({
+                            "Key Forward", "Key Defender", "Ruck", "Wing"
+                        })
+                        _use_detail = _detail_present & (~_is_wing) & (~_specific_squad)
+                        _sq.loc[_use_detail, "Position"] = _sq.loc[_use_detail, "Position_Detail"]
                         _sq.drop(columns=["Position_Detail"], inplace=True)
                 
                 # Clean up any suffix columns
@@ -11366,6 +11424,11 @@ elif page == "List Ladder":
             st.error(f"Error loading player data: {e}")
             st.stop()
 
+    # Defensive refresh for single-season mode: ensure stale cached rows are
+    # backfilled from match_ratings on every render.
+    if not _ll_use_summary:
+        players_df = _enrich_from_match_ratings(players_df.copy(), selected_season)
+
     if players_df.empty:
         st.warning(f"No player data found for {selected_season}.")
         st.stop()
@@ -11632,6 +11695,8 @@ elif page == "List Ladder":
     
     # Player contribution info
     st.markdown("<p style='color:#888; font-size:0.8em; margin-bottom:16px;'>Players color-coded by percentile ranking across the competition.</p>", unsafe_allow_html=True)
+    if not _ll_use_summary:
+        st.markdown("<p style='color:#777; font-size:0.75em; margin-top:-10px; margin-bottom:16px;'>Single-season player order and tiers are based on Weighted Rating (Rating x Matches, capped at 23).</p>", unsafe_allow_html=True)
     
     if selected_team:
         # Get players for selected team
@@ -11661,8 +11726,10 @@ elif page == "List Ladder":
                         if pos_players.empty:
                             continue
                         
-                        # Sort by rating points
-                        pos_players = pos_players.sort_values("RatingPoints_Avg", ascending=False)
+                        # Keep ordering aligned with tier logic: weighted in single-season,
+                        # raw rating in aggregate modes.
+                        _sort_col = "Weighted_Rating" if not _ll_use_summary else "RatingPoints_Avg"
+                        pos_players = pos_players.sort_values(_sort_col, ascending=False)
                         
                         # Create display table
                         player_table = pos_players[["Player", "RatingPoints_Avg", "Tier"]].copy()
@@ -11693,6 +11760,7 @@ elif page == "List Ladder":
                         for idx, row in player_table.iterrows():
                             matches = pos_players.loc[idx, "Matches"] if "Matches" in pos_players.columns else 0
                             rating_val = pos_players.loc[idx, "RatingPoints_Avg"]
+                            weighted_val = pos_players.loc[idx, "Weighted_Rating"] if "Weighted_Rating" in pos_players.columns else np.nan
                             
                             # Players with no games: grey NA pill (single-season only)
                             if not _ll_use_summary and (pd.isna(matches) or matches == 0):
@@ -11701,6 +11769,10 @@ elif page == "List Ladder":
                             else:
                                 rating_display = row['Rating']
                                 bg_color, text_color = rating_colour_for_value(rating_val, all_ratings)
+
+                            rating_cell = f"<span class=\"ct-pill\" style=\"background:{bg_color}; color:{text_color};\">{rating_display}</span>"
+                            if not _ll_use_summary and pd.notna(matches) and matches > 0 and pd.notna(weighted_val):
+                                rating_cell += f"<div style='font-size:0.68em; color:#999; margin-top:3px;'>W:{weighted_val:.1f} | M:{int(matches)}</div>"
                             
                             # Tier badge uses tier-specific colors
                             tier = row['Tier']
@@ -11715,7 +11787,7 @@ elif page == "List Ladder":
                             
                             html_player_table += f"""<tr>
 <td>{row['Player']}</td>
-<td><span class="ct-pill" style="background:{bg_color}; color:{text_color};">{rating_display}</span></td>
+<td>{rating_cell}</td>
 <td>{tier_html}</td>
 </tr>
 """
@@ -13902,25 +13974,28 @@ elif page == "Team Selection Ratings":
         first, last = _tsr_split_name(row["Player"])
         num = "" if pd.isna(row.get("Jumper", "")) else str(row.get("Jumper", ""))
         rating_val = _tsr_safe_float(row.get("Rating", None))
-        rat = "" if rating_val is None else f"{rating_val:.1f}"
+        rat = "&mdash;" if rating_val is None else f"{rating_val:.1f}"
         grp = _tsr_pos_group(row.get("Position", ""))
         bgc, fgc, bri = _tsr_rating_style(rating_val, series_for_colour)
+        if rating_val is None:
+            # Neutral grey pill for missing ratings to avoid red/colour mapping
+            bgc, fgc, bri = "rgba(255,255,255,0.10)", "#cccccc", 1.0
         fade = "opacity:0.55;" if dim else ""
-        return f"""
-        <div class="magRow" style="{fade}">
-        <div class="mag {grp}">
-            <div class="magNum">{num}</div>
-            <div class="magName">
-            <div class="magFirst">{first}</div>
-            <div class="magLast">{last}</div>
-            </div>
-            <div class="magRating"
-            style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">
-            {rat}
-            </div>
-        </div>
-        </div>
-        """
+        # Single-line HTML so Streamlit's markdown processor doesn't
+        # misinterpret indented multi-line blocks (which can leak the
+        # closing </div> as visible text when inner content is sparse).
+        return (
+            f'<div class="magRow" style="{fade}">'
+            f'<div class="mag {grp}">'
+            f'<div class="magNum">{num}</div>'
+            f'<div class="magName">'
+            f'<div class="magFirst">{first}</div>'
+            f'<div class="magLast">{last}</div>'
+            f'</div>'
+            f'<div class="magRating" style="background:{bgc};color:{fgc};filter:brightness({bri:.3f});">{rat}</div>'
+            f'</div>'
+            f'</div>'
+        )
 
     def _tsr_centre_stats(a_df, b_df, label):
         a = _tsr_avg_rating(a_df)
@@ -14166,7 +14241,40 @@ elif page == "Team Selection Ratings":
 
                 if _pr_team_data:
                     _pr_df = pd.DataFrame(_pr_team_data)
-                    _pr_baseline = _pr_df["AvgRating"].mean()
+
+                    # --- Per-round announced-squad averages for the whole season ---
+                    # We compute this once, then reuse for: league baseline,
+                    # season avg / best / worst markers, and previous-round dot.
+                    # All series use the same rating mode and same metric, so
+                    # they share a single scale.
+                    _pr_round_team_rows = []
+                    try:
+                        _ts_season_active = _ts_df[
+                            _ts_df["SelectionType"].isin(["selected", "interchange"])
+                        ]
+                        for (_s_rnd, _s_team), _s_grp in _ts_season_active.groupby(["Round", "Team"]):
+                            _s_vals = []
+                            for _s_p in _s_grp["Player"].tolist():
+                                _v = _pr_lookup_rating(_s_p, _s_team, _pr_rating_mode)
+                                if _v is not None:
+                                    _s_vals.append(_v)
+                            if _s_vals:
+                                _pr_round_team_rows.append({
+                                    "Round": int(_s_rnd),
+                                    "Team": _s_team,
+                                    "AvgRating": sum(_s_vals) / len(_s_vals),
+                                })
+                    except Exception:
+                        _pr_round_team_rows = []
+
+                    _pr_history_df = pd.DataFrame(_pr_round_team_rows)
+
+                    # --- Season-wide league baseline (stable zero-line) ---
+                    if not _pr_history_df.empty:
+                        _pr_baseline = float(_pr_history_df["AvgRating"].mean())
+                    else:
+                        _pr_baseline = float(_pr_df["AvgRating"].mean())
+
                     _pr_df["RelStrength"] = _pr_df["AvgRating"] - _pr_baseline
                     _pr_df = _pr_df.sort_values("RelStrength", ascending=False)
 
@@ -14256,54 +14364,73 @@ elif page == "Team Selection Ratings":
                     if len(_pr_df) >= 2:
                         import plotly.graph_objects as go
 
-                        # --- Compute Season Avg / Best / Worst from historical match ratings ---
+                        # --- Compute Season Avg / Best / Worst + Prev Round
+                        # All from the same announced-squad per-round data so
+                        # markers share the same scale as the bar. Season
+                        # Best/Worst include the currently-selected round so
+                        # that the bar can never exceed Season Best (especially
+                        # important for fixed-per-player modes like Last 2 /
+                        # Career, where the only thing varying round-to-round
+                        # is squad composition).
                         _pr_season_avg = {}
                         _pr_season_best = {}
                         _pr_season_best_rnd = {}
                         _pr_season_worst = {}
                         _pr_season_worst_rnd = {}
+                        _pr_prev_round_val = {}
+                        _pr_prev_round_label = ""
                         _pr_has_history = False
-                        _mr_path = Path(__file__).parent / "data" / "raw" / "player" / f"match_ratings_{season}.csv"
-                        if _mr_path.exists():
-                            try:
-                                _mr_hist = pd.read_csv(_mr_path)
-                                if "Round" in _mr_hist.columns and "RatingPoints" in _mr_hist.columns:
-                                    _mr_hist = _mr_hist[_mr_hist["Round"] > 0]  # exclude Opening Round 0
-                                    _mr_rounds = sorted(_mr_hist["Round"].unique())
-                                    if len(_mr_rounds) >= 2:
-                                        # Build per-round team averages
-                                        _rnd_team_avgs = []
-                                        for _rnd in _mr_rounds:
-                                            _rnd_df = _mr_hist[_mr_hist["Round"] == _rnd]
-                                            _rnd_avgs = _rnd_df.groupby("Team")["RatingPoints"].mean().reset_index()
-                                            _rnd_avgs.columns = ["Team", "AvgRating"]
-                                            _rnd_avgs["Round"] = _rnd
-                                            _rnd_team_avgs.append(_rnd_avgs)
-                                        _all_rnd = pd.concat(_rnd_team_avgs, ignore_index=True)
-                                        _hist_league_avg = _all_rnd.groupby("Team")["AvgRating"].mean().mean()
-                                        _all_rnd["RelStrength"] = _all_rnd["AvgRating"] - _hist_league_avg
-                                        _pr_season_avg = _all_rnd.groupby("Team")["RelStrength"].mean().to_dict()
-                                        _pr_season_best = _all_rnd.groupby("Team")["RelStrength"].max().to_dict()
-                                        _pr_season_worst = _all_rnd.groupby("Team")["RelStrength"].min().to_dict()
-                                        for _t in _pr_season_best:
-                                            _t_rows = _all_rnd[_all_rnd["Team"] == _t]
-                                            _best_row = _t_rows.loc[_t_rows["RelStrength"].idxmax()]
-                                            _pr_season_best_rnd[_t] = f"Rd {int(_best_row['Round'])}"
-                                        for _t in _pr_season_worst:
-                                            _t_rows = _all_rnd[_all_rnd["Team"] == _t]
-                                            _worst_row = _t_rows.loc[_t_rows["RelStrength"].idxmin()]
-                                            _pr_season_worst_rnd[_t] = f"Rd {int(_worst_row['Round'])}"
-                                        _pr_has_history = True
-                            except Exception:
-                                pass
+
+                        if not _pr_history_df.empty:
+                            _hist = _pr_history_df.copy()
+                            _hist["RelStrength"] = _hist["AvgRating"] - _pr_baseline
+
+                            if not _hist.empty:
+                                _pr_season_avg = (
+                                    _hist.groupby("Team")["RelStrength"].mean().to_dict()
+                                )
+                                _best_idx = _hist.groupby("Team")["RelStrength"].idxmax()
+                                _worst_idx = _hist.groupby("Team")["RelStrength"].idxmin()
+                                for _t, _i in _best_idx.items():
+                                    _r = _hist.loc[_i]
+                                    _pr_season_best[_t] = float(_r["RelStrength"])
+                                    _pr_season_best_rnd[_t] = (
+                                        "Opening Rd" if int(_r["Round"]) == 0 else f"Rd {int(_r['Round'])}"
+                                    )
+                                for _t, _i in _worst_idx.items():
+                                    _r = _hist.loc[_i]
+                                    _pr_season_worst[_t] = float(_r["RelStrength"])
+                                    _pr_season_worst_rnd[_t] = (
+                                        "Opening Rd" if int(_r["Round"]) == 0 else f"Rd {int(_r['Round'])}"
+                                    )
+                                _pr_has_history = (
+                                    _hist["Round"].nunique() >= 1 and len(_pr_season_avg) > 0
+                                )
+
+                                # Previous round = highest round < upcoming round
+                                _prev_rounds = sorted(
+                                    [r for r in _hist["Round"].unique() if r < _upcoming_round]
+                                )
+                                if _prev_rounds:
+                                    _prev_rnd = int(_prev_rounds[-1])
+                                    _prev_df = _hist[_hist["Round"] == _prev_rnd]
+                                    _pr_prev_round_val = dict(
+                                        zip(_prev_df["Team"], _prev_df["RelStrength"])
+                                    )
+                                    _pr_prev_round_label = (
+                                        "Opening Rd" if _prev_rnd == 0 else f"Rd {_prev_rnd}"
+                                    )
 
                         _pr_teams = _pr_df["Team"].tolist()
                         _pr_n = len(_pr_teams)
                         _pr_max_abs = max(abs(_pr_df["RelStrength"].max()), abs(_pr_df["RelStrength"].min()), 0.3)
-                        # Extend range to accommodate season best/worst markers
+                        # Extend range to accommodate season best/worst & prev round markers
                         if _pr_has_history:
-                            _hist_vals = [v for t, v in _pr_season_best.items() if t in _pr_teams] + \
-                                         [v for t, v in _pr_season_worst.items() if t in _pr_teams]
+                            _hist_vals = (
+                                [v for t, v in _pr_season_best.items() if t in _pr_teams]
+                                + [v for t, v in _pr_season_worst.items() if t in _pr_teams]
+                                + [v for t, v in _pr_prev_round_val.items() if t in _pr_teams]
+                            )
                             if _hist_vals:
                                 _pr_max_abs = max(_pr_max_abs, max(abs(v) for v in _hist_vals))
                         _pr_x_range = [-_pr_max_abs * 1.4, _pr_max_abs * 1.4]
@@ -14374,6 +14501,23 @@ elif page == "Team Selection Ratings":
                                 name="Season Worst", hovertemplate=_pr_worst_hover,
                             ))
 
+                            # Previous round — cyan circle (only teams that played)
+                            if _pr_prev_round_val:
+                                _pr_prev_x = [_pr_prev_round_val.get(t, float("nan")) for t in _pr_teams]
+                                _pr_prev_hover = [
+                                    (
+                                        f"<b>{t}</b>: {v:+.1f} ({_pr_prev_round_label})<extra>Previous Round</extra>"
+                                        if pd.notna(v) else ""
+                                    )
+                                    for t, v in zip(_pr_teams, _pr_prev_x)
+                                ]
+                                _pr_fig.add_trace(go.Scatter(
+                                    x=_pr_prev_x, y=_pr_teams, mode="markers",
+                                    marker=dict(symbol="circle", size=10, color="#4ECDC4",
+                                                line=dict(width=1.2, color="rgba(0,0,0,0.55)")),
+                                    name="Previous Round", hovertemplate=_pr_prev_hover,
+                                ))
+
                         _pr_fig.update_layout(
                             height=max(300, _pr_n * 44),
                             margin=dict(l=0, r=20, t=0, b=28),
@@ -14430,7 +14574,7 @@ elif page == "Team Selection Ratings":
                             <div style="font-size:12px;color:rgba(255,255,255,0.35);
                                 font-family:SF Pro Display,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
                                 margin-bottom:16px;letter-spacing:0.01em;">
-                                Average {_pr_mode_labels.get(_pr_rating_mode, 'rating')} of announced squad, relative to the mean of announced teams.
+                                Average {_pr_mode_labels.get(_pr_rating_mode, 'rating')} of announced squad, relative to the season-wide league average.
                             </div>
                         </div>
                         """
@@ -14444,14 +14588,14 @@ elif page == "Team Selection Ratings":
                             "<span style='display:inline-block;width:14px;height:14px;background:#6a89cc;border-radius:3px;'></span></td>"
                             "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;width:110px;'>Bar (This Round)</td>"
                             f"<td style='padding:6px 0;'>Average the {_pr_mode_labels.get(_pr_rating_mode, 'rating')} for each player in the team&#39;s announced squad, "
-                            f"then subtract the <b style=\"color:rgba(255,255,255,0.8);\">league baseline</b> (mean of all announced team averages). "
+                            f"then subtract the <b style=\"color:rgba(255,255,255,0.8);\">league baseline</b> (mean of every team&#39;s announced-squad average across all rounds in {season}). "
                             f"Positive&nbsp;=&nbsp;above average.</td></tr>"
                             "<tr style='border-bottom:1px solid rgba(255,255,255,0.06);'>"
                             "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
                             "<span style='display:inline-block;width:14px;height:2px;background:rgba(255,255,255,0.75);margin-top:7px;'></span></td>"
                             "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Zero Line</td>"
-                            "<td style='padding:6px 0;'>The league average baseline — computed as the mean of all team averages "
-                            "across all rounds. A team on the zero line is exactly league-average.</td></tr>"
+                            f"<td style='padding:6px 0;'>The season-wide league baseline — mean of every team&#39;s announced-squad average across all rounds played in {season}. "
+                            "Stable round-to-round so bars reflect each team&#39;s standing rather than this round&#39;s sample.</td></tr>"
                         )
                         if _pr_has_history:
                             _pr_explainer_rows += (
@@ -14474,6 +14618,15 @@ elif page == "Team Selection Ratings":
                                 "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the lowest relative strength. "
                                 "Hover to see which round.</td></tr>"
                             )
+                            if _pr_prev_round_val:
+                                _pr_explainer_rows += (
+                                    "<tr style='border-top:1px solid rgba(255,255,255,0.06);'>"
+                                    "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                                    "<span style='color:#4ECDC4;font-size:13px;'>●</span></td>"
+                                    "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Previous Round</td>"
+                                    f"<td style='padding:6px 0;'>This team&#39;s relative strength in <b>{_pr_prev_round_label}</b>. "
+                                    "Compare to the bar to see week-on-week change. Missing if the team was not announced last round.</td></tr>"
+                                )
                         _pr_explainer = (
                             "<div style='background:linear-gradient(135deg,rgba(20,20,28,0.92) 0%,rgba(14,14,20,0.96) 100%);"
                             "border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px 16px 22px;"
@@ -14506,6 +14659,7 @@ elif page == "Team Selection Ratings":
         md_round = st.selectbox(
             "Round",
             _md_rounds,
+            index=len(_md_rounds) - 1 if _md_rounds else 0,
             format_func=lambda r: _md_round_labels[r],
             key="tsr_round_sel",
         )
@@ -14520,7 +14674,13 @@ elif page == "Team Selection Ratings":
                 _md_games[f"{_mteams[0]} vs {_mteams[1]}"] = mid
 
         if _md_games:
-            md_game_label = st.selectbox("Game", list(_md_games.keys()), key="tsr_game_sel")
+            _md_game_keys = list(_md_games.keys())
+            md_game_label = st.selectbox(
+                "Game",
+                _md_game_keys,
+                index=len(_md_game_keys) - 1,
+                key="tsr_game_sel",
+            )
             md_match_id = _md_games[md_game_label]
 
             _tsr_rating_options = ["Current Season Rating", "Game Rating", "Trait Rating"]
@@ -15093,6 +15253,9 @@ elif page == "Team Selection Ratings":
                         _rd_team_avg["SeasonBestRound"] = _rd_team_avg["Team"].map(_season_best_rnd)
                         _rd_team_avg["SeasonWorst"] = _rd_team_avg["Team"].map(_season_worst)
                         _rd_team_avg["SeasonWorstRound"] = _rd_team_avg["Team"].map(_season_worst_rnd)
+                        _rd_team_avg["PrevRound"] = float("nan")
+                        _prev_round_val_map = {}
+                        _prev_round_label = ""
                     else:
                         # Game Rating / Season Rating baseline
                         _all_round_avgs = []
@@ -15176,7 +15339,29 @@ elif page == "Team Selection Ratings":
                         _rd_team_avg["SeasonWorst"] = _rd_team_avg["Team"].map(_season_worst)
                         _rd_team_avg["SeasonWorstRound"] = _rd_team_avg["Team"].map(_season_worst_rnd)
 
-                    # --- Build team logo b64 lookup ---
+                        # Previous round (current season, < md_round)
+                        _prev_round_val_map = {}
+                        _prev_round_label = ""
+                        try:
+                            _cur_season_rounds = sorted(
+                                _season_all[_season_all["Season"] == season]["Round"].unique()
+                            )
+                            _cur_prev_rounds = [r for r in _cur_season_rounds if r < md_round]
+                            if _cur_prev_rounds:
+                                _prev_rnd = int(_cur_prev_rounds[-1])
+                                _prev_df = _season_all[
+                                    (_season_all["Season"] == season)
+                                    & (_season_all["Round"] == _prev_rnd)
+                                ]
+                                _prev_round_val_map = dict(
+                                    zip(_prev_df["Team"], _prev_df["RelStrength"])
+                                )
+                                _prev_round_label = (
+                                    "Opening Round" if _prev_rnd == 0 else f"Rd {_prev_rnd}"
+                                )
+                        except Exception:
+                            _prev_round_val_map = {}
+                        _rd_team_avg["PrevRound"] = _rd_team_avg["Team"].map(_prev_round_val_map)
                     _logo_b64_map = {}
                     for _t in _rd_team_avg["Team"]:
                         _lp = get_team_logo_path(_t)
@@ -15186,6 +15371,12 @@ elif page == "Team Selection Ratings":
                     _teams_list = _rd_team_avg["Team"].tolist()
                     _n_teams = len(_teams_list)
                     _max_abs = max(abs(_rd_team_avg["RelStrength"].max()), abs(_rd_team_avg["RelStrength"].min()), 0.5)
+                    # extend to fit season best/worst & previous-round markers
+                    for _col in ("SeasonBest", "SeasonWorst", "PrevRound"):
+                        if _col in _rd_team_avg.columns:
+                            _vals = _rd_team_avg[_col].dropna()
+                            if not _vals.empty:
+                                _max_abs = max(_max_abs, float(_vals.abs().max()))
                     # extend range slightly for text
                     _x_range = [-_max_abs * 1.35, _max_abs * 1.35]
 
@@ -15289,6 +15480,29 @@ elif page == "Team Selection Ratings":
                         hovertemplate=_worst_hover,
                     ))
 
+                    # Previous round — cyan circle (only teams that played last round)
+                    if _prev_round_val_map:
+                        _prev_hover = [
+                            (
+                                f"<b>{t}</b>: {v:+.1f} ({_prev_round_label})<extra>Previous Round</extra>"
+                                if pd.notna(v) else ""
+                            )
+                            for t, v in zip(_rd_team_avg["Team"], _rd_team_avg["PrevRound"])
+                        ]
+                        _fig.add_trace(go.Scatter(
+                            x=_rd_team_avg["PrevRound"],
+                            y=_rd_team_avg["Team"],
+                            mode="markers",
+                            marker=dict(
+                                symbol="circle",
+                                size=10,
+                                color="#4ECDC4",
+                                line=dict(width=1.2, color="rgba(0,0,0,0.55)"),
+                            ),
+                            name="Previous Round",
+                            hovertemplate=_prev_hover,
+                        ))
+
                     _fig.update_layout(
                         height=max(380, _n_teams * 44),
                         margin=dict(l=0, r=20, t=0, b=28),
@@ -15379,6 +15593,15 @@ elif page == "Team Selection Ratings":
                         "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Season Worst</td>"
                         "<td style='padding:6px 0;'>The round where this team&#39;s selected squad had the lowest relative strength. "
                         "Hover to see which round.</td></tr>"
+                        + (
+                            "<tr style='border-top:1px solid rgba(255,255,255,0.06);'>"
+                            "<td style='padding:6px 10px 6px 0;vertical-align:top;'>"
+                            "<span style='color:#4ECDC4;font-size:13px;'>●</span></td>"
+                            "<td style='padding:6px 10px 6px 0;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;vertical-align:top;'>Previous Round</td>"
+                            f"<td style='padding:6px 0;'>This team&#39;s relative strength in <b>{_prev_round_label}</b>. "
+                            "Compare to the bar to see week-on-week change. Missing if the team didn&#39;t play last round.</td></tr>"
+                            if _prev_round_val_map else ""
+                        ) +
                         "</table></div>"
                     )
                     st.markdown(_chart_explainer, unsafe_allow_html=True)
@@ -21486,11 +21709,18 @@ elif page == "Player Rating Matrix":
                                 return _hist_lookup.get((p, rd), float("nan"))
 
                             _rdata["_tr_raw"] = _rdata.apply(_raw_tr, axis=1)
-                            # Mark which cells correspond to an actual snapshot
-                            # (player played that round).  Cells where the player
-                            # did NOT play will be forward-filled below and
-                            # rendered at reduced opacity.
-                            _rdata["_played"] = _rdata["_tr_raw"].notna()
+                            # Mark which cells correspond to rounds the player
+                            # actually played (from match data), independent of
+                            # whether a trait rating exists. Cells where the
+                            # player did NOT play will be forward-filled below
+                            # and rendered at reduced opacity.
+                            _played_set = set(
+                                zip(df_filt[player_col].astype(str), df_filt["Round"].astype(int))
+                            )
+                            _rdata["_played"] = _rdata.apply(
+                                lambda r: (str(r[player_col]), int(r["Round"])) in _played_set,
+                                axis=1,
+                            )
                             # Forward-fill within each player so once a rating is
                             # established it carries across rounds they miss.
                             _rdata = _rdata.sort_values([player_col, "Round"])
@@ -21500,7 +21730,14 @@ elif page == "Player Rating Matrix":
                             _rdata["_tr"] = _rdata.apply(
                                 lambda r: _trait_map.get(r[player_col]) if r["_cg"] >= 3 and pd.notna(_trait_map.get(r[player_col])) else float("nan"), axis=1
                             )
-                            _rdata["_played"] = _rdata["_tr"].notna()
+                            # Played = appears in match data for that round
+                            _played_set = set(
+                                zip(df_filt[player_col].astype(str), df_filt["Round"].astype(int))
+                            )
+                            _rdata["_played"] = _rdata.apply(
+                                lambda r: (str(r[player_col]), int(r["Round"])) in _played_set,
+                                axis=1,
+                            )
 
                         pivot = _rdata.pivot_table(index=player_col, columns="Round", values="_tr", aggfunc="first")
                         pivot = pivot.reindex(columns=_all_rounds)

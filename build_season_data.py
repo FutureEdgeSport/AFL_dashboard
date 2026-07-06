@@ -21,6 +21,12 @@ import json
 BASE_DIR = Path(__file__).parent
 sys.path.insert(0, str(BASE_DIR))
 from config.constants import CURRENT_SEASON
+from utils.player_positions import (
+    EXPECTED_AFL_TEAM_COUNT,
+    count_unique_teams,
+    load_csv_with_team_fallback,
+    resolve_positions_for_output,
+)
 from utils.safe_io import safe_csv_write
 
 SEASON = CURRENT_SEASON  # Overridden by --season arg
@@ -33,8 +39,15 @@ def build_2026_data():
     # ---- 1. Load fresh squad list ----
     print(f"\n1. Loading fresh {SEASON} squad list...")
     lists_path = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_lists.csv"
-    df = pd.read_csv(lists_path)
+    df, source_path, used_backup = load_csv_with_team_fallback(lists_path)
+    if used_backup:
+        print(f"   Warning: current list file had only {count_unique_teams(pd.read_csv(lists_path))} teams")
+        print(f"   Restoring from last good {EXPECTED_AFL_TEAM_COUNT}-team backup: {source_path.name}")
+        safe_csv_write(df, lists_path)
     print(f"   {len(df)} players from {df['Team'].nunique()} teams")
+
+    if df['Team'].nunique() != EXPECTED_AFL_TEAM_COUNT:
+        raise ValueError(f"Expected {EXPECTED_AFL_TEAM_COUNT} teams in {lists_path.name}, found {df['Team'].nunique()}")
     
     # ---- 2. Merge with existing contract data ----
     print("\n2. Merging contract data...")
@@ -84,6 +97,8 @@ def build_2026_data():
             matched = merged[existing_draft[0]].notna().sum()
             print(f"   Matched {matched}/{len(df)} players with draft data")
     
+    merged = resolve_positions_for_output(merged, SEASON, BASE_DIR)
+
     # ---- 4. Save updated complete file ----
     print("\n4. Saving updated complete file...")
     complete_out = BASE_DIR / "data" / "raw" / "player" / f"footywire_{SEASON}_complete.csv"
@@ -94,19 +109,7 @@ def build_2026_data():
     print(f"\n5. Creating squads_{SEASON}.csv...")
     squads = merged.copy()
     
-    # Map positions to app format
-    pos_map = {
-        "Forward": "Forward",
-        "Defender": "Defender", 
-        "Midfield": "Midfielder",
-        "MidfieldForward": "Mid-Forward",
-        "Ruck": "Ruck",
-        "DefenderMidfield": "Defender",
-        "ForwardRuck": "Ruck",
-        "DefenderForward": "Defender",
-        "DefenderRuck": "Defender",
-    }
-    squads["Position_Mapped"] = squads["Position"].map(pos_map).fillna("Midfielder")
+    squads["Position_Mapped"] = squads["Position_Resolved"].fillna("")
     
     # Parse age to numeric
     def parse_age(age_str):
@@ -137,6 +140,8 @@ def build_2026_data():
     print(f"\n6. Creating player_stats_{SEASON}.csv (metadata only, ratings come from Wheelo)...")
     stats = squads_out[["Player", "Team", "Jumper", "Position", "Height", "DOB", "Age_Decimal", "Matches_Career"]].copy()
     stats.rename(columns={"Matches_Career": "Matches", "Age_Decimal": "Age"}, inplace=True)
+    if "Position_Resolved" in squads_out.columns:
+        stats["Position"] = squads_out["Position_Resolved"]
     stats["Matches"] = 0  # Actual match data comes from wheelo_player_to_raw step
     stats_path = BASE_DIR / "data" / "raw" / "player" / f"player_stats_{SEASON}.csv"
     safe_csv_write(stats, stats_path)
