@@ -1,5 +1,15 @@
 {
     "chat.tools.terminal.autoApprove": {
         "/Users/marcuswagner/coding/AFL_dashboard/.venv/bin/python": true
+    },
+    // pandas-stubs types the Series.str accessor via the series' generic parameter,
+    // producing false "Cannot access attribute strip/contains" errors on correct
+    // .astype(str).str.* chains. Suppress that specific false-positive category.
+    // reportRedeclaration: this single-file app intentionally redefines small helper
+    // functions (get_ordinal_suffix, get_rank_color_age, _pill, ...) inside each
+    // mutually-exclusive page block, sometimes with page-specific behaviour.
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportAttributeAccessIssue": "none",
+        "reportRedeclaration": "none"
     }
 }

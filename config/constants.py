@@ -81,24 +81,43 @@ MASTER_SHEET_MAP: Dict[str, str] = {
 # ============================================================================
 TEAM_CODE_MAP: Dict[str, str] = {
     "Adelaide": "afc",
+    "Adelaide Crows": "afc",
     "Brisbane": "lions",
+    "Brisbane Lions": "lions",
     "Carlton": "cfc",
+    "Carlton Blues": "cfc",
     "Collingwood": "cofc",
+    "Collingwood Magpies": "cofc",
     "Essendon": "efc",
+    "Essendon Bombers": "efc",
     "Fremantle": "ffc",
+    "Fremantle Dockers": "ffc",
     "Geelong": "gfc",
+    "Geelong Cats": "gfc",
     "Gold Coast": "gcfc",
+    "Gold Coast Suns": "gcfc",
     "GWS": "gws",
     "GWS Giants": "gws",
+    "Greater Western Sydney": "gws",
+    "Greater Western Sydney Giants": "gws",
     "Hawthorn": "hfc",
+    "Hawthorn Hawks": "hfc",
     "Melbourne": "mfc",
+    "Melbourne Demons": "mfc",
     "North Melbourne": "nmfc",
+    "North Melbourne Kangaroos": "nmfc",
     "Port Adelaide": "pafc",
+    "Port Adelaide Power": "pafc",
     "Richmond": "rfc",
+    "Richmond Tigers": "rfc",
     "St Kilda": "skfc",
+    "St Kilda Saints": "skfc",
     "Sydney": "sfc",
+    "Sydney Swans": "sfc",
     "West Coast": "wcfc",
+    "West Coast Eagles": "wcfc",
     "Western Bulldogs": "wbfc",
+    "Western Bulldogs Bulldogs": "wbfc",
 }
 
 TEAM_CODE_TO_NAME: Dict[str, str] = {
@@ -1575,6 +1594,11 @@ TEAM_NAME_NORMALIZE_MAP: Dict[str, str] = {
 }
 
 
+def _normalise_team_key(value: str) -> str:
+    """Return a compact, case-insensitive key for team aliases."""
+    return "".join(ch.lower() for ch in str(value).strip() if ch.isalnum())
+
+
 def normalize_team_name(team: str) -> str:
     """Normalize any team representation to its canonical short name.
 
@@ -1586,7 +1610,15 @@ def normalize_team_name(team: str) -> str:
         return team
 
     team = str(team).strip()
-    return TEAM_NAME_NORMALIZE_MAP.get(team, team)
+    direct = TEAM_NAME_NORMALIZE_MAP.get(team)
+    if direct:
+        return direct
+
+    compact = _normalise_team_key(team)
+    for alias, canonical in TEAM_NAME_NORMALIZE_MAP.items():
+        if _normalise_team_key(alias) == compact:
+            return canonical
+    return team
 
 
 def safe_int(x):

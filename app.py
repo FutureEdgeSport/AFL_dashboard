@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path  # type: ignore  # suppresses Pyright "module too complex" binder-limit note on this 21k-line file
 import os
 import warnings
 import math
@@ -83,7 +83,7 @@ try:
     DATA_LOADER_AVAILABLE = True
 except ImportError:
     DATA_LOADER_AVAILABLE = False
-    def master_workbook_available(): return False
+    def master_workbook_available() -> bool: return False
 
 # Import Historical Data Module (consolidated 2012-2025 data)
 try:
@@ -110,12 +110,12 @@ try:
 except ImportError:
     HISTORICAL_DATA_AVAILABLE = False
     # Create stub functions so code doesn't break
-    def historical_workbook_available(): return False
-    def is_historical_season(s): return False
-    def load_player_registry(): return pd.DataFrame()
-    def get_player_dob(n): return None
-    def get_player_draft_info(n): return {}
-    def get_player_contract_expiry(n): return None
+    def historical_workbook_available() -> bool: return False
+    def is_historical_season(season: int) -> bool: return False
+    def load_player_registry() -> pd.DataFrame: return pd.DataFrame()
+    def get_player_dob(player_name: str) -> Optional[str]: return None
+    def get_player_draft_info(player_name: str) -> dict: return {}
+    def get_player_contract_expiry(player_name: str) -> Optional[int]: return None
 
 # Import Traits API integration (with graceful fallback if not available)
 try:
@@ -276,7 +276,7 @@ def render_watch_list_add_button(player: str, team: str, key_suffix: str = ""):
             else:
                 st.info(f"{player} already in '{target}'")
 
-def add_to_recent_views(view_type: str, name: str, team: str = None, page: str = None):
+def add_to_recent_views(view_type: str, name: str, team: Optional[str] = None, page: Optional[str] = None):
     """Add an item to recent views, keeping last 5 unique items."""
     item = {"type": view_type, "name": name, "team": team, "page": page}
     # Remove existing if same item
@@ -311,7 +311,7 @@ def toggle_favorite_player(player: str, team: str):
     else:
         st.session_state.favorite_players.add(key)
 
-def get_trend_indicator(current_val: float, prev_val: float = None) -> str:
+def get_trend_indicator(current_val: float, prev_val: Optional[float] = None) -> str:
     """Get trend arrow indicator based on value change."""
     if prev_val is None or current_val is None:
         return ""
@@ -559,7 +559,7 @@ def render_html(container, html_str: str):
     container.markdown(textwrap.dedent(html_str).strip(), unsafe_allow_html=True)
 
 
-def render_sortable_table(html_table: str, height: int = None):
+def render_sortable_table(html_table: str, height: Optional[int] = None):
     """Render an HTML table with working JavaScript sorting.
     
     Uses st.components.v1.html() which properly executes JavaScript.
@@ -845,7 +845,7 @@ def _svg_for_page(page_name, size=20, color=None):
     return _svg_inline(icon_key, size, color)
 
 
-def render_page_header(title: str, subtitle: str = None, icon: str = "chart_bar"):
+def render_page_header(title: str, subtitle: Optional[str] = None, icon: str = "chart_bar"):
     """Render consistent page header across all pages using SVG silhouette icons."""
     svg_icon = _svg_inline(icon, 36)
     subtitle_html = f'<p style="text-align: center; color: #CCCCCC; margin: 10px 0 0 0; font-size: 1.2em; font-weight: 300;">{subtitle}</p>' if subtitle else ''
@@ -900,7 +900,7 @@ def render_info_box(content: str, box_type: str = "info"):
     ''', unsafe_allow_html=True)
 
 
-def render_empty_state(message: str, suggestion: str = None):
+def render_empty_state(message: str, suggestion: Optional[str] = None):
     """Render consistent empty state when no data is available."""
     suggestion_html = f'<p style="color: rgba(255,255,255,0.6);">{suggestion}</p>' if suggestion else ''
     st.markdown(f'''
@@ -961,7 +961,7 @@ def make_name_key(name: str) -> str:
     return name
 
 
-def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_name: str = None) -> pd.DataFrame:
+def match_player_name_to_traits(full_name: str, traits_df: pd.DataFrame, team_name: Optional[str] = None) -> pd.DataFrame:
     """
     Match a full player name (e.g., 'Chad Warner') to the abbreviated format in traits (e.g., 'Ch. Warner').
     Also handles nickname variants (e.g. 'Cameron Rayner' matches 'Cam Rayner').
@@ -1587,7 +1587,7 @@ def _generate_summary_from_raw(season: int) -> pd.DataFrame:
 
     # Build rows
     n_rows = 3 + n_teams  # header blank + group header + stat labels + team rows
-    grid = [[np.nan] * total_cols for _ in range(n_rows)]
+    grid: List[List[Any]] = [[np.nan] * total_cols for _ in range(n_rows)]
 
     # Row 0 = empty
     # Row 1 = group headers
@@ -1808,7 +1808,7 @@ def _normalise_rating_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _compute_age_decimal_from_dob(df: pd.DataFrame, season: int = None) -> pd.DataFrame:
+def _compute_age_decimal_from_dob(df: pd.DataFrame, season: Optional[int] = None) -> pd.DataFrame:
     """Compute precise Age_Decimal from DOB column.
     
     Overwrites any existing Age_Decimal with DOB-derived values (existing
@@ -2704,7 +2704,7 @@ def load_traits(season: int = CURRENT_SEASON) -> pd.DataFrame:
         
         # If requested season doesn't exist, fall back to most recent available
         if str(season) not in available_sheets:
-            numeric_sheets = [int(s) for s in available_sheets if s.isdigit()]
+            numeric_sheets = [int(s) for s in available_sheets if str(s).isdigit()]
             if numeric_sheets:
                 actual_season = max(numeric_sheets)
             else:
@@ -2828,7 +2828,7 @@ def _load_wheelo_team_stats() -> pd.DataFrame:
             # Try L10 sheet first (most comprehensive), then first sheet
             xls = pd.ExcelFile(wheelo_path)
             for sheet in xls.sheet_names:
-                if "L10" in sheet:
+                if "L10" in str(sheet):
                     df = pd.read_excel(wheelo_path, sheet_name=sheet)
                     df.columns = df.columns.astype(str).str.strip()
                     if "Team" in df.columns:
@@ -2998,9 +2998,22 @@ def get_attribute_stat_distribution(
 def get_team_logo_path(team_name: str):
     if not isinstance(team_name, str):
         return None
-    code = TEAM_CODE_MAP.get(team_name)
+
+    cleaned = team_name.strip()
+    if not cleaned:
+        return None
+
+    normalized = normalize_team_name(cleaned)
+    code = TEAM_CODE_MAP.get(cleaned) or TEAM_CODE_MAP.get(normalized)
+    if not code:
+        compact = "".join(ch.lower() for ch in cleaned if ch.isalnum())
+        for alias, alias_code in TEAM_CODE_MAP.items():
+            if "".join(ch.lower() for ch in alias if ch.isalnum()) == compact:
+                code = alias_code
+                break
     if not code:
         return None
+
     for ext in (".png", ".jpg", ".jpeg"):
         path = str(BASE_DIR / LOGO_FOLDER / (code + ext))
         if os.path.exists(path):
@@ -3848,7 +3861,7 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
         teams = all_teams_df["Team"].dropna().unique()
         
         # Calculate age band rankings (column rankings) - TOTAL POINTS using weighted rating
-        age_band_points = {team: {band: 0 for band in AGE_BANDS} for team in teams}
+        age_band_points = {team: {band: 0.0 for band in AGE_BANDS} for team in teams}
         
         for team in teams:
             team_df = all_teams_df[all_teams_df["Team"] == team]
@@ -3875,7 +3888,7 @@ def build_depth_chart_html(df_team: pd.DataFrame, all_teams_df: pd.DataFrame = N
                 age_band_rankings[band] = (ranks[selected_team_name], len(teams), pts_series[selected_team_name])
         
         # Calculate position rankings (row rankings) - TOTAL POINTS using weighted rating
-        position_points = {team: {pos: 0 for pos in DEPTH_POSITIONS} for team in teams}
+        position_points = {team: {pos: 0.0 for pos in DEPTH_POSITIONS} for team in teams}
         
         for team in teams:
             team_df = all_teams_df[all_teams_df["Team"] == team]
@@ -11361,7 +11374,323 @@ elif page == "Team Age Breakdown":
     
     html_table += "</tbody>\n</table>"
     render_sortable_table(html_table)
-    
+
+    # ---------------- Premiership Readiness Continuum (last working version) ----------------
+    st.markdown(
+        """
+        <div style='margin-top:14px;margin-bottom:10px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);'>
+            <div style='font-size:1.05em;font-weight:800;color:#FFFFFF;margin-bottom:6px;'>Premiership Readiness Continuum</div>
+            <div style='font-size:0.82em;color:#BFBFBF;'><b>Horizontal</b> = premiership readiness from the age/rating profile (Rebuild → Cliff). <b>Vertical</b> = actual results this season (ladder position, team-rating fallback). The <b>amber curve</b> is the result expected for each readiness level this season — logos <b>above</b> it are overachieving, <b>below</b> are underachieving — and it doubles as the sustainable premiership window: it holds across the leading contenders then arcs down through the Cliff edge, so ageing lists sitting above it are winning on borrowed time.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    _band_under22 = next((b for b in AGE_BANDS if "under" in str(b).lower() or "<22" in str(b).lower()), AGE_BANDS[0])
+    _band_22_26 = next((b for b in AGE_BANDS if "22" in str(b) and ("26" in str(b) or "25" in str(b))), AGE_BANDS[1] if len(AGE_BANDS) > 1 else AGE_BANDS[0])
+    _band_26_30 = next(
+        (
+            b
+            for b in AGE_BANDS
+            if "26" in str(b)
+            and ("30" in str(b) or "29" in str(b))
+            and "+" not in str(b)
+        ),
+        AGE_BANDS[2] if len(AGE_BANDS) > 2 else AGE_BANDS[-1],
+    )
+    _band_30p = next(
+        (
+            b
+            for b in AGE_BANDS
+            if (
+                "+" in str(b)
+                or "over" in str(b).lower()
+                or "30+" in str(b).lower()
+                or str(b).strip().lower().startswith("30+")
+            )
+        ),
+        AGE_BANDS[-1],
+    )
+
+    _band_strength = age_contributions.pivot(index="Team", columns="Age_Band", values="Total_Rating_Points").fillna(0.0)
+    for _b in [_band_under22, _band_22_26, _band_26_30, _band_30p]:
+        if _b not in _band_strength.columns:
+            _band_strength[_b] = 0.0
+    _selected_bands = []
+    for _c in [_band_under22, _band_22_26, _band_26_30, _band_30p]:
+        if _c in _band_strength.columns and _c not in _selected_bands:
+            _selected_bands.append(_c)
+    _band_strength = _band_strength[_selected_bands]
+
+    def _band_series(_label: str) -> pd.Series:
+        _v = _band_strength[_label]
+        if isinstance(_v, pd.DataFrame):
+            _v = _v.iloc[:, 0]
+        return _v
+
+    def _minmax_norm(_s: pd.Series | pd.DataFrame) -> pd.Series:
+        if isinstance(_s, pd.DataFrame):
+            _s = _s.iloc[:, 0] if _s.shape[1] else pd.Series(dtype=float)
+        _s = pd.to_numeric(_s, errors="coerce").fillna(0.0)
+        _lo = float(_s.min()) if len(_s) else 0.0
+        _hi = float(_s.max()) if len(_s) else 0.0
+        if _hi <= _lo:
+            return pd.Series(0.5, index=_s.index)
+        return (_s - _lo) / (_hi - _lo)
+
+    def _robust_norm(_s: pd.Series | pd.DataFrame) -> pd.Series:
+        # Logistic-squashed z-score: outlier-robust, keeps [0,1] like min-max but
+        # a single dominant team no longer compresses everyone else.
+        if isinstance(_s, pd.DataFrame):
+            _s = _s.iloc[:, 0] if _s.shape[1] else pd.Series(dtype=float)
+        _s = pd.to_numeric(_s, errors="coerce").fillna(0.0)
+        _mu = float(_s.mean()) if len(_s) else 0.0
+        _sd = float(_s.std(ddof=0)) if len(_s) else 0.0
+        if _sd < 1e-9:
+            return pd.Series(0.5, index=_s.index)
+        return 1.0 / (1.0 + np.exp(-((_s - _mu) / _sd)))
+
+    _u22 = _robust_norm(_band_series(_band_under22))
+    _a22 = _robust_norm(_band_series(_band_22_26))
+    _a26 = _robust_norm(_band_series(_band_26_30))
+    _a30 = _robust_norm(_band_series(_band_30p))
+    _overall = _robust_norm(team_totals.set_index("Team")["Team_Total"]) if not team_totals.empty else pd.Series(0.5, index=_band_strength.index)
+
+    _continuum_scores = pd.DataFrame(index=_band_strength.index)
+    _continuum_scores["Rebuild"] = 0.95 * _u22 + 0.25 * (1 - _overall) - 0.70 * _a26 - 0.45 * _a30 - 0.25 * _a22
+    _continuum_scores["Developing"] = 1.00 * _u22 + 0.55 * _a22 - 0.45 * _a30 - 0.25 * _overall
+    _continuum_scores["Challenging"] = 0.90 * _a26 + 0.80 * _a22 + 0.25 * _u22 - 0.60 * _a30 - 0.15 * (_a22 - _a26).abs()
+    _continuum_scores["Contending"] = 1.00 * _a26 + 0.70 * _a30 + 0.65 * _a22 - 0.25 * _u22 + 0.20 * _overall
+    _continuum_scores["Cliff"] = 1.10 * _a30 + 0.60 * _a26 - 0.65 * _u22 - 0.45 * _a22 + 0.15 * _overall
+
+    _stage_order = ["Rebuild", "Developing", "Challenging", "Contending", "Cliff"]
+    _anchors = {"Rebuild": 8.0, "Developing": 28.0, "Challenging": 50.0, "Contending": 72.0, "Cliff": 92.0}
+
+    # Softmax temperature: <1 sharpens each team toward its dominant stage,
+    # spreading the mid-table instead of blurring everyone to the centre.
+    _softmax_temp = 0.5
+    _score_matrix = _continuum_scores[_stage_order] / _softmax_temp
+    _exp_scores = np.exp(_score_matrix.sub(_score_matrix.max(axis=1), axis=0))
+    _probs = _exp_scores.div(_exp_scores.sum(axis=1), axis=0)
+    _xpos = pd.Series(0.0, index=_probs.index)
+    for _st in _stage_order:
+        _xpos = _xpos + _probs[_st] * _anchors[_st]
+
+    # Fixed calibrated domain (2018-2025 backtest p2/p98 of raw softmax-X) mapped
+    # to [6,94]. Uses constants — NOT per-render min/max — so a team's position
+    # depends only on its own profile and never drifts week to week.
+    _X_DOMAIN_LO, _X_DOMAIN_HI = 40.7, 75.2
+    _xpos = (6.0 + (_xpos - _X_DOMAIN_LO) / (_X_DOMAIN_HI - _X_DOMAIN_LO) * 88.0).clip(6.0, 94.0)
+
+    # Stage label follows horizontal position (anchor-zone midpoints) so each
+    # badge's stage always matches the axis zone it sits in.
+    _stage_cuts = [(18.0, "Rebuild"), (39.0, "Developing"), (61.0, "Challenging"), (82.0, "Contending")]
+
+    def _stage_from_x(_xv: float) -> str:
+        for _thr, _name in _stage_cuts:
+            if float(_xv) < _thr:
+                return _name
+        return "Cliff"
+
+    _primary_stage = _xpos.apply(_stage_from_x)
+
+    _continuum_df = pd.DataFrame({
+        "Team": _continuum_scores.index,
+        "Stage": _primary_stage.values,
+        "X": _xpos.values,
+    }).sort_values("X").reset_index(drop=True)
+
+    _stage_palette = {
+        "Rebuild": "#d1495b",
+        "Developing": "#f08a24",
+        "Challenging": "#f2c94c",
+        "Contending": "#2fbf71",
+        "Cliff": "#4f5d75",
+    }
+
+    _n_perf = len(_continuum_df)
+    _ladder_df = load_afl_ladder_positions()
+    _ladder_pos = {}
+    if not _ladder_df.empty and {"Season", "Position", "Team"}.issubset(_ladder_df.columns):
+        _cur_ladder = _ladder_df[_ladder_df["Season"] == CURRENT_SEASON]
+        for _, _lr in _cur_ladder.iterrows():
+            try:
+                _ladder_pos[normalize_team_name(str(_lr["Team"]))] = int(_lr["Position"])
+            except (ValueError, TypeError):
+                continue
+
+    _team_rating = team_totals.set_index("Team")["Team_Total"] if not team_totals.empty else pd.Series(dtype=float)
+    _perf_rank = {}
+    for _t in _continuum_df["Team"]:
+        if _t in _ladder_pos:
+            _perf_rank[_t] = float(_n_perf - _ladder_pos[_t] + 1)
+        else:
+            _perf_rank[_t] = np.nan
+    _perf_series = pd.Series(_perf_rank, dtype=float)
+    if _perf_series.isna().any() and not _team_rating.empty:
+        _rating_rank = _team_rating.reindex(_continuum_df["Team"]).rank(ascending=True)
+        for _t in _perf_series.index[_perf_series.isna()]:
+            _perf_series[_t] = _rating_rank.get(_t, np.nan)
+    if _perf_series.notna().sum() < max(4, _n_perf // 2) and not _team_rating.empty:
+        _perf_series = _team_rating.reindex(_continuum_df["Team"]).rank(ascending=True).astype(float)
+    _perf_series = _perf_series.astype(float)
+    _perf_series = _perf_series.fillna(_perf_series.mean() if _perf_series.notna().any() else 0.5)
+
+    _pmin, _pmax = float(_perf_series.min()), float(_perf_series.max())
+    _perf_norm = (_perf_series - _pmin) / (_pmax - _pmin) if _pmax > _pmin else pd.Series(0.5, index=_perf_series.index)
+
+    _xv = _continuum_df.set_index("Team")["X"].reindex(_perf_norm.index).astype(float)
+    # Amber curve is a FIXED benchmark: pivots on Brisbane's logo bottom (0.769 @ X≈85.5)
+    # with a lowered left anchor so genuine rebuilders aren't flagged as underachieving.
+    # Hardcoded constants — NOT a weekly regression — so the line never moves week to week.
+    _slope, _intercept = 0.00858, 0.035
+    _expected_norm = (_intercept + _slope * _xv).clip(0.0, 1.0)
+    _residual = _perf_norm - _expected_norm
+
+    _ou_palette = {"over": "#2fbf71", "under": "#e0523f", "on": "#8a94a6"}
+
+    def _ou_state(_res: float):
+        if _res > 0.06:
+            return "over", "Overachieving"
+        if _res < -0.06:
+            return "under", "Underachieving"
+        return "on", "On track"
+
+    _PLOT_TOP = 46.0
+    _PLOT_H = 400.0
+
+    # Render-only anti-collision: nudge overlapping badges apart horizontally so
+    # clustered teams (e.g. bottom-of-ladder rebuilds) don't hide each other.
+    # Uses a copy of X and never feeds back into the amber curve math.
+    _BADGE_X_GAP = 3.0
+    _BADGE_Y_GAP = 44.0
+    _adj_nodes = []
+    for _i, _r in _continuum_df.iterrows():
+        _t = str(_r["Team"])
+        _bpn = float(_perf_norm.get(_t, 0.5))
+        _btop = float(np.clip(_PLOT_TOP + (1.0 - _bpn) * _PLOT_H - 22.0,
+                              _PLOT_TOP - 4.0, _PLOT_TOP + _PLOT_H - 40.0))
+        _adj_nodes.append({"team": _t, "x": float(np.clip(_r["X"], 2.0, 98.0)), "top": _btop})
+    _placed_nodes = []
+    for _node in sorted(_adj_nodes, key=lambda d: (d["x"], d["top"])):
+        for _ in range(200):
+            _hit = False
+            for _pn_node in _placed_nodes:
+                if abs(_node["top"] - _pn_node["top"]) < _BADGE_Y_GAP and abs(_node["x"] - _pn_node["x"]) < _BADGE_X_GAP:
+                    _node["x"] = _pn_node["x"] + _BADGE_X_GAP
+                    _hit = True
+            if not _hit:
+                break
+        _node["x"] = float(np.clip(_node["x"], 2.0, 98.0))
+        _placed_nodes.append(_node)
+    _adj_x = {_d["team"]: _d["x"] for _d in _adj_nodes}
+
+    _continuum_logo_html = []
+    for _i, _r in _continuum_df.iterrows():
+        _team = str(_r["Team"])
+        _x = float(_adj_x.get(_team, float(np.clip(_r["X"], 2.0, 98.0))))
+        _pn = float(_perf_norm.get(_team, 0.5))
+        _res = float(_residual.get(_team, 0.0))
+        _top = _PLOT_TOP + (1.0 - _pn) * _PLOT_H - 22.0
+        _top = float(np.clip(_top, _PLOT_TOP - 4.0, _PLOT_TOP + _PLOT_H - 40.0))
+        _stage = str(_r["Stage"])
+        _ou_key, _ou_label = _ou_state(_res)
+        _border = _ou_palette[_ou_key]
+        _lp = _ladder_pos.get(_team)
+        _lp_txt = f" • Ladder {get_ordinal_suffix(int(_lp))}" if _lp else ""
+        _tip = f"{_team} • {_stage}{_lp_txt} • {_ou_label}"
+        _logo_path = get_team_logo_path(_team)
+        if _logo_path and os.path.exists(_logo_path):
+            try:
+                with open(_logo_path, "rb") as _lf:
+                    _b64 = base64.b64encode(_lf.read()).decode("utf-8")
+                _ext = _logo_path.rsplit(".", 1)[-1].lower()
+                _mime = "png" if _ext == "png" else ("jpeg" if _ext in {"jpg", "jpeg"} else _ext)
+                _continuum_logo_html.append(
+                    f"<div title='{_tip}' style='position:absolute;left:calc({_x}% - 22px);top:{_top}px;'>"
+                    f"<img src='data:image/{_mime};base64,{_b64}' style='width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid {_border};box-shadow:0 4px 14px rgba(0,0,0,0.35);'/>"
+                    f"</div>"
+                )
+            except Exception:
+                _continuum_logo_html.append(
+                    f"<div title='{_tip}' style='position:absolute;left:calc({_x}% - 22px);top:{_top}px;width:44px;height:44px;border-radius:50%;background:{_border};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.65em;font-weight:800;'>"
+                    f"{_team[:3].upper()}</div>"
+                )
+        else:
+            _continuum_logo_html.append(
+                f"<div title='{_tip}' style='position:absolute;left:calc({_x}% - 22px);top:{_top}px;width:44px;height:44px;border-radius:50%;background:{_border};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.65em;font-weight:800;'>"
+                f"{_team[:3].upper()}</div>"
+            )
+
+    def _base_expected(_xx: float) -> float:
+        return float(np.clip(_intercept + _slope * _xx, 0.0, 1.0))
+
+    # Fixed tail geometry: rise to a peak in the Contending zone, then arc down
+    # through the Cliff edge. All constants — the amber line is identical every week.
+    _peak_x = 85.5
+    _edge_px = 94.0
+    _lo_val = _base_expected(0.0)
+    _edge_val = 0.58
+    _hand_w = 100.0 - _peak_x
+    _hand_p = _base_expected(_peak_x)
+    _hand_s = _slope * _hand_w
+    _t_edge = float(np.clip((_edge_px - _peak_x) / _hand_w, 0.1, 0.9))
+    _cub_d = ((_edge_val - _hand_p - _hand_s * _t_edge
+               - (_lo_val - _hand_p - _hand_s) * _t_edge ** 2)
+              / (_t_edge ** 3 - _t_edge ** 2))
+    _cub_c = (_lo_val - _hand_p - _hand_s) - _cub_d
+    _sustain_pts = []
+    for _sx in range(0, 101):
+        _fx = float(_sx)
+        if _fx <= _peak_x:
+            _sv = _base_expected(_fx)
+        else:
+            _t = (_fx - _peak_x) / _hand_w
+            _sv = _hand_p + _hand_s * _t + _cub_c * _t ** 2 + _cub_d * _t ** 3
+        _sustain_pts.append(f"{_sx},{(1.0 - float(np.clip(_sv, 0.0, 1.0))) * 100.0:.1f}")
+    _sustain_poly = " ".join(_sustain_pts)
+
+    _stage_marks = [
+        ("Rebuild", 8),
+        ("Developing", 28),
+        ("Challenging", 50),
+        ("Contending", 72),
+        ("Cliff", 92),
+    ]
+    _marks_html = "".join(
+        [
+            f"<div style='position:absolute;left:calc({x}% - 48px);top:18px;width:96px;text-align:center;color:#E6E6E6;font-size:0.78em;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;'>{label}</div>"
+            for label, x in _stage_marks
+        ]
+    )
+
+    _continuum_html = (
+        "<div style='position:relative;height:500px;margin:8px 0 6px 0;border-radius:16px;"
+        "background:linear-gradient(90deg,rgba(209,73,91,0.18) 0%,rgba(240,138,36,0.16) 24%,rgba(242,201,76,0.12) 50%,rgba(47,191,113,0.15) 76%,rgba(79,93,117,0.2) 100%);"
+        "border:1px solid rgba(255,255,255,0.12);overflow:hidden;'>"
+        f"<svg viewBox='0 0 100 100' preserveAspectRatio='none' style='position:absolute;left:0;top:{_PLOT_TOP}px;width:100%;height:{_PLOT_H}px;'>"
+        f"<polyline points='{_sustain_poly}' fill='none' stroke='#f2c94c' stroke-width='2.5' stroke-dasharray='2,3' vector-effect='non-scaling-stroke' opacity='0.9'/>"
+        "</svg>"
+        "<div style='position:absolute;left:8px;top:44px;color:#8fe0b4;font-size:0.66em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;'>▲ Overachieving</div>"
+        "<div style='position:absolute;left:8px;bottom:30px;color:#f0a08f;font-size:0.66em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;'>▼ Underachieving</div>"
+        f"{_marks_html}"
+        + "".join(_continuum_logo_html)
+        + "<div style='position:absolute;left:2%;right:2%;bottom:8px;display:flex;justify-content:space-between;color:#9A9A9A;font-size:0.73em;'>"
+        "<span>Early cycle</span><span>Window building</span><span>Prime window</span><span>Peak window</span><span>Ageing edge</span></div>"
+        "</div>"
+    )
+    st.markdown(_continuum_html, unsafe_allow_html=True)
+
+    st.markdown(
+        "<div style='display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 12px 4px;font-size:0.76em;color:#C8C8C8;'>"
+        "<span><span style='display:inline-block;width:11px;height:11px;border-radius:50%;background:#2fbf71;margin-right:5px;'></span>Overachieving vs readiness</span>"
+        "<span><span style='display:inline-block;width:11px;height:11px;border-radius:50%;background:#8a94a6;margin-right:5px;'></span>Performing to expectation</span>"
+        "<span><span style='display:inline-block;width:11px;height:11px;border-radius:50%;background:#e0523f;margin-right:5px;'></span>Underachieving vs readiness</span>"
+        "<span style='color:#f2c94c;'>· · · amber: expected results / sustainable premiership window</span>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
     # Professional footer
     render_footer()
 
@@ -11597,7 +11926,7 @@ elif page == "List Ladder":
         return f"{n}{suffix}"
     
     # Helper function to get color based on rank - 5 tier system
-    def get_rank_color(rank):
+    def _ladder_rank_color(rank):
         """5-tier system: Elite (1-4), Good (5-7), Average (8-11), Below Avg (12-15), Poor (16-18)"""
         if rank <= 4:
             return "#008000"   # Elite - Dark Green
@@ -11651,7 +11980,7 @@ elif page == "List Ladder":
                 html_table += f"<td>{row[col]}</td>\n"
             elif col == "Total Points":
                 overall_rank = int(row["Rank"])
-                tp_bg = get_rank_color(overall_rank)
+                tp_bg = _ladder_rank_color(overall_rank)
                 tp_text = "black" if tp_bg in ("#90EE90", "#FFD700") else "white"
                 html_table += (
                     f"<td style='background:rgba(255,255,255,0.95);border-left:3px solid rgba(255,215,0,0.6);'>"
@@ -11667,7 +11996,7 @@ elif page == "List Ladder":
                     rank_part = val_str.split("(")[1].split(")")[0]
 
                     rank_val = int(ladder_df.iloc[row_idx][f"{col}_Rank"])
-                    bg_color = get_rank_color(rank_val)
+                    bg_color = _ladder_rank_color(rank_val)
                     text_color = "black" if bg_color in ("#90EE90", "#FFD700") else "white"
 
                     html_table += (
@@ -15931,7 +16260,7 @@ elif page == "List Breakdown - Traits":
             'West Coast': 'West Coast',
             'WCFC': 'West Coast'
         }
-        return photo_guide_map.get(normalized, normalized)
+        return photo_guide_map.get(normalized, normalized)  # type: ignore[arg-type]
     
     def get_full_player_name(player_name, team_name=None):
         """Get full player name by looking up in player photo guide."""
@@ -20062,7 +20391,7 @@ elif page == "Custom Player Comparison":
         custom_vector: tuple,  # Use tuple for caching
         traits_data: str,  # Serialized data for caching
         available_traits_keys: tuple,
-        filter_position: str = None  # Filter by position
+        filter_position: Optional[str] = None  # Filter by position
     ) -> pd.DataFrame:
         """Calculate cosine similarity between custom player and all AFL players."""
         import json
@@ -20123,7 +20452,7 @@ elif page == "Custom Player Comparison":
         is_primary: bool = False,
         fc_mode: bool = False,
         show_subcategories: bool = False,
-        available_traits: dict = None,
+        available_traits: Optional[dict] = None,
         card_key: str = ""
     ):
         """Render a premium player card."""
